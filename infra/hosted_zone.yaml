@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Route53 Hosted Zone"
+
+Parameters:
+  DomainName:
+    Type: String
+    Description: Domain name for the hosted zone. Must end in *.account.gov.uk
+    AllowedPattern: '\d.+\.account.gov.uk$'
+
+Resources:
+  HostedZone:
+    Type: AWS::Route53::HostedZone
+    Properties:
+      Name: !Ref DomainName
+
+Outputs:
+  NameServers:
+    Description: Name servers for the hosted zone
+    Value: !Join [", ", !GetAtt HostedZone.NameServers]
+    Export:
+      Name: !Sub "${AWS::StackName}-NameServers"
