@@ -5,7 +5,7 @@ Parameters:
   DomainName:
     Type: String
     Description: Domain name for the hosted zone. Must end in *.account.gov.uk
-    AllowedPattern: '\d.+\.account.gov.uk$'
+    AllowedPattern: .+\.account.gov.uk$
 
 Resources:
   HostedZone:
