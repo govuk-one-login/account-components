@@ -7,7 +7,7 @@ resource "aws_cloudformation_stack" "github_identity_provider_stack" {
 
   parameters = {
     Environment = var.environment
-    System      = "Account Management Components"
+    System      = var.system
   }
 
   capabilities = ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"]

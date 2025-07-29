@@ -17,3 +17,9 @@ variable "create_build_stacks" {
   description = "Whether or not to deploy the stacks for building and signing application code. Only needed in dev and build. Defaults to false."
   default     = false
 }
+
+variable "system" {
+  type        = string
+  description = "The name of the system. Used in tags."
+  default     = "Account Managment Components"
+}
