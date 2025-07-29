@@ -21,7 +21,13 @@ variable "create_build_stacks" {
 variable "system" {
   type        = string
   description = "The name of the system. Used in tags."
-  default     = "Account Managment Components"
+  default     = "Account Management Components"
+}
+
+variable "product" {
+  type        = string
+  description = "The name of the product. Used in tags."
+  default     = "GOV.UK One Login"
 }
 
 
@@ -30,7 +36,7 @@ variable "signer_allowed_accounts" {
   description = "The AWS account IDs that can read the code signing KMS key"
 }
 
-variable "notification_email" {
+variable "owner_email" {
   type        = string
-  description = "The email address to send ECR image vulnerabilities to"
+  description = "The owning team's Google Group email address. Used for tagging and ECR scan notifications"
 }

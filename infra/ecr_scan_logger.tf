@@ -5,7 +5,7 @@ resource "aws_cloudformation_stack" "ecr_scan_logger_stack" {
   template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/ecr-image-scan-findings-logger/template.yaml"
 
   parameters = {
-    NotificationEmail = var.notification_email
+    NotificationEmail = var.owner_email
   }
 
   capabilities = ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"]
