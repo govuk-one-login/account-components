@@ -23,3 +23,9 @@ variable "system" {
   description = "The name of the system. Used in tags."
   default     = "Account Managment Components"
 }
+
+
+variable "signer_allowed_accounts" {
+  type        = list(string)
+  description = "The AWS account IDs that can read the code signing KMS key. "
+}
