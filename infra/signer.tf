@@ -15,7 +15,7 @@ resource "aws_cloudformation_stack" "signer_stack" {
 resource "aws_cloudformation_stack" "container_signer_stack" {
   count = var.create_build_stacks ? 1 : 0
   # See https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/3376840727/Container+Signer
-  name         = "signer"
+  name         = "container-signer"
   template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/container-signer/template.yaml"
 
   parameters = {
