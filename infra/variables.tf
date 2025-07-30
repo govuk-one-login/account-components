@@ -39,4 +39,5 @@ variable "signer_allowed_accounts" {
 variable "owner_email" {
   type        = string
   description = "The owning team's Google Group email address. Used for tagging and ECR scan notifications"
+  default     = "one-login-home-team-tech@digital.cabinet-office.gov.uk"
 }
