@@ -36,6 +36,45 @@ variable "signer_allowed_accounts" {
   description = "The AWS account IDs that can read the code signing KMS key"
 }
 
+variable "container_signer_key_arn" {
+  type        = string
+  description = "The ARN of the KMS key used to sign containers. This is the shared key deployed in build from the container-signer stack"
+}
+
+variable "signing_profile_arn" {
+  type        = string
+  description = "The ARN of the signing profile used to sign Lambda code. This is the shared profile deployed in build from the signer stack"
+}
+
+variable "signing_profile_version_arn" {
+  type        = string
+  description = "The ARN of the signing profile version used to Lambda code. This is the shared profile deployed in build from the signer stack"
+}
+
+variable "artifact_source_bucket_arn" {
+  type        = string
+  description = "The ARN of the promotion bucket from the previous environment"
+  default     = "none"
+}
+
+variable "artifact_source_bucket_event_trigger_role_arn" {
+  type        = string
+  description = "The ARN of the role to assume for promotion events from the previous environment"
+  default     = "none"
+}
+
+variable "repository_name" {
+  type        = string
+  description = "The Github repository name"
+  default     = "account-components"
+}
+
+variable "allowed_promotion_accounts" {
+  type        = list(string)
+  description = "The AWS account IDs that this pipeline will promote to. Maximum 2 accounts"
+  default     = []
+}
+
 variable "owner_email" {
   type        = string
   description = "The owning team's Google Group email address. Used for tagging and ECR scan notifications"
