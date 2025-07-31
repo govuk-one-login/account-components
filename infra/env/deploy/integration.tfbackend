@@ -1,0 +1,3 @@
+bucket = "di-account-components-integration-tfstate"
+key    = "account-components.tfstate"
+region = "eu-west-2"
