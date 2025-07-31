@@ -1,10 +1,10 @@
 # See https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/3059908609/How+to+deploy+a+SAM+application+with+secure+pipelines
 resource "aws_cloudformation_stack" "main_pipeline_stack" {
-  name         = "components-pipeline-main"
+  name         = "pipeline-main"
   template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/sam-deploy-pipeline/template.yaml"
 
   parameters = {
-    SAMStackName                            = "account-components-${var.environment}-main"
+    SAMStackName                            = "components-main"
     Environment                             = var.environment
     VpcStackName                            = "vpc"
     ContainerSignerKmsKeyArn                = var.container_signer_key_arn
@@ -24,11 +24,11 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
 }
 
 resource "aws_cloudformation_stack" "core_pipeline_stack" {
-  name         = "components-pipeline-core"
+  name         = "pipeline-core"
   template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/sam-deploy-pipeline/template.yaml"
 
   parameters = {
-    SAMStackName                            = "account-components-${var.environment}-core"
+    SAMStackName                            = "components-core"
     Environment                             = var.environment
     VpcStackName                            = "vpc"
     ContainerSignerKmsKeyArn                = var.container_signer_key_arn
@@ -48,11 +48,11 @@ resource "aws_cloudformation_stack" "core_pipeline_stack" {
 }
 
 resource "aws_cloudformation_stack" "alarms_pipeline_stack" {
-  name         = "components-pipeline-alarms"
+  name         = "pipeline-alarms"
   template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/sam-deploy-pipeline/template.yaml"
 
   parameters = {
-    SAMStackName                            = "account-components-${var.environment}-alarms"
+    SAMStackName                            = "components-alarms"
     Environment                             = var.environment
     VpcStackName                            = "vpc"
     ContainerSignerKmsKeyArn                = var.container_signer_key_arn
@@ -73,11 +73,11 @@ resource "aws_cloudformation_stack" "alarms_pipeline_stack" {
 
 resource "aws_cloudformation_stack" "mocks_pipeline_stack" {
   count        = contains(["build", "dev"], var.environment) ? 1 : 0
-  name         = "components-pipeline-mocks"
+  name         = "pipeline-mocks"
   template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/sam-deploy-pipeline/template.yaml"
 
   parameters = {
-    SAMStackName                            = "account-components-${var.environment}-alarms"
+    SAMStackName                            = "components-mocks"
     Environment                             = var.environment
     VpcStackName                            = "vpc"
     ContainerSignerKmsKeyArn                = var.container_signer_key_arn
