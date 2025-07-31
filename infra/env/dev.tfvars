@@ -1,11 +1,7 @@
-environment             = "dev"
-hosted_zone_domain      = "manage.dev.account.gov.uk"
-create_build_stacks     = true
-signer_allowed_accounts = []
-# TODO once we've deployed the base stacks 
-container_signer_key_arn                      = ""
-signing_profile_arn                           = ""
-signing_profile_version_arn                   = ""
-artifact_source_bucket_arn                    = ""
-artifact_source_bucket_event_trigger_role_arn = ""
-allowed_promotion_accounts                    = []
+environment                 = "dev"
+hosted_zone_domain          = "manage.dev.account.gov.uk"
+create_build_stacks         = true
+signer_allowed_accounts     = []
+container_signer_key_arn    = "arn:aws:kms:eu-west-2:621833521570:key/eaf47454-2fb3-4730-a12c-221156ac32e8"
+signing_profile_arn         = "arn:aws:signer:eu-west-2:621833521570:/signing-profiles/SigningProfile_XQk3kGQ3RvMJ"
+signing_profile_version_arn = "arn:aws:signer:eu-west-2:621833521570:/signing-profiles/SigningProfile_XQk3kGQ3RvMJ/stYeKc9mAG"
