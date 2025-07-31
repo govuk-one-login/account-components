@@ -20,3 +20,12 @@ terraform init -backend-config=env/deploy/dev.tfbackend
 terraform plan -var-file=env/dev.tfvars
 terraform apply -var-file=env/dev.tfvars
 ```
+
+> [!NOTE]
+> You'll get a warning about an existing backend when running `terraform init`
+> if you've already initialised a backend for a different environment.
+>
+> You should re-run your command with the `-reconfigure` flag as we don't want
+> to migrate state between environments:
+>
+> `terraform init -backend-config=env/deploy/dev.tfbackend -reconfigure`
