@@ -1,3 +1,12 @@
-environment             = "production"
-hosted_zone_domain      = "manage.account.gov.uk"
-signer_allowed_accounts = []
+environment                                          = "production"
+hosted_zone_domain                                   = "manage.account.gov.uk"
+signer_allowed_accounts                              = []
+container_signer_key_arn                             = "arn:aws:kms:eu-west-2:629382882013:key/6d5cec29-dda4-42cb-a6bb-ea317123cd4c"
+signing_profile_arn                                  = "arn:aws:signer:eu-west-2:629382882013:/signing-profiles/SigningProfile_VLTxKzC7V3x8"
+signing_profile_version_arn                          = "arn:aws:signer:eu-west-2:629382882013:/signing-profiles/SigningProfile_VLTxKzC7V3x8/RvyUVgeXLz"
+core_artifact_source_bucket_arn                      = "arn:aws:s3:::pipeline-core-artifactpromotionbucket-0ld84qgqizan"
+core_artifact_source_bucket_event_trigger_role_arn   = "arn:aws:iam::837553126879:role/PL-pipeline-core-PromoTrigRole-06695294062d"
+main_artifact_source_bucket_arn                      = "arn:aws:s3:::pipeline-main-artifactpromotionbucket-rbwpnbrwsqih"
+main_artifact_source_bucket_event_trigger_role_arn   = "arn:aws:iam::837553126879:role/PL-pipeline-main-PromoTrigRole-0a14a914e5b1"
+alarms_artifact_source_bucket_arn                    = "arn:aws:s3:::pipeline-alarms-artifactpromotionbucket-j19jtwjxmec9"
+alarms_artifact_source_bucket_event_trigger_role_arn = "arn:aws:iam::837553126879:role/PL-pipeline-alarms-PromoTrigRole-062e841de563"
