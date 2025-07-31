@@ -10,8 +10,8 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
     ContainerSignerKmsKeyArn                = var.container_signer_key_arn
     SigningProfileArn                       = var.signing_profile_arn
     SigningProfileVersionArn                = var.signing_profile_version_arn
-    ArtifactSourceBucketArn                 = var.artifact_source_bucket_arn
-    ArtifactSourceBucketEventTriggerRoleArn = var.artifact_source_bucket_event_trigger_role_arn
+    ArtifactSourceBucketArn                 = var.main_artifact_source_bucket_arn
+    ArtifactSourceBucketEventTriggerRoleArn = var.main_artifact_source_bucket_event_trigger_role_arn
     GitHubRepositoryName                    = var.create_build_stacks ? var.repository_name : "none"
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
@@ -34,8 +34,8 @@ resource "aws_cloudformation_stack" "core_pipeline_stack" {
     ContainerSignerKmsKeyArn                = var.container_signer_key_arn
     SigningProfileArn                       = var.signing_profile_arn
     SigningProfileVersionArn                = var.signing_profile_version_arn
-    ArtifactSourceBucketArn                 = var.artifact_source_bucket_arn
-    ArtifactSourceBucketEventTriggerRoleArn = var.artifact_source_bucket_event_trigger_role_arn
+    ArtifactSourceBucketArn                 = var.core_artifact_source_bucket_arn
+    ArtifactSourceBucketEventTriggerRoleArn = var.core_artifact_source_bucket_event_trigger_role_arn
     GitHubRepositoryName                    = var.create_build_stacks ? var.repository_name : "none"
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
@@ -58,8 +58,8 @@ resource "aws_cloudformation_stack" "alarms_pipeline_stack" {
     ContainerSignerKmsKeyArn                = var.container_signer_key_arn
     SigningProfileArn                       = var.signing_profile_arn
     SigningProfileVersionArn                = var.signing_profile_version_arn
-    ArtifactSourceBucketArn                 = var.artifact_source_bucket_arn
-    ArtifactSourceBucketEventTriggerRoleArn = var.artifact_source_bucket_event_trigger_role_arn
+    ArtifactSourceBucketArn                 = var.alarms_artifact_source_bucket_arn
+    ArtifactSourceBucketEventTriggerRoleArn = var.alarms_artifact_source_bucket_event_trigger_role_arn
     GitHubRepositoryName                    = var.create_build_stacks ? var.repository_name : "none"
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
@@ -83,8 +83,8 @@ resource "aws_cloudformation_stack" "mocks_pipeline_stack" {
     ContainerSignerKmsKeyArn                = var.container_signer_key_arn
     SigningProfileArn                       = var.signing_profile_arn
     SigningProfileVersionArn                = var.signing_profile_version_arn
-    ArtifactSourceBucketArn                 = var.artifact_source_bucket_arn
-    ArtifactSourceBucketEventTriggerRoleArn = var.artifact_source_bucket_event_trigger_role_arn
+    ArtifactSourceBucketArn                 = var.mocks_artifact_source_bucket_arn
+    ArtifactSourceBucketEventTriggerRoleArn = var.mocks_artifact_source_bucket_event_trigger_role_arn
     GitHubRepositoryName                    = var.create_build_stacks ? var.repository_name : "none"
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)

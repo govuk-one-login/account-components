@@ -51,17 +51,55 @@ variable "signing_profile_version_arn" {
   description = "The ARN of the signing profile version used to Lambda code. This is the shared profile deployed in build from the signer stack"
 }
 
-variable "artifact_source_bucket_arn" {
+variable "core_artifact_source_bucket_arn" {
   type        = string
-  description = "The ARN of the promotion bucket from the previous environment"
+  description = "The ARN of the promotion bucket from the previous environment's core pipeline"
   default     = "none"
 }
 
-variable "artifact_source_bucket_event_trigger_role_arn" {
+variable "core_artifact_source_bucket_event_trigger_role_arn" {
   type        = string
-  description = "The ARN of the role to assume for promotion events from the previous environment"
+  description = "The ARN of the role to assume for promotion events from the previous environment's core pipeline"
   default     = "none"
 }
+
+variable "main_artifact_source_bucket_arn" {
+  type        = string
+  description = "The ARN of the promotion bucket from the previous environment's main pipeline"
+  default     = "none"
+}
+
+variable "main_artifact_source_bucket_event_trigger_role_arn" {
+  type        = string
+  description = "The ARN of the role to assume for promotion events from the previous environment's main pipeline"
+  default     = "none"
+}
+
+variable "mocks_artifact_source_bucket_arn" {
+  type        = string
+  description = "The ARN of the promotion bucket from the previous environment's mocks pipeline"
+  default     = "none"
+}
+
+variable "mocks_artifact_source_bucket_event_trigger_role_arn" {
+  type        = string
+  description = "The ARN of the role to assume for promotion events from the previous environment's mocks pipeline"
+  default     = "none"
+}
+
+
+variable "alarms_artifact_source_bucket_arn" {
+  type        = string
+  description = "The ARN of the promotion bucket from the previous environment's alarms pipeline"
+  default     = "none"
+}
+
+variable "alarms_artifact_source_bucket_event_trigger_role_arn" {
+  type        = string
+  description = "The ARN of the role to assume for promotion events from the previous environment's alarms pipeline"
+  default     = "none"
+}
+
 
 variable "repository_name" {
   type        = string
