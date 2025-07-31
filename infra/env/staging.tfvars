@@ -1,3 +1,13 @@
-environment             = "staging"
-hosted_zone_domain      = "manage.staging.account.gov.uk"
-signer_allowed_accounts = []
+environment                                          = "staging"
+hosted_zone_domain                                   = "manage.staging.account.gov.uk"
+signer_allowed_accounts                              = []
+container_signer_key_arn                             = "arn:aws:kms:eu-west-2:629382882013:key/6d5cec29-dda4-42cb-a6bb-ea317123cd4c"
+signing_profile_arn                                  = "arn:aws:signer:eu-west-2:629382882013:/signing-profiles/SigningProfile_VLTxKzC7V3x8"
+signing_profile_version_arn                          = "arn:aws:signer:eu-west-2:629382882013:/signing-profiles/SigningProfile_VLTxKzC7V3x8/RvyUVgeXLz"
+allowed_promotion_accounts                           = ["549834518434", "494066295151"]
+core_artifact_source_bucket_arn                      = "arn:aws:s3:::pipeline-core-artifactpromotionbucket-bgeia84uabvv"
+core_artifact_source_bucket_event_trigger_role_arn   = "arn:aws:iam::629382882013:role/PL-pipeline-core-PromoTrigRole-02fc8f012deb"
+main_artifact_source_bucket_arn                      = "arn:aws:s3:::pipeline-main-artifactpromotionbucket-keuqvxdtbzlm"
+main_artifact_source_bucket_event_trigger_role_arn   = "arn:aws:iam::629382882013:role/PL-pipeline-main-PromoTrigRole-06b72641d005"
+alarms_artifact_source_bucket_arn                    = "arn:aws:s3:::pipeline-alarms-artifactpromotionbucket-ouvrrmucl4jg"
+alarms_artifact_source_bucket_event_trigger_role_arn = "arn:aws:iam::629382882013:role/PL-pipeline-alarms-PromoTrigRole-0aacc187d65d"
