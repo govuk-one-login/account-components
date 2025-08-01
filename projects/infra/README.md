@@ -25,7 +25,8 @@ sso_start_url = https://uk-digital-identity.awsapps.com/start
 To deploy the Terraform (in build) run:
 
 ```sh
-cd infra
+tfenv install && tfenv use
+cd projects/infra
 AWS_PROFILE=di-account-components-build-admin
 aws sso login
 terraform init -backend-config=env/deploy/build.tfbackend

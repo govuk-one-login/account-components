@@ -1,0 +1,10 @@
+{
+  "ignoreBinaries": [
+    "detect-secrets",
+    "zizmor",
+    "tflint",
+    "brew",
+    "pre-commit",
+    "cfn-lint",
+  ],
+}
