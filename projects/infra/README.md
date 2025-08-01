@@ -26,7 +26,7 @@ To deploy the Terraform (in build) run:
 
 ```sh
 tfenv install && tfenv use
-cd src/infra
+cd projects/infra
 AWS_PROFILE=di-account-components-build-admin
 aws sso login
 terraform init -backend-config=env/deploy/build.tfbackend
