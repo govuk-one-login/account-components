@@ -10,10 +10,11 @@ The [Civil Service Code](https://www.gov.uk/government/publications/civil-servic
 
 ## Contributor Covenant Code of Conduct
 
-> Note: 
-> * where the code of conduct says "project" we mean GDS, `govuk-one-login` and all repositories hosted within it. 
-> * where the code of conduct says "maintainer" we mean `govuk-one-login` organisation owners
-> * where the code of conduct says "leadership" we mean both `govuk-one-login` organisation owners, line managers, and other leadership within GDS
+> Note:
+>
+> - where the code of conduct says "project" we mean GDS, `govuk-one-login` and all repositories hosted within it.
+> - where the code of conduct says "maintainer" we mean `govuk-one-login` organisation owners
+> - where the code of conduct says "leadership" we mean both `govuk-one-login` organisation owners, line managers, and other leadership within GDS
 
 ### Our Pledge
 
@@ -29,21 +30,21 @@ orientation.
 Examples of behavior that contributes to creating a positive environment
 include:
 
-* Using welcoming and inclusive language
-* Being respectful of differing viewpoints and experiences
-* Gracefully accepting constructive criticism
-* Focusing on what is best for the community
-* Showing empathy towards other community members
+- Using welcoming and inclusive language
+- Being respectful of differing viewpoints and experiences
+- Gracefully accepting constructive criticism
+- Focusing on what is best for the community
+- Showing empathy towards other community members
 
 Examples of unacceptable behavior by participants include:
 
-* The use of sexualized language or imagery and unwelcome sexual attention or
+- The use of sexualized language or imagery and unwelcome sexual attention or
   advances
-* Trolling, insulting/derogatory comments, and personal or political attacks
-* Public or private harassment
-* Publishing others' private information, such as a physical or electronic
+- Trolling, insulting/derogatory comments, and personal or political attacks
+- Public or private harassment
+- Publishing others' private information, such as a physical or electronic
   address, without explicit permission
-* Other conduct which could reasonably be considered inappropriate in a
+- Other conduct which could reasonably be considered inappropriate in a
   professional setting
 
 ### Our Responsibilities
