@@ -3,5 +3,5 @@ resource "aws_cloudformation_stack" "hosted_zone" {
   parameters = {
     DomainName = var.hosted_zone_domain
   }
-  template_body = file("./hosted_zone.yaml")
+  template_body = file("./hosted_zone.cf.yaml")
 }

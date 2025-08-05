@@ -1,0 +1,6 @@
+brew "cfn-lint"
+brew "detect-secrets"
+brew "tflint"
+brew "pre-commit"
+brew "tfenv"
+brew "zizmor"
