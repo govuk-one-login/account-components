@@ -49,6 +49,7 @@ export default tseslint.config(
     rules: {
       ...vitestEslint.configs.all.rules,
       "vitest/no-focused-tests": "error",
+      "vitest/prefer-expect-assertions": "off",
     },
   },
 );
