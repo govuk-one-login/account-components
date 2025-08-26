@@ -6,7 +6,7 @@ declare module "fastify" {
     render?: (
       templatePath: string,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      variables: Record<string, any>
+      variables: Record<string, any>,
     ) => Promise<void>;
   }
 }
@@ -20,7 +20,7 @@ declare module "fastify" {
 const initApp = async function (
   fastify?: FastifyInstance,
   // @ts-expect-error  - it is necessary to include this argument even though it isn't used as otherwise the command to generate OpenAPI documents errors saying that the function should have two arguments
-  opts?: FastifyPluginOptions // eslint-disable-line
+  opts?: FastifyPluginOptions, // eslint-disable-line
 ) {
   const isGeneratingOpenApiDocs = !!fastify;
   const app = fastify ?? (await import("fastify")).default();
@@ -64,7 +64,6 @@ const initApp = async function (
     });
 
     app.decorateReply("render", async function (templatePath, variables) {
-      console.log("MHTEST", "nunjucjs init TODO");
       const nunjucksModule = await import("nunjucks");
 
       nunjucksModule.default.configure({
@@ -107,12 +106,12 @@ const initApp = async function (
         },
         async function (request, reply) {
           (await import("./handlers/api/hello/index.js")).hello(request, reply);
-        }
+        },
       );
     },
     {
       prefix: "/api/",
-    }
+    },
   );
 
   return app;

@@ -1,4 +1,5 @@
 {
+  "entry": ["projects/app/lambda.ts", "projects/app/rolldown.config.ts"],
   "ignoreBinaries": [
     "detect-secrets",
     "zizmor",
@@ -7,5 +8,6 @@
     "pre-commit",
     "cfn-lint",
     "read",
+    "sam",
   ],
 }

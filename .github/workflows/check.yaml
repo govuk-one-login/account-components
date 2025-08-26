@@ -14,12 +14,12 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           persist-credentials: false
 
       - name: Check GitHub Actions
-        uses: zizmorcore/zizmor-action@f52a838cfabf134edcbaa7c8b3677dde20045018
+        uses: zizmorcore/zizmor-action@5ca5fc7a4779c5263a3ffa0e1f693009994446d1
 
       - name: Node setup
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
@@ -27,7 +27,7 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Setup tflint
-        uses: terraform-linters/setup-tflint@90f302c255ef959cbfb4bd10581afecdb7ece3e6
+        uses: terraform-linters/setup-tflint@ae78205cfffec9e8d93fd2b3115c7e9d3166d4b6
 
       - name: Setup cfn-lint
         uses: scottbrenner/cfn-lint-action@83ad1ba8376272cb219fcde1306ec50a8a480d15
