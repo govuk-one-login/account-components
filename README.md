@@ -27,7 +27,7 @@ There are various commands which can be run manually and which may also be run b
 
 - `npm run run:app` to run the app locally
 - `npm run build:app` to build the app
-- `generate-openapi:app` to generate OpenApi documentation for the app
+- `generate-openapi:app` to generate OpenAPI documentation for the app
 - `npm run format` to run [Prettier](https://prettier.io/) formatting
 - `npm run eslint` to run [ESLint](https://eslint.org/)
 - `npm run knip` to run [Knip](https://knip.dev/)
