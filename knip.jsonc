@@ -6,5 +6,6 @@
     "brew",
     "pre-commit",
     "cfn-lint",
+    "read",
   ],
 }

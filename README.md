@@ -4,7 +4,7 @@ This repo contains the code for Account Components
 
 ## Installation
 
-Install [FNM](https://github.com/nvm-sh/nvm) or [NVM](https://github.com/Schniz/fnm) and select the correct Node version by running `nvm use` or `fnm use`.
+Install [NVM](https://github.com/nvm-sh/nvm) or [FNM](https://github.com/Schniz/fnm) and select the correct Node version by running `nvm use` or `fnm use`.
 
 Install [Homebrew](https://brew.sh/).
 
