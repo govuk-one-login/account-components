@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: "String"
+    AllowedValues:
+      - "local"
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
+    Default: "local"
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 512
+    Architectures: ["arm64"]
+    Runtime: nodejs22.x
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        NODE_ENV: "production"
+
+Resources:
+  AppLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist
+      Handler: lambda.handler
+      Events:
+        Root:
+          Type: HttpApi
+          Properties:
+            Method: ANY
+            Path: /
+        CatchAll:
+          Type: HttpApi
+          Properties:
+            Method: ANY
+            Path: /{proxy+}
