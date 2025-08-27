@@ -5,4 +5,7 @@ export default defineConfig({
   input: "lambda.ts",
   platform: "node",
   external: ["fsevents", /^@aws-sdk\/.+$/],
+  output: {
+    minify: true,
+  },
 });
