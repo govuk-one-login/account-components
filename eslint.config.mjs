@@ -50,6 +50,8 @@ export default tseslint.config(
       ...vitestEslint.configs.all.rules,
       "vitest/no-focused-tests": "error",
       "vitest/prefer-expect-assertions": "off",
+      "vitest/require-mock-type-parameters": "off",
+      "vitest/prefer-describe-function-title": "off",
     },
   },
 );

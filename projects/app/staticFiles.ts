@@ -12,5 +12,6 @@ export const staticFiles = async function (app: FastifyInstance) {
     root: path.join(import.meta.dirname, "static"),
     prefix: "/static/",
     decorateReply: false,
+    cacheControl: false,
   });
 };
