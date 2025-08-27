@@ -1,5 +1,7 @@
 import { type FastifyPluginOptions, type FastifyInstance } from "fastify";
-import * as path from "node:path";
+import { frontend } from "./frontend.js";
+import { api } from "./api.js";
+import { staticFiles } from "./staticFiles.js";
 
 declare module "fastify" {
   interface FastifyReply {
@@ -32,94 +34,9 @@ const initApp = async function (
     });
   }
 
-  // Static files
-  app.register((await import("@fastify/static")).default, {
-    root: path.join(import.meta.dirname, "static", "cacheable"),
-    prefix: "/static/cacheable/",
-    maxAge: "1y",
-    immutable: true,
-  });
-  app.register((await import("@fastify/static")).default, {
-    root: path.join(import.meta.dirname, "static"),
-    prefix: "/static/",
-    decorateReply: false,
-  });
-
-  // Frontend
-  app.register(async function (app) {
-    const [
-      fastifyCookieModule,
-      fastifySessionModule,
-      fastifyCsrfProtectionModule,
-      fastifyHelmetModule,
-    ] = await Promise.all([
-      import("@fastify/cookie"),
-      import("@fastify/session"),
-      import("@fastify/csrf-protection"),
-      import("@fastify/helmet"),
-    ]);
-    app.register(fastifyHelmetModule.default);
-    app.register(fastifyCookieModule.default);
-    app.register(fastifySessionModule.default, {
-      secret: ["TODO a secret with minimum length of 32 characters!!!!!"],
-      cookie: {
-        secure: false, // TODO
-      },
-    });
-    app.register(fastifyCsrfProtectionModule.default, {
-      sessionPlugin: "@fastify/session",
-    });
-
-    app.decorateReply("render", async function (templatePath, variables) {
-      const nunjucksModule = await import("nunjucks");
-
-      nunjucksModule.default.configure({
-        autoescape: true,
-        noCache: true,
-      });
-      const html = nunjucksModule.default.render(templatePath, variables);
-      this.type("text/html").send(html);
-    });
-
-    app.get("/html", async function (request, reply) {
-      return (await import("./handlers/html/index.js")).html(request, reply);
-    });
-  });
-
-  // API
-  app.register(
-    function (app) {
-      app.get(
-        "/hello",
-        {
-          schema: {
-            querystring: {
-              type: "object",
-              properties: {
-                foo: { type: "number" },
-                bar: { type: "string" },
-              },
-              required: ["foo", "bar"],
-            },
-            response: {
-              200: {
-                type: "object",
-                properties: {
-                  hello: { type: "string" },
-                },
-              },
-            },
-          },
-        },
-        async function (request, reply) {
-          (await import("./handlers/api/hello/index.js")).hello(request, reply);
-        },
-      );
-    },
-    {
-      prefix: "/api/",
-    },
-  );
+  app.register(staticFiles);
+  app.register(api);
+  app.register(frontend);
 
   return app;
 };
