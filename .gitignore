@@ -4,3 +4,4 @@ coverage
 projects/app/dist
 projects/app/dist_openapi
 openapi.json
+.eslintcache
