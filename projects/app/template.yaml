@@ -1,18 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
-Parameters:
-  Environment:
-    Type: "String"
-    AllowedValues:
-      - "local"
-      - "dev"
-      - "build"
-      - "staging"
-      - "integration"
-      - "production"
-    Default: "local"
-
 Globals:
   Function:
     Timeout: 10
@@ -21,10 +9,16 @@ Globals:
     Runtime: nodejs22.x
     Environment:
       Variables:
-        ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"
 
 Resources:
+  AppPublicApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: production
+      BinaryMediaTypes:
+        - image/png
+
   AppLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -32,12 +26,14 @@ Resources:
       Handler: lambda.handler
       Events:
         Root:
-          Type: HttpApi
+          Type: Api
           Properties:
             Method: ANY
             Path: /
+            RestApiId: !Ref AppPublicApiGateway
         CatchAll:
-          Type: HttpApi
+          Type: Api
           Properties:
             Method: ANY
             Path: /{proxy+}
+            RestApiId: !Ref AppPublicApiGateway
