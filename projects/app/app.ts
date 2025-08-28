@@ -27,16 +27,16 @@ const initApp = async function (
   const isGeneratingOpenApiDocs = !!fastify;
   const app = fastify ?? (await import("fastify")).default();
 
-  app.register(defaultCaching);
-  app.register(staticFiles);
-  app.register(api);
-  app.register(frontend);
-
   if (isGeneratingOpenApiDocs) {
     app.register((await import("@fastify/swagger")).default, {
       openapi: {},
     });
   }
+
+  app.register(defaultCaching);
+  app.register(staticFiles);
+  app.register(api);
+  app.register(frontend);
 
   return app;
 };
