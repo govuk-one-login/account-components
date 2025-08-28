@@ -13,6 +13,7 @@
     "@fastify/session": "^11.1.0",
     "@fastify/static": "^8.2.0",
     "fastify": "^5.4.0",
+    "fastify-plugin": "^5.0.1",
     "nunjucks": "^3.2.4"
   },
   "devDependencies": {
@@ -60,7 +61,7 @@
     "check-gh-actions:fix": "zizmor . --fix --config zizmor.yaml",
     "build:app": "cd projects/app && rm -rf dist && cp -r ./ dist && find dist -type f ! -name '*.njk' -print0 | xargs -0 rm -f && cp -r ./static dist && sass dist/static/application.scss dist/static/application.css --no-source-map && rm dist/static/application.scss && csso dist/static/application.css --output dist/static/application.css && rolldown -c rolldown.config.ts && cd dist && cp ../../../package.json ./package.json",
     "watch:app": "chokidar \"./projects/app/**/*\" -c \"npm run build:app\" -i \"projects/app/dist\" --initial",
-    "run:app": "npm run watch:app & cd projects/app && sam local start-api",
+    "run:app": "npm run watch:app & cd projects/app && sam local start-api --warm-containers LAZY",
     "generate-openapi:app": "cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger dist_openapi/app.js > openapi.json"
   }
 }

@@ -1,12 +1,8 @@
-import {
-  type FastifyPluginOptions,
-  type FastifyInstance,
-  type FastifyRequest,
-  type FastifyReply,
-} from "fastify";
+import type { FastifyPluginOptions, FastifyInstance } from "fastify";
 import { frontend } from "./frontend.js";
 import { api } from "./api.js";
 import { staticFiles } from "./staticFiles.js";
+import { defaultCaching } from "./defaultCaching.js";
 declare module "fastify" {
   interface FastifyReply {
     render?: (
@@ -31,23 +27,16 @@ const initApp = async function (
   const isGeneratingOpenApiDocs = !!fastify;
   const app = fastify ?? (await import("fastify")).default();
 
-  app.addHook(
-    "onRequest",
-    (_request: FastifyRequest, reply: FastifyReply, done) => {
-      reply.header("cache-control", "no-cache");
-      done();
-    },
-  );
+  app.register(defaultCaching);
+  app.register(staticFiles);
+  app.register(api);
+  app.register(frontend);
 
   if (isGeneratingOpenApiDocs) {
     app.register((await import("@fastify/swagger")).default, {
       openapi: {},
     });
   }
-
-  app.register(staticFiles);
-  app.register(api);
-  app.register(frontend);
 
   return app;
 };

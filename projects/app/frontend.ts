@@ -1,50 +1,41 @@
 import { type FastifyInstance } from "fastify";
+import fastifyCookie from "@fastify/cookie";
+import fastifySession from "@fastify/session";
+import fastifyHelmet from "@fastify/helmet";
+import fastifyCsrfProtection from "@fastify/csrf-protection";
 
 export const frontend = function (app: FastifyInstance) {
-  app.register(async function (app) {
-    const [
-      fastifyCookieModule,
-      fastifySessionModule,
-      fastifyCsrfProtectionModule,
-      fastifyHelmetModule,
-    ] = await Promise.all([
-      import("@fastify/cookie"),
-      import("@fastify/session"),
-      import("@fastify/csrf-protection"),
-      import("@fastify/helmet"),
-    ]);
-    app.register(fastifyHelmetModule.default);
-    app.register(fastifyCookieModule.default);
-    app.register(fastifySessionModule.default, {
-      secret: ["TODO a secret with minimum length of 32 characters!!!!!"],
-      cookie: {
-        secure: false, // TODO
-      },
-    });
-    app.register(fastifyCsrfProtectionModule.default, {
-      sessionPlugin: "@fastify/session",
-    });
+  app.register(fastifyHelmet);
+  app.register(fastifyCookie);
+  app.register(fastifySession, {
+    secret: ["TODO a secret with minimum length of 32 characters!!!!!"],
+    cookie: {
+      secure: false, // TODO
+    },
+  });
+  app.register(fastifyCsrfProtection, {
+    sessionPlugin: "@fastify/session",
+  });
 
-    app.decorateReply("render", async function (templatePath, variables) {
-      const nunjucksModule = await import("nunjucks");
+  app.decorateReply("render", async function (templatePath, variables) {
+    const nunjucksModule = await import("nunjucks");
 
-      nunjucksModule.default.configure({
-        autoescape: true,
-        noCache: true,
-      });
-      const html = nunjucksModule.default.render(templatePath, variables);
-      this.type("text/html").send(html);
+    nunjucksModule.default.configure({
+      autoescape: true,
+      noCache: true,
     });
+    const html = nunjucksModule.default.render(templatePath, variables);
+    this.type("text/html").send(html);
+  });
 
-    app.get("/robots.txt", async function (request, reply) {
-      return (await import("./handlers/robots.txt/index.js")).handler(
-        request,
-        reply,
-      );
-    });
+  app.get("/robots.txt", async function (request, reply) {
+    return (await import("./handlers/robots.txt/index.js")).handler(
+      request,
+      reply,
+    );
+  });
 
-    app.get("/html", async function (request, reply) {
-      return (await import("./handlers/html/index.js")).html(request, reply);
-    });
+  app.get("/html", async function (request, reply) {
+    return (await import("./handlers/html/index.js")).html(request, reply);
   });
 };
