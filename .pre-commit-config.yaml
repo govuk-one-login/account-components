@@ -76,6 +76,16 @@ repos:
 
   - repo: local
     hooks:
+      - id: sam-validate-app
+        name: SAM validate app
+        entry: npm run sam-validate:app
+        language: system
+        exclude: .*
+        always_run: true
+        stages: [pre-commit]
+
+  - repo: local
+    hooks:
       - id: cflint
         name: Lint CloudFormation
         entry: npm run cflint

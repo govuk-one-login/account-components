@@ -3,5 +3,5 @@
     "@tsconfig/node22/tsconfig.json",
     "@tsconfig/strictest/tsconfig.json"
   ],
-  "exclude": ["coverage"]
+  "exclude": ["coverage", "projects/app/dist", "projects/app/dist_openapi"]
 }

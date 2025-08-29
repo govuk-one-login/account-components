@@ -17,14 +17,17 @@ When updating the Node version you will need to update the following:
 - `engines.node` field in package.json
 - .nvmrc
 - .node-version
-- Node images in Dockerfiles
+- Node version used by used by Lambda functions
 - ensure the base TSConfig installed as a development dependency in package.json and used in tsconfig.json corresponds with the Node version being used e.g. for Node 22 use the base TSConfig `@tsconfig/node22`
 - ensure the major version of `@types/node` installed as a development dependency in package.json corresponds with the Node version being used
 
 ## Useful commands
 
-There are various commands which can be run manually and which are also run by Git hooks and in CI:
+There are various commands which can be run manually and which may also be run by Git hooks and in CI:
 
+- `npm run run:app` to run the app locally
+- `npm run build:app` to build the app
+- `generate-openapi:app` to generate OpenAPI documentation for the app
 - `npm run format` to run [Prettier](https://prettier.io/) formatting
 - `npm run eslint` to run [ESLint](https://eslint.org/)
 - `npm run knip` to run [Knip](https://knip.dev/)

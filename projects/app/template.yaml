@@ -1,0 +1,41 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 512
+    Architectures: ["arm64"]
+    Runtime: nodejs22.x
+    Environment:
+      Variables:
+        NODE_ENV: "production"
+
+Resources:
+  AppPublicApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: production
+      BinaryMediaTypes:
+        - image/png
+
+  AppLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      CodeUri: dist
+      Handler: lambda.handler
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /
+            RestApiId: !Ref AppPublicApiGateway
+        CatchAll:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /{proxy+}
+            RestApiId: !Ref AppPublicApiGateway
