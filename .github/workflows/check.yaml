@@ -29,6 +29,12 @@ jobs:
       - name: Setup tflint
         uses: terraform-linters/setup-tflint@ae78205cfffec9e8d93fd2b3115c7e9d3166d4b6
 
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@f664fad9e12492edfc187a31f575537dfbb0ff63
+        with:
+          use-installer: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Setup cfn-lint
         uses: scottbrenner/cfn-lint-action@83ad1ba8376272cb219fcde1306ec50a8a480d15
 
@@ -43,6 +49,9 @@ jobs:
 
       - name: Lint Terraform
         run: npm run tflint
+
+      - name: SAM validate app
+        run: npm run sam-validate:app
 
       - name: Lint CloudFormation
         run: npm run cflint

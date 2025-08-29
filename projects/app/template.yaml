@@ -21,6 +21,8 @@ Resources:
 
   AppLambda:
     Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
     Properties:
       CodeUri: dist
       Handler: lambda.handler
