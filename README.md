@@ -25,7 +25,7 @@ When updating the Node version you will need to update the following:
 
 There are various commands which can be run manually and which may also be run by Git hooks and in CI:
 
-- `npm run run:app` to run the app locally
+- `npm run run:app` to run the app locally and watch for changes
 - `npm run build:app` to build the app
 - `generate-openapi:app` to generate OpenAPI documentation for the app
 - `npm run format` to run [Prettier](https://prettier.io/) formatting
@@ -33,6 +33,7 @@ There are various commands which can be run manually and which may also be run b
 - `npm run knip` to run [Knip](https://knip.dev/)
 - `npm run tflint` to [lint Terraform](https://github.com/terraform-linters/tflint) files
 - `npm run cflint` to [lint CloudFormation](https://github.com/aws-cloudformation/cfn-lint) templates with the file extension `.cf.yaml`
+- `npm run sam-validate:app` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the app's CloudFormation template
 - `npm run check-gh-actions` to check GitHub Actions with [Zizmor](https://docs.zizmor.sh/)
 - `npm run detect-secrets` to detect secrets which should not be in the repo. False positives can be [ignored with comments](https://github.com/Yelp/detect-secrets?tab=readme-ov-file#inline-allowlisting) or added to the baseline by running `npm run detect-secrets:update-baseline`
 

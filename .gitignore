@@ -3,6 +3,6 @@ node_modules
 coverage
 projects/app/dist
 projects/app/dist_openapi
-openapi.json
+openapi.yaml
 .eslintcache
 .aws-sam
