@@ -1,0 +1,90 @@
+name: Deploy app to dev
+
+on:
+  workflow_dispatch:
+    inputs:
+      refType:
+        type: choice
+        description: "Find branch name, commit SHA, or tag?"
+        options:
+          - Branch name
+          - Commit SHA
+          - Tag
+        default: Branch name
+      gitRef:
+        description: "Input branch name, commit SHA, or tag"
+        required: true
+        type: string
+        default: main
+
+jobs:
+  deploy-app:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+          ref: ${{ inputs.gitRef }}
+
+      - name: Fetch Commit SHA
+        id: gitRefSHA
+        if: github.event.inputs.refType == 'Commit SHA'
+        run: echo GIT_REF_SHA=${GIT_REF} >> $GITHUB_ENV
+        env:
+          GIT_REF: ${{ inputs.gitRef }}
+
+      - name: Fetch Commit SHA by Branch name
+        id: gitRefBranch
+        if: github.event.inputs.refType == 'Branch name'
+        run: echo GIT_REF_SHA=$(git log -1 ${GIT_REF} --pretty=format:%H) >> $GITHUB_ENV
+        env:
+          GIT_REF: ${{ inputs.gitRef }}
+
+      - name: Fetch Commit SHA by Tag
+        id: gitRefTag
+        if: github.event.inputs.refType == 'Tag'
+        run: echo GIT_REF_SHA=$(git rev-list -n 1 ${GIT_REF}) >> $GITHUB_ENV
+        env:
+          GIT_REF: ${{ inputs.gitRef }}
+
+      - name: Set tag
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+
+      - name: Get current date
+        id: datetime
+        run: echo "date=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
+
+      - name: Node setup
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version-file: .nvmrc
+
+      - name: Setup SAM CLI
+        uses: aws-actions/setup-sam@f664fad9e12492edfc187a31f575537dfbb0ff63
+        with:
+          use-installer: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Assume AWS role
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a
+        with:
+          role-to-assume: ${{ secrets.DEV_GH_ACTIONS_ROLE_ARN }}
+          aws-region: "eu-west-2"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build app
+        run: npm run build:app
+
+      - name: Deploy app
+        uses: govuk-one-login/devplatform-upload-action@fda75612a1b0e5a8c84ae7c44a23340e50e5bbde
+        with:
+          artifact-bucket-name: ${{ secrets.DEV_ARTIFACT_BUCKET_NAME }}
+          signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
+          working-directory: ./projects/app
