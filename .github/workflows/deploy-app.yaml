@@ -41,7 +41,7 @@ jobs:
         run: npm run build:app
 
       - name: Deploy app
-        uses: govuk-one-login/di-devplatform-upload-action@fda75612a1b0e5a8c84ae7c44a23340e50e5bbde
+        uses: govuk-one-login/devplatform-upload-action@fda75612a1b0e5a8c84ae7c44a23340e50e5bbde
         with:
           artifact-bucket-name: ${{ secrets.DEV_ARTIFACT_BUCKET_NAME }} # TODO remove DEV_
           signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }} # TODO remove DEV_
