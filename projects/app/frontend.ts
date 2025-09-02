@@ -17,14 +17,18 @@ export const frontend = function (app: FastifyInstance) {
     sessionPlugin: "@fastify/session",
   });
 
-  app.decorateReply("render", async function (templatePath, variables) {
+  app.decorateReply("renderProps", {});
+  app.decorateReply("render", async function (templatePath, renderProps) {
     const nunjucksModule = await import("nunjucks");
 
     nunjucksModule.default.configure({
       autoescape: true,
       noCache: true,
     });
-    const html = nunjucksModule.default.render(templatePath, variables);
+    const html = nunjucksModule.default.render(templatePath, {
+      ...this.renderProps,
+      ...renderProps,
+    });
     this.type("text/html").send(html);
   });
 

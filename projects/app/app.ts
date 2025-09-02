@@ -5,10 +5,12 @@ import { staticFiles } from "./staticFiles.js";
 import { defaultCaching } from "./defaultCaching.js";
 declare module "fastify" {
   interface FastifyReply {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    renderProps?: Record<string, any>;
     render?: (
       templatePath: string,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      variables: Record<string, any>,
+      renderProps: Record<string, any>,
     ) => Promise<void>;
   }
 }
