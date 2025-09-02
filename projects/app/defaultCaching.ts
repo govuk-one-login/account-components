@@ -3,9 +3,11 @@ import fastifyPlugin from "fastify-plugin";
 
 export const defaultCaching = fastifyPlugin(function (app: FastifyInstance) {
   app.addHook(
-    "onRequest",
+    "onSend",
     async (_request: FastifyRequest, reply: FastifyReply) => {
-      reply.header("cache-control", "no-cache");
+      if (typeof reply.getHeader("cache-control") === "undefined") {
+        reply.header("cache-control", "no-cache");
+      }
     },
   );
 });

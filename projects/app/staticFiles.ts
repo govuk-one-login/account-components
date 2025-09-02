@@ -7,32 +7,32 @@ export const staticFiles = function (app: FastifyInstance) {
 
   app.register(fastifyStatic, {
     root: path.join(import.meta.dirname, "static", "full-cache"),
-    prefix: "/main/static/full-cache/",
+    prefix: "/static/full-cache/",
     cacheControl: false,
     setHeaders: (res) => {
       res.setHeader(
         "cache-control",
-        `public, max-age=${oneYearInSeconds}, immutable`
+        `public, max-age=${oneYearInSeconds}, immutable`,
       );
     },
   });
 
   app.register(fastifyStatic, {
     root: path.join(import.meta.dirname, "static", "shared-cache"),
-    prefix: "/main/static/shared-cache/",
+    prefix: "/static/shared-cache/",
     decorateReply: false,
     cacheControl: false,
     setHeaders: (res) => {
       res.setHeader(
         "cache-control",
-        `public, s-maxage=${oneYearInSeconds}, immutable`
+        `public, s-maxage=${oneYearInSeconds}, immutable`,
       );
     },
   });
 
   app.register(fastifyStatic, {
     root: path.join(import.meta.dirname, "static"),
-    prefix: "/main/static/",
+    prefix: "/static/",
     decorateReply: false,
     cacheControl: false,
     setHeaders: (res) => {
