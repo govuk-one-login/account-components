@@ -49,7 +49,7 @@ Resources:
     Properties:
       StageName: production
       BinaryMediaTypes:
-        - image/png
+        - "*/*"
 
   AppLambda:
     Type: AWS::Serverless::Function
