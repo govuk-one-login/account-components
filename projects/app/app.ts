@@ -10,7 +10,7 @@ declare module "fastify" {
     render?: (
       templatePath: string,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      renderProps: Record<string, any>,
+      renderProps: Record<string, any>
     ) => Promise<void>;
   }
 }
@@ -24,7 +24,7 @@ declare module "fastify" {
 const initApp = async function (
   fastify?: FastifyInstance,
   // @ts-expect-error  - it is necessary to include this argument even though it isn't used as otherwise the command to generate OpenAPI documents errors saying that the function should have two arguments
-  opts?: FastifyPluginOptions, // eslint-disable-line
+  opts?: FastifyPluginOptions // eslint-disable-line
 ) {
   const isGeneratingOpenApiDocs = !!fastify;
   const app = fastify ?? (await import("fastify")).default();

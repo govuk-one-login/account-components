@@ -17,7 +17,7 @@ export const frontend = function (app: FastifyInstance) {
     sessionPlugin: "@fastify/session",
   });
 
-  app.decorateReply("renderProps", {});
+  //app.decorateReply("renderProps", {});
   app.decorateReply("render", async function (templatePath, renderProps) {
     const nunjucksModule = await import("nunjucks");
 
@@ -35,7 +35,7 @@ export const frontend = function (app: FastifyInstance) {
   app.get("/robots.txt", async function (request, reply) {
     return (await import("./handlers/robots.txt/index.js")).handler(
       request,
-      reply,
+      reply
     );
   });
 
