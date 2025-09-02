@@ -51,7 +51,7 @@ jobs:
       - name: Set tag
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
-      - name: Set current date
+      - name: Set current datetime
         run: echo "date=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
 
       - name: Node setup
