@@ -12,6 +12,11 @@ Parameters:
     Description: >
       The ARN of the permissions boundary to apply to any role created by the template, provided by the deployment pipeline
     Default: "none"
+  VpcStackName:
+    Type: String
+    Description: >
+      The name of the stack that defines the VPC in which this container will, provided by the deployment pipeline
+      run.
 
 Conditions:
   UseCodeSigning:
@@ -35,6 +40,13 @@ Globals:
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
+    VpcConfig:
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdC
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
     Timeout: 10
     MemorySize: 512
     Architectures: ["arm64"]
