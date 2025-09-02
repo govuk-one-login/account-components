@@ -10,7 +10,7 @@ export const frontend = function (app: FastifyInstance) {
   app.register(fastifySession, {
     secret: ["TODO a secret with minimum length of 32 characters!!!!!"],
     cookie: {
-      secure: false, // TODO
+      secure: true,
     },
   });
   app.register(fastifyCsrfProtection, {

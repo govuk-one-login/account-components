@@ -48,6 +48,8 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: production
+      EndpointConfiguration:
+        Type: REGIONAL
       BinaryMediaTypes:
         - "*/*"
 
