@@ -59,7 +59,7 @@
     "detect-secrets:update-baseline": "detect-secrets scan --baseline .secrets.baseline",
     "check-gh-actions": "zizmor .  --config zizmor.yaml",
     "check-gh-actions:fix": "zizmor . --fix --config zizmor.yaml",
-    "build:app": "ls && pwd && cd projects/app && rm -rf dist_openapi && rm -rf .aws-sam && rm -rf dist && cp -r ./ dist",
+    "build:app": "cd projects/app && rm -rf dist_openapi && rm -rf .aws-sam && rm -rf dist && cp -r ./ ../dist && mv ../dist ./dist && find dist -type f ! -name '*.njk' -print0 | xargs -0 rm -f && cp -r ./static dist && cp ./Makefile dist && sass dist/static/shared-cache/application.scss dist/static/shared-cache/application.css --no-source-map && rm dist/static/shared-cache/application.scss && csso dist/static/shared-cache/application.css --output dist/static/shared-cache/application.css && rolldown -c rolldown.config.ts && cd dist && cp ../../../package.json ./package.json && cd ../ && sam build",
     "sam-validate:app": "cd projects/app && sam validate --region eu-west-2 --lint",
     "watch:app": "npm run build:app && chokidar \"./projects/app/**/*\" -c \"npm run build:app\" -i \"projects/app/dist\" -i \"projects/app/.aws-sam\"",
     "run:app": "npm run watch:app & cd projects/app && sam local start-api --warm-containers LAZY",
