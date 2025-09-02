@@ -7,11 +7,13 @@ Parameters:
     Description: >
       The environment type
     AllowedValues:
+      - "local"
       - "dev"
       - "build"
       - "staging"
       - "integration"
       - "production"
+    Default: "local"
   CodeSigningConfigArn:
     Type: String
     Description: >
@@ -39,6 +41,11 @@ Conditions:
       - Fn::Equals:
           - !Ref PermissionsBoundary
           - "none"
+  UseDynatraceLayer:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref Environment
+          - "local"
 
 Mappings:
   EnvironmentConfiguration:
@@ -56,7 +63,10 @@ Mappings:
 Globals:
   Function:
     Layers:
-      - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1
+      - !If
+        - UseDynatraceLayer
+        - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1
+        - !Ref AWS::NoValue
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
@@ -74,12 +84,17 @@ Globals:
         - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
     Timeout: 10
     MemorySize: 512
-    Architectures: ["arm64"]
+    Architectures:
+      - arm64
     Runtime: nodejs22.x
     Environment:
       Variables:
+        ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"
-        AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
+        AWS_LAMBDA_EXEC_WRAPPER: !If
+          - UseDynatraceLayer
+          - /opt/dynatrace
+          - !Ref AWS::NoValue
         DT_CONNECTION_AUTH_TOKEN: !Sub
           - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}" # pragma: allowlist-secret
           - SecretArn:

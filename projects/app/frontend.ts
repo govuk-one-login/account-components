@@ -3,6 +3,7 @@ import fastifyCookie from "@fastify/cookie";
 import fastifySession from "@fastify/session";
 import fastifyHelmet from "@fastify/helmet";
 import fastifyCsrfProtection from "@fastify/csrf-protection";
+import { environment } from "./utils/environment/index.js";
 
 export const frontend = function (app: FastifyInstance) {
   app.register(fastifyHelmet);
@@ -10,7 +11,7 @@ export const frontend = function (app: FastifyInstance) {
   app.register(fastifySession, {
     secret: ["TODO a secret with minimum length of 32 characters!!!!!"],
     cookie: {
-      secure: true,
+      secure: environment !== "local",
     },
   });
   app.register(fastifyCsrfProtection, {

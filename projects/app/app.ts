@@ -27,7 +27,11 @@ const initApp = async function (
   opts?: FastifyPluginOptions, // eslint-disable-line
 ) {
   const isGeneratingOpenApiDocs = !!fastify;
-  const app = fastify ?? (await import("fastify")).default();
+  const app =
+    fastify ??
+    (await import("fastify")).default({
+      trustProxy: true, // Required as HTTPS is terminated at API Gateway
+    });
 
   if (isGeneratingOpenApiDocs) {
     app.register((await import("@fastify/swagger")).default, {
