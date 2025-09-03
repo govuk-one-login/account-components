@@ -46,9 +46,21 @@ variable "signing_profile_arn" {
   description = "The ARN of the signing profile used to sign Lambda code. This is the shared profile deployed in build from the signer stack"
 }
 
+variable "additional_code_signing_version_arns" {
+  type        = string
+  description = "The ARN of an additional signing profile version used to sign Lambda code"
+  default     = "arn:aws:signer:eu-west-2:216552277552:/signing-profiles/DynatraceSigner/5uwzCCGTPq"
+}
+
+variable "custom_kms_key_arn" {
+  type        = string
+  description = "The ARN of a custom KMS key that can be used to access secrets"
+  default     = "arn:aws:kms:eu-west-2:216552277552:key/4bc58ab5-c9bb-4702-a2c3-5d339604a8fe"
+}
+
 variable "signing_profile_version_arn" {
   type        = string
-  description = "The ARN of the signing profile version used to Lambda code. This is the shared profile deployed in build from the signer stack"
+  description = "The ARN of the signing profile version used to sign Lambda code. This is the shared profile deployed in build from the signer stack"
 }
 
 variable "core_artifact_source_bucket_arn" {
