@@ -64,11 +64,6 @@ Globals:
   Function:
     CodeUri: dist
     Handler: lambda.handler
-    Layers:
-      - !If
-        - UseDynatraceLayer
-        - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1
-        - !Ref AWS::NoValue
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
@@ -93,10 +88,6 @@ Globals:
       Variables:
         ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"
-        AWS_LAMBDA_EXEC_WRAPPER: !If
-          - UseDynatraceLayer
-          - /opt/dynatrace
-          - !Ref AWS::NoValue
         DT_CONNECTION_AUTH_TOKEN: !Sub
           - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}" # pragma: allowlist-secret
           - SecretArn:
