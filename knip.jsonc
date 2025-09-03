@@ -1,7 +1,6 @@
 {
-  "entry": ["projects/app/lambda.ts", "projects/app/rolldown.config.ts"],
+  "entry": ["projects/app/src/lambda.ts", "projects/app/rolldown.config.ts"],
   "ignoreBinaries": [
-    "detect-secrets",
     "zizmor",
     "tflint",
     "brew",

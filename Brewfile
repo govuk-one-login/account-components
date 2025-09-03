@@ -1,6 +1,5 @@
 brew "aws-sam-cli"
 brew "cfn-lint"
-brew "detect-secrets"
 brew "tflint"
 brew "pre-commit"
 brew "tfenv"

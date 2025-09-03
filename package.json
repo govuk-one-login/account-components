@@ -56,7 +56,6 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "detect-secrets": "git ls-files -z | xargs -0 detect-secrets-hook --verbose --baseline .secrets.baseline # pragma: allowlist-secret",
-    "detect-secrets:update-baseline": "detect-secrets scan --verbose --baseline .secrets.baseline",
     "check-gh-actions": "zizmor .  --config zizmor.yaml",
     "check-gh-actions:fix": "zizmor . --fix --config zizmor.yaml",
     "build:app": "cd projects/app && rm -rf dist && cp -r ./src ./dist && find dist -type f ! -name '*.njk' -print0 | xargs -0 rm -f && cp -r ./src/static dist && cp ./Makefile dist && sass dist/static/shared-cache/application.scss dist/static/shared-cache/application.css --no-source-map && rm dist/static/shared-cache/application.scss && csso dist/static/shared-cache/application.css --output dist/static/shared-cache/application.css && rolldown -c rolldown.config.ts && cp ../../package.json ./dist/package.json",
