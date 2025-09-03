@@ -3,8 +3,15 @@ import { frontend } from "./frontend.js";
 import { api } from "./api.js";
 import { staticFiles } from "./staticFiles.js";
 import { defaultCaching } from "./defaultCaching.js";
+import type { APIGatewayEvent, Context } from "aws-lambda";
 
 declare module "fastify" {
+  interface FastifyRequest {
+    awsLambda: {
+      event: APIGatewayEvent;
+      context: Context;
+    };
+  }
   interface FastifyReply {
     render?: (
       templatePath: string,

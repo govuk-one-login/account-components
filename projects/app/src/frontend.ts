@@ -3,9 +3,11 @@ import fastifyCookie from "@fastify/cookie";
 import fastifySession from "@fastify/session";
 import fastifyHelmet from "@fastify/helmet";
 import fastifyCsrfProtection from "@fastify/csrf-protection";
+import fastifyFormBody from "@fastify/formbody";
 import { environment } from "./utils/environment/index.js";
 
 export const frontend = function (app: FastifyInstance) {
+  app.register(fastifyFormBody);
   app.register(fastifyHelmet);
   app.register(fastifyCookie);
   app.register(fastifySession, {
