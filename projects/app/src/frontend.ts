@@ -14,6 +14,7 @@ export const frontend = function (app: FastifyInstance) {
     secret: ["TODO a secret with minimum length of 32 characters!!!!!"],
     cookie: {
       secure: environment !== "local",
+      sameSite: "lax",
     },
   });
   app.register(fastifyCsrfProtection, {

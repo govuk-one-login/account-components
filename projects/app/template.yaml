@@ -169,7 +169,7 @@ Resources:
             Path: /api/{proxy+}
             RestApiId: !Ref AppPublicApiGateway
 
-  FrontendLambda:
+  EverythingElseLambda:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: makefile

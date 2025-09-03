@@ -2,8 +2,8 @@ import type { FastifyPluginOptions, FastifyInstance } from "fastify";
 import { frontend } from "./frontend.js";
 import { api } from "./api.js";
 import { staticFiles } from "./staticFiles.js";
-import { defaultCaching } from "./defaultCaching.js";
 import type { APIGatewayEvent, Context } from "aws-lambda";
+import { getRequestParamsToLog } from "./utils/getRequestParamsToLog/index.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -37,6 +37,8 @@ const initApp = async function (
     fastify ??
     (await import("fastify")).default({
       trustProxy: true, // Required as HTTPS is terminated at API Gateway
+      logger: true,
+      disableRequestLogging: true,
     });
 
   if (isGeneratingOpenApiDocs) {
@@ -45,10 +47,37 @@ const initApp = async function (
     });
   }
 
-  app.register(defaultCaching);
   app.register(staticFiles);
   app.register(api);
   app.register(frontend);
+
+  app.addHook("onSend", async (_request, reply) => {
+    if (typeof reply.getHeader("cache-control") === "undefined") {
+      reply.header("cache-control", "no-cache");
+    }
+  });
+
+  app.addHook("onRequest", (request, _reply, done) => {
+    request.log.info(
+      {
+        request: getRequestParamsToLog(request),
+      },
+      "received request",
+    );
+    done();
+  });
+
+  app.addHook("onResponse", async (request, reply) => {
+    request.log.info(
+      {
+        request: getRequestParamsToLog(request),
+        response: {
+          statusCode: reply.statusCode,
+        },
+      },
+      "sent response",
+    );
+  });
 
   return app;
 };
