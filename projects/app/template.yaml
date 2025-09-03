@@ -62,6 +62,8 @@ Mappings:
 
 Globals:
   Function:
+    CodeUri: dist
+    Handler: lambda.handler
     Layers:
       - !If
         - UseDynatraceLayer
@@ -83,7 +85,7 @@ Globals:
       SecurityGroupIds:
         - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
     Timeout: 10
-    MemorySize: 512
+    MemorySize: 256
     Architectures:
       - arm64
     Runtime: nodejs22.x
@@ -141,19 +143,37 @@ Resources:
   AppPublicApiGateway:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: main
+      StageName: !Ref Environment
       EndpointConfiguration:
         Type: REGIONAL
       BinaryMediaTypes:
         - "*/*"
 
-  AppLambda:
+  ApiLambda:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: makefile
     Properties:
-      CodeUri: dist
-      Handler: lambda.handler
+      MemorySize: 512 # TODO remove once demo code removed
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /api/
+            RestApiId: !Ref AppPublicApiGateway
+        CatchAll:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /api/{proxy+}
+            RestApiId: !Ref AppPublicApiGateway
+
+  FrontendLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
       Events:
         Root:
           Type: Api

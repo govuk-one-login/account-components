@@ -62,7 +62,7 @@
     "build:app": "cd projects/app && rm -rf dist_openapi && rm -rf .aws-sam && rm -rf dist && cp -r ./ ../dist && mv ../dist ./dist && find dist -type f ! -name '*.njk' -print0 | xargs -0 rm -f && cp -r ./static dist && cp ./Makefile dist && sass dist/static/shared-cache/application.scss dist/static/shared-cache/application.css --no-source-map && rm dist/static/shared-cache/application.scss && csso dist/static/shared-cache/application.css --output dist/static/shared-cache/application.css && rolldown -c rolldown.config.ts && cd dist && cp ../../../package.json ./package.json && cd ../ && sam build",
     "sam-validate:app": "cd projects/app && sam validate --region eu-west-2 --lint",
     "watch:app": "npm run build:app && chokidar \"./projects/app/**/*\" -c \"npm run build:app\" -i \"projects/app/dist\" -i \"projects/app/.aws-sam\"",
-    "run:app": "npm run watch:app & cd projects/app && sam local start-api --warm-containers LAZY",
+    "run:app": "npm run watch:app & cd projects/app && sam local start-api",
     "generate-openapi:app": "cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/app.js > openapi.yaml"
   }
 }
