@@ -3,7 +3,7 @@ node_modules
 coverage
 projects/app/dist
 projects/app/dist_openapi
-openapi.yaml
+openapi_tmp.yaml
 .eslintcache
 .aws-sam
 .terraform

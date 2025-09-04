@@ -20,6 +20,7 @@
     "@eslint/compat": "^1.3.1",
     "@eslint/js": "^9.31.0",
     "@fastify/swagger": "^9.5.1",
+    "@stoplight/spectral-cli": "^6.15.0",
     "@tsconfig/node22": "^22.0.1",
     "@tsconfig/strictest": "^2.0.5",
     "@types/aws-lambda": "^8.10.152",
@@ -63,6 +64,7 @@
     "sam-validate:app": "cd projects/app && sam validate --region eu-west-2 --lint",
     "watch:app": "npm run build:app && chokidar \"./projects/app/src/**/*\" -c \"npm run build:app\"",
     "run:app": "npm run watch:app & cd projects/app && sam local start-api",
-    "generate-openapi:app": "cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/app.js > openapi.yaml"
+    "generate-openapi:app": "cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi.yaml",
+    "check-openapi:app": "cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi_tmp.yaml && cmp -s openapi.yaml openapi_tmp.yaml && spectral lint openapi.yaml"
   }
 }
