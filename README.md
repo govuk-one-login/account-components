@@ -16,7 +16,6 @@ When updating the Node version you will need to update the following:
 
 - `engines.node` field in package.json
 - .nvmrc
-- .node-version
 - Node version used by used by Lambda functions
 - ensure the base TSConfig installed as a development dependency in package.json and used in tsconfig.json corresponds with the Node version being used e.g. for Node 22 use the base TSConfig `@tsconfig/node22`
 - ensure the major version of `@types/node` installed as a development dependency in package.json corresponds with the Node version being used
