@@ -52,6 +52,7 @@ export default tseslint.config(
       "vitest/prefer-expect-assertions": "off",
       "vitest/require-mock-type-parameters": "off",
       "vitest/prefer-describe-function-title": "off",
+      "vitest/no-hooks": "off",
     },
   },
 );

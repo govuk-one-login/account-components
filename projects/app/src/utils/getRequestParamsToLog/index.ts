@@ -3,10 +3,10 @@ import { getDiSessionIdsFromRequest } from "../getDiSessionIdsFromRequest/index.
 
 export const getRequestParamsToLog = (req?: FastifyRequest) => {
   return {
-    awsRequestId: req?.awsLambda.context.awsRequestId,
+    awsRequestId: req?.awsLambda.context.awsRequestId ?? "",
     method: req?.method ?? "",
     url: req?.url ?? "",
-    referrer: req?.headers.referer,
+    referrer: req?.headers.referer ?? "",
     diSessionIds: getDiSessionIdsFromRequest(req),
   };
 };
