@@ -4,6 +4,7 @@ import { api } from "./api.js";
 import { staticFiles } from "./staticFiles.js";
 import type { APIGatewayEvent, Context } from "aws-lambda";
 import { getRequestParamsToLog } from "./utils/getRequestParamsToLog/index.js";
+import { miscellaneous } from "./miscellaneous.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -50,6 +51,7 @@ const initApp = async function (
   app.register(staticFiles);
   app.register(api);
   app.register(frontend);
+  app.register(miscellaneous);
 
   app.addHook("onSend", async (_request, reply) => {
     if (typeof reply.getHeader("cache-control") === "undefined") {

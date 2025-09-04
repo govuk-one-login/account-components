@@ -154,7 +154,6 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      MemorySize: 512 # TODO remove once demo code removed
       Events:
         Root:
           Type: Api

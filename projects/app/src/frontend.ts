@@ -32,13 +32,6 @@ export const frontend = function (app: FastifyInstance) {
     this.type("text/html").send(html);
   });
 
-  app.get("/robots.txt", async function (request, reply) {
-    return (await import("./handlers/robots.txt/index.js")).handler(
-      request,
-      reply,
-    );
-  });
-
   app.get("/html", async function (request, reply) {
     return (await import("./handlers/html/index.js")).html(request, reply);
   });

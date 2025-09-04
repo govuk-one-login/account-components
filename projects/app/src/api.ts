@@ -15,14 +15,6 @@ export const api = function (app: FastifyInstance) {
               },
               required: ["foo", "bar"],
             },
-            response: {
-              200: {
-                type: "object",
-                properties: {
-                  hello: { type: "string" },
-                },
-              },
-            },
           },
         },
         async function (request, reply) {
