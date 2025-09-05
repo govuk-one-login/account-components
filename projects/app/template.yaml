@@ -158,8 +158,6 @@ Resources:
         Type: REGIONAL
       BinaryMediaTypes:
         - "*/*"
-      Variables:
-        ApiGatewaysForceDeploymentId: !Ref ApiGatewaysForceDeploymentId
       Auth:
         ResourcePolicy:
           CustomStatements:
@@ -265,3 +263,10 @@ Resources:
             Method: ANY
             Path: /{proxy+}
             RestApiId: !Ref AppPublicApiGateway
+
+  ApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref AppPublicApiGateway
+      StageName: !Ref Environment
+      Description: !Sub "Deployment ${ApiGatewaysForceDeploymentId}"
