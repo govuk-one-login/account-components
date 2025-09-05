@@ -5,6 +5,11 @@ info:
 components:
   schemas: {}
 paths:
+  /stub//:
+    get:
+      responses:
+        "200":
+          description: Default Response
   /api/hello:
     get:
       parameters:
