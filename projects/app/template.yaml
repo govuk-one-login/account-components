@@ -189,6 +189,23 @@ Resources:
       RestApiId: !Ref AppPublicApiGateway
       StageName: !Ref Environment
 
+  AppPrivateApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      EndpointConfiguration:
+        Type: PRIVATE
+        VPCEndpointIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayVpcEndpointId
+      BinaryMediaTypes:
+        - "*/*"
+
+  AppPrivateApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref AppPrivateApiGateway
+      StageName: !Ref Environment
+
   PrivateApiLambda:
     Type: AWS::Serverless::Function
     Metadata:
@@ -200,13 +217,13 @@ Resources:
           Properties:
             Method: ANY
             Path: /private-api/
-            RestApiId: !Ref AppPublicApiGateway # TODO change to private API Gateway
+            RestApiId: !Ref AppPrivateApiGateway
         CatchAll:
           Type: Api
           Properties:
             Method: ANY
             Path: /private-api/{proxy+}
-            RestApiId: !Ref AppPublicApiGateway # TODO change to private API Gateway
+            RestApiId: !Ref AppPrivateApiGateway
 
   StubsLambda:
     Type: AWS::Serverless::Function

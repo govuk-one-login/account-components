@@ -42,7 +42,6 @@ const initApp = async function (
       trustProxy: true, // Required as HTTPS is terminated at API Gateway
       logger: true,
       disableRequestLogging: true,
-      //ignoreTrailingSlash: true, // TODO deprectation
     });
 
   if (isGeneratingOpenApiDocs) {
@@ -60,12 +59,6 @@ const initApp = async function (
   app.register(frontend);
   app.register(miscellaneous);
 
-  app.addHook("onSend", async (_request, reply) => {
-    if (typeof reply.getHeader("cache-control") === "undefined") {
-      reply.header("cache-control", "no-cache");
-    }
-  });
-
   app.addHook("onRequest", (request, _reply, done) => {
     request.log.info(
       {
@@ -76,15 +69,19 @@ const initApp = async function (
     done();
   });
 
-  /*
   app.addHook("onRequest", async (request, reply) => {
-    const url = new URL(request.url);
+    const url = new URL(request.url, "https://fake.com");
     if (url.pathname.endsWith("/")) {
-      url.pathname = url.pathname.slice(0, -1);
-      return reply.redirect(url.toString(), 308);
+      return reply.redirect(`${url.pathname.slice(0, -1)}${url.search}`, 308);
     }
     return;
-  });*/
+  });
+
+  app.addHook("onSend", async (_request, reply) => {
+    if (typeof reply.getHeader("cache-control") === "undefined") {
+      reply.header("cache-control", "no-cache");
+    }
+  });
 
   app.addHook("onResponse", async (request, reply) => {
     request.log.info(
