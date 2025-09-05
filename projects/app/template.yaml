@@ -26,6 +26,11 @@ Parameters:
     Type: String
     Description: >
       The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
+  ApiGatewaysForceDeploymentId:
+    Type: String
+    Description: >
+      Unique deployment identifier to force API Gateways redeployment
+    Default: "1hibfkbffkbefiwefww3" # TODO make unique
 
 Mappings:
   EnvironmentConfiguration:
@@ -153,6 +158,8 @@ Resources:
         Type: REGIONAL
       BinaryMediaTypes:
         - "*/*"
+      Variables:
+        ApiGatewaysForceDeploymentId: !Ref ApiGatewaysForceDeploymentId
       Auth:
         ResourcePolicy:
           CustomStatements:
