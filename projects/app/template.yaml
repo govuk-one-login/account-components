@@ -30,7 +30,7 @@ Parameters:
 Mappings:
   EnvironmentConfiguration:
     dev:
-      allowStubsAccess: "0" # TODO set to "1"
+      allowStubsAccess: "1" # TODO set to "1"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
     build:
       allowStubsAccess: "1"
@@ -182,6 +182,12 @@ Resources:
                 Principal: "*"
                 Action: execute-api:Invoke
                 Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/stub"
+
+  AppPublicApiGatewayDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref AppPublicApiGateway
+      StageName: !Ref Environment
 
   PrivateApiLambda:
     Type: AWS::Serverless::Function
