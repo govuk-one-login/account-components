@@ -30,7 +30,7 @@ Parameters:
 Mappings:
   EnvironmentConfiguration:
     dev:
-      allowStubsAccess: "0" # TODO set to "1"
+      allowStubsAccess: "1"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
     build:
       allowStubsAccess: "1"
@@ -153,10 +153,9 @@ Resources:
         Type: REGIONAL
       BinaryMediaTypes:
         - "*/*"
-      DefinitionBody:
-        x-amazon-apigateway-policy:
-          Version: "2012-10-17"
-          Statement:
+      Auth:
+        ResourcePolicy:
+          CustomStatements:
             - Effect: Allow
               Principal: "*"
               Action: execute-api:Invoke
