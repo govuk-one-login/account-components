@@ -151,14 +151,14 @@ Resources:
       Auth:
         ResourcePolicy:
           CustomStatements:
+            - Effect: Allow
+              Principal: "*"
+              Action: execute-api:Invoke
+              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/*"
             - Effect: Deny
               Principal: "*"
               Action: execute-api:Invoke
               Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/api/*"
-            - Effect: Deny
-              Principal: "*"
-              Action: execute-api:Invoke
-              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/api"
 
   ApiLambda:
     Type: AWS::Serverless::Function
