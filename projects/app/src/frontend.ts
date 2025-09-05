@@ -4,7 +4,7 @@ import fastifySession from "@fastify/session";
 import fastifyHelmet from "@fastify/helmet";
 import fastifyCsrfProtection from "@fastify/csrf-protection";
 import fastifyFormBody from "@fastify/formbody";
-import { environment } from "./utils/environment/index.js";
+import { getEnvironment } from "./utils/getEnvironment/index.js";
 
 export const frontend = function (app: FastifyInstance) {
   app.register(fastifyFormBody);
@@ -13,7 +13,7 @@ export const frontend = function (app: FastifyInstance) {
   app.register(fastifySession, {
     secret: ["TODO a secret with minimum length of 32 characters!!!!!"],
     cookie: {
-      secure: environment !== "local",
+      secure: getEnvironment() !== "local",
       sameSite: "lax",
     },
   });
@@ -24,10 +24,13 @@ export const frontend = function (app: FastifyInstance) {
   app.decorateReply("render", async function (templatePath, props) {
     const nunjucksModule = await import("nunjucks");
 
-    nunjucksModule.default.configure({
-      autoescape: true,
-      noCache: true,
-    });
+    nunjucksModule.default.configure(
+      getEnvironment() === "local" ? "dist" : "",
+      {
+        autoescape: true,
+        noCache: true,
+      },
+    );
     const html = nunjucksModule.default.render(templatePath, props);
     this.type("text/html").send(html);
   });

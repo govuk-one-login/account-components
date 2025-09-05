@@ -8,3 +8,4 @@ openapi_tmp.yaml
 .aws-sam
 .terraform
 .terraform.lock.hcl
+.env

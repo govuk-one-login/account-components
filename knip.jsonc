@@ -1,5 +1,10 @@
 {
-  "entry": ["projects/app/src/lambda.ts", "projects/app/rolldown.config.ts"],
+  "entry": [
+    "projects/app/src/lambda.ts",
+    "projects/app/src/local.ts",
+    "projects/app/rolldown.config.ts",
+    "projects/app/rolldown.local.config.ts",
+  ],
   "ignoreBinaries": [
     "zizmor",
     "tflint",

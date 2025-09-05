@@ -8,7 +8,9 @@ The initial architecture decided upon is as shown in the following diagram. The 
 
 ![Architecture diagram](./docs/images/architecture.png "Architecture diagram")
 
-## Installation
+## Set up and installation
+
+Copy `projects/app/.env.sample` to `projects/app/.env` and replace any placeholder values as appropriate.
 
 Install [NVM](https://github.com/nvm-sh/nvm) or [FNM](https://github.com/Schniz/fnm) and select the correct Node version by running `nvm use` or `fnm use`.
 

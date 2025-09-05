@@ -5,12 +5,12 @@ import { staticFiles } from "./staticFiles.js";
 import type { APIGatewayEvent, Context } from "aws-lambda";
 import { getRequestParamsToLog } from "./utils/getRequestParamsToLog/index.js";
 import { miscellaneous } from "./miscellaneous.js";
-import { hasStubs } from "./utils/hasStubs.ts/index.js";
+import { hasStubs } from "./utils/hasStubs/index.js";
 import { privateApi } from "./privateApi.js";
 
 declare module "fastify" {
   interface FastifyRequest {
-    awsLambda: {
+    awsLambda?: {
       event: APIGatewayEvent;
       context: Context;
     };
@@ -51,7 +51,7 @@ const initApp = async function (
     });
   }
 
-  if (hasStubs) {
+  if (hasStubs()) {
     app.register((await import("./stubs.js")).stubs);
   }
   app.register(staticFiles);
