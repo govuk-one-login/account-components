@@ -21,10 +21,6 @@ export const api = function (app: FastifyInstance) {
           (await import("./handlers/api/hello/index.js")).hello(request, reply);
         },
       );
-
-      app.get("/", async function (request, reply) {
-        (await import("./handlers/api/hello/index.js")).hello(request, reply);
-      });
     },
     {
       prefix: "/api/",
