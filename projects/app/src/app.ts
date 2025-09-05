@@ -1,7 +1,6 @@
 import type { FastifyPluginOptions, FastifyInstance } from "fastify";
 import { frontend } from "./frontend.js";
 import { api } from "./api.js";
-import { stubs } from "./stubs.js";
 import { staticFiles } from "./staticFiles.js";
 import type { APIGatewayEvent, Context } from "aws-lambda";
 import { getRequestParamsToLog } from "./utils/getRequestParamsToLog/index.js";
@@ -50,7 +49,6 @@ const initApp = async function (
   }
 
   app.register(staticFiles);
-  app.register(stubs);
   app.register(api);
   app.register(frontend);
   app.register(miscellaneous);

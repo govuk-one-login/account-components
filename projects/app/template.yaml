@@ -34,25 +34,16 @@ Mappings:
   EnvironmentConfiguration:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      deployStubs: false # TODO change to true
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      deployStubs: true
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      deployStubs: false
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      deployStubs: false
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
-      deployStubs: false
 
 Conditions:
-  DeployStubs:
-    Fn::Equals:
-      - !FindInMap [EnvironmentConfiguration, !Ref Environment, deployStubs]
-      - true
   UseCodeSigning:
     Fn::Not:
       - Fn::Equals:
@@ -175,26 +166,6 @@ Resources:
           Properties:
             Method: ANY
             Path: /api/{proxy+}
-            RestApiId: !Ref AppPublicApiGateway
-
-  StubsLambda:
-    Condition: DeployStubs
-    Type: AWS::Serverless::Function
-    Metadata:
-      BuildMethod: makefile
-    Properties:
-      Events:
-        Root:
-          Type: Api
-          Properties:
-            Method: ANY
-            Path: /stub/
-            RestApiId: !Ref AppPublicApiGateway
-        CatchAll:
-          Type: Api
-          Properties:
-            Method: ANY
-            Path: /stub/{proxy+}
             RestApiId: !Ref AppPublicApiGateway
 
   EverythingElseLambda:
