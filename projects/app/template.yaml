@@ -30,14 +30,19 @@ Parameters:
 Mappings:
   EnvironmentConfiguration:
     dev:
+      allowStubsAccess: "1"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
     build:
+      allowStubsAccess: "1"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
     staging:
+      allowStubsAccess: "0"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
     integration:
+      allowStubsAccess: "0"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
     production:
+      allowStubsAccess: "0"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
 
 Conditions:
@@ -51,6 +56,14 @@ Conditions:
       - Fn::Equals:
           - !Ref PermissionsBoundary
           - "none"
+  AllowStubsAccess:
+    Fn::Equals:
+      - !FindInMap [
+          EnvironmentConfiguration,
+          !Ref Environment,
+          allowStubsAccess,
+        ]
+      - "1"
 
 Globals:
   Function:
@@ -82,6 +95,12 @@ Globals:
       Variables:
         ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"
+        HAS_STUBS:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            allowStubsAccess,
+          ]
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
         DT_CONNECTION_AUTH_TOKEN: !Sub
           - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}" # pragma: allowlist-secret
@@ -149,6 +168,20 @@ Resources:
               Principal: "*"
               Action: execute-api:Invoke
               Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/private"
+            - !If
+              - AllowStubsAccess
+              - !Ref AWS::NoValue
+              - Effect: Deny
+                Principal: "*"
+                Action: execute-api:Invoke
+                Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/stub/*"
+            - !If
+              - AllowStubsAccess
+              - !Ref AWS::NoValue
+              - Effect: Deny
+                Principal: "*"
+                Action: execute-api:Invoke
+                Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/stub"
 
   PrivateApiLambda:
     Type: AWS::Serverless::Function
@@ -168,6 +201,25 @@ Resources:
             Method: ANY
             Path: /private/{proxy+}
             RestApiId: !Ref AppPublicApiGateway # TODO change to private API Gateway
+
+  StubsLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /stub/
+            RestApiId: !Ref AppPublicApiGateway
+        CatchAll:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /stub/{proxy+}
+            RestApiId: !Ref AppPublicApiGateway
 
   ApiLambda:
     Type: AWS::Serverless::Function

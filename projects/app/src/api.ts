@@ -23,7 +23,7 @@ export const api = function (app: FastifyInstance) {
       );
     },
     {
-      prefix: "/api/",
+      prefix: "/api",
     },
   );
 };

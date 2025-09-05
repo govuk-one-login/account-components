@@ -2,6 +2,12 @@
 
 This repo contains the code for Account Components
 
+## Architecture
+
+The initial architecture decided upon is as shown in the following diagram. The diagram may not be an accurate representation of reality at the time of reading.
+
+![Architecture diagram](./docs/images/architecture.png "Architecture diagram")
+
 ## Installation
 
 Install [NVM](https://github.com/nvm-sh/nvm) or [FNM](https://github.com/Schniz/fnm) and select the correct Node version by running `nvm use` or `fnm use`.

@@ -5,6 +5,7 @@ import { staticFiles } from "./staticFiles.js";
 import type { APIGatewayEvent, Context } from "aws-lambda";
 import { getRequestParamsToLog } from "./utils/getRequestParamsToLog/index.js";
 import { miscellaneous } from "./miscellaneous.js";
+import { hasStubs } from "./utils/hasStubs.ts/index.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -40,6 +41,7 @@ const initApp = async function (
       trustProxy: true, // Required as HTTPS is terminated at API Gateway
       logger: true,
       disableRequestLogging: true,
+      //ignoreTrailingSlash: true, // TODO deprectation
     });
 
   if (isGeneratingOpenApiDocs) {
@@ -48,6 +50,9 @@ const initApp = async function (
     });
   }
 
+  if (hasStubs) {
+    app.register((await import("./stubs.js")).stubs);
+  }
   app.register(staticFiles);
   app.register(api);
   app.register(frontend);
@@ -68,6 +73,16 @@ const initApp = async function (
     );
     done();
   });
+
+  /*
+  app.addHook("onRequest", async (request, reply) => {
+    const url = new URL(request.url);
+    if (url.pathname.endsWith("/")) {
+      url.pathname = url.pathname.slice(0, -1);
+      return reply.redirect(url.toString(), 308);
+    }
+    return;
+  });*/
 
   app.addHook("onResponse", async (request, reply) => {
     request.log.info(
