@@ -163,11 +163,11 @@ Resources:
             - Effect: Deny
               Principal: "*"
               Action: execute-api:Invoke
-              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/private/*"
+              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/private-api/*"
             - Effect: Deny
               Principal: "*"
               Action: execute-api:Invoke
-              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/private"
+              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/private-api"
             - !If
               - AllowStubsAccess
               - !Ref AWS::NoValue
@@ -199,13 +199,13 @@ Resources:
           Type: Api
           Properties:
             Method: ANY
-            Path: /private/
+            Path: /private-api/
             RestApiId: !Ref AppPublicApiGateway # TODO change to private API Gateway
         CatchAll:
           Type: Api
           Properties:
             Method: ANY
-            Path: /private/{proxy+}
+            Path: /private-api/{proxy+}
             RestApiId: !Ref AppPublicApiGateway # TODO change to private API Gateway
 
   StubsLambda:

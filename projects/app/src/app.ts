@@ -6,6 +6,7 @@ import type { APIGatewayEvent, Context } from "aws-lambda";
 import { getRequestParamsToLog } from "./utils/getRequestParamsToLog/index.js";
 import { miscellaneous } from "./miscellaneous.js";
 import { hasStubs } from "./utils/hasStubs.ts/index.js";
+import { privateApi } from "./privateApi.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -55,6 +56,7 @@ const initApp = async function (
   }
   app.register(staticFiles);
   app.register(api);
+  app.register(privateApi);
   app.register(frontend);
   app.register(miscellaneous);
 
