@@ -30,7 +30,7 @@ Parameters:
 Mappings:
   EnvironmentConfiguration:
     dev:
-      allowStubsAccess: "1" # TODO set to "1"
+      allowStubsAccess: "0" # TODO set to "1"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
     build:
       allowStubsAccess: "1"
