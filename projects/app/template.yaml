@@ -26,11 +26,6 @@ Parameters:
     Type: String
     Description: >
       The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
-  ApiGatewaysForceDeploymentId:
-    Type: String
-    Description: >
-      Unique deployment identifier to force API Gateways redeployment
-    Default: "1hibfkbffkbefiwefww3" # TODO make unique
 
 Mappings:
   EnvironmentConfiguration:
@@ -158,9 +153,10 @@ Resources:
         Type: REGIONAL
       BinaryMediaTypes:
         - "*/*"
-      Auth:
-        ResourcePolicy:
-          CustomStatements:
+      DefinitionBody:
+        x-amazon-apigateway-policy:
+          Version: "2012-10-17"
+          Statement:
             - Effect: Allow
               Principal: "*"
               Action: execute-api:Invoke
@@ -263,10 +259,3 @@ Resources:
             Method: ANY
             Path: /{proxy+}
             RestApiId: !Ref AppPublicApiGateway
-
-  ApiGatewayDeployment:
-    Type: AWS::ApiGateway::Deployment
-    Properties:
-      RestApiId: !Ref AppPublicApiGateway
-      StageName: !Ref Environment
-      Description: !Sub "Deployment ${ApiGatewaysForceDeploymentId}"
