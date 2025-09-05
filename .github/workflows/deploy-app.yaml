@@ -40,7 +40,7 @@ jobs:
         run: npm ci
 
       - name: Build app
-        run: npm run sam-build:app
+        run: npm run build:app
 
       - name: Deploy app
         uses: govuk-one-login/devplatform-upload-action@fda75612a1b0e5a8c84ae7c44a23340e50e5bbde
