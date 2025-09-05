@@ -6,3 +6,4 @@ rules:
   operation-description: "off"
   operation-operationId: "off"
   operation-tags: "off"
+  path-keys-no-trailing-slash: "off"
