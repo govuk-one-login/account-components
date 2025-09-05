@@ -189,41 +189,44 @@ Resources:
       RestApiId: !Ref AppPublicApiGateway
       StageName: !Ref Environment
 
-  AppPrivateApiGateway:
-    Type: AWS::Serverless::Api
-    Properties:
-      StageName: !Ref Environment
-      EndpointConfiguration:
-        Type: PRIVATE
-        VPCEndpointIds:
-          - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayVpcEndpointId
-      BinaryMediaTypes:
-        - "*/*"
+  # Uncomment this once  export ${VpcStackName}-ExecuteApiGatewayVpcEndpointId is available
+  # AppPrivateApiGateway:
+  #   Type: AWS::Serverless::Api
+  #   Properties:
+  #     StageName: !Ref Environment
+  #     EndpointConfiguration:
+  #       Type: PRIVATE
+  #       VPCEndpointIds:
+  #         - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayVpcEndpointId
+  #     BinaryMediaTypes:
+  #       - "*/*"
 
-  AppPrivateApiGatewayDeployment:
-    Type: AWS::ApiGateway::Deployment
-    Properties:
-      RestApiId: !Ref AppPrivateApiGateway
-      StageName: !Ref Environment
+  # Uncomment this once  export ${VpcStackName}-ExecuteApiGatewayVpcEndpointId is available
+  # AppPrivateApiGatewayDeployment:
+  #   Type: AWS::ApiGateway::Deployment
+  #   Properties:
+  #     RestApiId: !Ref AppPrivateApiGateway
+  #     StageName: !Ref Environment
 
-  PrivateApiLambda:
-    Type: AWS::Serverless::Function
-    Metadata:
-      BuildMethod: makefile
-    Properties:
-      Events:
-        Root:
-          Type: Api
-          Properties:
-            Method: ANY
-            Path: /private-api/
-            RestApiId: !Ref AppPrivateApiGateway
-        CatchAll:
-          Type: Api
-          Properties:
-            Method: ANY
-            Path: /private-api/{proxy+}
-            RestApiId: !Ref AppPrivateApiGateway
+  # Uncomment this once  export ${VpcStackName}-ExecuteApiGatewayVpcEndpointId is available
+  # PrivateApiLambda:
+  #   Type: AWS::Serverless::Function
+  #   Metadata:
+  #     BuildMethod: makefile
+  #   Properties:
+  #     Events:
+  #       Root:
+  #         Type: Api
+  #         Properties:
+  #           Method: ANY
+  #           Path: /private-api/
+  #           RestApiId: !Ref AppPrivateApiGateway
+  #       CatchAll:
+  #         Type: Api
+  #         Properties:
+  #           Method: ANY
+  #           Path: /private-api/{proxy+}
+  #           RestApiId: !Ref AppPrivateApiGateway
 
   StubsLambda:
     Type: AWS::Serverless::Function
