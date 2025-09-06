@@ -67,7 +67,7 @@
     "build-local:app": "npm run build:app:shared && cd projects/app && rolldown -c rolldown.local.config.ts",
     "watch:app": "chokidar \"./projects/app/src/**/*\" -c \"npm run build-local:app\" --initial",
     "run:app": "npm run watch:app & cd projects/app && node --watch-path ./dist ./dist/local.js",
-    "generate-openapi:app": "export HAS_STUBS=0; cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi.yaml",
-    "check-openapi:app": "export HAS_STUBS=0; cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi_tmp.yaml && cmp -s openapi.yaml openapi_tmp.yaml && spectral lint openapi.yaml"
+    "generate-openapi:app": "export $(cat projects/app/.env.openapi | xargs); cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi.yaml",
+    "check-openapi:app": "export $(cat projects/app/.env.openapi | xargs); cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi_tmp.yaml && cmp -s openapi.yaml openapi_tmp.yaml && spectral lint openapi.yaml"
   }
 }

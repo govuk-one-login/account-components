@@ -5,28 +5,22 @@ info:
 components:
   schemas: {}
 paths:
-  /api/hello:
-    get:
-      parameters:
-        - schema:
-            type: number
-          in: query
-          name: foo
-          required: true
-        - schema:
-            type: string
-          in: query
-          name: bar
-          required: true
-      responses:
-        "200":
-          description: Default Response
-  /private-api/:
+  /static/healthcheck:
     get:
       responses:
         "200":
           description: Default Response
-  /html:
+  /api/healthcheck:
+    get:
+      responses:
+        "200":
+          description: Default Response
+  /private-api/healthcheck:
+    get:
+      responses:
+        "200":
+          description: Default Response
+  /healthcheck:
     get:
       responses:
         "200":

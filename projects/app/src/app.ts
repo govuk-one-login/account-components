@@ -1,12 +1,12 @@
 import type { FastifyPluginOptions, FastifyInstance } from "fastify";
-import { frontend } from "./frontend.js";
-import { api } from "./api.js";
-import { staticFiles } from "./staticFiles.js";
 import type { APIGatewayEvent, Context } from "aws-lambda";
 import { getRequestParamsToLog } from "./utils/getRequestParamsToLog/index.js";
-import { miscellaneous } from "./miscellaneous.js";
-import { hasStubs } from "./utils/hasStubs/index.js";
-import { privateApi } from "./privateApi.js";
+import { registerStubRoutes } from "./utils/registerStubRoutes/index.js";
+import { registerStaticRoutes } from "./utils/registerStaticRoutes/index.js";
+import { registerApiRoutes } from "./utils/registerApiRoutes/index.js";
+import { registerPrivateApiRoutes } from "./utils/registerPrivateApiRoutes/index.js";
+import { registerFrontendRoutes } from "./utils/registerFrontendRoutes/index.js";
+import { registerMiscellaneousRoutes } from "./utils/registerMiscellaneousRoutes/index.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -50,14 +50,28 @@ const initApp = async function (
     });
   }
 
-  if (hasStubs()) {
-    app.register((await import("./stubs.js")).stubs);
+  if (registerStubRoutes()) {
+    app.register((await import("./stubs.js")).stubs, { prefix: "/stub" });
   }
-  app.register(staticFiles);
-  app.register(api);
-  app.register(privateApi);
-  app.register(frontend);
-  app.register(miscellaneous);
+  if (registerStaticRoutes()) {
+    app.register((await import("./staticFiles.js")).staticFiles, {
+      prefix: "/static",
+    });
+  }
+  if (registerApiRoutes()) {
+    app.register((await import("./api.js")).api, { prefix: "/api" });
+  }
+  if (registerPrivateApiRoutes()) {
+    app.register((await import("./privateApi.js")).privateApi, {
+      prefix: "/private-api",
+    });
+  }
+  if (registerFrontendRoutes()) {
+    app.register((await import("./frontend.js")).frontend);
+  }
+  if (registerMiscellaneousRoutes()) {
+    app.register((await import("./miscellaneous.js")).miscellaneous);
+  }
 
   app.addHook("onRequest", (request, _reply, done) => {
     request.log.info(

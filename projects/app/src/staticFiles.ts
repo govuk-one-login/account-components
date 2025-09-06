@@ -5,9 +5,13 @@ import fastifyStatic from "@fastify/static";
 export const staticFiles = function (app: FastifyInstance) {
   const oneYearInSeconds = "31536000";
 
+  app.get("/healthcheck", async function (_request, reply) {
+    return reply.send("ok");
+  });
+
   app.register(fastifyStatic, {
     root: path.join(import.meta.dirname, "static", "full-cache"),
-    prefix: "/static/full-cache/",
+    prefix: "/full-cache",
     cacheControl: false,
     setHeaders: (res) => {
       res.setHeader(
@@ -19,7 +23,7 @@ export const staticFiles = function (app: FastifyInstance) {
 
   app.register(fastifyStatic, {
     root: path.join(import.meta.dirname, "static", "shared-cache"),
-    prefix: "/static/shared-cache/",
+    prefix: "/shared-cache",
     decorateReply: false,
     cacheControl: false,
     setHeaders: (res) => {
@@ -32,7 +36,7 @@ export const staticFiles = function (app: FastifyInstance) {
 
   app.register(fastifyStatic, {
     root: path.join(import.meta.dirname, "static"),
-    prefix: "/static/",
+    prefix: "/",
     decorateReply: false,
     cacheControl: false,
     setHeaders: (res) => {

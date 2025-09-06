@@ -30,19 +30,19 @@ Parameters:
 Mappings:
   EnvironmentConfiguration:
     dev:
-      allowStubsAccess: "1"
+      enableStubs: "1"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
     build:
-      allowStubsAccess: "1"
+      enableStubs: "1"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
     staging:
-      allowStubsAccess: "0"
+      enableStubs: "0"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
     integration:
-      allowStubsAccess: "0"
+      enableStubs: "0"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
     production:
-      allowStubsAccess: "0"
+      enableStubs: "0"
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
 
 Conditions:
@@ -56,14 +56,6 @@ Conditions:
       - Fn::Equals:
           - !Ref PermissionsBoundary
           - "none"
-  AllowStubsAccess:
-    Fn::Equals:
-      - !FindInMap [
-          EnvironmentConfiguration,
-          !Ref Environment,
-          allowStubsAccess,
-        ]
-      - "1"
 
 Globals:
   Function:
@@ -95,12 +87,6 @@ Globals:
       Variables:
         ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"
-        HAS_STUBS:
-          !FindInMap [
-            EnvironmentConfiguration,
-            !Ref Environment,
-            allowStubsAccess,
-          ]
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
         DT_CONNECTION_AUTH_TOKEN: !Sub
           - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}" # pragma: allowlist-secret
@@ -153,41 +139,6 @@ Resources:
         Type: REGIONAL
       BinaryMediaTypes:
         - "*/*"
-      Auth:
-        ResourcePolicy:
-          CustomStatements:
-            - Effect: Allow
-              Principal: "*"
-              Action: execute-api:Invoke
-              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/*"
-            - Effect: Deny
-              Principal: "*"
-              Action: execute-api:Invoke
-              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/private-api/*"
-            - Effect: Deny
-              Principal: "*"
-              Action: execute-api:Invoke
-              Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/private-api"
-            - !If
-              - AllowStubsAccess
-              - !Ref AWS::NoValue
-              - Effect: Deny
-                Principal: "*"
-                Action: execute-api:Invoke
-                Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/stub/*"
-            - !If
-              - AllowStubsAccess
-              - !Ref AWS::NoValue
-              - Effect: Deny
-                Principal: "*"
-                Action: execute-api:Invoke
-                Resource: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/${Environment}/*/stub"
-
-  AppPublicApiGatewayDeployment:
-    Type: AWS::ApiGateway::Deployment
-    Properties:
-      RestApiId: !Ref AppPublicApiGateway
-      StageName: !Ref Environment
 
   # Uncomment this once  export ${VpcStackName}-ExecuteApiGatewayVpcEndpointId is available
   # AppPrivateApiGateway:
@@ -202,18 +153,14 @@ Resources:
   #       - "*/*"
 
   # Uncomment this once  export ${VpcStackName}-ExecuteApiGatewayVpcEndpointId is available
-  # AppPrivateApiGatewayDeployment:
-  #   Type: AWS::ApiGateway::Deployment
-  #   Properties:
-  #     RestApiId: !Ref AppPrivateApiGateway
-  #     StageName: !Ref Environment
-
-  # Uncomment this once  export ${VpcStackName}-ExecuteApiGatewayVpcEndpointId is available
   # PrivateApiLambda:
   #   Type: AWS::Serverless::Function
   #   Metadata:
   #     BuildMethod: makefile
   #   Properties:
+  #     Environment:
+  #       Variables:
+  #         REGISTER_PRIVATE_API_ROUTES: "1"
   #     Events:
   #       Root:
   #         Type: Api
@@ -233,6 +180,10 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
+      Environment:
+        Variables:
+          REGISTER_STUB_ROUTES:
+            !FindInMap [EnvironmentConfiguration, !Ref Environment, enableStubs]
       Events:
         Root:
           Type: Api
@@ -252,6 +203,9 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
+      Environment:
+        Variables:
+          REGISTER_API_ROUTES: "1"
       Events:
         Root:
           Type: Api
@@ -271,6 +225,11 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
+      Environment:
+        Variables:
+          REGISTER_STATIC_ROUTES: "1"
+          REGISTER_FRONTEND_ROUTES: "1"
+          REGISTER_MISC_ROUTES: "1"
       Events:
         Root:
           Type: Api
