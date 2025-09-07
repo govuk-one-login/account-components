@@ -67,8 +67,8 @@ repos:
 
   - repo: local
     hooks:
-      - id: lint-open-api-spec
-        name: Lint OpenAPI spec
+      - id: check-open-api-spec
+        name: Check OpenAPI spec
         entry: npm run check-openapi:app
         language: system
         exclude: .*

@@ -47,7 +47,7 @@ jobs:
       - name: ESLint
         run: npm run eslint
 
-      - name: Lint OpenAPI spec
+      - name: Check OpenAPI spec
         run: npm run check-openapi:app
 
       - name: Lint Terraform

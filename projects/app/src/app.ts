@@ -24,7 +24,7 @@ declare module "fastify" {
 
 declare module "fastify" {
   interface Session {
-    example?: string;
+    example?: string; // TODO remove this once there is at least one real property
   }
 }
 
@@ -37,7 +37,7 @@ const initApp = async function (
   const app =
     fastify ??
     (await import("fastify")).default({
-      trustProxy: true, // Required as HTTPS is terminated at API Gateway
+      trustProxy: true, // Required as HTTPS is terminated before the Lambda
       logger: true,
       disableRequestLogging: true,
     });

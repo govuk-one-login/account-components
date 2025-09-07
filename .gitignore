@@ -5,7 +5,6 @@ projects/app/dist
 projects/app/dist_openapi
 openapi_check.yaml
 .eslintcache
-.aws-sam
 .terraform
 .terraform.lock.hcl
 .env
