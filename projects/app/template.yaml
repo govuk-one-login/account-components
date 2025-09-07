@@ -150,6 +150,17 @@ Resources:
           - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
       BinaryMediaTypes:
         - "*/*"
+      Policy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: execute-api:Invoke
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:sourceVpce:
+                  - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
 
   PrivateApiLambda:
     Type: AWS::Serverless::Function
