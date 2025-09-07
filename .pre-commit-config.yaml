@@ -97,9 +97,9 @@ repos:
 
   - repo: local
     hooks:
-      - id: cflint
+      - id: cfnlint
         name: Lint CloudFormation
-        entry: npm run cflint
+        entry: npm run cfnlint
         language: system
         exclude: .*
         always_run: true

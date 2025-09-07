@@ -57,7 +57,7 @@ jobs:
         run: npm run sam-validate:app
 
       - name: Lint CloudFormation
-        run: npm run cflint
+        run: npm run cfnlint
 
       - name: Check formatting
         run: npm run format
