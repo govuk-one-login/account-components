@@ -30,6 +30,7 @@
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/eslint-plugin": "^1.3.4",
     "chokidar-cli": "^3.0.0",
+    "concurrently": "^9.2.1",
     "csso-cli": "^4.0.2",
     "dotenv": "^17.2.2",
     "eslint": "^9.31.0",
@@ -66,8 +67,8 @@
     "build:app:shared": "cd projects/app && rm -rf dist && cp -r ./src ./dist && find dist -type f ! -name '*.njk' -print0 | xargs -0 rm -f && cp -r ./src/static dist && sass dist/static/shared-cache/application.scss dist/static/shared-cache/application.css --no-source-map && rm dist/static/shared-cache/application.scss && csso dist/static/shared-cache/application.css --output dist/static/shared-cache/application.css",
     "build:app": "npm run build:app:shared && cd projects/app && rolldown -c rolldown.config.ts && cp ./Makefile dist && cp ../../package.json ./dist/package.json",
     "build-local:app": "npm run build:app:shared && cd projects/app && rolldown -c rolldown.local.config.ts",
-    "watch:app": "chokidar \"./projects/app/src/**/*\" -c \"npm run build-local:app\" --initial",
-    "run:app": "npm run watch:app & cd projects/app && node --watch-path ./dist ./dist/local.js",
+    "watch:app": "chokidar \"./projects/app/src/**/*\" -c \"npm run build-local:app\"",
+    "run:app": "npm run build-local:app && concurrently 'npm run watch:app' 'cd projects/app && node --watch ./dist/local.js' --kill-others",
     "generate-openapi:app": "export $(cat projects/app/.env.openapi | xargs); cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi.yaml",
     "check-openapi:app": "export $(cat projects/app/.env.openapi | xargs); cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi_check.yaml && cmp -s openapi.yaml openapi_check.yaml && spectral lint openapi.yaml"
   }
