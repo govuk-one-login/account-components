@@ -1,4 +1,5 @@
-default_install_hook_types: [commit-msg, pre-commit]
+default_install_hook_types: [commit-msg, pre-commit, pre-push]
+fail_fast: true
 
 repos:
   - repo: https://github.com/jorisroovers/gitlint
@@ -66,9 +67,29 @@ repos:
 
   - repo: local
     hooks:
+      - id: check-open-api-spec
+        name: Check OpenAPI spec
+        entry: npm run check-openapi:app
+        language: system
+        exclude: .*
+        always_run: true
+        stages: [pre-commit]
+
+  - repo: local
+    hooks:
       - id: tflint
         name: Lint Terraform
         entry: npm run tflint
+        language: system
+        exclude: .*
+        always_run: true
+        stages: [pre-commit]
+
+  - repo: local
+    hooks:
+      - id: sam-validate-app
+        name: SAM validate app
+        entry: npm run sam-validate:app
         language: system
         exclude: .*
         always_run: true
@@ -93,3 +114,13 @@ repos:
         exclude: .*
         always_run: true
         stages: [pre-commit]
+
+  - repo: local
+    hooks:
+      - id: test
+        name: Test
+        entry: npm run test
+        language: system
+        exclude: .*
+        always_run: true
+        stages: [pre-push]

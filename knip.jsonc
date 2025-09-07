@@ -1,11 +1,18 @@
 {
+  "entry": [
+    "projects/app/src/lambda.ts",
+    "projects/app/src/local.ts",
+    "projects/app/rolldown.config.ts",
+    "projects/app/rolldown.local.config.ts",
+  ],
   "ignoreBinaries": [
-    "detect-secrets",
     "zizmor",
     "tflint",
     "brew",
     "pre-commit",
     "cfn-lint",
     "read",
+    "sam",
+    "cmp",
   ],
 }

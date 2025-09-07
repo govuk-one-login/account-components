@@ -1,0 +1,33 @@
+openapi: 3.0.3
+info:
+  version: 9.5.1
+  title: "@fastify/swagger"
+components:
+  schemas: {}
+paths:
+  /static/healthcheck:
+    get:
+      responses:
+        "200":
+          description: Default Response
+  /api/healthcheck:
+    get:
+      responses:
+        "200":
+          description: Default Response
+  /private-api/healthcheck:
+    get:
+      responses:
+        "200":
+          description: Default Response
+  /healthcheck:
+    get:
+      responses:
+        "200":
+          description: Default Response
+  /robots.txt:
+    get:
+      responses:
+        "200":
+          description: Default Response
+
