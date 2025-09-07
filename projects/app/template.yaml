@@ -147,7 +147,7 @@ Resources:
       EndpointConfiguration:
         Type: PRIVATE
         VPCEndpointIds:
-          - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayVpcEndpointId
+          - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
       BinaryMediaTypes:
         - "*/*"
 
