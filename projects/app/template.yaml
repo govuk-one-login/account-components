@@ -140,40 +140,38 @@ Resources:
       BinaryMediaTypes:
         - "*/*"
 
-  # Uncomment this once  export ${VpcStackName}-ExecuteApiGatewayVpcEndpointId is available
-  # AppPrivateApiGateway:
-  #   Type: AWS::Serverless::Api
-  #   Properties:
-  #     StageName: !Ref Environment
-  #     EndpointConfiguration:
-  #       Type: PRIVATE
-  #       VPCEndpointIds:
-  #         - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayVpcEndpointId
-  #     BinaryMediaTypes:
-  #       - "*/*"
+  AppPrivateApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      EndpointConfiguration:
+        Type: PRIVATE
+        VPCEndpointIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayVpcEndpointId
+      BinaryMediaTypes:
+        - "*/*"
 
-  # Uncomment this once  export ${VpcStackName}-ExecuteApiGatewayVpcEndpointId is available
-  # PrivateApiLambda:
-  #   Type: AWS::Serverless::Function
-  #   Metadata:
-  #     BuildMethod: makefile
-  #   Properties:
-  #     Environment:
-  #       Variables:
-  #         REGISTER_PRIVATE_API_ROUTES: "1"
-  #     Events:
-  #       Root:
-  #         Type: Api
-  #         Properties:
-  #           Method: ANY
-  #           Path: /private-api/
-  #           RestApiId: !Ref AppPrivateApiGateway
-  #       CatchAll:
-  #         Type: Api
-  #         Properties:
-  #           Method: ANY
-  #           Path: /private-api/{proxy+}
-  #           RestApiId: !Ref AppPrivateApiGateway
+  PrivateApiLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Environment:
+        Variables:
+          REGISTER_PRIVATE_API_ROUTES: "1"
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /private-api/
+            RestApiId: !Ref AppPrivateApiGateway
+        CatchAll:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /private-api/{proxy+}
+            RestApiId: !Ref AppPrivateApiGateway
 
   StubsLambda:
     Type: AWS::Serverless::Function

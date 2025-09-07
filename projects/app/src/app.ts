@@ -1,12 +1,10 @@
 import type { FastifyPluginOptions, FastifyInstance } from "fastify";
 import type { APIGatewayEvent, Context } from "aws-lambda";
-import { getRequestParamsToLog } from "./utils/getRequestParamsToLog/index.js";
-import { registerStubRoutes } from "./utils/registerStubRoutes/index.js";
-import { registerStaticRoutes } from "./utils/registerStaticRoutes/index.js";
-import { registerApiRoutes } from "./utils/registerApiRoutes/index.js";
-import { registerPrivateApiRoutes } from "./utils/registerPrivateApiRoutes/index.js";
-import { registerFrontendRoutes } from "./utils/registerFrontendRoutes/index.js";
-import { registerMiscellaneousRoutes } from "./utils/registerMiscellaneousRoutes/index.js";
+import { resolveEnvVarToBool } from "./utils/resolveEnvVarToBool/index.js";
+import { removeTrailingSlash } from "./utils/removeTrailingSlash/index.js";
+import { logRequest } from "./utils/logRequest/index.js";
+import { logResponse } from "./utils/logResponse/index.js";
+import { addDefaultCaching } from "./utils/addDefaultCaching/index.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -50,64 +48,33 @@ const initApp = async function (
     });
   }
 
-  if (registerStubRoutes()) {
+  if (resolveEnvVarToBool("REGISTER_STUB_ROUTES")) {
     app.register((await import("./stubs.js")).stubs, { prefix: "/stub" });
   }
-  if (registerStaticRoutes()) {
+  if (resolveEnvVarToBool("REGISTER_STATIC_ROUTES")) {
     app.register((await import("./staticFiles.js")).staticFiles, {
       prefix: "/static",
     });
   }
-  if (registerApiRoutes()) {
+  if (resolveEnvVarToBool("REGISTER_API_ROUTES")) {
     app.register((await import("./api.js")).api, { prefix: "/api" });
   }
-  if (registerPrivateApiRoutes()) {
+  if (resolveEnvVarToBool("REGISTER_PRIVATE_API_ROUTES")) {
     app.register((await import("./privateApi.js")).privateApi, {
       prefix: "/private-api",
     });
   }
-  if (registerFrontendRoutes()) {
+  if (resolveEnvVarToBool("REGISTER_FRONTEND_ROUTES")) {
     app.register((await import("./frontend.js")).frontend);
   }
-  if (registerMiscellaneousRoutes()) {
+  if (resolveEnvVarToBool("REGISTER_MISC_ROUTES")) {
     app.register((await import("./miscellaneous.js")).miscellaneous);
   }
 
-  app.addHook("onRequest", (request, _reply, done) => {
-    request.log.info(
-      {
-        request: getRequestParamsToLog(request),
-      },
-      "received request",
-    );
-    done();
-  });
-
-  app.addHook("onRequest", async (request, reply) => {
-    const url = new URL(request.url, "https://fake.com");
-    if (url.pathname.endsWith("/")) {
-      return reply.redirect(`${url.pathname.slice(0, -1)}${url.search}`, 308);
-    }
-    return;
-  });
-
-  app.addHook("onSend", async (_request, reply) => {
-    if (typeof reply.getHeader("cache-control") === "undefined") {
-      reply.header("cache-control", "no-cache");
-    }
-  });
-
-  app.addHook("onResponse", async (request, reply) => {
-    request.log.info(
-      {
-        request: getRequestParamsToLog(request),
-        response: {
-          statusCode: reply.statusCode,
-        },
-      },
-      "sent response",
-    );
-  });
+  app.addHook("onRequest", logRequest);
+  app.addHook("onRequest", removeTrailingSlash);
+  app.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
+  app.addHook("onResponse", logResponse);
 
   return app;
 };

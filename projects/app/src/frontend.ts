@@ -5,6 +5,7 @@ import fastifyHelmet from "@fastify/helmet";
 import fastifyCsrfProtection from "@fastify/csrf-protection";
 import fastifyFormBody from "@fastify/formbody";
 import { getEnvironment } from "./utils/getEnvironment/index.js";
+import { nunjucksRender } from "./utils/nunjucksRender/index.js";
 
 export const frontend = function (app: FastifyInstance) {
   app.register(fastifyFormBody);
@@ -20,20 +21,7 @@ export const frontend = function (app: FastifyInstance) {
   app.register(fastifyCsrfProtection, {
     sessionPlugin: "@fastify/session",
   });
-
-  app.decorateReply("render", async function (templatePath, props) {
-    const nunjucksModule = await import("nunjucks");
-
-    nunjucksModule.default.configure(
-      getEnvironment() === "local" ? "dist" : "",
-      {
-        autoescape: true,
-        noCache: true,
-      },
-    );
-    const html = nunjucksModule.default.render(templatePath, props);
-    this.type("text/html").send(html);
-  });
+  app.register(nunjucksRender);
 
   app.get("/healthcheck", async function (_request, reply) {
     return reply.send("ok");

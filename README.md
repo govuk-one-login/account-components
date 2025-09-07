@@ -2,12 +2,6 @@
 
 This repo contains the code for Account Components
 
-## Architecture
-
-The initial architecture decided upon is as shown in the following diagram. The diagram may not be an accurate representation of reality at the time of reading.
-
-![Architecture diagram](./docs/images/architecture.png "Architecture diagram")
-
 ## Set up and installation
 
 Copy `projects/app/.env.sample` to `projects/app/.env` and replace any placeholder values as appropriate.
