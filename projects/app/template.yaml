@@ -1,0 +1,254 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: >
+      The environment type
+    AllowedValues:
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
+  PermissionsBoundary:
+    Type: String
+    Description: >
+      The ARN of the permissions boundary to apply to any role created by the template, provided by the deployment pipeline
+    Default: "none"
+  VpcStackName:
+    Type: String
+    Description: >
+      The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
+
+Mappings:
+  EnvironmentConfiguration:
+    dev:
+      enableStubs: "1"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+    build:
+      enableStubs: "1"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+    staging:
+      enableStubs: "0"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+    integration:
+      enableStubs: "0"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+    production:
+      enableStubs: "0"
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
+
+Conditions:
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
+  UsePermissionsBoundary:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref PermissionsBoundary
+          - "none"
+
+Globals:
+  Function:
+    CodeUri: dist
+    Handler: lambda.handler
+    Layers:
+      - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1
+    CodeSigningConfigArn: !If
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+    VpcConfig:
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdC
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+    Timeout: 10
+    MemorySize: 256
+    Architectures:
+      - arm64
+    Runtime: nodejs22.x
+    Environment:
+      Variables:
+        ENVIRONMENT: !Ref Environment
+        NODE_ENV: "production"
+        AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
+        DT_CONNECTION_AUTH_TOKEN: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_CONNECTION_BASE_URL: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_CLUSTER_ID: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_LOG_COLLECTION_AUTH_TOKEN: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_TENANT: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
+
+Resources:
+  AppPublicApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      EndpointConfiguration:
+        Type: REGIONAL
+      BinaryMediaTypes:
+        - "*/*"
+
+  AppPrivateApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      EndpointConfiguration:
+        Type: PRIVATE
+        VPCEndpointIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
+      BinaryMediaTypes:
+        - "*/*"
+      Policy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: execute-api:Invoke
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:sourceVpce:
+                  - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
+
+  PrivateApiLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Environment:
+        Variables:
+          REGISTER_PRIVATE_API_ROUTES: "1"
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /private-api/
+            RestApiId: !Ref AppPrivateApiGateway
+        CatchAll:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /private-api/{proxy+}
+            RestApiId: !Ref AppPrivateApiGateway
+
+  StubsLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Environment:
+        Variables:
+          REGISTER_STUB_ROUTES:
+            !FindInMap [EnvironmentConfiguration, !Ref Environment, enableStubs]
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /stub/
+            RestApiId: !Ref AppPublicApiGateway
+        CatchAll:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /stub/{proxy+}
+            RestApiId: !Ref AppPublicApiGateway
+
+  ApiLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Environment:
+        Variables:
+          REGISTER_API_ROUTES: "1"
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /api/
+            RestApiId: !Ref AppPublicApiGateway
+        CatchAll:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /api/{proxy+}
+            RestApiId: !Ref AppPublicApiGateway
+
+  EverythingElseLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      Environment:
+        Variables:
+          REGISTER_STATIC_ROUTES: "1"
+          REGISTER_FRONTEND_ROUTES: "1"
+          REGISTER_MISC_ROUTES: "1"
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /
+            RestApiId: !Ref AppPublicApiGateway
+        CatchAll:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /{proxy+}
+            RestApiId: !Ref AppPublicApiGateway

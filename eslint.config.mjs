@@ -41,6 +41,7 @@ export default tseslint.config(
         },
       ],
       "n/no-sync": "error",
+      "@typescript-eslint/require-await": "off",
     },
   },
   {
@@ -50,6 +51,12 @@ export default tseslint.config(
       ...vitestEslint.configs.all.rules,
       "vitest/no-focused-tests": "error",
       "vitest/prefer-expect-assertions": "off",
+      "vitest/require-mock-type-parameters": "off",
+      "vitest/prefer-describe-function-title": "off",
+      "vitest/no-hooks": "off",
+      "vitest/max-expects": "off",
+      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
 );

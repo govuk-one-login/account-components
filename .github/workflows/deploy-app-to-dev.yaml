@@ -18,7 +18,7 @@ on:
         default: main
 
 jobs:
-  deploy-app:
+  deploy-app-to-dev:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -30,41 +30,36 @@ jobs:
           persist-credentials: false
           ref: ${{ inputs.gitRef }}
 
-      - name: Fetch Commit SHA
-        id: gitRefSHA
+      - name: Set commit SHA
         if: github.event.inputs.refType == 'Commit SHA'
         run: echo GIT_REF_SHA=${GIT_REF} >> $GITHUB_ENV
         env:
           GIT_REF: ${{ inputs.gitRef }}
 
-      - name: Fetch Commit SHA by Branch name
-        id: gitRefBranch
+      - name: Set commit SHA by branch name
         if: github.event.inputs.refType == 'Branch name'
         run: echo GIT_REF_SHA=$(git log -1 ${GIT_REF} --pretty=format:%H) >> $GITHUB_ENV
         env:
           GIT_REF: ${{ inputs.gitRef }}
 
-      - name: Fetch Commit SHA by Tag
-        id: gitRefTag
+      - name: Set commit SHA by tag
         if: github.event.inputs.refType == 'Tag'
         run: echo GIT_REF_SHA=$(git rev-list -n 1 ${GIT_REF}) >> $GITHUB_ENV
         env:
           GIT_REF: ${{ inputs.gitRef }}
 
       - name: Set tag
-        id: vars
         run: echo "tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
-      - name: Get current date
-        id: datetime
+      - name: Set current datetime
         run: echo "date=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
 
-      - name: Node setup
+      - name: Set up Node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
           node-version-file: .nvmrc
 
-      - name: Setup SAM CLI
+      - name: Set up SAM CLI
         uses: aws-actions/setup-sam@f664fad9e12492edfc187a31f575537dfbb0ff63
         with:
           use-installer: true
