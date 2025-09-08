@@ -65,6 +65,8 @@ We've performance tested this option and it comfortably met our performance NFRs
 Given the 'low base, high burst' traffic pattern we expect for this application, running on Lambda will allow us to scale faster
 and will be significantly cheaper and more environmentally friendly than a container based app.
 
+We could use provisioned concurrency if traffic is very low and we're seeing frequent cold starts that break our NFRs.
+
 ### 4. Combined Express app deployed to Lambda
 
 The Frontend Capability team in GOV.UK One Login have been experimenting with running Express applications on AWS Lambda.
