@@ -117,3 +117,42 @@ variable "owner_email" {
   description = "The owning team's Google Group email address. Used for tagging and ECR scan notifications"
   default     = "one-login-home-team-tech@digital.cabinet-office.gov.uk"
 }
+
+variable "capabilities" {
+  type    = list(string)
+  default = ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"]
+}
+
+variable "iam_role_arn" {
+  type    = string
+  default = ""
+}
+
+variable "on_failure" {
+  type    = string
+  default = "ROLLBACK"
+}
+
+variable "tags" {
+  description = "A Map of tags - with optional default values"
+  type = object({
+    Product     = optional(string, "GOV.UK One Login")
+    System      = optional(string, "One Login Home")
+    Environment = optional(string, "build")
+  })
+
+  default = {
+    Product     = "GOV.UK One Login"
+    System      = "One Login Home"
+    Environment = "build"
+  }
+}
+
+
+variable "allowed_config_access_accounts" {
+  type        = list(string)
+  description = "The AWS account IDs that this can read config"
+  default     = []
+}
+
+

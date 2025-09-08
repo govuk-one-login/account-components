@@ -4,6 +4,7 @@
     "projects/app/src/local.ts",
     "projects/app/rolldown.config.ts",
     "projects/app/rolldown.local.config.ts",
+    "projects/app-config/src/handler.ts"
   ],
   "ignoreBinaries": [
     "zizmor",
@@ -15,4 +16,6 @@
     "sam",
     "cmp",
   ],
+  "ignoreDependencies": ["esBuild"],
+  "treatConfigHintsAsErrors": false
 }

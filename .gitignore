@@ -8,3 +8,6 @@ openapi_check.yaml
 .terraform
 .terraform.lock.hcl
 .env
+.aws-sam
+.idea
+.vscode

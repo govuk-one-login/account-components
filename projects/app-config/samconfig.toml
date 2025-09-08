@@ -1,0 +1,11 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "app-config-test"
+resolve_s3 = true
+s3_prefix = "app-config-test"
+region = "eu-west-2"
+profile = "di-account-dev-admin"
+capabilities = "CAPABILITY_NAMED_IAM"
+parameter_overrides = "Environment=\"dev\" VpcStackName=\"vpc-enhanced\""
+image_repositories = []

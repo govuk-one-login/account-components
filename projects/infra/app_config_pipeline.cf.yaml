@@ -1,0 +1,1169 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::LanguageExtensions"
+Description: >
+  Configuration Deploy Template, uses an AppConfig linked pipeline to deploy configuration.
+
+Parameters:
+  AlarmOne:
+    Description: "1st alarm to monitor during deployments"
+    Type: "String"
+    Default: "none"
+
+  AlarmTwo:
+    Description: "2nd alarm to monitor during deployments"
+    Type: "String"
+    Default: "none"
+
+  AlarmThree:
+    Description: "3rd alarm to monitor during deployments"
+    Type: "String"
+    Default: "none"
+
+  ApplicationName:
+    Description: "The name to give AppConfig application, this will get prefixed with the stack name"
+    Type: "String"
+    Default: "Configuration"
+
+  ArtifactSourceBucketArn:
+    Description: >
+      Name of a bucket to use as source for config deployments, if 'none' then a bucket is created.
+      When set to 'none' then you must specify OneLoginRepositoryName in order to set correct permissions 
+      on the created bucket
+    Type: "String"
+    Default: "none"
+
+  ArtifactSourceBucketAllowedAccounts:
+    Description: >
+      If the source bucket is created in this account, comma-separated list of other accounts that 
+      can read from the bucket. Generally you would create the bucket in your build account and list your higher
+      accounts here to allow them to read their config
+    Type: "CommaDelimitedList"
+    Default: "none"
+
+  ArtifactSourceBucketEventTriggerRoleArn:
+    Description: >
+      (Optional) The ARN of the IAM role assumed by upstream environment CloudWatch events, notifying
+      any changes to the ArtifactSource bucket. This is one of the components of the event-based trigger.
+      This would typically be the `ArtifactPromotionBucketEventTriggerRoleArn` output from an upstream pipeline.
+    Type: "String"
+    Default: "none"
+    AllowedPattern: "(arn:.*:iam::.*:role/.+)|(none)"
+    ConstraintDescription: "must be an IAM Role ARN or none"
+
+  AWSOrganizationId:
+    Description: "Comma-separated IDs of AWS Organizations where this account and the target pipeline account are members."
+    Type: "CommaDelimitedList"
+    Default: "o-pjzf8d99ys,o-dpp53lco28"
+    AllowedPattern: "^[a-z0-9-]+$"
+    ConstraintDescription: "must be a valid organization ID, made of lowercase letters and numbers"
+
+  ConfigFileName:
+    Description: "Name of the zip file in the configuration artefact bucket to retrieve (environment prefix will be automatically be added)"
+    Type: "String"
+    Default: "config.zip"
+
+  ConfigArtefactPath:
+    Description: "Path to file within zip file to deploy using AppConfig"
+    Type: "String"
+    Default: "config.json"
+
+  DeploymentDurationInMinutes:
+    Description: "The period over which the blue/green deployment is staged"
+    Type: Number
+    Default: "5"
+
+  DeployEventBusPolicy:
+    Description: "Deploy the event bus policy allowing S3 update events from another account"
+    Type: String
+    Default: "False"
+
+  DeploymentStrategy:
+    Description: "The algorithm used to define how percentage grows over time. "
+    Type: String
+    Default: none
+    AllowedValues:
+      - none
+      - LINEAR
+      - EXPONENTIAL
+
+  Environment:
+    Description: "The name to give AppConfig profile environment"
+    Type: "String"
+
+  FinalBakeTimeInMinutes:
+    Description: "The period after blue/green completes to continue to monitor for errors"
+    Type: Number
+    Default: "0"
+
+  GrowthFactor:
+    Description: "The percentage of targets to receive a deployed configuration during each interval."
+    Type: Number
+    Default: "20"
+
+  LambdaValidatorArn:
+    Description: >
+      (Optional) The ARN of a lambda function that can be used to validate new configuration before deploying.
+      The creation and deployment of the lambda must be done as part of separate stack.
+      MUST include the alias.
+    Type: "String"
+    Default: "none"
+    AllowedPattern: '^(none|arn:aws:lambda:[a-z]+-[a-z]+-[\d]+:\d{12}:function:[\w-_]+:[\w-_]+$)'
+    ConstraintDescription: 'Must be either "none" or a valid function URL including the alias name'
+
+  OneLoginRepositoryName:
+    Description: >
+      (Optional) The name of the GitHub repository (within the govuk-one-login
+      organization) which initiates this pipeline.  This parameter should only
+      be specified if ArtifactSourceBucketArn is 'none'
+    Type: "String"
+    Default: "none"
+    AllowedPattern: "[^/]+"
+    ConstraintDescription: >
+      must be a GitHub repository name in the govuk-one-login organization (without the
+      govuk-one-login/ prefix)
+
+  ProfileName:
+    Description: "The name to give AppConfig profile"
+    Type: "String"
+
+  SigningKeyArn:
+    Description: >
+      (Optional) The ARN of an existing KMS key used to verify artefact signatures. 
+      If set to "None" a new key will be created.
+    Type: "String"
+    Default: "none"
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: "General configuration"
+        Parameters:
+          - ApplicationName
+          - ProfileName
+          - Environment
+      - Label:
+          default: "Source configuration"
+        Parameters:
+          - ArtifactSourceBucketArn
+          - ArtifactSourceBucketEventTriggerRoleArn
+          - OneLoginRepositoryName
+          - ArtifactSourceBucketAllowedAccounts
+          - AWSOrganizationId
+          - ConfigFileName
+          - DeployEventBusPolicy
+      - Label:
+          default: "Deployment configuration"
+        Parameters:
+          - ConfigArtefactPath
+          - DeploymentDurationInMinutes
+          - DeploymentStrategy
+          - GrowthFactor
+          - FinalBakeTimeInMinutes
+          - AlarmOne
+          - AlarmTwo
+          - AlarmThree
+      - Label:
+          default: "Verification & Validation"
+        Parameters:
+          - SigningKeyArn
+          - LambdaValidatorArn
+
+Conditions:
+  ArtifactSourceBucketProvided:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref ArtifactSourceBucketArn
+          - "none"
+
+  ArtifactSourceBucketEventTriggerRoleProvided:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref ArtifactSourceBucketEventTriggerRoleArn
+          - "none"
+
+  CreateSourceBucket:
+    Fn::Equals:
+      - !Ref ArtifactSourceBucketArn
+      - "none"
+
+  AllowAdditionalAccounts:
+    Fn::Not:
+      - Fn::Equals:
+          - !Select
+            - 0
+            - !Ref ArtifactSourceBucketAllowedAccounts
+          - "none"
+
+  AllowAdditionalAccountTwo:
+    Fn::Or:
+      - Fn::Equals:
+          - Fn::Length: !Ref ArtifactSourceBucketAllowedAccounts
+          - 2
+      - !Condition AllowAdditionalAccountThree
+      - !Condition AllowAdditionalAccountFour
+
+  AllowAdditionalAccountThree:
+    Fn::Or:
+      - Fn::Equals:
+          - Fn::Length: !Ref ArtifactSourceBucketAllowedAccounts
+          - 3
+      - !Condition AllowAdditionalAccountFour
+
+  AllowAdditionalAccountFour:
+    Fn::Equals:
+      - Fn::Length: !Ref ArtifactSourceBucketAllowedAccounts
+      - 4
+
+  CreateLambdaValidator:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref LambdaValidatorArn
+          - "none"
+
+  CreateSigningKey:
+    Fn::Equals:
+      - !Ref SigningKeyArn
+      - "none"
+
+  EnableBlueGreen:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref DeploymentStrategy
+          - "none"
+
+  IsDev:
+    Fn::Equals:
+      - !Ref Environment
+      - "dev"
+
+  MonitorAlarmOne:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref AlarmOne
+          - "none"
+
+  MonitorAlarmTwo:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref AlarmTwo
+          - "none"
+
+  MonitorAlarmThree:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref AlarmThree
+          - "none"
+
+  MonitorAlarms:
+    Fn::Or:
+      - !Condition MonitorAlarmOne
+      - !Condition MonitorAlarmTwo
+      - !Condition MonitorAlarmThree
+
+Resources:
+  GitHubArtifactSourceBucket:
+    Type: AWS::S3::Bucket
+    Condition: CreateSourceBucket
+    Properties:
+      LifecycleConfiguration:
+        Rules:
+          - Id: artifactBucketExpiry
+            Status: Enabled
+            ExpirationInDays: 180
+      VersioningConfiguration:
+        Status: "Enabled"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "GitHubArtifactSourceBucket"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  GitHubArtifactSourceBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Condition: CreateSourceBucket
+    Properties:
+      Bucket: !Ref GitHubArtifactSourceBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Sid: "AllowGithubActions"
+            Resource:
+              - !GetAtt GitHubArtifactSourceBucket.Arn
+              - !Sub "${GitHubArtifactSourceBucket.Arn}/*"
+            Principal:
+              AWS: !GetAtt GitHubActionsRole.Arn
+            Action:
+              - "s3:PutObject"
+              - "s3:PutObjectAcl"
+              - "s3:ListBucket"
+            Condition:
+              Bool:
+                "aws:SecureTransport": true
+          - !If
+            - AllowAdditionalAccounts
+            - Effect: "Allow"
+              Sid: "AllowHigherAccounts"
+              Resource:
+                - !GetAtt GitHubArtifactSourceBucket.Arn
+                - !Sub "${GitHubArtifactSourceBucket.Arn}/*"
+              Principal:
+                AWS: !Ref ArtifactSourceBucketAllowedAccounts
+              Action:
+                - "s3:GetBucketVersioning"
+                - "s3:GetObject"
+                - "s3:GetObjectVersion"
+                - "s3:GetObjectTagging"
+                - "s3:ListBucket"
+              Condition:
+                StringEquals:
+                  "aws:PrincipalOrgID": !Ref AWSOrganizationId
+                Bool:
+                  "aws:SecureTransport": true
+            - !Ref AWS::NoValue
+
+  GitHubActionsRole:
+    Type: AWS::IAM::Role
+    Condition: CreateSourceBucket
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Action: "sts:AssumeRoleWithWebIdentity"
+            Principal:
+              Federated: !ImportValue GitHubIdentityProviderArn
+            Condition:
+              StringLike:
+                "token.actions.githubusercontent.com:sub":
+                  - !If
+                    - IsDev
+                    - !Sub "repo:govuk-one-login/${OneLoginRepositoryName}*ref:refs/heads/*"
+                    - !Sub "repo:govuk-one-login/${OneLoginRepositoryName}*ref:refs/heads/main"
+      ManagedPolicyArns:
+        - !Ref GitHubActionsPolicy
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "GitHubActionsRole"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  GitHubActionsPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Condition: CreateSourceBucket
+    Properties:
+      ManagedPolicyName:
+        Fn::Join:
+          - "-"
+          - - !Ref AWS::StackName
+            - "GitHubActionsPolicy"
+            - Fn::Select:
+                - 4
+                - Fn::Split:
+                    - "-"
+                    - Fn::Select:
+                        - 2
+                        - Fn::Split:
+                            - "/"
+                            - Ref: AWS::StackId
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "AccessToGitHubArtifactSourceBucket"
+            Effect: "Allow"
+            Action:
+              - "s3:GetObject"
+              - "s3:PutObject"
+              - "s3:GetObjectTagging"
+              - "s3:GetObjectVersion"
+              - "s3:ListBucket"
+            Resource:
+              - !GetAtt GitHubArtifactSourceBucket.Arn
+              - !Sub "${GitHubArtifactSourceBucket.Arn}/*"
+
+  CodePipelinePolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName:
+        Fn::Join:
+          - "-"
+          - - !Ref AWS::StackName
+            - "AppConfigCodePipelinePolicy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Resource:
+              - !If
+                - CreateSourceBucket
+                - !GetAtt GitHubArtifactSourceBucket.Arn
+                - !Ref ArtifactSourceBucketArn
+              - !Sub
+                - "${ArtifactSourceBucketArn}/${Environment}/${ConfigFileName}"
+                - ArtifactSourceBucketArn: !If
+                    - CreateSourceBucket
+                    - !GetAtt GitHubArtifactSourceBucket.Arn
+                    - !Ref ArtifactSourceBucketArn
+            Action:
+              - "s3:GetObject"
+              - "s3:GetObjectVersion"
+              - "s3:GetBucketVersioning"
+            Effect: "Allow"
+          - Resource:
+              - !GetAtt PipelineBucket.Arn
+              - !Sub "${PipelineBucket.Arn}/*"
+            Action:
+              - "s3:GetObject"
+              - "s3:GetObjectVersion"
+              - "s3:GetBucketVersioning"
+              - "s3:PutObjectAcl"
+              - "s3:PutObject"
+            Effect: "Allow"
+          - Resource: "*"
+            Action:
+              - "appconfig:StartDeployment"
+              - "appconfig:StopDeployment"
+              - "appconfig:GetDeployment"
+              - "codebuild:BatchGetBuilds"
+              - "codebuild:StartBuild"
+              - "codebuild:BatchGetBuildBatches"
+              - "codebuild:StartBuildBatch"
+            Effect: "Allow"
+          - Resource:
+              - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codepipeline/${AWS::StackName}-${ProfileName}-Pipeline"
+              - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codepipeline/${AWS::StackName}-${ProfileName}-Pipeline:*"
+            Action:
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Effect: "Allow"
+          - Resource:
+              - !If
+                - CreateSigningKey
+                - !GetAtt ArtefactSigningKey.Arn
+                - !Ref SigningKeyArn
+            Action:
+              - "kms:Verify"
+            Effect: "Allow"
+
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "codepipeline.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref CodePipelinePolicy
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "CodePipelineRole"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  PipelineBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      LifecycleConfiguration:
+        Rules:
+          - Id: artifactBucketExpiry
+            Status: Enabled
+            ExpirationInDays: 180
+      VersioningConfiguration:
+        Status: "Enabled"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "PipelineBucket"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  PipelineBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref PipelineBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Deny"
+            Resource:
+              - !GetAtt PipelineBucket.Arn
+              - !Sub "${PipelineBucket.Arn}/*"
+            Principal: "*"
+            Action: "*"
+            Condition:
+              Bool:
+                "aws:SecureTransport": false
+
+  ArtefactSigningKey:
+    Type: AWS::KMS::Key
+    Condition: CreateSigningKey
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: Key for signing config artefacts
+      Enabled: TRUE
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: Enable IAM User Permissions
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - "kms:CancelKeyDeletion"
+              - "kms:CreateAlias"
+              - "kms:CreateGrant"
+              - "kms:DeleteAlias"
+              - "kms:DescribeKey"
+              - "kms:DisableKey"
+              - "kms:EnableKey"
+              - "kms:GetKeyPolicy"
+              - "kms:GetPublicKey"
+              - "kms:ListKeyPolicies"
+              - "kms:ListResourceTags"
+              - "kms:PutKeyPolicy"
+              - "kms:ReplicateKey"
+              - "kms:ScheduleKeyDeletion"
+              - "kms:TagResource"
+              - "kms:UntagResource"
+              - "kms:UpdateAlias"
+              - "kms:UpdateKeyDescription"
+              - "kms:UpdatePrimaryRegion"
+              - "kms:Verify"
+            Resource: "*"
+          - Sid: Allow Github Actions to Sign
+            Effect: "Allow"
+            Principal:
+              AWS: !GetAtt GitHubActionsRole.Arn
+            Action:
+              - "kms:Sign"
+            Resource: "*"
+          - !If
+            - AllowAdditionalAccounts
+            - Effect: Allow
+              Action:
+                - "kms:Verify"
+              Principal:
+                AWS: !Sub
+                  - "arn:aws:iam::${AccountId}:root"
+                  - AccountId: !Select
+                      - 0
+                      - !Ref ArtifactSourceBucketAllowedAccounts
+              Resource: "*"
+            - !Ref AWS::NoValue
+          - !If
+            - AllowAdditionalAccountTwo
+            - Effect: Allow
+              Action:
+                - "kms:Verify"
+              Principal:
+                AWS: !Sub
+                  - "arn:aws:iam::${AccountId}:root"
+                  - AccountId: !Select
+                      - 1
+                      - !Ref ArtifactSourceBucketAllowedAccounts
+              Resource: "*"
+            - !Ref AWS::NoValue
+          - !If
+            - AllowAdditionalAccountThree
+            - Effect: Allow
+              Action:
+                - "kms:Verify"
+              Principal:
+                AWS: !Sub
+                  - "arn:aws:iam::${AccountId}:root"
+                  - AccountId: !Select
+                      - 2
+                      - !Ref ArtifactSourceBucketAllowedAccounts
+              Resource: "*"
+            - !Ref AWS::NoValue
+          - !If
+            - AllowAdditionalAccountFour
+            - Effect: Allow
+              Action:
+                - "kms:Verify"
+              Principal:
+                AWS: !Sub
+                  - "arn:aws:iam::${AccountId}:root"
+                  - AccountId: !Select
+                      - 3
+                      - !Ref ArtifactSourceBucketAllowedAccounts
+              Resource: "*"
+            - !Ref AWS::NoValue
+      KeySpec: ECC_NIST_P256
+      KeyUsage: SIGN_VERIFY
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "CodePipelineRole"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  LogsKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+            Action:
+              - "kms:*"
+            Resource:
+              - "*"
+          - Effect: "Allow"
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource:
+              - "*"
+            Condition:
+              ArnLike:
+                "kms:EncryptionContext:aws:logs:arn": !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:*"
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "CodePipelineRole"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  CodePipelineLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      KmsKeyId: !GetAtt LogsKmsKey.Arn
+      LogGroupName: !Sub "/aws/codepipeline/${AWS::StackName}-${ProfileName}-Pipeline"
+      RetentionInDays: 30
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "CodePipelineRole"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub "${AWS::StackName}-${ProfileName}-Pipeline"
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      ArtifactStore:
+        Type: "S3"
+        Location: !Ref PipelineBucket
+      Stages:
+        - Name: "Fetch"
+          Actions:
+            - Name: "Get-Artifacts"
+              ActionTypeId:
+                Category: "Source"
+                Version: "1"
+                Provider: "S3"
+                Owner: "AWS"
+              Configuration:
+                S3Bucket: !If
+                  - CreateSourceBucket
+                  - !Ref GitHubArtifactSourceBucket
+                  - !Select [5, !Split [":", !Ref ArtifactSourceBucketArn]]
+                S3ObjectKey: !Sub "${Environment}/${ConfigFileName}"
+                PollForSourceChanges: false
+              OutputArtifacts:
+                - Name: "config-artefact"
+
+        - Name: "Verify"
+          Actions:
+            - Name: "Verify-Signature"
+              ActionTypeId:
+                Category: "Compute"
+                Version: "1"
+                Provider: "Commands"
+                Owner: "AWS"
+              Configuration:
+                ComputeType: "BUILD_GENERAL1_SMALL"
+                EnvironmentType: "LINUX_CONTAINER"
+              EnvironmentVariables:
+                - Name: CONFIG_ARTEFACT_PATH
+                  Value: !Ref ConfigArtefactPath
+                - Name: SIGNING_KEY_ARN
+                  Value: !If
+                    - CreateSigningKey
+                    - !GetAtt ArtefactSigningKey.Arn
+                    - !Ref SigningKeyArn
+              InputArtifacts:
+                - Name: "config-artefact"
+              Commands:
+                - aws kms verify --key-id "${SIGNING_KEY_ARN}" --signing-algorithm "$(cat "${CONFIG_ARTEFACT_PATH}.sig" | jq -r '.SigningAlgorithm')" --message "$(openssl dgst -sha256 -binary "${CONFIG_ARTEFACT_PATH}" | base64)" --message-type DIGEST --signature "$(cat "${CONFIG_ARTEFACT_PATH}.sig" | jq -r '.Signature')"
+
+        - Name: "Deploy"
+          Actions:
+            - Name: "Deploy-Config"
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: AppConfig
+                Version: "1"
+              Configuration:
+                Application: !Ref AppConfigApplication
+                ConfigurationProfile: !Ref AppConfigConfigurationProfile
+                DeploymentStrategy: !Ref AppConfigDeploymentStrategy
+                Environment: !Ref AppConfigEnvironment
+                InputArtifactConfigurationPath: !Ref ConfigArtefactPath
+              InputArtifacts:
+                - Name: "config-artefact"
+              Namespace: DeployVariables
+              OutputArtifacts: []
+              Region: eu-west-2
+              RunOrder: 1
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "Pipeline"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  AppConfigApplication:
+    Type: AWS::AppConfig::Application
+    Properties:
+      Name: !Sub "${ApplicationName}"
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "AppConfigApplication"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  AppConfigConfigurationProfile:
+    Type: AWS::AppConfig::ConfigurationProfile
+    Properties:
+      Name: !Ref ProfileName
+      ApplicationId: !Ref AppConfigApplication
+      LocationUri: !Sub "codepipeline://${AWS::StackName}-${ProfileName}-Pipeline"
+      Validators: !If
+        - CreateLambdaValidator
+        - - Type: LAMBDA
+            Content: !Ref LambdaValidatorArn
+        - !Ref "AWS::NoValue"
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "AppConfigConfigurationProfile"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  AlarmMonitorPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Condition: MonitorAlarms
+    Properties:
+      ManagedPolicyName:
+        Fn::Join:
+          - "-"
+          - - !Ref AWS::StackName
+            - "AppConfigAlarmMonitorPolicy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Resource: "*"
+            Action:
+              - "cloudwatch:DescribeAlarms"
+            Effect: "Allow"
+
+  AlarmRole:
+    Type: AWS::IAM::Role
+    Condition: MonitorAlarms
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "appconfig.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      ManagedPolicyArns:
+        - !Ref AlarmMonitorPolicy
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "AlarmRole"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  AppConfigEnvironment:
+    Type: AWS::AppConfig::Environment
+    Properties:
+      Name: !Ref Environment
+      ApplicationId: !Ref AppConfigApplication
+      Monitors:
+        - !If
+          - MonitorAlarmOne
+          - AlarmArn: !Ref AlarmOne
+            AlarmRoleArn: !GetAtt AlarmRole.Arn
+          - !Ref AWS::NoValue
+        - !If
+          - MonitorAlarmTwo
+          - AlarmArn: !Ref AlarmTwo
+            AlarmRoleArn: !GetAtt AlarmRole.Arn
+          - !Ref AWS::NoValue
+        - !If
+          - MonitorAlarmThree
+          - AlarmArn: !Ref AlarmThree
+            AlarmRoleArn: !GetAtt AlarmRole.Arn
+          - !Ref AWS::NoValue
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "AppConfigEnvironment"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  AppConfigDeploymentStrategy:
+    Type: AWS::AppConfig::DeploymentStrategy
+    Properties:
+      Description: !If
+        - EnableBlueGreen
+        - !Sub "${DeploymentStrategy} - ${GrowthFactor}% every minute over ${DeploymentDurationInMinutes} and ${FinalBakeTimeInMinutes} bake time"
+        - !Sub "Custom All at Once with ${FinalBakeTimeInMinutes} bake time"
+      DeploymentDurationInMinutes: !If
+        - EnableBlueGreen
+        - !Ref DeploymentDurationInMinutes
+        - 0
+      FinalBakeTimeInMinutes: !Ref FinalBakeTimeInMinutes
+      GrowthFactor: !If
+        - EnableBlueGreen
+        - !Ref GrowthFactor
+        - 100
+      GrowthType: !If
+        - EnableBlueGreen
+        - !Ref DeploymentStrategy
+        - LINEAR
+      Name: !Sub "${AWS::StackName}-DeploymentStrategy"
+      ReplicateTo: NONE
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "AppConfigDeploymentStrategy"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  DeploymentTriggerCloudWatchEventRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Join:
+          - "-"
+          - - "PL"
+            - !Ref AWS::StackName
+            - "DepTrigRole"
+            - Fn::Select:
+                - 4
+                - Fn::Split:
+                    - "-"
+                    - Fn::Select:
+                        - 2
+                        - Fn::Split:
+                            - "/"
+                            - Ref: AWS::StackId
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - events.amazonaws.com
+            Action: sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: cwe-pipeline-execution
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: codepipeline:StartPipelineExecution
+                Resource: !Sub "arn:${AWS::Partition}:codepipeline:${AWS::Region}:${AWS::AccountId}:${Pipeline}"
+              - !If
+                - AllowAdditionalAccounts
+                - Effect: Allow
+                  Action: events:PutEvents
+                  Resource: !Sub
+                    - "arn:${AWS::Partition}:events:${AWS::Region}:${AccountId}:event-bus/default"
+                    - AccountId: !Select
+                        - 0
+                        - !Ref ArtifactSourceBucketAllowedAccounts
+                - !Ref AWS::NoValue
+              - !If
+                - AllowAdditionalAccountTwo
+                - Effect: Allow
+                  Action: events:PutEvents
+                  Resource: !Sub
+                    - "arn:${AWS::Partition}:events:${AWS::Region}:${AccountId}:event-bus/default"
+                    - AccountId: !Select
+                        - 1
+                        - !Ref ArtifactSourceBucketAllowedAccounts
+                - !Ref AWS::NoValue
+              - !If
+                - AllowAdditionalAccountThree
+                - Effect: Allow
+                  Action: events:PutEvents
+                  Resource: !Sub
+                    - "arn:${AWS::Partition}:events:${AWS::Region}:${AccountId}:event-bus/default"
+                    - AccountId: !Select
+                        - 2
+                        - !Ref ArtifactSourceBucketAllowedAccounts
+                - !Ref AWS::NoValue
+              - !If
+                - AllowAdditionalAccountFour
+                - Effect: Allow
+                  Action: events:PutEvents
+                  Resource: !Sub
+                    - "arn:${AWS::Partition}:events:${AWS::Region}:${AccountId}:event-bus/default"
+                    - AccountId: !Select
+                        - 3
+                        - !Ref ArtifactSourceBucketAllowedAccounts
+                - !Ref AWS::NoValue
+      Tags:
+        - Key: "Name"
+          Value: !Join
+            - "-"
+            - - !Ref AWS::StackName
+              - "DeploymentTriggerCloudWatchEventRole"
+        - Key: "Service"
+          Value: "appconfig-deploy"
+        - Key: "Source"
+          Value: "govuk-one-login/ipv-spot-common-infra/terraform/modules/config-pipeline/template.yaml"
+
+  DeploymentTriggerCloudWatchEventRule:
+    Type: AWS::Events::Rule
+    Properties:
+      EventPattern:
+        source:
+          - aws.s3
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - s3.amazonaws.com
+          eventName:
+            - CopyObject
+            - PutObject
+            - CompleteMultipartUpload
+          requestParameters:
+            bucketName:
+              - !If
+                - CreateSourceBucket
+                - !Ref GitHubArtifactSourceBucket
+                - !Select [5, !Split [":", !Ref ArtifactSourceBucketArn]]
+            key:
+              - !Sub "${Environment}/${ConfigFileName}"
+      Targets:
+        - Arn: !Sub "arn:${AWS::Partition}:codepipeline:${AWS::Region}:${AWS::AccountId}:${Pipeline}"
+          RoleArn: !GetAtt DeploymentTriggerCloudWatchEventRole.Arn
+          Id: !Sub "codepipeline-config-${ApplicationName}-${AWS::AccountId}"
+
+  HigherEnvironmentDeploymentTriggerCloudWatchEventRule:
+    Type: AWS::Events::Rule
+    Condition: AllowAdditionalAccounts
+    Properties:
+      EventPattern:
+        source:
+          - aws.s3
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventSource:
+            - s3.amazonaws.com
+          eventName:
+            - CopyObject
+            - PutObject
+            - CompleteMultipartUpload
+          requestParameters:
+            bucketName:
+              - !If
+                - CreateSourceBucket
+                - !Ref GitHubArtifactSourceBucket
+                - !Select [5, !Split [":", !Ref ArtifactSourceBucketArn]]
+            key:
+              - wildcard: "*.zip"
+      Targets:
+        - !If
+          - AllowAdditionalAccounts
+          - Arn: !Sub
+              - "arn:${AWS::Partition}:events:${AWS::Region}:${AccountId}:event-bus/default"
+              - AccountId: !Select
+                  - 0
+                  - !Ref ArtifactSourceBucketAllowedAccounts
+            RoleArn: !GetAtt DeploymentTriggerCloudWatchEventRole.Arn
+            Id: !Sub
+              - "codepipeline-config-${ApplicationName}-${AccountId}"
+              - AccountId: !Select
+                  - 0
+                  - !Ref ArtifactSourceBucketAllowedAccounts
+          - !Ref AWS::NoValue
+        - !If
+          - AllowAdditionalAccountTwo
+          - Arn: !Sub
+              - "arn:${AWS::Partition}:events:${AWS::Region}:${AccountId}:event-bus/default"
+              - AccountId: !Select
+                  - 1
+                  - !Ref ArtifactSourceBucketAllowedAccounts
+            RoleArn: !GetAtt DeploymentTriggerCloudWatchEventRole.Arn
+            Id: !Sub
+              - "upstream-config-${ApplicationName}-${AccountId}"
+              - AccountId: !Select
+                  - 1
+                  - !Ref ArtifactSourceBucketAllowedAccounts
+          - !Ref AWS::NoValue
+        - !If
+          - AllowAdditionalAccountThree
+          - Arn: !Sub
+              - "arn:${AWS::Partition}:events:${AWS::Region}:${AccountId}:event-bus/default"
+              - AccountId: !Select
+                  - 2
+                  - !Ref ArtifactSourceBucketAllowedAccounts
+            RoleArn: !GetAtt DeploymentTriggerCloudWatchEventRole.Arn
+            Id: !Sub
+              - "upstream-config-${ApplicationName}-${AccountId}"
+              - AccountId: !Select
+                  - 2
+                  - !Ref ArtifactSourceBucketAllowedAccounts
+          - !Ref AWS::NoValue
+        - !If
+          - AllowAdditionalAccountFour
+          - Arn: !Sub
+              - "arn:${AWS::Partition}:events:${AWS::Region}:${AccountId}:event-bus/default"
+              - AccountId: !Select
+                  - 3
+                  - !Ref ArtifactSourceBucketAllowedAccounts
+            RoleArn: !GetAtt DeploymentTriggerCloudWatchEventRole.Arn
+            Id: !Sub
+              - "upstream-config-${ApplicationName}-${AccountId}"
+              - AccountId: !Select
+                  - 3
+                  - !Ref ArtifactSourceBucketAllowedAccounts
+          - !Ref AWS::NoValue
+
+  DeploymentTriggerEventBusPolicy:
+    Type: AWS::Events::EventBusPolicy
+    Condition: ArtifactSourceBucketEventTriggerRoleProvided
+    Properties:
+      StatementId: !Sub
+        - "${StackName}-DepTrigEventBusPolicy"
+        - StackName: !Ref AWS::StackName
+      Statement:
+        Effect: "Allow"
+        Principal:
+          AWS: !Ref ArtifactSourceBucketEventTriggerRoleArn
+        Action: "events:PutEvents"
+        Resource: !Sub "arn:${AWS::Partition}:events:${AWS::Region}:${AWS::AccountId}:event-bus/default"
+
+Outputs:
+  GitHubArtifactSourceBucketArn:
+    Condition: CreateSourceBucket
+    Description: >
+      The ARN of the bucket containing artifacts to be promoted to higher
+      environments.
+    Value: !GetAtt GitHubArtifactSourceBucket.Arn
+
+  GitHubArtifactSourceBucketEventTriggerRoleArn:
+    Condition: CreateSourceBucket
+    Description: >
+      The ARN of the IAM role CloudWatch Events assume to notify the higher environments
+      any changes to the promotion bucket. This is one of the components of the event-based trigger.
+    Value: !GetAtt DeploymentTriggerCloudWatchEventRole.Arn
+
+  GitHubActionsRoleArn:
+    Condition: CreateSourceBucket
+    Description: >
+      Role ARN for deploying and signing artifacts in GitHub Actions.
+      Restricted for usage only in the repository specified in the
+      `GitHubRepositoryName` and/or `OneLoginRepositoryName` parameter
+      and on branches named `main`.
+    Value: !GetAtt GitHubActionsRole.Arn
+
+  ArtefactSigningKeyArn:
+    Condition: CreateSigningKey
+    Description: >
+      The ARN of the KMS key used to sign artefacts in Github actions, and used to verify provenance prior to deploying
+      new configurations to an environment.
+    Value: !GetAtt ArtefactSigningKey.Arn

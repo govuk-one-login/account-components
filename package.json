@@ -6,6 +6,7 @@
     "node": "22"
   },
   "dependencies": {
+    "@aws-lambda-powertools/logger": "^2.25.2",
     "@fastify/aws-lambda": "^6.0.0",
     "@fastify/cookie": "^11.0.2",
     "@fastify/csrf-protection": "^7.1.0",
@@ -33,6 +34,7 @@
     "concurrently": "^9.2.1",
     "csso-cli": "^4.0.2",
     "dotenv": "^17.2.2",
+    "esbuild": "0.25.9",
     "eslint": "^9.31.0",
     "eslint-plugin-n": "^17.21.3",
     "fastify-cli": "^7.4.0",
