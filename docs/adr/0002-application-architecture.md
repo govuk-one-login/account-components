@@ -7,10 +7,11 @@ We will build a combined Fastify app deployed to AWS Lambda (Option 3).
 We will comply with the following restrictions to meet our security standards:
 
 - We will deploy a private API gateway for service to service routes
-- We will deploy the application as 3 separate lambdas:
+- We will deploy the application as 4 separate lambdas:
   - `/authorize` handler
   - `/token` and `/userinfo` handler (accessible on the private API only)
   - All other user-facing routes
+  - Audit event processor that responds to incoming events (eg. global logout or account deleted)
 
 ## Context
 
