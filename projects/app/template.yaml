@@ -132,13 +132,9 @@ Globals:
 
 Resources:
   AppPublicApiGateway:
-    Type: AWS::Serverless::Api
+    Type: AWS::Serverless::HttpApi
     Properties:
       StageName: !Ref Environment
-      EndpointConfiguration:
-        Type: REGIONAL
-      BinaryMediaTypes:
-        - "*/*"
 
   AppPrivateApiGateway:
     Type: AWS::Serverless::Api
@@ -195,17 +191,17 @@ Resources:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, enableStubs]
       Events:
         Root:
-          Type: Api
+          Type: HttpApi
           Properties:
             Method: ANY
             Path: /stub/
-            RestApiId: !Ref AppPublicApiGateway
+            ApiId: !Ref AppPublicApiGateway
         CatchAll:
-          Type: Api
+          Type: HttpApi
           Properties:
             Method: ANY
             Path: /stub/{proxy+}
-            RestApiId: !Ref AppPublicApiGateway
+            ApiId: !Ref AppPublicApiGateway
 
   ApiLambda:
     Type: AWS::Serverless::Function
@@ -217,17 +213,17 @@ Resources:
           REGISTER_API_ROUTES: "1"
       Events:
         Root:
-          Type: Api
+          Type: HttpApi
           Properties:
             Method: ANY
             Path: /api/
-            RestApiId: !Ref AppPublicApiGateway
+            ApiId: !Ref AppPublicApiGateway
         CatchAll:
-          Type: Api
+          Type: HttpApi
           Properties:
             Method: ANY
             Path: /api/{proxy+}
-            RestApiId: !Ref AppPublicApiGateway
+            ApiId: !Ref AppPublicApiGateway
 
   EverythingElseLambda:
     Type: AWS::Serverless::Function
@@ -241,14 +237,14 @@ Resources:
           REGISTER_MISC_ROUTES: "1"
       Events:
         Root:
-          Type: Api
+          Type: HttpApi
           Properties:
             Method: ANY
             Path: /
-            RestApiId: !Ref AppPublicApiGateway
+            ApiId: !Ref AppPublicApiGateway
         CatchAll:
-          Type: Api
+          Type: HttpApi
           Properties:
             Method: ANY
             Path: /{proxy+}
-            RestApiId: !Ref AppPublicApiGateway
+            ApiId: !Ref AppPublicApiGateway
