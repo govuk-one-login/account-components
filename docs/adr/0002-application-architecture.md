@@ -52,7 +52,6 @@ We build a single application that handles all routes using [Fastify](https://fa
 
 Fastify is an Express-like framework that has [first-class support](https://github.com/fastify/aws-lambda-fastify) for running in Lambda.
 This means we'd get a good developer experience as we can easily run the whole application locally, while still getting the simpler scaling from Lambda.
-We could run the application locally with the SAM CLI which will also allow us to integration test our Cloudformation template.
 This should mean we can release this feature more quickly, even with the time taken to learn the new framework as it's very similar to Express.
 
 If we have particularly sensitive routes that require higher AWS permissions or performance needs, we could deploy these as a separate Lambda function.
