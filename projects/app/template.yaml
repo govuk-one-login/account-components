@@ -131,7 +131,7 @@ Globals:
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
 
 Resources:
-  AppPublicApiGateway:
+  AppPublicApiGatewayTODO:
     Type: AWS::Serverless::HttpApi
     Properties:
       StageName: !Ref Environment
@@ -195,13 +195,13 @@ Resources:
           Properties:
             Method: ANY
             Path: /stub/
-            ApiId: !Ref AppPublicApiGateway
+            ApiId: !Ref AppPublicApiGatewayTODO
         CatchAll:
           Type: HttpApi
           Properties:
             Method: ANY
             Path: /stub/{proxy+}
-            ApiId: !Ref AppPublicApiGateway
+            ApiId: !Ref AppPublicApiGatewayTODO
 
   ApiLambda:
     Type: AWS::Serverless::Function
@@ -217,13 +217,13 @@ Resources:
           Properties:
             Method: ANY
             Path: /api/
-            ApiId: !Ref AppPublicApiGateway
+            ApiId: !Ref AppPublicApiGatewayTODO
         CatchAll:
           Type: HttpApi
           Properties:
             Method: ANY
             Path: /api/{proxy+}
-            ApiId: !Ref AppPublicApiGateway
+            ApiId: !Ref AppPublicApiGatewayTODO
 
   EverythingElseLambda:
     Type: AWS::Serverless::Function
@@ -241,10 +241,10 @@ Resources:
           Properties:
             Method: ANY
             Path: /
-            ApiId: !Ref AppPublicApiGateway
+            ApiId: !Ref AppPublicApiGatewayTODO
         CatchAll:
           Type: HttpApi
           Properties:
             Method: ANY
             Path: /{proxy+}
-            ApiId: !Ref AppPublicApiGateway
+            ApiId: !Ref AppPublicApiGatewayTODO
