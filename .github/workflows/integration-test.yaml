@@ -45,7 +45,7 @@ jobs:
       - name: Set up Node for integration tests
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
-          node-version-file: projects/integration-tests/.nvmrc
+          node-version-file: .nvmrc
 
       - name: Install integration tests dependencies
         run: cd projects/integration-tests && npm ci
