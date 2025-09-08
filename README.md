@@ -19,6 +19,7 @@ When updating the Node version you will need to update the following:
 - `engines.node` field in package.json
 - .nvmrc
 - Node version used by used by Lambda functions
+- Node versions used in Docker images
 - ensure the base TSConfig installed as a development dependency in package.json and used in tsconfig.json corresponds with the Node version being used e.g. for Node 22 use the base TSConfig `@tsconfig/node22`
 - ensure the major version of `@types/node` installed as a development dependency in package.json corresponds with the Node version being used
 
@@ -47,3 +48,7 @@ If these commands detect issues it may be possible to fix them by running:
 - `npm run tflint:fix`
 - `npm run cfnlint:fix`
 - `npm run check-gh-actions:fix`
+
+## Integration testing
+
+See [Integration testing README](/projects/integration-tests/README.md)

@@ -6,6 +6,7 @@ import { includeIgnoreFile } from "@eslint/compat";
 import { fileURLToPath, URL } from "node:url";
 import vitestEslint from "@vitest/eslint-plugin";
 import nodeEslint from "eslint-plugin-n";
+import playwrightEslint from "eslint-plugin-playwright";
 
 // eslint-disable-next-line no-restricted-exports
 export default tseslint.config(
@@ -57,6 +58,14 @@ export default tseslint.config(
       "vitest/max-expects": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+  {
+    ...playwrightEslint.configs["flat/recommended"],
+    files: ["projects/integration-tests/tests/**"],
+    rules: {
+      ...playwrightEslint.configs["flat/recommended"].rules,
+      "playwright/no-standalone-expect": "off",
     },
   },
 );
