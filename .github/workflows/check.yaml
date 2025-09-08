@@ -39,7 +39,7 @@ jobs:
         uses: scottbrenner/cfn-lint-action@83ad1ba8376272cb219fcde1306ec50a8a480d15
 
       - name: Install dependencies
-        run: npm ci
+        run: npm ci && cd projects/integration-tests && npm ci
 
       - name: Check types
         run: npm run check-types
