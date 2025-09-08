@@ -21,21 +21,21 @@ jobs:
       - name: Check GitHub Actions
         uses: zizmorcore/zizmor-action@5ca5fc7a4779c5263a3ffa0e1f693009994446d1
 
-      - name: Node setup
+      - name: Set up Node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
           node-version-file: .nvmrc
 
-      - name: Setup tflint
+      - name: Set up tflint
         uses: terraform-linters/setup-tflint@ae78205cfffec9e8d93fd2b3115c7e9d3166d4b6
 
-      - name: Setup SAM CLI
+      - name: Set up SAM CLI
         uses: aws-actions/setup-sam@f664fad9e12492edfc187a31f575537dfbb0ff63
         with:
           use-installer: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Setup cfn-lint
+      - name: Set up cfn-lint
         uses: scottbrenner/cfn-lint-action@83ad1ba8376272cb219fcde1306ec50a8a480d15
 
       - name: Install dependencies

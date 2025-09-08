@@ -54,12 +54,12 @@ jobs:
       - name: Set current datetime
         run: echo "date=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
 
-      - name: Node setup
+      - name: Set up Node
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
           node-version-file: .nvmrc
 
-      - name: Setup SAM CLI
+      - name: Set up SAM CLI
         uses: aws-actions/setup-sam@f664fad9e12492edfc187a31f575537dfbb0ff63
         with:
           use-installer: true
