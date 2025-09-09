@@ -106,6 +106,12 @@ variable "repository_name" {
   default     = "account-components"
 }
 
+variable "integration_tests_ecr_pull_accounts" {
+  type        = list(string)
+  description = "Additional AWS account IDs that should be allowed to pull the integration tests image from ECR"
+  default     = []
+}
+
 variable "allowed_promotion_accounts" {
   type        = list(string)
   description = "The AWS account IDs that this pipeline will promote to. Maximum 2 accounts"
