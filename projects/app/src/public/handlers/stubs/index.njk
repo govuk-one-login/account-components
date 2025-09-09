@@ -21,10 +21,10 @@
       {% for endpoint, endpointConfig in groupConfig %}
         <fieldset>    
           <legend>{{ endpoint }}</legend>
-          {% for scenario in endpointConfig.scenarios %}
+          {% for scenario in endpointConfig %}
             <label>
               <input
-                type="radio" name="{{ endpointConfig.cookieKey }}"
+                type="radio" name="{{ generateStubConfigCookieKey(group, endpoint) }}"
                 value="{{ scenario }}"
                 {% if scenario === getCurrentStubScenario(group, endpoint) %}checked="checked"{% endif %}
               >

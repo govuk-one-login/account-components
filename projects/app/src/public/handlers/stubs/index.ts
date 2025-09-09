@@ -1,9 +1,10 @@
 import type { FastifyReply } from "fastify";
 import assert from "node:assert";
 import {
+  generateStubConfigCookieKey,
   getCurrentStubScenario,
   stubsConfig,
-} from "./utils/getStubsConfig/index.js";
+} from "./utils/stubsConfig/index.js";
 import type { StubsGetSchema, StubsPostSchema } from "../../stubs.js";
 import { getEnvironment } from "../../../utils/getEnvironment/index.js";
 import { getPath } from "./utils/paths.js";
@@ -24,6 +25,7 @@ export async function getHandler(
       group: Parameters<typeof getCurrentStubScenario>[1],
       endpoint: Parameters<typeof getCurrentStubScenario>[2],
     ) => getCurrentStubScenario(request, group, endpoint),
+    generateStubConfigCookieKey,
   });
 }
 
@@ -34,12 +36,12 @@ export async function postHandler(
   assert.ok(reply.render);
 
   Object.entries(request.body).forEach(([key, value]) => {
-    for (const groupValue of Object.values(stubsConfig)) {
-      for (const endpointValue of Object.values(groupValue)) {
+    for (const [groupKey, groupValue] of Object.entries(stubsConfig)) {
+      for (const [endpointKey, endpointValue] of Object.entries(groupValue)) {
         if (
-          endpointValue.cookieKey === key &&
+          generateStubConfigCookieKey(groupKey, endpointKey) === key &&
           // @ts-expect-error
-          endpointValue.scenarios.includes(value)
+          endpointValue.includes(value)
         ) {
           reply.setCookie(key, value, {
             httpOnly: true,

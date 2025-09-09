@@ -3,7 +3,7 @@ import fastifyFormbody from "@fastify/formbody";
 import { nunjucksRender } from "../utils/nunjucksRender/index.js";
 import type { FastifyTypeboxInstance } from "../app.js";
 import * as Type from "@fastify/type-provider-typebox";
-import { getCurrentStubScenario } from "./handlers/stubs/utils/getStubsConfig/index.js";
+import { getCurrentStubScenario } from "./handlers/stubs/utils/stubsConfig/index.js";
 import { getPath } from "./handlers/stubs/utils/paths.js";
 
 export const StubsGetSchema = {
