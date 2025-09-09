@@ -42,6 +42,16 @@ export default tseslint.config(
       ],
       "n/no-sync": "error",
       "@typescript-eslint/require-await": "off",
+      "@typescript-eslint/ban-ts-comment": [
+        "error",
+        {
+          minimumDescriptionLength: 0,
+          "ts-check": false,
+          "ts-expect-error": "allow-with-description",
+          "ts-ignore": true,
+          "ts-nocheck": true,
+        },
+      ],
     },
   },
   {

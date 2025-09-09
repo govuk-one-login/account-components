@@ -1,11 +1,32 @@
-import type { FastifyPluginOptions, FastifyInstance } from "fastify";
+import type {
+  FastifyPluginOptions,
+  FastifyInstance,
+  RawServerDefault,
+  RawRequestDefaultExpression,
+  RawReplyDefaultExpression,
+  FastifyBaseLogger,
+  FastifySchema,
+  FastifyRequest,
+  RouteGenericInterface,
+} from "fastify";
 import type { APIGatewayEvent, Context } from "aws-lambda";
 import { resolveEnvVarToBool } from "./utils/resolveEnvVarToBool/index.js";
 import { removeTrailingSlash } from "./utils/removeTrailingSlash/index.js";
 import { logRequest } from "./utils/logRequest/index.js";
 import { logResponse } from "./utils/logResponse/index.js";
 import { addDefaultCaching } from "./utils/addDefaultCaching/index.js";
+import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
+import type { IncomingMessage } from "node:http";
+import type * as Type from "@fastify/type-provider-typebox";
+import type { ResolveFastifyRequestType } from "fastify/types/type-provider.js";
 
+export type FastifyTypeboxInstance = FastifyInstance<
+  RawServerDefault,
+  RawRequestDefaultExpression,
+  RawReplyDefaultExpression,
+  FastifyBaseLogger,
+  TypeBoxTypeProvider
+>;
 declare module "fastify" {
   interface FastifyRequest {
     awsLambda?: {
@@ -17,7 +38,7 @@ declare module "fastify" {
     render?: (
       templatePath: string,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      props: Record<string, any>,
+      props?: Record<string, any>,
     ) => Promise<void>;
   }
 }
@@ -28,19 +49,38 @@ declare module "fastify" {
   }
 }
 
+export type FastifyRequestWithSchema<
+  Schema extends FastifySchema = FastifySchema,
+> = FastifyRequest<
+  RouteGenericInterface,
+  RawServerDefault,
+  IncomingMessage,
+  Schema,
+  Type.TypeBoxTypeProvider,
+  unknown,
+  FastifyBaseLogger,
+  ResolveFastifyRequestType<
+    Type.TypeBoxTypeProvider,
+    Schema,
+    RouteGenericInterface
+  >
+>;
+
 const initApp = async function (
-  fastify?: FastifyInstance,
+  fastify?: FastifyTypeboxInstance,
   // @ts-expect-error  - it is necessary to include this argument even though it isn't used as otherwise the command to generate OpenAPI documents errors saying that the function should have two arguments
   opts?: FastifyPluginOptions, // eslint-disable-line
 ) {
   const isGeneratingOpenApiDocs = !!fastify;
   const app =
     fastify ??
-    (await import("fastify")).default({
-      trustProxy: true, // Required as HTTPS is terminated before the Lambda
-      logger: true,
-      disableRequestLogging: true,
-    });
+    (await import("fastify"))
+      .default({
+        trustProxy: true, // Required as HTTPS is terminated before the Lambda
+        logger: true,
+        disableRequestLogging: true,
+      })
+      .withTypeProvider<TypeBoxTypeProvider>();
 
   if (isGeneratingOpenApiDocs) {
     app.register((await import("@fastify/swagger")).default, {

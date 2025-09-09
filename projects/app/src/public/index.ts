@@ -1,9 +1,9 @@
-import { type FastifyInstance } from "fastify";
 import { frontend } from "./frontend.js";
 import { staticFiles } from "./staticFiles.js";
 import { resolveEnvVarToBool } from "../utils/resolveEnvVarToBool/index.js";
+import type { FastifyTypeboxInstance } from "../app.js";
 
-export const publicRoutes = async function (app: FastifyInstance) {
+export const publicRoutes = async function (app: FastifyTypeboxInstance) {
   if (resolveEnvVarToBool("REGISTER_STUB_ROUTES")) {
     app.register((await import("./stubs.js")).stubs, { prefix: "/stubs" });
   }

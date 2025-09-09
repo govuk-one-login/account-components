@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+  <head>
+    <title>Stubs configuration</title>
+  </head>
+  <body>
+
+  <h1>Stubs configuration</h1>
+
+  {% if showSuccessMessage %}
+    <div style="background-color: palegreen; font-weight: bold; padding: 5px;">
+      The configuration has been updated
+    </div>
+  {% endif %}
+
+  <form method="post">
+    {% for group, groupConfig in stubsConfig %}
+      <h2>{{ group }}</h2>
+
+      {% for endpoint, endpointConfig in groupConfig %}
+        <fieldset>    
+          <legend>{{ endpoint }}</legend>
+          {% for scenario in endpointConfig.scenarios %}
+            <label>
+              <input
+                type="radio" name="{{ endpointConfig.cookieKey }}"
+                value="{{ scenario }}"
+                {% if scenario === getCurrentStubScenario(group, endpoint) %}checked="checked"{% endif %}
+              >
+              {{ scenario }}
+            </label>          
+          {% endfor %}
+        </fieldset>
+      {% endfor %}
+    {% endfor %}
+
+    <br>
+    <button type="submit">Save configuration</button>
+  </form>
+
+  </body>
+</html>
