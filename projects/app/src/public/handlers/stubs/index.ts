@@ -6,7 +6,7 @@ import {
 } from "./utils/getStubsConfig/index.js";
 import type { StubsGetSchema, StubsPostSchema } from "../../stubs.js";
 import { getEnvironment } from "../../../utils/getEnvironment/index.js";
-import { paths } from "./utils/paths.js";
+import { getPath } from "./utils/paths.js";
 import type { FastifyRequestWithSchema } from "../../../app.js";
 
 const templatePath = "public/handlers/stubs/index.njk";
@@ -54,5 +54,5 @@ export async function postHandler(
     }
   });
 
-  return reply.redirect(`${paths.root}?updated=1`);
+  return reply.redirect(`${getPath("root", true)}?updated=1`);
 }

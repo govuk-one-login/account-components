@@ -4,6 +4,7 @@ import { nunjucksRender } from "../utils/nunjucksRender/index.js";
 import type { FastifyTypeboxInstance } from "../app.js";
 import * as Type from "@fastify/type-provider-typebox";
 import { getCurrentStubScenario } from "./handlers/stubs/utils/getStubsConfig/index.js";
+import { getPath } from "./handlers/stubs/utils/paths.js";
 
 export const StubsGetSchema = {
   querystring: Type.Object({
@@ -21,7 +22,7 @@ export const stubs = function (app: FastifyTypeboxInstance) {
   app.register(nunjucksRender);
 
   app.get(
-    "/",
+    getPath("root"),
     {
       schema: StubsGetSchema,
     },
@@ -34,7 +35,7 @@ export const stubs = function (app: FastifyTypeboxInstance) {
   );
 
   app.post(
-    "/",
+    getPath("root"),
     {
       schema: StubsPostSchema,
     },
