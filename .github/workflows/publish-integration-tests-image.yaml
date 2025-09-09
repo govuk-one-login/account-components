@@ -1,0 +1,10 @@
+name: Publish integration tests image
+on:
+  workflow_dispatch:
+
+jobs:
+  noop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: No operation
+        run: echo "This workflow is triggered manually to publish the integration tests image"
