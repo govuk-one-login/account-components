@@ -5,10 +5,6 @@ import fastifyStatic from "@fastify/static";
 export const staticFiles = function (app: FastifyInstance) {
   const oneYearInSeconds = "31536000";
 
-  app.get("/healthcheck", async function (_request, reply) {
-    return reply.send("ok");
-  });
-
   app.register(fastifyStatic, {
     root: path.join(import.meta.dirname, "static", "full-cache"),
     prefix: "/full-cache",

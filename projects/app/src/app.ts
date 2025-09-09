@@ -48,27 +48,11 @@ const initApp = async function (
     });
   }
 
-  if (resolveEnvVarToBool("REGISTER_STUB_ROUTES")) {
-    app.register((await import("./stubs.js")).stubs, { prefix: "/stub" });
+  if (resolveEnvVarToBool("REGISTER_PRIVATE_ROUTES")) {
+    app.register((await import("./private/index.js")).privateRoutes);
   }
-  if (resolveEnvVarToBool("REGISTER_STATIC_ROUTES")) {
-    app.register((await import("./staticFiles.js")).staticFiles, {
-      prefix: "/static",
-    });
-  }
-  if (resolveEnvVarToBool("REGISTER_API_ROUTES")) {
-    app.register((await import("./api.js")).api, { prefix: "/api" });
-  }
-  if (resolveEnvVarToBool("REGISTER_PRIVATE_API_ROUTES")) {
-    app.register((await import("./privateApi.js")).privateApi, {
-      prefix: "/private-api",
-    });
-  }
-  if (resolveEnvVarToBool("REGISTER_FRONTEND_ROUTES")) {
-    app.register((await import("./frontend.js")).frontend);
-  }
-  if (resolveEnvVarToBool("REGISTER_MISC_ROUTES")) {
-    app.register((await import("./miscellaneous.js")).miscellaneous);
+  if (resolveEnvVarToBool("REGISTER_PUBLIC_ROUTES")) {
+    app.register((await import("./public/index.js")).publicRoutes);
   }
 
   app.addHook("onRequest", logRequest);
