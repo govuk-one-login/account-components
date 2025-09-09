@@ -4,7 +4,7 @@ import { nunjucksRender } from "../utils/nunjucksRender/index.js";
 import type { FastifyTypeboxInstance } from "../app.js";
 import * as Type from "@fastify/type-provider-typebox";
 import { getCurrentStubScenario } from "./handlers/stubs/utils/stubsConfig/index.js";
-import { getPath } from "./handlers/stubs/utils/paths.js";
+import { getPath } from "./handlers/stubs/utils/paths/index.js";
 
 export const StubsGetSchema = {
   querystring: Type.Object({

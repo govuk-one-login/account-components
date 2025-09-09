@@ -7,7 +7,7 @@ import {
 } from "./utils/stubsConfig/index.js";
 import type { StubsGetSchema, StubsPostSchema } from "../../stubs.js";
 import { getEnvironment } from "../../../utils/getEnvironment/index.js";
-import { getPath } from "./utils/paths.js";
+import { getPath } from "./utils/paths/index.js";
 import type { FastifyRequestWithSchema } from "../../../app.js";
 
 const templatePath = "public/handlers/stubs/index.njk";
