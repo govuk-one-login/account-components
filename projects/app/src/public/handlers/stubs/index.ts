@@ -33,8 +33,6 @@ export async function postHandler(
   request: FastifyRequestWithSchema<typeof StubsPostSchema>,
   reply: FastifyReply,
 ) {
-  assert.ok(reply.render);
-
   Object.entries(request.body).forEach(([key, value]) => {
     for (const [groupKey, groupValue] of Object.entries(stubsConfig)) {
       for (const [endpointKey, endpointValue] of Object.entries(groupValue)) {
