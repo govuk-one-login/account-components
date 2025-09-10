@@ -147,6 +147,9 @@ Resources:
       EndpointConfiguration:
         Type: PRIVATE
         VPCEndpointIds:
+          # This VPCE is here as an example but we don't actually want to access the
+          # API Gateway from this VPC. Once there is another VPCE here then remove this
+          # example entry
           - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
       BinaryMediaTypes:
         - "*/*"
@@ -160,6 +163,9 @@ Resources:
             Condition:
               StringEquals:
                 aws:sourceVpce:
+                  # This VPCE is here as an example but we don't actually want to access the
+                  # API Gateway from this VPC. Once there is another VPCE here then remove this
+                  # example entry
                   - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
 
   PrivateRoutesLambda:
