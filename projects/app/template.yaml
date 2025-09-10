@@ -147,6 +147,9 @@ Resources:
       EndpointConfiguration:
         Type: PRIVATE
         VPCEndpointIds:
+          # This VPCE is here as an example but we don't actually want to access the
+          # API Gateway from this VPC. Once there is another VPCE here then remove this
+          # example entry
           - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
       BinaryMediaTypes:
         - "*/*"
@@ -160,28 +163,25 @@ Resources:
             Condition:
               StringEquals:
                 aws:sourceVpce:
+                  # This VPCE is here as an example but we don't actually want to access the
+                  # API Gateway from this VPC. Once there is another VPCE here then remove this
+                  # example entry
                   - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
 
-  PrivateApiLambda:
+  PrivateRoutesLambda:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: makefile
     Properties:
       Environment:
         Variables:
-          REGISTER_PRIVATE_API_ROUTES: "1"
+          REGISTER_PRIVATE_ROUTES: "1"
       Events:
         Root:
           Type: Api
           Properties:
             Method: ANY
-            Path: /private-api/
-            RestApiId: !Ref AppPrivateApiGateway
-        CatchAll:
-          Type: Api
-          Properties:
-            Method: ANY
-            Path: /private-api/{proxy+}
+            Path: /private-healthcheck/
             RestApiId: !Ref AppPrivateApiGateway
 
   StubsLambda:
@@ -191,6 +191,7 @@ Resources:
     Properties:
       Environment:
         Variables:
+          REGISTER_PUBLIC_ROUTES: "1"
           REGISTER_STUB_ROUTES:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, enableStubs]
       Events:
@@ -198,47 +199,23 @@ Resources:
           Type: Api
           Properties:
             Method: ANY
-            Path: /stub/
+            Path: /stubs/
             RestApiId: !Ref AppPublicApiGateway
         CatchAll:
           Type: Api
           Properties:
             Method: ANY
-            Path: /stub/{proxy+}
+            Path: /stubs/{proxy+}
             RestApiId: !Ref AppPublicApiGateway
 
-  ApiLambda:
+  PublicRoutesLambda:
     Type: AWS::Serverless::Function
     Metadata:
       BuildMethod: makefile
     Properties:
       Environment:
         Variables:
-          REGISTER_API_ROUTES: "1"
-      Events:
-        Root:
-          Type: Api
-          Properties:
-            Method: ANY
-            Path: /api/
-            RestApiId: !Ref AppPublicApiGateway
-        CatchAll:
-          Type: Api
-          Properties:
-            Method: ANY
-            Path: /api/{proxy+}
-            RestApiId: !Ref AppPublicApiGateway
-
-  EverythingElseLambda:
-    Type: AWS::Serverless::Function
-    Metadata:
-      BuildMethod: makefile
-    Properties:
-      Environment:
-        Variables:
-          REGISTER_STATIC_ROUTES: "1"
-          REGISTER_FRONTEND_ROUTES: "1"
-          REGISTER_MISC_ROUTES: "1"
+          REGISTER_PUBLIC_ROUTES: "1"
       Events:
         Root:
           Type: Api
