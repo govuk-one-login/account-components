@@ -5,17 +5,7 @@ info:
 components:
   schemas: {}
 paths:
-  /static/healthcheck:
-    get:
-      responses:
-        "200":
-          description: Default Response
-  /api/healthcheck:
-    get:
-      responses:
-        "200":
-          description: Default Response
-  /private-api/healthcheck:
+  /private-healthcheck:
     get:
       responses:
         "200":
