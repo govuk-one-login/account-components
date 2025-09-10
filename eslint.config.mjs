@@ -1,14 +1,13 @@
-// @ts-check
-
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 import { includeIgnoreFile } from "@eslint/compat";
 import { fileURLToPath, URL } from "node:url";
 import vitestEslint from "@vitest/eslint-plugin";
 import nodeEslint from "eslint-plugin-n";
+import { defineConfig } from "eslint/config";
 
 // eslint-disable-next-line no-restricted-exports
-export default tseslint.config(
+export default defineConfig(
   includeIgnoreFile(
     fileURLToPath(new URL(".gitignore", import.meta.url)),
     "Imported .gitignore patterns",
