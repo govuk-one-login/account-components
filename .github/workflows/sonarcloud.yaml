@@ -1,7 +1,5 @@
 name: SonarCloud
 
-permissions: {}
-
 on:
   pull_request:
   merge_group:
