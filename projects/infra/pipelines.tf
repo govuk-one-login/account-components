@@ -16,7 +16,7 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
     ArtifactSourceBucketEventTriggerRoleArn = var.main_artifact_source_bucket_event_trigger_role_arn
     GitHubRepositoryName                    = var.create_build_stacks ? var.repository_name : "none"
     TestImageRepositoryNames                = var.create_build_stacks ? var.repository_name : ""
-    TestImageRepositoryUri                  = aws_cloudformation_stack.test_image_repository.outputs["TestRunnerImageEcrRepositoryUri"]
+    TestImageRepositoryUri                  = contains(["dev", "build"], var.environment) ? aws_cloudformation_stack.test_image_repository.outputs["TestRunnerImageEcrRepositoryUri"] : ""
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
