@@ -5,7 +5,12 @@ import type { FastifyTypeboxInstance } from "../app.js";
 
 export const publicRoutes = async function (app: FastifyTypeboxInstance) {
   if (resolveEnvVarToBool("REGISTER_STUB_ROUTES")) {
-    app.register((await import("./stubs.js")).stubs, { prefix: "/stubs" });
+    app.register(
+      (await import("./externalEndpointStubs.js")).externalEndpointStubs,
+      {
+        prefix: "/stubs/external-endpoints",
+      },
+    );
   }
   app.register(staticFiles, { prefix: "/static" });
   app.register(frontend);

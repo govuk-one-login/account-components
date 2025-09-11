@@ -3,11 +3,11 @@
 <meta charset="utf-8">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stubs configuration</title>
+    <title>External endpoint stubs configuration</title>
   </head>
   <body>
 
-  <h1>Stubs configuration</h1>
+  <h1>External endpoint stubs configuration</h1>
 
   {% if showSuccessMessage %}
     <div style="background-color: palegreen; font-weight: bold; padding: 5px;">
@@ -16,7 +16,7 @@
   {% endif %}
 
   <form method="post">
-    {% for group, groupConfig in stubsConfig %}
+    {% for group, groupConfig in externalEndpointStubsConfig %}
       <h2>{{ group }}</h2>
 
       {% for endpoint, endpointConfig in groupConfig %}
@@ -25,9 +25,9 @@
           {% for scenario in endpointConfig %}
             <label>
               <input
-                type="radio" name="{{ generateStubConfigCookieKey(group, endpoint) }}"
+                type="radio" name="{{ generateExternalEndpointStubConfigCookieKey(group, endpoint) }}"
                 value="{{ scenario }}"
-                {% if scenario === getCurrentStubScenario(group, endpoint) %}checked="checked"{% endif %}
+                {% if scenario === getCurrentExternalEndpointStubScenario(group, endpoint) %}checked="checked"{% endif %}
               >
               {{ scenario }}
             </label>          

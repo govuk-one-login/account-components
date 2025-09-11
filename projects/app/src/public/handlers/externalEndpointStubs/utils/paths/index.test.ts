@@ -11,7 +11,7 @@ describe("getPath", () => {
   it("should return root path with prefix when withPrefix is true", () => {
     const result = getPath("root", true);
 
-    expect(result).toBe("/stubs/");
+    expect(result).toBe("/stubs/external-endpoints/");
   });
 
   it("should return root path without prefix when withPrefix is false", () => {

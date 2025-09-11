@@ -3,10 +3,10 @@ const paths = {
 } as const;
 
 export const getPath = (key: keyof typeof paths, withPrefix = false) => {
-  const stubsPrefix = "/stubs";
+  const prefix = "/stubs/external-endpoints";
 
   if (withPrefix) {
-    return `${stubsPrefix}${paths[key]}`;
+    return `${prefix}${paths[key]}`;
   }
 
   return paths[key];

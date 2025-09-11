@@ -1,28 +1,28 @@
 import { describe, expect, it } from "vitest";
 import type { FastifyRequest } from "fastify";
 import {
-  generateStubConfigCookieKey,
-  getCurrentStubScenario,
+  generateExternalEndpointStubConfigCookieKey,
+  getCurrentExternalEndpointStubScenario,
 } from "./index.js";
 
-describe("generateStubConfigCookieKey", () => {
+describe("generateExternalEndpointStubConfigCookieKey", () => {
   it("should generate correct cookie key format", () => {
-    expect(generateStubConfigCookieKey("group", "endpoint")).toBe(
-      "stub_group_endpoint",
-    );
+    expect(
+      generateExternalEndpointStubConfigCookieKey("group", "endpoint"),
+    ).toBe("externalEndpointStub_group_endpoint");
   });
 });
 
-describe("getCurrentStubScenario", () => {
+describe("getCurrentExternalEndpointStubScenario", () => {
   it("should return scenario from cookie when it exists in config", () => {
     const request = {
       cookies: {
-        stub_accountManagementApi_exampleEndpoint: "scenario2",
+        externalEndpointStub_accountManagementApi_exampleEndpoint: "scenario2",
       },
     } as Partial<FastifyRequest>;
 
     expect(
-      getCurrentStubScenario(
+      getCurrentExternalEndpointStubScenario(
         request as FastifyRequest,
         "accountManagementApi",
         "exampleEndpoint",
@@ -36,7 +36,7 @@ describe("getCurrentStubScenario", () => {
     } as FastifyRequest;
 
     expect(
-      getCurrentStubScenario(
+      getCurrentExternalEndpointStubScenario(
         request,
         "accountManagementApi",
         "exampleEndpoint",
@@ -47,12 +47,13 @@ describe("getCurrentStubScenario", () => {
   it("should return first scenario when cookie value is not in config", () => {
     const request = {
       cookies: {
-        stub_accountManagementApi_exampleEndpoint: "invalidScenario",
+        externalEndpointStub_accountManagementApi_exampleEndpoint:
+          "invalidScenario",
       },
     } as Partial<FastifyRequest>;
 
     expect(
-      getCurrentStubScenario(
+      getCurrentExternalEndpointStubScenario(
         request as FastifyRequest,
         "accountManagementApi",
         "exampleEndpoint",
