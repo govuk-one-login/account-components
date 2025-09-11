@@ -24,9 +24,9 @@ When running tests locally they are run against `http://localhost:6002` by defau
 
 ### Steps to run the tests:
 
-Copy the file `/projects/app/.env.integration-tests.sample` to `/projects/app/.env.integration-tests`.
+Copy the file `/projects/app/.env.integration-tests.sample` to `/projects/app/.env.integration-tests` and replace any placeholder values as appropriate.
 
-Copy the file `/projects/integration-tests/.env.sample` to `/projects/integration-tests/.env`.
+Copy the file `/projects/integration-tests/.env.sample` to `/projects/integration-tests/.env` and replace any placeholder values as appropriate.
 
 To run the tests:
 

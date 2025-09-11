@@ -6,6 +6,8 @@ This repo contains the code for Account Components
 
 Copy `projects/app/.env.sample` to `projects/app/.env` and replace any placeholder values as appropriate.
 
+Copy `projects/app/.env.openapi.sample` to `projects/app/.env.openapi` and replace any placeholder values as appropriate.
+
 Install [NVM](https://github.com/nvm-sh/nvm) or [FNM](https://github.com/Schniz/fnm) and select the correct Node version by running `nvm use` or `fnm use`.
 
 Install [Homebrew](https://brew.sh/).
