@@ -56,7 +56,7 @@ Then("the page looks as expected", async ({ page }) => {
   expect(
     await page.screenshot({
       fullPage: true,
-      quality: 25,
+      quality: 50,
       type: "jpeg",
     }),
   ).toMatchSnapshot();
