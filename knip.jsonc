@@ -1,18 +1,25 @@
 {
-  "entry": [
-    "projects/app/src/lambda.ts",
-    "projects/app/src/local.ts",
-    "projects/app/rolldown.config.ts",
-    "projects/app/rolldown.local.config.ts",
-  ],
-  "ignoreBinaries": [
-    "zizmor",
-    "tflint",
-    "brew",
-    "pre-commit",
-    "cfn-lint",
-    "read",
-    "sam",
-    "cmp",
-  ],
+  "workspaces": {
+    ".": {
+      "entry": [
+        "projects/app/src/lambda.ts",
+        "projects/app/src/local.ts",
+        "projects/app/rolldown.config.ts",
+        "projects/app/rolldown.local.config.ts",
+      ],
+      "ignoreBinaries": [
+        "zizmor",
+        "tflint",
+        "brew",
+        "pre-commit",
+        "cfn-lint",
+        "read",
+        "sam",
+        "cmp",
+      ],
+    },
+    "projects/integration-tests": {
+      "entry": ["tests/**/*.ts"],
+    },
+  },
 }
