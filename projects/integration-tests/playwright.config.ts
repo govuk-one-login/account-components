@@ -46,7 +46,6 @@ export default defineConfig({
       : [],
   use: {
     baseURL: getBaseUrl(),
-    testIdAttribute: "data-test-id",
   },
   projects: [
     {
