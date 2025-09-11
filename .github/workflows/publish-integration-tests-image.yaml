@@ -3,7 +3,6 @@ name: Publish integration tests image
 permissions: {}
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - main

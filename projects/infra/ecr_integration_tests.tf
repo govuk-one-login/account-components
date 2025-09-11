@@ -7,3 +7,8 @@ resource "aws_cloudformation_stack" "test_image_repository" {
     RetainedImageCount = 100
   }
 }
+
+output "test_runner_image_uri" {
+  value       = aws_cloudformation_stack.test_image_repository.outputs["TestRunnerImageEcrRepositoryUri"]
+  description = "The ECR repository URI for the test image."
+}

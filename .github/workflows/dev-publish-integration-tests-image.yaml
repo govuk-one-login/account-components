@@ -1,12 +1,9 @@
-name: Publish integration tests image
+name: Publish integration tests image to the dev account ECR
 
 permissions: {}
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
 
 jobs:
   publish-integration-tests-image:
