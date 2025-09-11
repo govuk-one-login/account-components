@@ -1,0 +1,51 @@
+name: Integration test
+
+permissions: {}
+
+on:
+  pull_request:
+  merge_group:
+
+jobs:
+  integration-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    concurrency:
+      group: ${{ github.workflow }}-${{ github.ref }}
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Configure app environment
+        run: |
+          cd projects/app
+          touch .env.integration-tests
+          echo "IS_INTEGRATION_TEST=1" >> .env.integration-tests
+          echo "ENVIRONMENT=local" >> .env.integration-tests
+          echo "NODE_ENV=production" >> .env.integration-tests
+          echo "REGISTER_STUB_ROUTES=1" >> .env.integration-tests
+          echo "REGISTER_PUBLIC_ROUTES=1" >> .env.integration-tests
+          echo "REGISTER_PRIVATE_ROUTES=1" >> .env.integration-tests
+
+      - name: Install integration tests dependencies
+        run: cd projects/integration-tests && npm ci
+
+      - name: Run integration tests
+        run: |
+          cd projects/integration-tests
+          touch .env
+          echo "PRE_OR_POST_DEPLOY=pre" >> .env
+          echo "PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:3000/" >> .env
+          npm run test
