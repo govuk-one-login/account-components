@@ -17,7 +17,7 @@ Install dependencies with `npm ci`.
 When updating the Node version you will need to update the following:
 
 - `engines.node` field in package.json
-- .nvmrc
+- `.nvmrc`
 - Node version used by used by Lambda functions
 - Node versions used in Docker images
 - ensure the base TSConfig installed as a development dependency in package.json and used in tsconfig.json corresponds with the Node version being used e.g. for Node 22 use the base TSConfig `@tsconfig/node22`
