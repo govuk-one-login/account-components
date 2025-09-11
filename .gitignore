@@ -4,6 +4,7 @@ coverage
 .eslintcache
 .env*
 !.env*.sample
+!.env.openapi
 
 projects/app/dist
 projects/app/dist_openapi
