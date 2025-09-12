@@ -71,7 +71,13 @@
     "build-local:app": "npm run build:app:shared && cd projects/app && rolldown -c rolldown.local.config.ts",
     "watch:app": "chokidar \"./projects/app/src/**/*\" -c \"npm run build-local:app\"",
     "run:app": "npm run build-local:app && concurrently 'npm run watch:app' 'cd projects/app && node --watch ./dist/local.js' --kill-others",
-    "generate-openapi:app": "export $(cat projects/app/.env.openapi | xargs); cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi.yaml",
-    "check-openapi:app": "export $(cat projects/app/.env.openapi | xargs); cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi_check.yaml && cmp -s openapi.yaml openapi_check.yaml && spectral lint openapi.yaml"
+    "generate-openapi:public:app": "export $(cat projects/app/.env.openapi | xargs); export REGISTER_PUBLIC_ROUTES=1; cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi.public.yaml",
+    "generate-openapi:private:app": "export $(cat projects/app/.env.openapi | xargs); export REGISTER_PRIVATE_ROUTES=1; cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi.private.yaml",
+    "generate-openapi:stubs:app": "export $(cat projects/app/.env.openapi | xargs); export REGISTER_PUBLIC_ROUTES=1; export REGISTER_STUB_ROUTES=1; cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi.stubs.yaml",
+    "generate-openapi:app": "npm run generate-openapi:public:app && npm run generate-openapi:private:app && npm run generate-openapi:stubs:app",
+    "check-openapi:public:app": "export $(cat projects/app/.env.openapi | xargs); export REGISTER_PUBLIC_ROUTES=1; cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi_check.public.yaml && cmp -s openapi.public.yaml openapi_check.public.yaml && spectral lint openapi.public.yaml",
+    "check-openapi:private:app": "export $(cat projects/app/.env.openapi | xargs); export REGISTER_PRIVATE_ROUTES=1; cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi_check.private.yaml && cmp -s openapi.private.yaml openapi_check.private.yaml && spectral lint openapi.private.yaml",
+    "check-openapi:stubs:app": "export $(cat projects/app/.env.openapi | xargs); export REGISTER_PUBLIC_ROUTES=1; export REGISTER_STUB_ROUTES=1; cd projects/app && rm -rf dist_openapi && tsc && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi_check.stubs.yaml && cmp -s openapi.stubs.yaml openapi_check.stubs.yaml && spectral lint openapi.stubs.yaml",
+    "check-openapi:app": "npm run check-openapi:public:app && npm run check-openapi:private:app && npm run check-openapi:stubs:app"
   }
 }
