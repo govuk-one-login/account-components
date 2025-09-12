@@ -8,7 +8,7 @@ coverage
 
 projects/app/dist
 projects/app/dist_openapi
-projects/app/openapi_check.yaml
+projects/app/openapi_check*.yaml
 
 projects/infra/.terraform
 projects/infra/.terraform.lock.hcl

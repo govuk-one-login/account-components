@@ -10,14 +10,4 @@ paths:
       responses:
         "200":
           description: Default Response
-  /healthcheck:
-    get:
-      responses:
-        "200":
-          description: Default Response
-  /robots.txt:
-    get:
-      responses:
-        "200":
-          description: Default Response
 
