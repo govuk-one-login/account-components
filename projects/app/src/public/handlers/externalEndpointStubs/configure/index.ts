@@ -61,8 +61,8 @@ export async function postHandler(
           sameSite: "lax",
           secure: getEnvironment() !== "local",
         });
+        break;
       }
-      break;
     }
   });
 
