@@ -44,7 +44,6 @@ resource "aws_cloudformation_stack" "core_pipeline_stack" {
     ArtifactSourceBucketArn                 = var.core_artifact_source_bucket_arn
     ArtifactSourceBucketEventTriggerRoleArn = var.core_artifact_source_bucket_event_trigger_role_arn
     GitHubRepositoryName                    = var.create_build_stacks ? var.repository_name : "none"
-    TestImageRepositoryNames                = var.repository_name
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
