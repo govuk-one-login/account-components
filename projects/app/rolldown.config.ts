@@ -4,7 +4,7 @@ import { defineConfig } from "rolldown";
 export default defineConfig({
   input: "src/lambda.ts",
   platform: "node",
-  external: ["fsevents", /^@aws-sdk\/.+$/],
+  external: ["fsevents"],
   output: {
     minify: true,
   },
