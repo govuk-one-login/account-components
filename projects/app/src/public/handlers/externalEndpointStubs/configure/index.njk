@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>External endpoint stubs configuration</title>
+  </head>
+  <body>
+
+  <h1>External endpoint stubs configuration</h1>
+
+  {% if showSuccessMessage %}
+    <div style="background-color: palegreen; font-weight: bold; padding: 5px;">
+      The configuration has been updated
+    </div>
+  {% endif %}
+
+  <form method="post">
+    {% for group, groupConfig in externalEndpointStubsConfig %}
+      <h2>{{ group }}</h2>
+
+      {% for endpoint, endpointConfig in groupConfig %}
+        <fieldset>    
+          <legend>{{ endpoint }}</legend>
+          {% for scenario in endpointConfig %}
+            <label>
+              <input
+                type="radio" name="{{ generateExternalEndpointStubConfigCookieKey(group, endpoint) }}"
+                value="{{ scenario }}"
+                {% if scenario === getCurrentExternalEndpointStubScenario(group, endpoint) %}checked="checked"{% endif %}
+              >
+              {{ scenario }}
+            </label>          
+          {% endfor %}
+        </fieldset>
+      {% endfor %}
+    {% endfor %}
+
+    <br>
+    <button type="submit">Save configuration</button>
+  </form>
+
+  </body>
+</html>

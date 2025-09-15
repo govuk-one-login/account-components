@@ -1,7 +1,8 @@
 import { expect, it, describe, vi, beforeEach, afterEach } from "vitest";
 import { nunjucksRender } from "./index.js";
 import { getEnvironment } from "../getEnvironment/index.js";
-import type { FastifyInstance, FastifyReply } from "fastify";
+import type { FastifyReply } from "fastify";
+import type { FastifyTypeboxInstance } from "../../app.js";
 
 vi.mock("../getEnvironment/index.js", () => ({
   getEnvironment: vi.fn(),
@@ -17,13 +18,13 @@ vi.mock("nunjucks", () => ({
 }));
 
 describe("nunjucksRender", () => {
-  let app: Partial<FastifyInstance>;
+  let app: Partial<FastifyTypeboxInstance>;
   let reply: Partial<FastifyReply>;
 
   beforeEach(() => {
     app = {
       decorateReply: vi.fn(),
-    } as unknown as FastifyInstance;
+    } as unknown as FastifyTypeboxInstance;
 
     reply = {
       type: vi.fn().mockReturnThis(),
@@ -36,7 +37,7 @@ describe("nunjucksRender", () => {
   });
 
   it("decorates reply with render function", async () => {
-    nunjucksRender(app as FastifyInstance);
+    nunjucksRender(app as FastifyTypeboxInstance);
 
     expect(app.decorateReply).toHaveBeenCalledExactlyOnceWith(
       "render",
@@ -47,7 +48,7 @@ describe("nunjucksRender", () => {
   it("configures nunjucks with 'dist' path when environment is local", async () => {
     vi.mocked(getEnvironment).mockReturnValue("local");
 
-    nunjucksRender(app as FastifyInstance);
+    nunjucksRender(app as FastifyTypeboxInstance);
     const renderFunction = vi.mocked(app.decorateReply!).mock
       .calls[0]![1] as unknown as (...args: any) => Promise<void>;
 
@@ -62,7 +63,7 @@ describe("nunjucksRender", () => {
   it("configures nunjucks with empty path when environment is not local", async () => {
     vi.mocked(getEnvironment).mockReturnValue("production");
 
-    nunjucksRender(app as FastifyInstance);
+    nunjucksRender(app as FastifyTypeboxInstance);
     const renderFunction = vi.mocked(app.decorateReply!).mock
       .calls[0]![1] as unknown as (...args: any) => Promise<void>;
 
@@ -78,7 +79,7 @@ describe("nunjucksRender", () => {
     vi.mocked(getEnvironment).mockReturnValue("local");
     nunjucks.render.mockReturnValue("<html>rendered content</html>");
 
-    nunjucksRender(app as FastifyInstance);
+    nunjucksRender(app as FastifyTypeboxInstance);
     const renderFunction = vi.mocked(app.decorateReply!).mock
       .calls[0]![1] as unknown as (...args: any) => Promise<void>;
 
