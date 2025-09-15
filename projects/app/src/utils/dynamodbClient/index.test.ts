@@ -1,11 +1,11 @@
-import { describe, it, expect, afterEach, beforeEach } from 'vitest';
-import { getDynamoDbClient } from './index.js';
+import { describe, it, expect, afterEach, beforeEach } from "vitest";
+import { getDynamoDbClient } from "./index.js";
 
 describe("dynamodbClient", () => {
   let originalEnv: NodeJS.ProcessEnv;
 
   beforeEach(() => {
-    originalEnv = { ...process.env }
+    originalEnv = { ...process.env };
   });
 
   afterEach(() => {
@@ -40,12 +40,32 @@ describe("dynamodbClient", () => {
 
     const client = getDynamoDbClient();
 
-    await expect(client.config.endpoint ? client.config.endpoint() : Promise.resolve('fail')).resolves.toStrictEqual({
+    await expect(
+      client.config.endpoint
+        ? client.config.endpoint()
+        : Promise.resolve("fail"),
+    ).resolves.toStrictEqual({
       hostname: "localstack",
       port: 4566,
       protocol: "http:",
       path: "/",
       query: undefined,
     });
-  })
+  });
+
+  it("should not use Localstack settings when USE_LOCALSTACK is not set", async () => {
+    const client = getDynamoDbClient();
+
+    await expect(
+      client.config.endpoint
+        ? client.config.endpoint()
+        : Promise.resolve("fail"),
+    ).resolves.toStrictEqual({
+      hostname: "localstack",
+      port: 4566,
+      protocol: "http:",
+      path: "/",
+      query: undefined,
+    });
+  });
 });
