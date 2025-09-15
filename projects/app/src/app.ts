@@ -17,7 +17,6 @@ import { logResponse } from "./utils/logResponse/index.js";
 import { addDefaultCaching } from "./utils/addDefaultCaching/index.js";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import type { IncomingMessage } from "node:http";
-import type * as Type from "@fastify/type-provider-typebox";
 import type { ResolveFastifyRequestType } from "fastify/types/type-provider.js";
 
 export type FastifyTypeboxInstance = FastifyInstance<
@@ -56,14 +55,10 @@ export type FastifyRequestWithSchema<
   RawServerDefault,
   IncomingMessage,
   Schema,
-  Type.TypeBoxTypeProvider,
+  TypeBoxTypeProvider,
   unknown,
   FastifyBaseLogger,
-  ResolveFastifyRequestType<
-    Type.TypeBoxTypeProvider,
-    Schema,
-    RouteGenericInterface
-  >
+  ResolveFastifyRequestType<TypeBoxTypeProvider, Schema, RouteGenericInterface>
 >;
 
 const initApp = async function (
