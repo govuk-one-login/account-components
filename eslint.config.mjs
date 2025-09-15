@@ -6,6 +6,7 @@ import vitestEslint from "@vitest/eslint-plugin";
 import nodeEslint from "eslint-plugin-n";
 import playwrightEslint from "eslint-plugin-playwright";
 import { defineConfig } from "eslint/config";
+import dependEslint from "eslint-plugin-depend";
 
 // eslint-disable-next-line no-restricted-exports
 export default defineConfig(
@@ -24,7 +25,8 @@ export default defineConfig(
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
   {
-    plugins: { n: nodeEslint },
+    plugins: { n: nodeEslint, depend: dependEslint },
+    extends: ["depend/flat/recommended"],
     rules: {
       "no-console": "error",
       "@typescript-eslint/consistent-type-imports": "error",
@@ -50,6 +52,12 @@ export default defineConfig(
           "ts-expect-error": "allow-with-description",
           "ts-ignore": true,
           "ts-nocheck": true,
+        },
+      ],
+      "depend/ban-dependencies": [
+        "error",
+        {
+          allowed: ["dotenv"],
         },
       ],
     },

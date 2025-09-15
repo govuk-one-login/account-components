@@ -35,6 +35,7 @@
     "csso-cli": "^4.0.2",
     "dotenv": "^17.2.2",
     "eslint": "^9.35.0",
+    "eslint-plugin-depend": "^1.2.0",
     "eslint-plugin-n": "^17.22.0",
     "eslint-plugin-playwright": "^2.2.2",
     "fastify-cli": "^7.4.0",
