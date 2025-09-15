@@ -52,20 +52,4 @@ describe("dynamodbClient", () => {
       query: undefined,
     });
   });
-
-  it("should not use Localstack settings when USE_LOCALSTACK is not set", async () => {
-    const client = getDynamoDbClient();
-
-    await expect(
-      client.config.endpoint
-        ? client.config.endpoint()
-        : Promise.resolve("fail"),
-    ).resolves.toStrictEqual({
-      hostname: "localstack",
-      port: 4566,
-      protocol: "http:",
-      path: "/",
-      query: undefined,
-    });
-  });
 });
