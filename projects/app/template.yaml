@@ -183,6 +183,14 @@ Resources:
             Method: ANY
             Path: /private-healthcheck/
             RestApiId: !Ref AppPrivateApiGateway
+      LoggingConfig:
+        LogGroup: !Ref PrivateRoutesLambdaLogGroup
+
+  PrivateRoutesLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/lambda/${AWS::StackName}/PrivateRoutesLambda"
+      RetentionInDays: 30
 
   StubsLambda:
     Type: AWS::Serverless::Function
@@ -207,6 +215,14 @@ Resources:
             Method: ANY
             Path: /stubs/{proxy+}
             RestApiId: !Ref AppPublicApiGateway
+      LoggingConfig:
+        LogGroup: !Ref StubsLambdaLogGroup
+
+  StubsLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/lambda/${AWS::StackName}/StubsLambda"
+      RetentionInDays: 30
 
   PublicRoutesLambda:
     Type: AWS::Serverless::Function
@@ -229,3 +245,11 @@ Resources:
             Method: ANY
             Path: /{proxy+}
             RestApiId: !Ref AppPublicApiGateway
+      LoggingConfig:
+        LogGroup: !Ref PublicRoutesLambdaLogGroup
+
+  PublicRoutesLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/lambda/${AWS::StackName}/PublicRoutesLambda"
+      RetentionInDays: 30
