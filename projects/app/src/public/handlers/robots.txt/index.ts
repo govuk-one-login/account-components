@@ -1,4 +1,5 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
+import { getEnvironment } from "../../../utils/getEnvironment/index.js";
 
 export async function handler(_request: FastifyRequest, reply: FastifyReply) {
   return reply
@@ -7,7 +8,7 @@ export async function handler(_request: FastifyRequest, reply: FastifyReply) {
     .send(
       `
 User-agent: *
-Disallow:
+Disallow:${getEnvironment() === "production" ? "" : " /"}
   `.trim(),
     );
 }
