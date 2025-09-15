@@ -58,6 +58,7 @@ Then("the page looks as expected", async ({ page }) => {
       fullPage: true,
       quality: 50,
       type: "jpeg",
+      mask: [page.locator("[data-test-mask]")],
     }),
   ).toMatchSnapshot();
 });

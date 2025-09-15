@@ -2,7 +2,7 @@ import { getEnvironment } from "../getEnvironment/index.js";
 import fp from "fastify-plugin";
 
 export const nunjucksRender = fp(function (app) {
-  app.decorateReply("render", async function (templatePath, props) {
+  app.decorateReply("render", async function (templatePath, props = {}) {
     const nunjucksModule = await import("nunjucks");
 
     nunjucksModule.default.configure(

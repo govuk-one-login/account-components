@@ -1,8 +1,8 @@
-import { type FastifyInstance } from "fastify";
 import * as path from "node:path";
 import fastifyStatic from "@fastify/static";
+import type { FastifyTypeboxInstance } from "../app.js";
 
-export const staticFiles = function (app: FastifyInstance) {
+export const staticFiles = function (app: FastifyTypeboxInstance) {
   const oneYearInSeconds = "31536000";
 
   app.register(fastifyStatic, {

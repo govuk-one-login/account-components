@@ -1,4 +1,3 @@
-import { type FastifyInstance } from "fastify";
 import fastifyCookie from "@fastify/cookie";
 import fastifySession from "@fastify/session";
 import fastifyHelmet from "@fastify/helmet";
@@ -6,8 +5,9 @@ import fastifyCsrfProtection from "@fastify/csrf-protection";
 import fastifyFormBody from "@fastify/formbody";
 import { getEnvironment } from "../utils/getEnvironment/index.js";
 import { nunjucksRender } from "../utils/nunjucksRender/index.js";
+import type { FastifyTypeboxInstance } from "../app.js";
 
-export const frontend = function (app: FastifyInstance) {
+export const frontend = function (app: FastifyTypeboxInstance) {
   app.register(fastifyFormBody);
   app.register(fastifyHelmet);
   app.register(fastifyCookie);
