@@ -43,21 +43,24 @@ export async function postHandler(
     for (const [groupKey, groupValue] of Object.entries(
       externalEndpointStubsConfig,
     )) {
-      for (const [endpointKey, endpointValue] of Object.entries(groupValue)) {
-        if (
-          generateExternalEndpointStubConfigCookieKey(groupKey, endpointKey) ===
-            key &&
-          // @ts-expect-error
-          endpointValue.includes(value)
-        ) {
-          reply.setCookie(key, value, {
-            httpOnly: true,
-            maxAge: 31536000,
-            sameSite: "lax",
-            secure: getEnvironment() !== "local",
-          });
-          break;
-        }
+      if (
+        Object.entries(groupValue).find(([endpointKey, endpointValue]) => {
+          return (
+            generateExternalEndpointStubConfigCookieKey(
+              groupKey,
+              endpointKey,
+            ) === key &&
+            // @ts-expect-error
+            endpointValue.includes(value)
+          );
+        })
+      ) {
+        reply.setCookie(key, value, {
+          httpOnly: true,
+          maxAge: 31536000,
+          sameSite: "lax",
+          secure: getEnvironment() !== "local",
+        });
       }
       break;
     }
