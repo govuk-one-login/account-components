@@ -1,5 +1,6 @@
 import type { ScanCommandInput } from "@aws-sdk/client-dynamodb";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { getNumberFromEnvVar } from "../getNumberFromEnvVar/index.js";
 import type {
   PutCommandInput,
   GetCommandInput,
@@ -39,11 +40,6 @@ interface AppEnvironmentT {
   localstackAccessKeyId: string;
   localstackSecretAccessKey: string;
 }
-
-const getNumberFromEnvVar = (key: string, defaultValue: number): number => {
-  const value = process.env[key];
-  return value ? parseInt(value) : defaultValue;
-};
 
 const getAppEnvironment = (): AppEnvironmentT => {
   return {
