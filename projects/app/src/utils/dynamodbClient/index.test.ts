@@ -1,10 +1,14 @@
-import { describe, it, expect, afterEach, beforeEach } from "vitest";
-import { getDynamoDbClient } from "./index.js";
+import { describe, it, expect, afterEach, beforeEach, vi } from "vitest";
+// disabling the eslint rule as it is needed to import the module freshly in each test
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+let getDynamoDbClient: typeof import("./index.js").getDynamoDbClient;
 
 describe("dynamodbClient", () => {
   let originalEnv: NodeJS.ProcessEnv;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    vi.resetModules();
+    getDynamoDbClient = (await import("./index.js")).getDynamoDbClient;
     originalEnv = { ...process.env };
   });
 
@@ -35,7 +39,7 @@ describe("dynamodbClient", () => {
     process.env = {
       ...originalEnv,
       USE_LOCALSTACK: "true",
-      LOCALSTACK_HOSTNAME: "localstack",
+      LOCALSTACK_ENDPOINT: "https://test:1234",
     };
 
     const client = getDynamoDbClient();
@@ -45,9 +49,9 @@ describe("dynamodbClient", () => {
         ? client.config.endpoint()
         : Promise.resolve("fail"),
     ).resolves.toStrictEqual({
-      hostname: "localstack",
-      port: 4566,
-      protocol: "http:",
+      hostname: "test",
+      port: 1234,
+      protocol: "https:",
       path: "/",
       query: undefined,
     });
