@@ -1,5 +1,6 @@
 import { Logger } from "@aws-lambda-powertools/logger";
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import { getAppConfig } from "@aws-lambda-powertools/parameters/appconfig";
 
 const logger = new Logger({ serviceName: "test-function" });
 
@@ -13,17 +14,14 @@ export const handle = async (
   logger.info("Received event", { event, configPath });
   let response: APIGatewayProxyResult;
   try {
-    const configResponse = await fetch(`http://localhost:2772${configPath}`, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call
+    const config = await getAppConfig("operational", {
+      application: "account-management-components",
+      environment: "dev",
+      transform: "json",
     });
 
-    if (!configResponse.ok) {
-      throw new Error(`Error! status: ` + JSON.stringify(configResponse));
-    }
-    logger.info(JSON.stringify(configResponse.body));
+    logger.info(JSON.stringify(config));
 
     // const config = await configResponse.json();
 
@@ -40,7 +38,7 @@ export const handle = async (
 
     response = {
       statusCode: 200,
-      body: JSON.stringify(configResponse.json()),
+      body: JSON.stringify(config),
     };
   } catch (err) {
     logger.error("Failed to get config", { err });

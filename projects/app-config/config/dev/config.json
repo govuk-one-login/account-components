@@ -1,0 +1,30 @@
+{
+  "version": "1",
+  "flags": {
+    "pagination": {
+      "name": "AppPagination",
+      "attributes": {
+        "pageSize": {
+          "constraints": {
+            "type": "number",
+            "required": false,
+            "minimum": 5,
+            "maximum": 10
+          }
+        }
+      }
+    },
+    "wizardSwitch": {
+      "name": "WizardSwitch"
+    }
+  },
+  "values": {
+    "pagination": {
+      "enabled": true,
+      "pageSize": 5
+    },
+    "wizardSwitch": {
+      "enabled": true
+    }
+  }
+}

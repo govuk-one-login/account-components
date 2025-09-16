@@ -7,6 +7,9 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.25.2",
+    "@aws-lambda-powertools/parameters": "^2.25.2",
+    "@aws-sdk/client-appconfig": "^3.883.0",
+    "@aws-sdk/client-appconfigdata": "^3.883.0",
     "@fastify/aws-lambda": "^6.0.0",
     "@fastify/cookie": "^11.0.2",
     "@fastify/csrf-protection": "^7.1.0",

@@ -13,7 +13,7 @@ Parameters:
   VpcStackName:
     Description: The name of the stack that defines the VPC
     Type: String
-    Default: vpc-enhanced
+    Default: vpc
     AllowedPattern: ^[a-z0-9-]+$
     ConstraintDescription: must be a valid organization ID, made of lowercase letters and numbers
 
@@ -27,14 +27,14 @@ Globals:
     CodeUri: src
     VpcConfig:
       SubnetIds:
-        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
-        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
       #        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
       SecurityGroupIds:
         - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
     Layers:
       - "arn:aws:lambda:eu-west-2:282860088358:layer:AWS-AppConfig-Extension-Arm64:85"
-      - "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1"
+#      - "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1"
 
 Resources:
   TestFunction:
@@ -46,14 +46,48 @@ Resources:
       Handler: handler.handle
       MemorySize: 128
       Role: !GetAtt TestFunctionRole.Arn
+      Environment:
+        Variables:
+          #          APPCONFIG_URL: http://localhost:2772/applications/account-management-components/environments/dev/configurations/operational
+          AWS_APPCONFIG_EXTENSION_PREFETCH_LIST: /applications/account-management-components/environments/dev/configurations/operational
+          AWS_APPCONFIG_EXTENSION_LOG_LEVEL: debug
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
-        Minify: true
+        Minify: false
         Target: es2022
-        Sourcemap: false
+        Sourcemap: true
         EntryPoints:
           - handler.ts
+        Format: esm
+        Platform: node
+        OutExtension:
+          - .js=.mjs
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+
+  PTTestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "${AWS::StackName}-PTTestFunction"
+      Description: "TODO"
+      Timeout: 10
+      Handler: pt-handler.handle
+      MemorySize: 128
+      Role: !GetAtt TestFunctionRole.Arn
+      Environment:
+        Variables:
+          #          APPCONFIG_URL: http://localhost:2772/applications/account-management-components/environments/dev/configurations/operational
+          AWS_APPCONFIG_EXTENSION_PREFETCH_LIST: /applications/account-management-components/environments/dev/configurations/operational
+          AWS_APPCONFIG_EXTENSION_LOG_LEVEL: debug
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: false
+        Target: es2022
+        Sourcemap: true
+        EntryPoints:
+          - pt-handler.ts
         Format: esm
         Platform: node
         OutExtension:
@@ -91,10 +125,23 @@ Resources:
               - "logs:PutLogEvents"
             Resource:
               - !GetAtt TestFunctionLogGroup.Arn
+          - Effect: Allow
+            Action:
+              - appconfig:GetLatestConfiguration
+              - appconfig:StartConfigurationSession
+            Resource:
+              #              - !Sub 'arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/account-management-components/environment/dev/configuration/operational'
+              - arn:aws:appconfig:eu-west-2:621833521570:application/vdnd2gn/environment/pi242rt/configuration/y8xaya3
       Roles:
         - !Ref TestFunctionRole
   TestFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${TestFunction}"
+      RetentionInDays: 30
+
+  PTTestFunctionLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${PTTestFunction}"
       RetentionInDays: 30
