@@ -54,7 +54,8 @@ const getAppEnvironment = (): AppEnvironmentT => {
     ),
     region: process.env["AWS_REGION"] ?? "eu-west-2",
     useLocalstack: resolveEnvVarToBool("USE_LOCALSTACK"),
-    localstackHost: process.env["LOCALSTACK_HOSTNAME"] ?? "localhost",
+    localstackHost:
+      process.env["LOCALSTACK_ENDPOINT"] ?? "http://localhost:4566",
     localstackAccessKeyId: process.env["LOCALSTACK_ACCESS_KEY_ID"] ?? "test",
     localstackSecretAccessKey:
       process.env["LOCALSTACK_SECRET_ACCESS_KEY"] ?? "test",
@@ -62,21 +63,22 @@ const getAppEnvironment = (): AppEnvironmentT => {
 };
 
 const getDynamoDbClient = () => {
+  const environment = getAppEnvironment();
   const dynamoDbClient = new DynamoDBClient({
-    region: getAppEnvironment().region,
-    maxAttempts: getAppEnvironment().awsMaxAttempts,
-    ...(getAppEnvironment().useLocalstack
+    region: environment.region,
+    maxAttempts: environment.awsMaxAttempts,
+    ...(environment.useLocalstack
       ? {
-          endpoint: `http://${getAppEnvironment().localstackHost}:4566`,
+          endpoint: environment.localstackHost,
           credentials: {
-            accessKeyId: getAppEnvironment().localstackAccessKeyId,
-            secretAccessKey: getAppEnvironment().localstackSecretAccessKey,
+            accessKeyId: environment.localstackAccessKeyId,
+            secretAccessKey: environment.localstackSecretAccessKey,
           },
         }
       : {}),
     requestHandler: new NodeHttpHandler({
-      connectionTimeout: getAppEnvironment().awsClientConnectTimeout,
-      requestTimeout: getAppEnvironment().awsClientRequestTimeout,
+      connectionTimeout: environment.awsClientConnectTimeout,
+      requestTimeout: environment.awsClientRequestTimeout,
       httpAgent: new http.Agent({
         keepAlive: true,
         maxSockets: 50,
