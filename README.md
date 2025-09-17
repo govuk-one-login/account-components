@@ -4,22 +4,21 @@ This repo contains the code for Account Components
 
 ## Set up and installation
 
-Copy `projects/app/.env.sample` to `projects/app/.env` and replace any placeholder values as appropriate.
-
-Install [NVM](https://github.com/nvm-sh/nvm) or [FNM](https://github.com/Schniz/fnm) and select the correct Node version by running `nvm use` or `fnm use`.
-
-Install [Homebrew](https://brew.sh/).
-
-Install dependencies with `npm ci`.
+- Copy `projects/app/.env.sample` to `projects/app/.env` and replace any placeholder values as appropriate.
+- Install [NVM](https://github.com/nvm-sh/nvm) or [FNM](https://github.com/Schniz/fnm) and select the correct Node version by running `nvm use` or `fnm use`.
+- Install [Homebrew](https://brew.sh/).
+- Install NPM dependencies with `npm ci`.
+- Install Brewfile dependencies with `npm run install-brewfile`
+- Install Git Hooks with `npm run install-git-hooks`
 
 ## Updating Node version
 
 When updating the Node version you will need to update the following:
 
-- `engines.node` field in package.json
-- `.nvmrc`
-- Node version used by used by Lambda functions
-- Node versions used in Docker images
+- `engines.node` field in all package.json files
+- all `.nvmrc` files
+- Node version used by Lambda functions
+- Node version used in Docker images
 - ensure the base TSConfig installed as a development dependency in package.json and used in tsconfig.json corresponds with the Node version being used e.g. for Node 22 use the base TSConfig `@tsconfig/node22`
 - ensure the major version of `@types/node` installed as a development dependency in package.json corresponds with the Node version being used
 

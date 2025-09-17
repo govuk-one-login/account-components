@@ -6,6 +6,8 @@ ENV AWS_PAGER=""
 
 COPY package.json package.json
 COPY package-lock.json package-lock.json
+COPY .npmrc .npmrc
+COPY .nvmrc .nvmrc
 
 RUN npm ci && npm run install-browsers
 
