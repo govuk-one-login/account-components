@@ -1,5 +1,5 @@
 import AxeBuilder from "@axe-core/playwright";
-import { bdd } from "./fixtures";
+import { bdd } from "./fixtures.js";
 import { expect } from "@playwright/test";
 import assert from "node:assert";
 

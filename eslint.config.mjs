@@ -1,7 +1,7 @@
 import eslint from "@eslint/js";
 import tseslint from "typescript-eslint";
 import { includeIgnoreFile } from "@eslint/compat";
-import { fileURLToPath, URL } from "node:url";
+import { fileURLToPath } from "node:url";
 import vitestEslint from "@vitest/eslint-plugin";
 import nodeEslint from "eslint-plugin-n";
 import playwrightEslint from "eslint-plugin-playwright";
@@ -24,8 +24,9 @@ export default defineConfig(
   eslint.configs.recommended,
   tseslint.configs.strictTypeChecked,
   tseslint.configs.stylisticTypeChecked,
+  nodeEslint.configs["flat/recommended-script"],
   {
-    plugins: { n: nodeEslint, depend: dependEslint },
+    plugins: { depend: dependEslint },
     extends: ["depend/flat/recommended"],
     rules: {
       "no-console": "error",
@@ -43,6 +44,13 @@ export default defineConfig(
         },
       ],
       "n/no-sync": "error",
+      "n/no-unpublished-import": "off",
+      "n/no-missing-import": [
+        "error",
+        {
+          ignoreTypeImport: true,
+        },
+      ],
       "@typescript-eslint/require-await": "off",
       "@typescript-eslint/ban-ts-comment": [
         "error",

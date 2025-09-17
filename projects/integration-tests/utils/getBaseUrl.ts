@@ -1,4 +1,4 @@
-import { env } from "../env";
+import { env } from "../env.js";
 
 export const getBaseUrl = () => {
   if (env.TEST_TARGET === "local") {
