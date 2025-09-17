@@ -6,8 +6,8 @@
     "node": "22"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.888.0",
-    "@aws-sdk/lib-dynamodb": "^3.888.0",
+    "@aws-sdk/client-dynamodb": "^3.890.0",
+    "@aws-sdk/lib-dynamodb": "^3.890.0",
     "@fastify/aws-lambda": "^6.0.0",
     "@fastify/cookie": "^11.0.2",
     "@fastify/csrf-protection": "^7.1.0",
