@@ -7,8 +7,8 @@ This repo contains the code for Account Components
 - Copy `projects/app/.env.sample` to `projects/app/.env` and replace any placeholder values as appropriate.
 - Install [NVM](https://github.com/nvm-sh/nvm) or [FNM](https://github.com/Schniz/fnm) and select the correct Node version by running `nvm use` or `fnm use`.
 - Install [Homebrew](https://brew.sh/).
-- Install NPM dependencies with `npm ci`.
 - Install Brewfile dependencies with `npm run install-brewfile`
+- Install NPM dependencies with `npm ci`.
 - Install Git Hooks with `npm run install-git-hooks`
 
 ## Updating Node version
