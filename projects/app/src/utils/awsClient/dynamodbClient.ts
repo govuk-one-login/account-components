@@ -4,7 +4,6 @@ import {
   QueryCommand,
   ScanCommand,
 } from "@aws-sdk/client-dynamodb";
-import { getNumberFromEnvVar } from "../getNumberFromEnvVar/index.js";
 import type {
   PutCommandInput,
   GetCommandInput,
@@ -29,43 +28,10 @@ import { NodeHttpHandler } from "@smithy/node-http-handler";
 import * as AWSXRay from "aws-xray-sdk";
 import http from "http";
 import https from "https";
-import { resolveEnvVarToBool } from "../resolveEnvVarToBool/index.js";
 import { getEnvironment } from "../getEnvironment/index.js";
+import type { AppEnvironmentT } from "./getAppEnvironment.js";
 
-interface AppEnvironmentT {
-  awsMaxAttempts: number;
-  awsClientRequestTimeout: number;
-  awsClientConnectTimeout: number;
-  region: string;
-  useLocalstack: boolean;
-  localstackHost: string;
-  localstackAccessKeyId: string;
-  localstackSecretAccessKey: string;
-}
-
-const getAppEnvironment = (): AppEnvironmentT => {
-  return {
-    awsMaxAttempts: getNumberFromEnvVar("AWS_MAX_ATTEMPTS", 3),
-    awsClientRequestTimeout: getNumberFromEnvVar(
-      "AWS_CLIENT_REQUEST_TIMEOUT",
-      10000,
-    ),
-    awsClientConnectTimeout: getNumberFromEnvVar(
-      "AWS_CLIENT_CONNECT_TIMEOUT",
-      10000,
-    ),
-    region: process.env["AWS_REGION"] ?? "eu-west-2",
-    useLocalstack: resolveEnvVarToBool("USE_LOCALSTACK"),
-    localstackHost:
-      process.env["LOCALSTACK_ENDPOINT"] ?? "http://localhost:4566",
-    localstackAccessKeyId: process.env["LOCALSTACK_ACCESS_KEY_ID"] ?? "test",
-    localstackSecretAccessKey:
-      process.env["LOCALSTACK_SECRET_ACCESS_KEY"] ?? "test",
-  };
-};
-
-const createDynamoDbClient = () => {
-  const environment = getAppEnvironment();
+const createDynamoDbClient = (environment: AppEnvironmentT) => {
   const dynamoDbClient = new DynamoDBClient({
     region: environment.region,
     maxAttempts: environment.awsMaxAttempts,
@@ -135,10 +101,4 @@ const createDynamoDbClient = () => {
   return client;
 };
 
-let cachedClient: ReturnType<typeof createDynamoDbClient> | undefined;
-const getDynamoDbClient = (): ReturnType<typeof createDynamoDbClient> => {
-  cachedClient ??= createDynamoDbClient();
-  return cachedClient;
-};
-
-export { getDynamoDbClient };
+export { createDynamoDbClient };
