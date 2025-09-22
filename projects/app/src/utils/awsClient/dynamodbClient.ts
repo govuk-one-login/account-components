@@ -26,8 +26,8 @@ import {
 } from "@aws-sdk/lib-dynamodb";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 import * as AWSXRay from "aws-xray-sdk";
-import http from "http";
-import https from "https";
+import http from "node:http";
+import https from "node:https";
 import { getEnvironment } from "../getEnvironment/index.js";
 import type { AppEnvironmentT } from "./getAppEnvironment.js";
 

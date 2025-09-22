@@ -6,8 +6,8 @@ import {
 } from "@aws-sdk/client-sqs";
 import type { AppEnvironmentT } from "./getAppEnvironment.js";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
-import http from "http";
-import https from "https";
+import http from "node:http";
+import https from "node:https";
 import { getEnvironment } from "../getEnvironment/index.js";
 import * as AWSXRay from "aws-xray-sdk";
 
