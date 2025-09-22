@@ -1,10 +1,17 @@
 import { createDynamoDbClient } from "./dynamodbClient.js";
 import { getAppEnvironment } from "./getAppEnvironment.js";
+import { createSqsClient } from "./sqsClient.js";
 
-let cachedClient: ReturnType<typeof createDynamoDbClient> | undefined;
+let cachedDynamoDbClient: ReturnType<typeof createDynamoDbClient> | undefined;
 const getDynamoDbClient = (): ReturnType<typeof createDynamoDbClient> => {
-  cachedClient ??= createDynamoDbClient(getAppEnvironment());
-  return cachedClient;
+  cachedDynamoDbClient ??= createDynamoDbClient(getAppEnvironment());
+  return cachedDynamoDbClient;
 };
 
-export { getDynamoDbClient };
+let cachedSqsClient: ReturnType<typeof createSqsClient> | undefined;
+const getSqsClient = (): ReturnType<typeof createSqsClient> => {
+  cachedSqsClient ??= createSqsClient(getAppEnvironment());
+  return cachedSqsClient;
+};
+
+export { getDynamoDbClient, getSqsClient };
