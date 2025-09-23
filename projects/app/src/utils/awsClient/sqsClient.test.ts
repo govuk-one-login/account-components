@@ -39,4 +39,55 @@ describe("sqsClient", () => {
       query: undefined,
     });
   });
+
+  it("should sendMessages correctly", async () => {
+    const client = createSqsClient();
+    const sendSpy = vi
+      .spyOn(client.sqsClient, "send")
+      .mockResolvedValue({ MessageId: "12345" } as never);
+
+    const result = await client.sendMessage({
+      QueueUrl: "https://sqs.us-east-1.amazonaws.com/123456789012/MyQueue",
+      MessageBody: "Hello, world!",
+    });
+
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(result.MessageId).toBe("12345");
+  });
+
+  it("should receiveMessages correctly", async () => {
+    const client = createSqsClient();
+    const sendSpy = vi.spyOn(client.sqsClient, "send").mockResolvedValue({
+      Messages: [
+        {
+          MessageId: "12345",
+          ReceiptHandle: "abcde",
+          Body: "Hello, world!",
+        },
+      ],
+    } as never);
+
+    const result = await client.receiveMessage({
+      QueueUrl: "https://sqs.us-east-1.amazonaws.com/123456789012/MyQueue",
+      MaxNumberOfMessages: 1,
+      WaitTimeSeconds: 0,
+    });
+
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(result.Messages).toHaveLength(1);
+  });
+
+  it("should deleteMessage correctly", async () => {
+    const client = createSqsClient();
+    const sendSpy = vi
+      .spyOn(client.sqsClient, "send")
+      .mockResolvedValue({} as never);
+
+    await client.deleteMessage({
+      QueueUrl: "https://sqs.us-east-1.amazonaws.com/123456789012/MyQueue",
+      ReceiptHandle: "abcde",
+    });
+
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+  });
 });

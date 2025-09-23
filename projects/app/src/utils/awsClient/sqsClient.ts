@@ -17,6 +17,7 @@ const createSqsClient = () => {
       : AWSXRay.captureAWSv3Client(sqsClient);
 
   return {
+    sqsClient: wrappedClient,
     config: wrappedClient.config,
     sendMessage: async (params: { QueueUrl: string; MessageBody: string }) => {
       return await wrappedClient.send(new SendMessageCommand(params));

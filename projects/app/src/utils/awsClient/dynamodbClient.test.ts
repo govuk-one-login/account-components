@@ -14,6 +14,7 @@ describe("dynamodbClient", () => {
     delete process.env["AWS_MAX_ATTEMPTS"];
     delete process.env["AWS_CLIENT_REQUEST_TIMEOUT"];
     delete process.env["AWS_CLIENT_CONNECT_TIMEOUT"];
+    delete process.env["ENVIRONMENT"];
   });
 
   it("should create a DynamoDB client", () => {
@@ -49,5 +50,70 @@ describe("dynamodbClient", () => {
       path: "/",
       query: undefined,
     });
+  });
+
+  it("should not use XRAY when in local environment", async () => {
+    process.env["ENVIRONMENT"] = "local";
+
+    const { default: AWSXRay } = await import("aws-xray-sdk");
+    const spy = vi.spyOn(AWSXRay, "captureAWSv3Client");
+
+    createDynamoDbClient();
+
+    expect(spy).toHaveBeenCalledTimes(0);
+  });
+
+  it("should use XRAY when not in local environment", async () => {
+    process.env["ENVIRONMENT"] = "integration";
+
+    const { default: AWSXRay } = await import("aws-xray-sdk");
+    const spy = vi.spyOn(AWSXRay, "captureAWSv3Client");
+
+    createDynamoDbClient();
+
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it("should send commands correctly", async () => {
+    const client = createDynamoDbClient();
+
+    type DynamoMethodName = Extract<
+      keyof typeof client,
+      | "put"
+      | "get"
+      | "update"
+      | "delete"
+      | "query"
+      | "scan"
+      | "batchWrite"
+      | "batchGet"
+      | "transactWrite"
+      | "send"
+    >;
+
+    const methodNames: DynamoMethodName[] = [
+      "put",
+      "get",
+      "update",
+      "delete",
+      "query",
+      "scan",
+      "batchWrite",
+      "batchGet",
+      "transactWrite",
+      "send",
+    ];
+
+    const sendSpy = vi
+      .spyOn(client.docClient, "send")
+      .mockResolvedValue({} as never);
+
+    await Promise.all(
+      methodNames.map((methodName) => {
+        return client[methodName]({} as never);
+      }),
+    );
+
+    expect(sendSpy).toHaveBeenCalledTimes(methodNames.length);
   });
 });
