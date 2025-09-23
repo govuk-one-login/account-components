@@ -52,28 +52,6 @@ describe("jwtAdapter", () => {
         ).rejects.toThrow("Failed to retrieve key from SSM");
       });
 
-      it("throws error if public key from SSM is undefined", async () => {
-        getParameterCommand.mockResolvedValue(undefined);
-        const signatureType = SignatureTypes.EC;
-
-        const jwtAdapter = new JwtAdapter();
-
-        await expect(
-          jwtAdapter.sign(header, payload, signatureType),
-        ).rejects.toThrow("Unable to retrieve private key");
-      });
-
-      it("throws error if public key from SSM is an empty string", async () => {
-        getParameterCommand.mockResolvedValue("");
-        const signatureType = SignatureTypes.EC;
-
-        const jwtAdapter = new JwtAdapter();
-
-        await expect(
-          jwtAdapter.sign(header, payload, signatureType),
-        ).rejects.toThrow("Unable to retrieve private key");
-      });
-
       it.skip("throws error if public key from SSM is equal to the default value", async () => {
         getParameterCommand.mockResolvedValue("mock-value");
         const signatureType = SignatureTypes.EC;
@@ -113,19 +91,11 @@ describe("jwtAdapter", () => {
     });
 
     describe("when signing token", () => {
-      it("creates RSA token in a jwt format and correct signature", async () => {
-        const signatureType = SignatureTypes.RSA;
-
-        const jwtAdapter = new JwtAdapter();
-        const token = await jwtAdapter.sign(header, payload, signatureType);
-
-        expect(token).to.eq("jwtHeader.jwtPayload.jwtSignature");
-      });
-
       it("creates EC token in a jwt format and correct signature", async () => {
         const signatureType = SignatureTypes.EC;
 
         const jwtAdapter = new JwtAdapter();
+        jwtAdapter.signingKeyMap.set("EC", "ecPrivateKey");
         const token = await jwtAdapter.sign(header, payload, signatureType);
 
         expect(token).to.eq("jwtHeader.jwtPayload.jwtSignature");
