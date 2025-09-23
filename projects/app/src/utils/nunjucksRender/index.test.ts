@@ -3,13 +3,19 @@ import { nunjucksRender } from "./index.js";
 import { getEnvironment } from "../getEnvironment/index.js";
 import type { FastifyReply } from "fastify";
 import type { FastifyTypeboxInstance } from "../../app.js";
+import type i18next from "i18next";
+import assert from "node:assert";
 
 vi.mock("../getEnvironment/index.js", () => ({
   getEnvironment: vi.fn(),
 }));
 
+const mockEnv = {
+  addFilter: vi.fn(),
+};
+
 const nunjucks = {
-  configure: vi.fn(),
+  configure: vi.fn().mockReturnValue(mockEnv),
   render: vi.fn(),
 };
 
@@ -29,6 +35,9 @@ describe("nunjucksRender", () => {
     reply = {
       type: vi.fn().mockReturnThis(),
       send: vi.fn(),
+      i18next: {
+        t: vi.fn(),
+      } as unknown as typeof i18next,
     };
   });
 
@@ -85,6 +94,12 @@ describe("nunjucksRender", () => {
 
     await renderFunction.call(reply, "template.html", { title: "Test" });
 
+    assert.ok(reply.i18next?.t);
+
+    expect(mockEnv.addFilter).toHaveBeenCalledExactlyOnceWith(
+      "translate",
+      reply.i18next.t,
+    );
     expect(nunjucks.render).toHaveBeenCalledExactlyOnceWith("template.html", {
       title: "Test",
     });
