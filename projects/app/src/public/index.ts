@@ -32,10 +32,10 @@ export const publicRoutes = async function (app: FastifyTypeboxInstance) {
     );
 
     app.register(
-        (await import("./internalEndpointStubs.js")).internalEndpointStubs,
-        {
-          prefix: "/stubs/internal-endpoints",
-        },
+      (await import("./internalEndpointStubs.js")).internalEndpointStubs,
+      {
+        prefix: "/stubs/internal-endpoints",
+      },
     );
   }
 

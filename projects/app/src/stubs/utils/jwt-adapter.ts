@@ -1,11 +1,11 @@
-import {Buffer} from 'node:buffer';
-import type { JWTPayload} from 'jose';
-import {base64url, importPKCS8, SignJWT} from 'jose';
-import type {JwtHeader} from '../types/token.js';
-import {ALG, Algorithms, SignatureTypes} from '../types/common.js';
-import {getDefaultKeyValue, getPrivateKeyName} from './app-config.js';
-import logger from './logger.js';
-import {getParameter} from '@aws-lambda-powertools/parameters/ssm';
+import { Buffer } from "node:buffer";
+import type { JWTPayload } from "jose";
+import { base64url, importPKCS8, SignJWT } from "jose";
+import type { JwtHeader } from "../types/token.js";
+import { ALG, Algorithms, SignatureTypes } from "../types/common.js";
+import { getDefaultKeyValue, getPrivateKeyName } from "./app-config.js";
+import logger from "./logger.js";
+import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 
 /**
  * An implementation of the JWS standard using Jose to sign Jwts
@@ -20,11 +20,16 @@ export class JwtAdapter {
   ALG = ALG;
   signingKeyMap = new Map<string, string>();
 
-  constructor() {}
-
-  async sign(jwtHeader: JwtHeader, jwtPayload: JWTPayload, signatureType: SignatureTypes): Promise<string> {
-    if (jwtHeader.alg === Algorithms.NONE || jwtHeader.alg === Algorithms.INVALID) {
-      logger.info('creating token without a signature.');
+  async sign(
+    jwtHeader: JwtHeader,
+    jwtPayload: JWTPayload,
+    signatureType: SignatureTypes,
+  ): Promise<string> {
+    if (
+      jwtHeader.alg === Algorithms.NONE ||
+      jwtHeader.alg === Algorithms.INVALID
+    ) {
+      logger.info("creating token without a signature.");
       const header = base64url.encode(Buffer.from(JSON.stringify(jwtHeader)));
       const payload = base64url.encode(Buffer.from(JSON.stringify(jwtPayload)));
       return `${header}.${payload}.`;
@@ -33,28 +38,40 @@ export class JwtAdapter {
     let privateKeyPem;
     if (!this.signingKeyMap.has(signatureType)) {
       try {
-        privateKeyPem = await getParameter(getPrivateKeyName(signatureType, jwtPayload.iss!));
+        privateKeyPem = await getParameter(getPrivateKeyName(signatureType));
       } catch (error) {
-        logger.error(`Failed to retrieve ${signatureType} private key from SSM`, { error });
-        throw new Error('Failed to retrieve key from SSM');
+        logger.error(
+          `Failed to retrieve ${signatureType} private key from SSM`,
+          { error },
+        );
+        throw new Error("Failed to retrieve key from SSM");
       }
 
-      if (!privateKeyPem || privateKeyPem.trim().length === 0 || privateKeyPem === getDefaultKeyValue()) {
-        logger.error('Unable to retrieve private key');
-        throw new Error('Unable to retrieve private key');
+      if (
+        !privateKeyPem ||
+        privateKeyPem.trim().length === 0 ||
+        privateKeyPem === getDefaultKeyValue()
+      ) {
+        logger.error("Unable to retrieve private key");
+        throw new Error("Unable to retrieve private key");
       }
 
       this.signingKeyMap.set(signatureType, privateKeyPem);
     }
 
     privateKeyPem = this.signingKeyMap.get(signatureType);
-    const algorithm = signatureType === SignatureTypes.EC ? Algorithms.EC : Algorithms.RSA;
+    if (!privateKeyPem) {
+      logger.error("Unable to retrieve private key from cache");
+      throw new Error("Unable to retrieve private key from cache");
+    }
+    const algorithm =
+      signatureType === SignatureTypes.EC ? Algorithms.EC : Algorithms.RSA;
     const privateKey = await importPKCS8(privateKeyPem, algorithm);
 
     let jwt;
 
     try {
-      const unSignedJwt = await new SignJWT(jwtPayload)
+      const unSignedJwt = new SignJWT(jwtPayload)
         .setProtectedHeader(jwtHeader)
         .setExpirationTime(jwtPayload.exp ?? 0);
 
@@ -63,11 +80,11 @@ export class JwtAdapter {
 
       jwt = await unSignedJwt.sign(privateKey);
     } catch (error) {
-      logger.error('Failed to sign Jwt', { error });
-      throw new Error('Failed to sign Jwt');
+      logger.error("Failed to sign Jwt", { error });
+      throw new Error("Failed to sign Jwt");
     }
 
-    logger.info('Successfully signed token');
+    logger.info("Successfully signed token");
     return jwt;
   }
 }

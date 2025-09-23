@@ -1,59 +1,33 @@
 import {
-  getPrivateKeyName,
-  getPublicKeyName,
   getDefaultKeyValue,
   getPercentageReturn4xx,
   getPercentageReturn5xx,
   getPercentageTimeout,
   getPercentageDelay,
   getMaximumDelayMilliseconds,
-} from '../app-config.js';
-import { SignatureTypes } from '../../types/common.js';
+} from "../app-config.js";
+import { expect, describe, it } from "vitest";
 
-import {expect, describe, it} from "vitest";
+describe("app-config", () => {
+  describe("getDefaultKeyValue", () => {
+    it("returns the default key value", () => {
+      process.env["DEFAULT_SSM_VALUE"] = "mock-value";
+      const defaultKeyValue = getDefaultKeyValue();
 
-describe('app-config', () => {
-  // describe('getPrivateKeyName', () => {
-  //   it('return EC private key name when passed EC', () => {
-  //     const privateKeyName = getPrivateKeyName(SignatureTypes.EC, "iss");
-  //     expect(privateKeyName).to.eq('ecPrivateKeyName');
-  //   });
-  //
-  //   it('return RSA private key name when passed RSA', () => {
-  //     const privateKeyName = getPrivateKeyName(SignatureTypes.RSA, "iss");
-  //     expect(privateKeyName).to.eq('rsaPrivateKeyName');
-  //   });
-  // });
-  //
-  // describe('getPublicKeyName', () => {
-  //   it('return EC public key name when passed EC', () => {
-  //     const publicKeyName = getPublicKeyName(SignatureTypes.EC, "iss");
-  //     expect(publicKeyName).to.eq('ecPublicKeyName');
-  //   });
-  //
-  //   it('return RSA public key name when passed RSA', () => {
-  //     const publicKeyName = getPublicKeyName(SignatureTypes.RSA,"iss");
-  //     expect(publicKeyName).to.eq('rsaPublicKeyName');
-  //   });
-  // });
-  //
-  // describe('getDefaultKeyValue', () => {
-  //   it('returns the default key value', () => {
-  //     const defaultKeyValue = getDefaultKeyValue();
-  //     expect(defaultKeyValue).to.eq('mock-value');
-  //   });
-  // });
+      expect(defaultKeyValue).to.eq("mock-value");
+    });
+  });
 
-  describe('getPercentageReturn4xx', () => {
-    it('returns percentage value when value is between 0 and 1', () => {
-      process.env['PERCENTAGE_RETURN_4XX'] = '0.3';
+  describe("getPercentageReturn4xx", () => {
+    it("returns percentage value when value is between 0 and 1", () => {
+      process.env["PERCENTAGE_RETURN_4XX"] = "0.3";
       const percentage = getPercentageReturn4xx();
 
       expect(percentage).to.eq(0.3);
     });
 
-    it('throws error when value is less than 0', async () => {
-      process.env['PERCENTAGE_RETURN_4XX'] = '-0.1';
+    it("throws error when value is less than 0", async () => {
+      process.env["PERCENTAGE_RETURN_4XX"] = "-0.1";
       let percentage;
       try {
         percentage = getPercentageReturn4xx();
@@ -63,11 +37,13 @@ describe('app-config', () => {
         }
       }
 
-      expect(percentage).to.eq('Percentage value must be between 0.00 and 1.00.');
+      expect(percentage).to.eq(
+        "Percentage value must be between 0.00 and 1.00.",
+      );
     });
 
-    it('throws error when value is greater than 1', async () => {
-      process.env['PERCENTAGE_RETURN_4XX'] = '1.1';
+    it("throws error when value is greater than 1", async () => {
+      process.env["PERCENTAGE_RETURN_4XX"] = "1.1";
       let percentage;
       try {
         percentage = getPercentageReturn4xx();
@@ -77,11 +53,13 @@ describe('app-config', () => {
         }
       }
 
-      expect(percentage).to.eq('Percentage value must be between 0.00 and 1.00.');
+      expect(percentage).to.eq(
+        "Percentage value must be between 0.00 and 1.00.",
+      );
     });
 
-    it('throws error when value is not a number', () => {
-      process.env['PERCENTAGE_RETURN_4XX'] = 'notAnInteger';
+    it("throws error when value is not a number", () => {
+      process.env["PERCENTAGE_RETURN_4XX"] = "notAnInteger";
       let percentage;
       try {
         percentage = getPercentageReturn4xx();
@@ -91,20 +69,20 @@ describe('app-config', () => {
         }
       }
 
-      expect(percentage).to.eq('Percentage value must be a number.');
+      expect(percentage).to.eq("Percentage value must be a number.");
     });
   });
 
-  describe('getPercentageReturn5xx', () => {
-    it('returns percentage value when value is between 0 and 1', () => {
-      process.env['PERCENTAGE_RETURN_5XX'] = '0.3';
+  describe("getPercentageReturn5xx", () => {
+    it("returns percentage value when value is between 0 and 1", () => {
+      process.env["PERCENTAGE_RETURN_5XX"] = "0.3";
       const percentage = getPercentageReturn5xx();
 
       expect(percentage).to.eq(0.3);
     });
 
-    it('throws error when value is less than 0', async () => {
-      process.env['PERCENTAGE_RETURN_5XX'] = '-0.1';
+    it("throws error when value is less than 0", async () => {
+      process.env["PERCENTAGE_RETURN_5XX"] = "-0.1";
       let percentage;
       try {
         percentage = getPercentageReturn5xx();
@@ -114,11 +92,13 @@ describe('app-config', () => {
         }
       }
 
-      expect(percentage).to.eq('Percentage value must be between 0.00 and 1.00.');
+      expect(percentage).to.eq(
+        "Percentage value must be between 0.00 and 1.00.",
+      );
     });
 
-    it('throws error when value is greater than 1', async () => {
-      process.env['PERCENTAGE_RETURN_5XX'] = '1.1';
+    it("throws error when value is greater than 1", async () => {
+      process.env["PERCENTAGE_RETURN_5XX"] = "1.1";
       let percentage;
       try {
         percentage = getPercentageReturn5xx();
@@ -128,11 +108,13 @@ describe('app-config', () => {
         }
       }
 
-      expect(percentage).to.eq('Percentage value must be between 0.00 and 1.00.');
+      expect(percentage).to.eq(
+        "Percentage value must be between 0.00 and 1.00.",
+      );
     });
 
-    it('throws error when value is not a number', () => {
-      process.env['PERCENTAGE_RETURN_5XX'] = 'notAnInteger';
+    it("throws error when value is not a number", () => {
+      process.env["PERCENTAGE_RETURN_5XX"] = "notAnInteger";
       let percentage;
       try {
         percentage = getPercentageReturn5xx();
@@ -142,20 +124,20 @@ describe('app-config', () => {
         }
       }
 
-      expect(percentage).to.eq('Percentage value must be a number.');
+      expect(percentage).to.eq("Percentage value must be a number.");
     });
   });
 
-  describe('getPercentageTimeout', () => {
-    it('returns percentage value when value is between 0 and 1', () => {
-      process.env['PERCENTAGE_TIMEOUT'] = '0.3';
+  describe("getPercentageTimeout", () => {
+    it("returns percentage value when value is between 0 and 1", () => {
+      process.env["PERCENTAGE_TIMEOUT"] = "0.3";
       const percentage = getPercentageTimeout();
 
       expect(percentage).to.eq(0.3);
     });
 
-    it('throws error when value is less than 0', async () => {
-      process.env['PERCENTAGE_TIMEOUT'] = '-0.1';
+    it("throws error when value is less than 0", async () => {
+      process.env["PERCENTAGE_TIMEOUT"] = "-0.1";
       let percentage;
       try {
         percentage = getPercentageTimeout();
@@ -165,11 +147,13 @@ describe('app-config', () => {
         }
       }
 
-      expect(percentage).to.eq('Percentage value must be between 0.00 and 1.00.');
+      expect(percentage).to.eq(
+        "Percentage value must be between 0.00 and 1.00.",
+      );
     });
 
-    it('throws error when value is greater than 1', async () => {
-      process.env['PERCENTAGE_TIMEOUT'] = '1.1';
+    it("throws error when value is greater than 1", async () => {
+      process.env["PERCENTAGE_TIMEOUT"] = "1.1";
       let percentage;
       try {
         percentage = getPercentageTimeout();
@@ -179,11 +163,13 @@ describe('app-config', () => {
         }
       }
 
-      expect(percentage).to.eq('Percentage value must be between 0.00 and 1.00.');
+      expect(percentage).to.eq(
+        "Percentage value must be between 0.00 and 1.00.",
+      );
     });
 
-    it('throws error when value is not a number', () => {
-      process.env['PERCENTAGE_TIMEOUT'] = 'notAnInteger';
+    it("throws error when value is not a number", () => {
+      process.env["PERCENTAGE_TIMEOUT"] = "notAnInteger";
       let percentage;
       try {
         percentage = getPercentageTimeout();
@@ -193,20 +179,20 @@ describe('app-config', () => {
         }
       }
 
-      expect(percentage).to.eq('Percentage value must be a number.');
+      expect(percentage).to.eq("Percentage value must be a number.");
     });
   });
 
-  describe('getPercentageDelay', () => {
-    it('returns percentage value when value is between 0 and 1', () => {
-      process.env['PERCENTAGE_DELAY'] = '0.3';
+  describe("getPercentageDelay", () => {
+    it("returns percentage value when value is between 0 and 1", () => {
+      process.env["PERCENTAGE_DELAY"] = "0.3";
       const percentage = getPercentageDelay();
 
       expect(percentage).to.eq(0.3);
     });
 
-    it('throws error when value is less than 0', async () => {
-      process.env['PERCENTAGE_DELAY'] = '-0.1';
+    it("throws error when value is less than 0", async () => {
+      process.env["PERCENTAGE_DELAY"] = "-0.1";
       let percentage;
       try {
         percentage = getPercentageDelay();
@@ -216,11 +202,13 @@ describe('app-config', () => {
         }
       }
 
-      expect(percentage).to.eq('Percentage value must be between 0.00 and 1.00.');
+      expect(percentage).to.eq(
+        "Percentage value must be between 0.00 and 1.00.",
+      );
     });
 
-    it('throws error when value is greater than 1', async () => {
-      process.env['PERCENTAGE_DELAY'] = '1.1';
+    it("throws error when value is greater than 1", async () => {
+      process.env["PERCENTAGE_DELAY"] = "1.1";
       let percentage;
       try {
         percentage = getPercentageDelay();
@@ -230,11 +218,13 @@ describe('app-config', () => {
         }
       }
 
-      expect(percentage).to.eq('Percentage value must be between 0.00 and 1.00.');
+      expect(percentage).to.eq(
+        "Percentage value must be between 0.00 and 1.00.",
+      );
     });
 
-    it('throws error when value is not a number', () => {
-      process.env['PERCENTAGE_DELAY'] = 'notAnInteger';
+    it("throws error when value is not a number", () => {
+      process.env["PERCENTAGE_DELAY"] = "notAnInteger";
       let percentage;
       try {
         percentage = getPercentageDelay();
@@ -244,20 +234,20 @@ describe('app-config', () => {
         }
       }
 
-      expect(percentage).to.eq('Percentage value must be a number.');
+      expect(percentage).to.eq("Percentage value must be a number.");
     });
   });
 
-  describe('getMaximumDelayMilliseconds', () => {
-    it('returns the delay value when environment variable is a positive number', () => {
-      process.env['MAXIMUM_DELAY_MILLISECONDS'] = '1000';
+  describe("getMaximumDelayMilliseconds", () => {
+    it("returns the delay value when environment variable is a positive number", () => {
+      process.env["MAXIMUM_DELAY_MILLISECONDS"] = "1000";
       const delay = getMaximumDelayMilliseconds();
 
       expect(delay).to.eq(1000);
     });
 
-    it('throws error if the delay value when environment variable is a negative number', () => {
-      process.env['MAXIMUM_DELAY_MILLISECONDS'] = '-1000';
+    it("throws error if the delay value when environment variable is a negative number", () => {
+      process.env["MAXIMUM_DELAY_MILLISECONDS"] = "-1000";
       let delay;
       try {
         delay = getMaximumDelayMilliseconds();
@@ -267,11 +257,11 @@ describe('app-config', () => {
         }
       }
 
-      expect(delay).to.eq('Maximum delay cannot be a negative number.');
+      expect(delay).to.eq("Maximum delay cannot be a negative number.");
     });
 
-    it('throws error if the delay value when environment variable is not a integer string', () => {
-      process.env['MAXIMUM_DELAY_MILLISECONDS'] = 'notAnInteger';
+    it("throws error if the delay value when environment variable is not a integer string", () => {
+      process.env["MAXIMUM_DELAY_MILLISECONDS"] = "notAnInteger";
       let delay;
       try {
         delay = getMaximumDelayMilliseconds();
@@ -281,7 +271,7 @@ describe('app-config', () => {
         }
       }
 
-      expect(delay).to.eq('Maximum delay value must be a number.');
+      expect(delay).to.eq("Maximum delay value must be a number.");
     });
   });
 });

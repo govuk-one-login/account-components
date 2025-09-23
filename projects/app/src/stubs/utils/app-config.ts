@@ -1,44 +1,47 @@
-import { SignatureTypes } from '../types/common.js';
+import { SignatureTypes } from "../types/common.js";
 
-export const DEFAULT_ISSUER = (('https://' + process.env['DEFAULT_ISSUER'])) + '/orchestration';
-export const AUTHENTICATION_ISSUER = 'authentication-issuer';
+export const DEFAULT_ISSUER =
+  "https://" + (process.env["DEFAULT_ISSUER"] ?? "default.issuer");
 
-export const DEFAULT_AUDIENCE = process.env['DEFAULT_AUDIENCE']!;
+export const AUTHENTICATION_ISSUER = "authentication-issuer";
 
-export const getPrivateKeyName = (keyType: SignatureTypes, iss: string): string => {
-  let keyEnvironment = keyType == SignatureTypes.EC ? 'EC_PRIVATE_KEY_SSM_NAME' : 'RSA_PRIVATE_KEY_SSM_NAME';
-  if (iss === AUTHENTICATION_ISSUER) keyEnvironment = `${keyEnvironment}_AUTHENTICATION`;
-  return process.env[keyEnvironment]!;
-};
+export const DEFAULT_AUDIENCE = process.env["DEFAULT_AUDIENCE"];
 
-export const getPublicKeyName = (keyType: SignatureTypes, iss: string): string => {
-  let keyEnvironment = keyType == SignatureTypes.EC ? 'EC_PUBLIC_KEY_SSM_NAME' : 'RSA_PUBLIC_KEY_SSM_NAME';
-  if (iss === AUTHENTICATION_ISSUER) keyEnvironment = `${keyEnvironment}_AUTHENTICATION`;
-  return process.env[keyEnvironment]!;
+export const getPrivateKeyName = (keyType: SignatureTypes): string => {
+  const keyEnvironment =
+    keyType == SignatureTypes.EC
+      ? " EC_PRIVATE_KEY_SSM_NAME"
+      : "RSA_PRIVATE_KEY_SSM_NAME";
+
+  const privateKey = process.env[keyEnvironment];
+  if (!privateKey) {
+    throw new Error(`Environment variable ${keyEnvironment} is not set`);
+  }
+  return privateKey;
 };
 
 export const getDefaultKeyValue = () => {
-  return process.env['DEFAULT_SSM_VALUE']!;
+  return process.env["DEFAULT_SSM_VALUE"];
 };
 
 export const getPercentageReturn4xx = () => {
-  return getPositiveNumber('Percentage', 'PERCENTAGE_RETURN_4XX', 1);
+  return getPositiveNumber("Percentage", "PERCENTAGE_RETURN_4XX", 1);
 };
 
 export const getPercentageReturn5xx = () => {
-  return getPositiveNumber('Percentage', 'PERCENTAGE_RETURN_5XX', 1);
+  return getPositiveNumber("Percentage", "PERCENTAGE_RETURN_5XX", 1);
 };
 
 export const getPercentageTimeout = () => {
-  return getPositiveNumber('Percentage', 'PERCENTAGE_TIMEOUT', 1);
+  return getPositiveNumber("Percentage", "PERCENTAGE_TIMEOUT", 1);
 };
 
 export const getPercentageDelay = () => {
-  return getPositiveNumber('Percentage', 'PERCENTAGE_DELAY', 1);
+  return getPositiveNumber("Percentage", "PERCENTAGE_DELAY", 1);
 };
 
 export const getMaximumDelayMilliseconds = () => {
-  return getPositiveNumber('Maximum delay', 'MAXIMUM_DELAY_MILLISECONDS');
+  return getPositiveNumber("Maximum delay", "MAXIMUM_DELAY_MILLISECONDS");
 };
 
 /**
@@ -50,8 +53,12 @@ export const getMaximumDelayMilliseconds = () => {
  * @returns A positive number.
  */
 
-function getPositiveNumber(numberLabel: string, environmentVariable: string, upperLimit?: number) {
-  const number = +(process.env[environmentVariable] || 0);
+function getPositiveNumber(
+  numberLabel: string,
+  environmentVariable: string,
+  upperLimit?: number,
+) {
+  const number = +(process.env[environmentVariable] ?? 0);
   if (Number.isNaN(number)) {
     throw new TypeError(`${numberLabel} value must be a number.`);
   }
