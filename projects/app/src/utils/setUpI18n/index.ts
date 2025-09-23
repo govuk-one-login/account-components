@@ -3,7 +3,6 @@ import i18next from "i18next";
 import { Lang } from "../../app.js";
 import en from "../../translations/en.json" with { type: "json" };
 import cy from "../../translations/cy.json" with { type: "json" };
-
 import type {
   onRequestAsyncHookHandler,
   RawReplyDefaultExpression,
