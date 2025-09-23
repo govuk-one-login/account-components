@@ -254,7 +254,6 @@ Resources:
       LogGroupName: !Sub "/lambda/${AWS::StackName}/PublicRoutesLambda"
       RetentionInDays: 30
 
-
   ########
   # STUB KEYS #
   ########
@@ -266,13 +265,9 @@ Resources:
       Description: The EC private key for Authentication Issuer
       Name: !Sub /${AWS::StackName}/Authentication/EcPrivateKey
       Type: String
-      Value: 'set-me'
+      Value: "set-me"
       Tags:
         Environment: !Ref Environment
-        Product: !Ref ProductTagValue
-        System: !Ref SystemTagValue
-        Owner: !Ref OwnerTagValue
-        Source: !Ref SourceTagValue
 
   StubECPublicKeySSM:
     Type: AWS::SSM::Parameter
@@ -280,11 +275,6 @@ Resources:
       Description: The EC public key
       Name: !Sub /${AWS::StackName}/Authentication/EcPublicKey
       Type: String
-      Value: 'set-me'
+      Value: "set-me"
       Tags:
         Environment: !Ref Environment
-        Product: !Ref ProductTagValue
-        System: !Ref SystemTagValue
-        Owner: !Ref OwnerTagValue
-        Source: !Ref SourceTagValue
-

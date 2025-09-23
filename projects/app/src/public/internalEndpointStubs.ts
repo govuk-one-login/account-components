@@ -5,7 +5,7 @@ import type { FastifyTypeboxInstance } from "../app.js";
 import * as Type from "@fastify/type-provider-typebox";
 import { getCurrentInternalEndpointStubScenario } from "./handlers/internalEndpointStubs/utils/config/index.js";
 import { getPath } from "./handlers/internalEndpointStubs/utils/paths/index.js";
-import {generateAccessToken} from "../stubs/tokenGenerator/index.js";
+import { generateAccessToken } from "../stubs/tokenGenerator/index.js";
 import logger from "../stubs/utils/logger.js";
 export const ConfigureInternalEndpointsGetSchema = {
   querystring: Type.Object({
@@ -46,29 +46,28 @@ export const internalEndpointStubs = function (app: FastifyTypeboxInstance) {
     },
   );
 
-    app.post(
-        getPath("requestObjectGenerator"),
-        {
-            schema: ConfigureInternalEndpointsPostSchema,
-        },
-        async function (request, reply) {
-            //generate access token
-            const token = await generateAccessToken(request);
+  app.post(
+    getPath("requestObjectGenerator"),
+    {
+      schema: ConfigureInternalEndpointsPostSchema,
+    },
+    async function (request, reply) {
+      //generate access token
+      const token = await generateAccessToken(request);
 
-            logger.debug('Token is' + token);
+      logger.debug("Token is" + token);
 
+      //Create a signed JWT of the Request object
 
-            //Create a signed JWT of the Request object
+      //Get private signing key for the client
 
-            //Get private signing key for the client
+      //Create a JAR by encrypting the JWT using a public encryption key for the respective client
 
-            //Create a JAR by encrypting the JWT using a public encryption key for the respective client
+      //returns the JAR
 
-            //returns the JAR
-
-            return (reply.send(token));
-        },
-    );
+      return reply.send(token);
+    },
+  );
 
   app.get(
     "/temp-internal-endpoint-stub-example",
