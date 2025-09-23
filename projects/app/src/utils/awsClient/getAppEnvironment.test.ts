@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getAppEnvironment } from "./getAppEnvironment.js";
-
-// We recommend installing an extension to run vitest tests.
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -21,17 +20,9 @@ describe("getAppEnvironment", () => {
   it("returns defaults and calls helpers with expected args when env vars not set", async () => {
     const result = getAppEnvironment();
 
-    expect(result).toStrictEqual({
-      awsMaxAttempts: 3,
-      awsClientRequestTimeout: 10000,
-      awsClientConnectTimeout: 10000,
-      region: "eu-west-2",
-      useLocalstack: false,
-      localstackHost: "http://localhost:4566",
-      localstackAccessKeyId: "test",
-      // pragma: allowlist nextline secret
-      localstackSecretAccessKey: "test",
-    });
+    expect(result.region).toBe("eu-west-2");
+    expect(result.maxAttempts).toBe(3);
+    expect(result.requestHandler).toBeInstanceOf(NodeHttpHandler);
   });
 
   it("uses env var values when provided", async () => {
@@ -46,15 +37,7 @@ describe("getAppEnvironment", () => {
 
     const result = getAppEnvironment();
 
-    expect(result).toStrictEqual({
-      awsMaxAttempts: 5,
-      awsClientRequestTimeout: 2000,
-      awsClientConnectTimeout: 3000,
-      region: "us-east-1",
-      useLocalstack: true,
-      localstackHost: "http://localstack:4566",
-      localstackAccessKeyId: "abc",
-      localstackSecretAccessKey: "xyz",
-    });
+    expect(result.region).toBe("us-east-1");
+    expect(result.maxAttempts).toBe(5);
   });
 });

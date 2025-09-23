@@ -4,39 +4,12 @@ import {
   ReceiveMessageCommand,
   DeleteMessageCommand,
 } from "@aws-sdk/client-sqs";
-import type { AppEnvironmentT } from "./getAppEnvironment.js";
-import { NodeHttpHandler } from "@smithy/node-http-handler";
-import http from "node:http";
-import https from "node:https";
+import { getAppEnvironment } from "./getAppEnvironment.js";
 import { getEnvironment } from "../getEnvironment/index.js";
 import * as AWSXRay from "aws-xray-sdk";
 
-const createSqsClient = (environment: AppEnvironmentT) => {
-  const sqsClient = new SQSClient({
-    region: environment.region,
-    maxAttempts: environment.awsMaxAttempts,
-    ...(environment.useLocalstack
-      ? {
-          endpoint: environment.localstackHost,
-          credentials: {
-            accessKeyId: environment.localstackAccessKeyId,
-            secretAccessKey: environment.localstackSecretAccessKey,
-          },
-        }
-      : {}),
-    requestHandler: new NodeHttpHandler({
-      connectionTimeout: environment.awsClientConnectTimeout,
-      requestTimeout: environment.awsClientRequestTimeout,
-      httpAgent: new http.Agent({
-        keepAlive: true,
-        maxSockets: 50,
-      }),
-      httpsAgent: new https.Agent({
-        keepAlive: true,
-        maxSockets: 50,
-      }),
-    }),
-  });
+const createSqsClient = () => {
+  const sqsClient = new SQSClient(getAppEnvironment());
 
   const wrappedClient =
     getEnvironment() === "local"

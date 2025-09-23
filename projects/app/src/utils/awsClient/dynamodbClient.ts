@@ -24,39 +24,12 @@ import {
   TransactWriteCommand,
   UpdateCommand,
 } from "@aws-sdk/lib-dynamodb";
-import { NodeHttpHandler } from "@smithy/node-http-handler";
 import * as AWSXRay from "aws-xray-sdk";
-import http from "node:http";
-import https from "node:https";
 import { getEnvironment } from "../getEnvironment/index.js";
-import type { AppEnvironmentT } from "./getAppEnvironment.js";
+import { getAppEnvironment } from "./getAppEnvironment.js";
 
-const createDynamoDbClient = (environment: AppEnvironmentT) => {
-  const dynamoDbClient = new DynamoDBClient({
-    region: environment.region,
-    maxAttempts: environment.awsMaxAttempts,
-    ...(environment.useLocalstack
-      ? {
-          endpoint: environment.localstackHost,
-          credentials: {
-            accessKeyId: environment.localstackAccessKeyId,
-            secretAccessKey: environment.localstackSecretAccessKey,
-          },
-        }
-      : {}),
-    requestHandler: new NodeHttpHandler({
-      connectionTimeout: environment.awsClientConnectTimeout,
-      requestTimeout: environment.awsClientRequestTimeout,
-      httpAgent: new http.Agent({
-        keepAlive: true,
-        maxSockets: 50,
-      }),
-      httpsAgent: new https.Agent({
-        keepAlive: true,
-        maxSockets: 50,
-      }),
-    }),
-  });
+const createDynamoDbClient = () => {
+  const dynamoDbClient = new DynamoDBClient(getAppEnvironment());
 
   const wrappedClient =
     getEnvironment() === "local"
