@@ -10,6 +10,8 @@ projects/app/dist
 projects/app/dist_openapi
 projects/app/openapi_check*.yaml
 
+projects/core/.aws-sam
+
 projects/infra/.terraform
 projects/infra/.terraform.lock.hcl
 
