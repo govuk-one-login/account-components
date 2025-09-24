@@ -54,8 +54,8 @@
     "vitest": "^3.2.4"
   },
   "scripts": {
-    "preinstall": "if [ \"$CI\" != true ]; then cat Brewfile; echo; echo; read -p \"Install/update Brewfile dependencies as shown above (y/N)?\" -n 1 -r; echo; if [ \"$REPLY\" == \"y\" ]; then brew bundle check || brew bundle install; fi; fi",
-    "postinstall": "if [ \"$CI\" != true ]; then pre-commit install --install-hooks --overwrite; fi",
+    "install-brewfile": "cat Brewfile; echo; echo; read -p \"Install/update Brewfile dependencies as shown above (y/N)?\" -n 1 -r; echo; if [ \"$REPLY\" == \"y\" ]; then brew bundle check || brew bundle install; fi",
+    "install-git-hooks": "pre-commit install --install-hooks --overwrite",
     "check-types": "tsc --noEmit",
     "eslint": "eslint . --report-unused-disable-directives --cache",
     "eslint:fix": "eslint . --fix --report-unused-disable-directives --cache",
