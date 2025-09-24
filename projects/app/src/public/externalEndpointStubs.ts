@@ -5,6 +5,7 @@ import type { FastifyTypeboxInstance } from "../app.js";
 import * as Type from "@fastify/type-provider-typebox";
 import { getCurrentExternalEndpointStubScenario } from "./handlers/externalEndpointStubs/utils/config/index.js";
 import { getPath } from "./handlers/externalEndpointStubs/utils/paths/index.js";
+import { setUpI18n } from "../utils/setUpI18n/index.js";
 
 export const ConfigureExternalEndpointsGetSchema = {
   querystring: Type.Object({
@@ -20,6 +21,7 @@ export const externalEndpointStubs = function (app: FastifyTypeboxInstance) {
   app.register(fastifyFormbody);
   app.register(fastifyCookie);
   app.register(nunjucksRender);
+  app.register(setUpI18n);
 
   app.get(
     getPath("root"),
@@ -28,7 +30,7 @@ export const externalEndpointStubs = function (app: FastifyTypeboxInstance) {
     },
     async function (request, reply) {
       return (
-        await import("./handlers/externalEndpointStubs/configure/index.js")
+        await import("./handlers/externalEndpointStubs/index.js")
       ).getHandler(request, reply);
     },
   );
@@ -40,7 +42,7 @@ export const externalEndpointStubs = function (app: FastifyTypeboxInstance) {
     },
     async function (request, reply) {
       return (
-        await import("./handlers/externalEndpointStubs/configure/index.js")
+        await import("./handlers/externalEndpointStubs/index.js")
       ).postHandler(request, reply);
     },
   );

@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { setUpI18n } from "./index.js";
+import type { FastifyTypeboxInstance } from "../../app.js";
 import { Lang } from "../../app.js";
 import type {
-  FastifyInstance,
   FastifyRequest,
   FastifyReply,
   onRequestAsyncHookHandler,
@@ -17,7 +17,7 @@ vi.mock("i18next", () => ({
 }));
 
 describe("setUpI18n", () => {
-  let mockApp: Partial<FastifyInstance>;
+  let mockApp: Partial<FastifyTypeboxInstance>;
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let onRequestHandler: (
@@ -31,7 +31,7 @@ describe("setUpI18n", () => {
         if (hookName === "onRequest") {
           onRequestHandler = handler;
         }
-      }) as unknown as FastifyInstance["addHook"],
+      }) as unknown as FastifyTypeboxInstance["addHook"],
     };
 
     mockRequest = {
@@ -47,7 +47,7 @@ describe("setUpI18n", () => {
   });
 
   it("should register onRequest hook", () => {
-    setUpI18n(mockApp as FastifyInstance);
+    setUpI18n(mockApp as FastifyTypeboxInstance);
 
     expect(mockApp.addHook).toHaveBeenCalledWith(
       "onRequest",
@@ -56,7 +56,7 @@ describe("setUpI18n", () => {
   });
 
   it("should set English as default language when no lng parameter or cookie", async () => {
-    setUpI18n(mockApp as FastifyInstance);
+    setUpI18n(mockApp as FastifyTypeboxInstance);
 
     await onRequestHandler(
       mockRequest as FastifyRequest,
@@ -68,7 +68,7 @@ describe("setUpI18n", () => {
 
   it("should set language from query parameter", async () => {
     mockRequest.query = { lng: "cy" };
-    setUpI18n(mockApp as FastifyInstance);
+    setUpI18n(mockApp as FastifyTypeboxInstance);
 
     await onRequestHandler(
       mockRequest as FastifyRequest,
@@ -80,7 +80,7 @@ describe("setUpI18n", () => {
 
   it("should set language from cookie when no query parameter", async () => {
     mockRequest.cookies = { lng: "cy" };
-    setUpI18n(mockApp as FastifyInstance);
+    setUpI18n(mockApp as FastifyTypeboxInstance);
 
     await onRequestHandler(
       mockRequest as FastifyRequest,
@@ -93,7 +93,7 @@ describe("setUpI18n", () => {
   it("should prioritize query parameter over cookie", async () => {
     mockRequest.query = { lng: "en" };
     mockRequest.cookies = { lng: "cy" };
-    setUpI18n(mockApp as FastifyInstance);
+    setUpI18n(mockApp as FastifyTypeboxInstance);
 
     await onRequestHandler(
       mockRequest as FastifyRequest,
@@ -105,7 +105,7 @@ describe("setUpI18n", () => {
 
   it("should fallback to English for invalid language values", async () => {
     mockRequest.query = { lng: "invalid" };
-    setUpI18n(mockApp as FastifyInstance);
+    setUpI18n(mockApp as FastifyTypeboxInstance);
 
     await onRequestHandler(
       mockRequest as FastifyRequest,
@@ -118,7 +118,7 @@ describe("setUpI18n", () => {
   it("should initialize i18next with correct configuration", async () => {
     const { default: i18next } = await import("i18next");
     mockRequest.query = { lng: "cy" };
-    setUpI18n(mockApp as FastifyInstance);
+    setUpI18n(mockApp as FastifyTypeboxInstance);
 
     await onRequestHandler(
       mockRequest as FastifyRequest,
@@ -142,7 +142,7 @@ describe("setUpI18n", () => {
 
   it("should attach i18next instance to reply", async () => {
     const { default: i18next } = await import("i18next");
-    setUpI18n(mockApp as FastifyInstance);
+    setUpI18n(mockApp as FastifyTypeboxInstance);
 
     await onRequestHandler(
       mockRequest as FastifyRequest,
