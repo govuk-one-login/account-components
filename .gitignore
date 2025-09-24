@@ -21,3 +21,5 @@ projects/integration-tests/.features-gen
 projects/integration-tests/cucumber-report
 projects/integration-tests/snapshots-updated
 
+.idea
+

@@ -1,8 +1,5 @@
 import { SignatureTypes } from "../types/common.js";
 
-export const DEFAULT_ISSUER =
-  "https://" + (process.env["DEFAULT_ISSUER"] ?? "default.issuer");
-
 export const AUTHENTICATION_ISSUER = "authentication-issuer";
 
 export const DEFAULT_AUDIENCE = process.env["DEFAULT_AUDIENCE"];
@@ -18,6 +15,19 @@ export const getPrivateKeyName = (keyType: SignatureTypes): string => {
     throw new Error(`Environment variable ${keyEnvironment} is not set`);
   }
   return privateKey;
+};
+
+export const getPublicKeyName = (keyType: SignatureTypes): string => {
+  const keyEnvironment =
+    keyType == SignatureTypes.EC
+      ? " EC_PUBLIC_KEY_SSM_NAME"
+      : "RSA_PUBLIC_KEY_SSM_NAME";
+
+  const publicKey = process.env[keyEnvironment];
+  if (!publicKey) {
+    throw new Error(`Environment variable ${keyEnvironment} is not set`);
+  }
+  return publicKey;
 };
 
 export const getDefaultKeyValue = () => {

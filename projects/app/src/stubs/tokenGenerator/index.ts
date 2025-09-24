@@ -1,5 +1,4 @@
 import {
-  DEFAULT_ISSUER,
   DEFAULT_AUDIENCE,
   AUTHENTICATION_ISSUER,
 } from "../utils/app-config.js";
@@ -72,13 +71,7 @@ function getJwtHeader(
   const typ = "JWT";
   let alg: Algorithms = ALG[signatureType];
   let kid: string | undefined =
-    scenario == Scenarios.AUTH_ISS
-      ? signatureType === SignatureTypes.EC
-        ? Kids.AUTH_EC
-        : Kids.AUTH_RSA
-      : signatureType === SignatureTypes.EC
-        ? Kids.EC
-        : Kids.RSA;
+    signatureType === SignatureTypes.EC ? Kids.EC : Kids.RSA;
   switch (scenario) {
     case Scenarios.INVALID_ALGORITHM: {
       alg = Algorithms.INVALID;
@@ -107,11 +100,11 @@ function getJwtHeader(
 /**
  * A function for returning the JWT Payload.
  *
- * @param tokenType - the types of token: valid, invalid, none-algorithm, missing-kid, expired, iat in future.
+ * @param scenario - the types of scenario: valid, invalid, none-algorithm, missing-kid, expired, iat in future.
  * @param body - the body string.
  * @throws {@link CustomError} - if the event body is invalid JSON.
  */
-function getJwtPayload(tokenType: Scenarios, body: string | null): JWTPayload {
+function getJwtPayload(scenario: Scenarios, body: string | null): JWTPayload {
   let bodyPayload: JWTPayload = {};
   try {
     bodyPayload =
@@ -130,7 +123,6 @@ function getJwtPayload(tokenType: Scenarios, body: string | null): JWTPayload {
 
   const {
     aud: bodyAud,
-    iss: bodyIss,
     iat: bodyIat,
     scope: bodyScope,
     ttl,
@@ -141,27 +133,20 @@ function getJwtPayload(tokenType: Scenarios, body: string | null): JWTPayload {
   const initiatedAt =
     typeof bodyIat === "number" ? bodyIat * -1 : DEFAULT_TOKEN_INITIATED_AT;
   const exp =
-    tokenType === Scenarios.EXPIRED
-      ? getDateEpoch(-5)
-      : getDateEpoch(expiresIn);
+    scenario === Scenarios.EXPIRED ? getDateEpoch(-5) : getDateEpoch(expiresIn);
   const iat =
-    tokenType === Scenarios.IAT_IN_FUTURE
+    scenario === Scenarios.IAT_IN_FUTURE
       ? getDateEpoch(5)
       : getDateEpoch(initiatedAt);
-  const iss =
-    tokenType === Scenarios.AUTH_ISS
-      ? AUTHENTICATION_ISSUER
-      : (bodyIss ?? DEFAULT_ISSUER);
+  const iss = AUTHENTICATION_ISSUER;
   const aud = bodyAud ?? DEFAULT_AUDIENCE;
-  const scope =
-    bodyScope ??
-    (iss === AUTHENTICATION_ISSUER ? Scope.REVERIFICATION : Scope.PROVING);
+  const scope = bodyScope ?? Scope.REVERIFICATION;
 
   return {
     ...payload,
     exp,
     iat,
-    ...(iss && { iss }),
+    ...{ iss },
     ...(aud && { aud }),
     ...{ scope },
   } as JWTPayload;

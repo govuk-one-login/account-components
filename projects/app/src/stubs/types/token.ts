@@ -22,8 +22,14 @@ export interface RequestBody {
   sub: string;
   email: string;
   govuk_signin_journey_id: string;
-  "access-token": string;
+  access_token: string;
   lng: string;
   scenario: string;
   signatureType: string;
+}
+
+export interface JwksKeyType {
+  kty: SignatureTypes;
+  alg: Algorithms;
+  kid: string;
 }
