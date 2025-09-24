@@ -1,8 +1,11 @@
 {
   "name": "integration-tests",
   "version": "1.0.0",
+  "engines": {
+    "node": "22"
+  },
   "scripts": {
-    "run:app": "cd ../ && export IS_INTEGRATION_TEST=1; npm run run:app",
+    "run:app": "cd ../../ && export IS_INTEGRATION_TEST=1; npm run run:app",
     "build": "docker build -t account-components-integration-test .",
     "install-browsers": "playwright install --with-deps chromium",
     "start-test-server": "npm run build && docker run --network=host --rm --init account-components-integration-test run-server",
