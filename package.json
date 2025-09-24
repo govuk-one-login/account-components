@@ -73,6 +73,7 @@
     "check-gh-actions": "zizmor .",
     "check-gh-actions:fix": "zizmor . --fix",
     "sam-validate:app": "cd projects/app && sam validate --region eu-west-2 --lint",
+    "sam-validate:core": "cd projects/core && sam validate --region eu-west-2 --lint",
     "build:app:shared": "cd projects/app && rm -rf dist && cp -r ./src ./dist && find dist -type f ! -name '*.njk' -print0 | xargs -0 rm -f && cp -r ./src/static dist && sass dist/static/shared-cache/application.scss dist/static/shared-cache/application.css --no-source-map && rm dist/static/shared-cache/application.scss && csso dist/static/shared-cache/application.css --output dist/static/shared-cache/application.css",
     "build:app": "npm run build:app:shared && cd projects/app && rolldown -c rolldown.config.ts && cp ./Makefile dist && cp ../../package.json ./dist/package.json",
     "build-local:app": "npm run build:app:shared && cd projects/app && rolldown -c rolldown.local.config.ts",
