@@ -6,6 +6,7 @@ import fastifyFormBody from "@fastify/formbody";
 import { getEnvironment } from "../utils/getEnvironment/index.js";
 import { nunjucksRender } from "../utils/nunjucksRender/index.js";
 import type { FastifyTypeboxInstance } from "../app.js";
+import { setUpI18n } from "../utils/setUpI18n/index.js";
 
 export const frontend = function (app: FastifyTypeboxInstance) {
   app.register(fastifyFormBody);
@@ -22,4 +23,5 @@ export const frontend = function (app: FastifyTypeboxInstance) {
     sessionPlugin: "@fastify/session",
   });
   app.register(nunjucksRender);
+  app.register(setUpI18n);
 };
