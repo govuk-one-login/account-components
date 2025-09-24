@@ -13,10 +13,10 @@ import type {
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import * as AWSXRay from "aws-xray-sdk";
 import { getEnvironment } from "../getEnvironment/index.js";
-import { getAppEnvironment } from "./getAppEnvironment.js";
+import { getAwsClientConfig } from "./getAwsClientConfig.js";
 
 const createDynamoDbClient = () => {
-  const dynamoDbClient = new DynamoDBClient(getAppEnvironment());
+  const dynamoDbClient = new DynamoDBClient(getAwsClientConfig());
 
   const wrappedClient =
     getEnvironment() === "local"

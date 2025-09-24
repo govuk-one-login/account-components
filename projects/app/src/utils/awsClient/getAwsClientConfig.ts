@@ -4,7 +4,7 @@ import { resolveEnvVarToBool } from "../resolveEnvVarToBool/index.js";
 import http from "node:http";
 import https from "node:https";
 
-export const getAppEnvironment = () => {
+export const getAwsClientConfig = () => {
   return {
     region: process.env["AWS_REGION"] ?? "eu-west-2",
     maxAttempts: getNumberFromEnvVar("AWS_MAX_ATTEMPTS", 3),
