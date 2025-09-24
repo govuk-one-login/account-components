@@ -4,14 +4,14 @@ import {
   generateExternalEndpointStubConfigCookieKey,
   getCurrentExternalEndpointStubScenario,
   externalEndpointStubsConfig,
-} from "./utils/config/index.js";
+} from "../utils/config/index.js";
 import type {
   ConfigureExternalEndpointsGetSchema,
   ConfigureExternalEndpointsPostSchema,
-} from "../../externalEndpointStubs.js";
-import { getEnvironment } from "../../../utils/getEnvironment/index.js";
-import { getPath } from "./utils/paths/index.js";
-import type { FastifyRequestWithSchema } from "../../../app.js";
+} from "../../../externalEndpointStubs.js";
+import { getEnvironment } from "../../../../utils/getEnvironment/index.js";
+import { getPath } from "../utils/paths/index.js";
+import type { FastifyRequestWithSchema } from "../../../../app.js";
 
 export async function getHandler(
   request: FastifyRequestWithSchema<typeof ConfigureExternalEndpointsGetSchema>,
@@ -19,15 +19,18 @@ export async function getHandler(
 ) {
   assert.ok(reply.render);
 
-  return reply.render("public/handlers/externalEndpointStubs/index.njk", {
-    showSuccessMessage: request.query.updated === 1,
-    externalEndpointStubsConfig,
-    getCurrentExternalEndpointStubScenario: (
-      group: Parameters<typeof getCurrentExternalEndpointStubScenario>[1],
-      endpoint: Parameters<typeof getCurrentExternalEndpointStubScenario>[2],
-    ) => getCurrentExternalEndpointStubScenario(request, group, endpoint),
-    generateExternalEndpointStubConfigCookieKey,
-  });
+  return reply.render(
+    "public/handlers/externalEndpointStubs/configure/index.njk",
+    {
+      showSuccessMessage: request.query.updated === 1,
+      externalEndpointStubsConfig,
+      getCurrentExternalEndpointStubScenario: (
+        group: Parameters<typeof getCurrentExternalEndpointStubScenario>[1],
+        endpoint: Parameters<typeof getCurrentExternalEndpointStubScenario>[2],
+      ) => getCurrentExternalEndpointStubScenario(request, group, endpoint),
+      generateExternalEndpointStubConfigCookieKey,
+    },
+  );
 }
 
 export async function postHandler(
@@ -41,7 +44,7 @@ export async function postHandler(
       externalEndpointStubsConfig,
     )) {
       if (
-        Object.entries(groupValue).find(([endpointKey, endpointValue]) => {
+        Object.entries(groupValue).some(([endpointKey, endpointValue]) => {
           return (
             generateExternalEndpointStubConfigCookieKey(
               groupKey,
@@ -63,5 +66,5 @@ export async function postHandler(
     }
   });
 
-  return reply.redirect(`${getPath("root", true)}?updated=1`);
+  return reply.redirect(`${getPath("configure", true)}?updated=1`);
 }

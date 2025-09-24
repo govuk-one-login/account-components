@@ -24,25 +24,25 @@ export const externalEndpointStubs = function (app: FastifyTypeboxInstance) {
   app.register(setUpI18n);
 
   app.get(
-    getPath("root"),
+    getPath("configure"),
     {
       schema: ConfigureExternalEndpointsGetSchema,
     },
     async function (request, reply) {
       return (
-        await import("./handlers/externalEndpointStubs/index.js")
+        await import("./handlers/externalEndpointStubs/configure/index.js")
       ).getHandler(request, reply);
     },
   );
 
   app.post(
-    getPath("root"),
+    getPath("configure"),
     {
       schema: ConfigureExternalEndpointsPostSchema,
     },
     async function (request, reply) {
       return (
-        await import("./handlers/externalEndpointStubs/index.js")
+        await import("./handlers/externalEndpointStubs/configure/index.js")
       ).postHandler(request, reply);
     },
   );
