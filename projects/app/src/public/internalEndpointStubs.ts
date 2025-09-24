@@ -7,6 +7,8 @@ import { getCurrentInternalEndpointStubScenario } from "./handlers/internalEndpo
 import { getPath } from "./handlers/internalEndpointStubs/utils/paths/index.js";
 import { generateAccessToken } from "../stubs/tokenGenerator/index.js";
 import logger from "../stubs/utils/logger.js";
+import { buildJWK } from "../stubs/jwks/index.js";
+import type { RequestBody } from "../stubs/types/token.js";
 export const ConfigureInternalEndpointsGetSchema = {
   querystring: Type.Object({
     updated: Type.Optional(Type.Number()),
@@ -56,6 +58,10 @@ export const internalEndpointStubs = function (app: FastifyTypeboxInstance) {
       const token = await generateAccessToken(request);
 
       logger.debug("Token is" + token);
+
+      const jwkString = await buildJWK(request.body as unknown as RequestBody);
+
+      logger.debug("Jwk is" + jwkString);
 
       //Create a signed JWT of the Request object
 

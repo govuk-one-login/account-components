@@ -19,12 +19,10 @@ export enum Scenarios {
   WRONG_KID = "wrongKid",
   EXPIRED = "expired",
   IAT_IN_FUTURE = "iatInFuture",
-  AUTH_ISS = "authIss",
 }
 
 export enum Scope {
   REVERIFICATION = "reverification",
-  PROVING = "proving",
 }
 
 export enum SignatureTypes {
@@ -47,3 +45,4 @@ export const DEFAULT_TOKEN_EXPIRY = 5;
 export const DEFAULT_TOKEN_INITIATED_AT = 0;
 export const MILLISECONDS_IN_MINUTES = 60_000;
 export const CONVERT_TO_SECONDS = 1000;
+export const JWKS_TIMEOUT_MILLISECONDS = 31_000;
