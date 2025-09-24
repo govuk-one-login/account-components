@@ -18,6 +18,12 @@ import { addDefaultCaching } from "./utils/addDefaultCaching/index.js";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import type { IncomingMessage } from "node:http";
 import type { ResolveFastifyRequestType } from "fastify/types/type-provider.js";
+import type i18next from "i18next";
+
+export enum Lang {
+  English = "en",
+  Welsh = "cy",
+}
 
 export type FastifyTypeboxInstance = FastifyInstance<
   RawServerDefault,
@@ -28,6 +34,7 @@ export type FastifyTypeboxInstance = FastifyInstance<
 >;
 declare module "fastify" {
   interface FastifyRequest {
+    lang?: Lang;
     awsLambda?: {
       event: APIGatewayEvent;
       context: Context;
@@ -39,6 +46,7 @@ declare module "fastify" {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       props?: Record<string, any>,
     ) => Promise<void>;
+    i18next?: typeof i18next;
   }
 }
 
