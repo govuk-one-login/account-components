@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getAppEnvironment } from "./getAppEnvironment.js";
+import { getAwsClientConfig } from "./getAwsClientConfig.js";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 const ORIGINAL_ENV = { ...process.env };
 
-describe("getAppEnvironment", () => {
+describe("getAwsClientConfig", () => {
   beforeEach(() => {
     vi.resetModules();
     process.env = { ...ORIGINAL_ENV };
@@ -18,7 +18,7 @@ describe("getAppEnvironment", () => {
   });
 
   it("returns defaults and calls helpers with expected args when env vars not set", async () => {
-    const result = getAppEnvironment();
+    const result = getAwsClientConfig();
 
     expect(result.region).toBe("eu-west-2");
     expect(result.maxAttempts).toBe(3);
@@ -35,7 +35,7 @@ describe("getAppEnvironment", () => {
     process.env["AWS_CLIENT_REQUEST_TIMEOUT"] = "2000";
     process.env["AWS_CLIENT_CONNECT_TIMEOUT"] = "3000";
 
-    const result = getAppEnvironment();
+    const result = getAwsClientConfig();
 
     expect(result.region).toBe("us-east-1");
     expect(result.maxAttempts).toBe(5);
