@@ -97,6 +97,16 @@ repos:
 
   - repo: local
     hooks:
+      - id: sam-validate-core
+        name: SAM validate core
+        entry: npm run sam-validate:core
+        language: system
+        exclude: .*
+        always_run: true
+        stages: [pre-commit]
+
+  - repo: local
+    hooks:
       - id: cfnlint
         name: Lint CloudFormation
         entry: npm run cfnlint

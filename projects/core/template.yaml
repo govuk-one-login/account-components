@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: >
+      The environment type
+    AllowedValues:
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
+  PermissionsBoundary:
+    Type: String
+    Description: >
+      The ARN of the permissions boundary to apply to any role created by the template, provided by the deployment pipeline
+    Default: "none"
+  VpcStackName:
+    Type: String
+    Description: >
+      The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
+
+Resources:
+  DynamoDbSSEKey:
+    Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      Description: AWS KMS key for encrypting the data stored within DynamoDB tables
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: "dynamodb.amazonaws.com"
+            Action:
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:DescribeKey"
+              - "kms:CreateGrant"
+            Resource: "*"
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-DynamoDbSSEKey"
+
+  DynamoDbSSEKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-DynamoDbSSEKey"
+      TargetKeyId: !GetAtt DynamoDbSSEKey.Arn
+
+  DynamoDbSSEKeyArnSSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: "The ARN of the DynamoDbSSEKey KMS key"
+      Name: !Sub "/${AWS::StackName}/KMS/DynamoDbSSEKey/ARN"
+      Type: String
+      Value: !GetAtt DynamoDbSSEKey.Arn
