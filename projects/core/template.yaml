@@ -79,7 +79,7 @@ Resources:
   UserInfoTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: "user_info"
+      TableName: !Sub ${AWS::StackName}-UserInfo
       BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: outcome_id
@@ -107,3 +107,38 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-user_info"
+
+  SessionsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-SessionStore
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+        - AttributeName: "user_id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      TimeToLiveSpecification:
+        AttributeName: "expires"
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      GlobalSecondaryIndexes:
+        - IndexName: "users-sessions"
+          KeySchema:
+            - AttributeName: "user_id"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: KEYS_ONLY
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
