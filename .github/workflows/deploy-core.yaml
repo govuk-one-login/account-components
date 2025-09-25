@@ -1,0 +1,49 @@
+name: Deploy core
+
+permissions: {}
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - projects/core/**
+      - .github/workflows/deploy-core.yaml
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-core:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
+        with:
+          persist-credentials: false
+
+      - name: Set up SAM CLI
+        uses: aws-actions/setup-sam@f664fad9e12492edfc187a31f575537dfbb0ff63
+        with:
+          use-installer: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Assume AWS role
+        uses: aws-actions/configure-aws-credentials@a03048d87541d1d9fcf2ecf528a4a65ba9bd7838
+        with:
+          role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN_CORE }}
+          aws-region: "eu-west-2"
+
+      - name: Build SAM template
+        run: cd ./projects/core && sam build
+
+      - name: Deploy core
+        uses: govuk-one-login/devplatform-upload-action@fda75612a1b0e5a8c84ae7c44a23340e50e5bbde
+        with:
+          artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET_NAME_CORE }}
+          signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
+          working-directory: ./projects/core

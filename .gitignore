@@ -5,6 +5,7 @@ coverage
 .env*
 !.env*.sample
 !.env.openapi
+.aws-sam
 
 projects/app/dist
 projects/app/dist_openapi

@@ -56,6 +56,9 @@ jobs:
       - name: SAM validate app
         run: npm run sam-validate:app
 
+      - name: SAM validate core
+        run: npm run sam-validate:core
+
       - name: Lint CloudFormation
         run: npm run cfnlint
 
