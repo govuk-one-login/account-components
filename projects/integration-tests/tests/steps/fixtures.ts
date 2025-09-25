@@ -1,5 +1,5 @@
 import { test as base, createBdd } from "playwright-bdd";
-import { env } from "../../env";
+import { env } from "../../env.js";
 
 export const test = base.extend<{
   skips: undefined;

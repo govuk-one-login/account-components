@@ -1,8 +1,9 @@
 {
   "name": "integration-tests",
   "version": "1.0.0",
+  "type": "module",
   "engines": {
-    "node": "22"
+    "node": ">=22.16.0 <23"
   },
   "scripts": {
     "run:app": "cd ../../ && export IS_INTEGRATION_TEST=1; npm run run:app",
