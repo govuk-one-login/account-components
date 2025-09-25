@@ -71,7 +71,10 @@ export default defineConfig(
     },
   },
   {
-    ...vitestEslint.configs.all,
+    plugins: {
+      // @ts-expect-error
+      vitest: vitestEslint,
+    },
     files: ["**/*.test.ts"],
     rules: {
       ...vitestEslint.configs.all.rules,
