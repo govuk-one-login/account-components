@@ -7,11 +7,8 @@ components:
 paths:
   /healthcheck:
     get:
-      responses:
-        "200":
-          description: Default Response
-  /robots.txt:
-    get:
+      tags:
+        - include-in-docs
       responses:
         "200":
           description: Default Response

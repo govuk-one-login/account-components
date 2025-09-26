@@ -3,6 +3,7 @@ import type { FastifyTypeboxInstance } from "../app.js";
 import { nunjucksRender } from "../utils/nunjucksRender/index.js";
 import { setUpI18n } from "../utils/setUpI18n/index.js";
 import fastifyCookie from "@fastify/cookie";
+import { includeRouteInOpenApiDocsTag } from "../utils/includeRouteInOpenApiDocsTag.js";
 
 export const publicRoutes = async function (app: FastifyTypeboxInstance) {
   app.register(fastifyCookie);
@@ -45,9 +46,17 @@ export const publicRoutes = async function (app: FastifyTypeboxInstance) {
     });
   }
 
-  app.get("/healthcheck", async function (_request, reply) {
-    return reply.send("ok");
-  });
+  app.get(
+    "/healthcheck",
+    {
+      schema: {
+        tags: [includeRouteInOpenApiDocsTag],
+      },
+    },
+    async function (_request, reply) {
+      return reply.send("ok");
+    },
+  );
 
   app.get("/robots.txt", async function (request, reply) {
     return (await import("./handlers/robots.txt/index.js")).handler(

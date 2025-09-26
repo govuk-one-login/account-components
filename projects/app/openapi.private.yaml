@@ -7,6 +7,8 @@ components:
 paths:
   /private-healthcheck:
     get:
+      tags:
+        - include-in-docs
       responses:
         "200":
           description: Default Response

@@ -29,8 +29,8 @@ There are various commands which can be run manually and which may also be run b
 
 - `npm run run:app` to run the app locally and watch for changes
 - `npm run build:app` to build the app
-- `generate-openapi:app` to generate OpenAPI documentation for the app
-- `check-openapi:app` to check that the app's OpenAPI documentation is up to date and valid
+- `npm run generate-openapi:app` to generate OpenAPI documentation for the app
+- `npm run check-openapi:app` to check that the app's OpenAPI documentation is up to date and valid
 - `npm run format` to run [Prettier](https://prettier.io/) formatting
 - `npm run eslint` to run [ESLint](https://eslint.org/)
 - `npm run knip` to run [Knip](https://knip.dev/)
@@ -52,3 +52,7 @@ If these commands detect issues it may be possible to fix them by running:
 ## Integration testing
 
 See [Integration testing README](/projects/integration-tests/README.md)
+
+## Including routes in OpenAPI documentation
+
+When OpenAPI docs are generated (using `npm rungenerate-openapi:app`) a route is only included in the docs if it has one or more tags in its schema. If there are no logical tags to apply to a route which you want to appear in the docs then the variable `includeRouteInOpenApiDocsTag` can be imported and used as a tag to ensure the route is included.
