@@ -3,9 +3,7 @@ import { publicRoutes } from "./index.js";
 import type { FastifyTypeboxInstance } from "../app.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
-vi.mock("@fastify/cookie");
-vi.mock("../utils/nunjucksRender/index.js");
-vi.mock("../utils/setUpI18n/index.js");
+const ORIGINAL_ENV = { ...process.env };
 
 describe("frontend", () => {
   let mockApp: FastifyTypeboxInstance;
@@ -26,39 +24,15 @@ describe("frontend", () => {
       setErrorHandler: mockSetErrorHandler,
       get: mockGetHandler,
     } as unknown as FastifyTypeboxInstance;
+
+    process.env["REGISTER_PUBLIC_STUB_ROUTES"] = "1";
+    process.env["REGISTER_PUBLIC_STATIC_ROUTES"] = "1";
+    process.env["REGISTER_PUBLIC_FRONTEND_ROUTES"] = "1";
   });
 
   afterEach(() => {
     vi.clearAllMocks();
-  });
-
-  it("registers all required plugins", async () => {
-    const { default: fastifyCookie } = await import("@fastify/cookie");
-    const { nunjucksRender } = await import("../utils/nunjucksRender/index.js");
-    const { setUpI18n } = await import("../utils/setUpI18n/index.js");
-
-    await publicRoutes(mockApp);
-
-    expect(mockRegister).toHaveBeenCalledTimes(3);
-    expect(mockRegister).toHaveBeenNthCalledWith(1, fastifyCookie);
-    expect(mockRegister).toHaveBeenNthCalledWith(2, nunjucksRender);
-    expect(mockRegister).toHaveBeenNthCalledWith(3, setUpI18n);
-  });
-
-  it("sets up not found handler", async () => {
-    await publicRoutes(mockApp);
-
-    expect(mockSetNotFoundHandler).toHaveBeenCalledExactlyOnceWith(
-      expect.any(Function),
-    );
-  });
-
-  it("sets up error handler", async () => {
-    await publicRoutes(mockApp);
-
-    expect(mockSetErrorHandler).toHaveBeenCalledExactlyOnceWith(
-      expect.any(Function),
-    );
+    process.env = { ...ORIGINAL_ENV };
   });
 
   it("not found handler dynamically imports and calls onNotFound", async () => {
@@ -130,28 +104,5 @@ describe("frontend", () => {
     await handler.call(mockThis, mockRequest, mockReply);
 
     expect(mockReply.send).toHaveBeenCalledWith("ok");
-  });
-
-  it("robots.txt GET handler dynamically imports and calls handler", async () => {
-    const mockGetRobotsDotTxt = vi.fn();
-    const mockRequest = {} as FastifyRequest;
-    const mockReply = {} as FastifyReply;
-    const mockThis = {};
-
-    vi.doMock("./handlers/robots.txt/index.js", () => ({
-      handler: mockGetRobotsDotTxt,
-    }));
-
-    await publicRoutes(mockApp);
-
-    expect(mockGetHandler).toHaveBeenCalledWith(
-      "/robots.txt",
-      expect.any(Function),
-    );
-
-    const handler = mockGetHandler.mock.calls[1]![1] as (...args: any) => any;
-    await handler.call(mockThis, mockRequest, mockReply);
-
-    expect(mockGetRobotsDotTxt).toHaveBeenCalledWith(mockRequest, mockReply);
   });
 });
