@@ -200,7 +200,7 @@ Resources:
       Environment:
         Variables:
           REGISTER_PUBLIC_ROUTES: "1"
-          REGISTER_STUB_ROUTES:
+          REGISTER_PUBLIC_STUB_ROUTES:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, enableStubs]
       Events:
         Root:
@@ -232,6 +232,8 @@ Resources:
       Environment:
         Variables:
           REGISTER_PUBLIC_ROUTES: "1"
+          REGISTER_PUBLIC_STATIC_ROUTES: "1"
+          REGISTER_PUBLIC_FRONTEND_ROUTES: "1"
       Events:
         Root:
           Type: Api

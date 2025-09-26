@@ -5,7 +5,7 @@ import type { FastifyRequestWithSchema } from "../../../../app.js";
 import type {
   ConfigureExternalEndpointsGetSchema,
   ConfigureExternalEndpointsPostSchema,
-} from "../../../externalEndpointStubs.js";
+} from "../../index.js";
 import {
   externalEndpointStubsConfig,
   generateExternalEndpointStubConfigCookieKey,
@@ -39,7 +39,7 @@ describe("externalEndpointStubs handlers", () => {
       await getHandler(request, reply as FastifyReply);
 
       expect(reply.render).toHaveBeenCalledWith(
-        "public/handlers/externalEndpointStubs/configure/index.njk",
+        "public/externalEndpointStubs/handlers/configure/index.njk",
         expect.objectContaining({
           showSuccessMessage: false,
           externalEndpointStubsConfig,
@@ -56,7 +56,7 @@ describe("externalEndpointStubs handlers", () => {
       await getHandler(request, reply as FastifyReply);
 
       expect(reply.render).toHaveBeenCalledWith(
-        "public/handlers/externalEndpointStubs/configure/index.njk",
+        "public/externalEndpointStubs/handlers/configure/index.njk",
         expect.objectContaining({
           showSuccessMessage: true,
           externalEndpointStubsConfig,

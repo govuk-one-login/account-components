@@ -29,7 +29,7 @@ describe("onNotFound handler", () => {
     onNotFound(mockRequest, mockReply);
 
     expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(
-      "public/handlers/frontend/onNotFound/index.njk",
+      "public/handlers/onNotFound/index.njk",
     );
   });
 });

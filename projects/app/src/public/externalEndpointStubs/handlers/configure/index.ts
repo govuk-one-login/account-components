@@ -8,7 +8,7 @@ import {
 import type {
   ConfigureExternalEndpointsGetSchema,
   ConfigureExternalEndpointsPostSchema,
-} from "../../../externalEndpointStubs.js";
+} from "../../index.js";
 import { getEnvironment } from "../../../../utils/getEnvironment/index.js";
 import { getPath } from "../utils/paths/index.js";
 import type { FastifyRequestWithSchema } from "../../../../app.js";
@@ -20,7 +20,7 @@ export async function getHandler(
   assert.ok(reply.render);
 
   return reply.render(
-    "public/handlers/externalEndpointStubs/configure/index.njk",
+    "public/externalEndpointStubs/handlers/configure/index.njk",
     {
       showSuccessMessage: request.query.updated === 1,
       externalEndpointStubsConfig,

@@ -35,9 +35,11 @@ jobs:
           echo "IS_INTEGRATION_TEST=1" >> .env.integration-tests
           echo "ENVIRONMENT=local" >> .env.integration-tests
           echo "NODE_ENV=production" >> .env.integration-tests
-          echo "REGISTER_STUB_ROUTES=1" >> .env.integration-tests
           echo "REGISTER_PUBLIC_ROUTES=1" >> .env.integration-tests
           echo "REGISTER_PRIVATE_ROUTES=1" >> .env.integration-tests
+          echo "REGISTER_PUBLIC_STUB_ROUTES=1" >> .env.integration-tests
+          echo "REGISTER_PUBLIC_STATIC_ROUTES=1" >> .env.integration-tests
+          echo "REGISTER_PUBLIC_FRONTEND_ROUTES=1" >> .env.integration-tests
 
       - name: Install integration tests dependencies
         run: cd projects/integration-tests && npm ci

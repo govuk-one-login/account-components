@@ -35,7 +35,7 @@ describe("onError handler", () => {
 
     expect(mockLog.error).toHaveBeenCalledExactlyOnceWith(
       testError,
-      "A frontend error occurred",
+      "An error occurred",
     );
   });
 
@@ -53,7 +53,7 @@ describe("onError handler", () => {
     onError(testError, mockRequest, mockReply);
 
     expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(
-      "public/handlers/frontend/onError/index.njk",
+      "public/handlers/onError/index.njk",
     );
   });
 });

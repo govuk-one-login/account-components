@@ -3,16 +3,13 @@ import {
   externalEndpointStubs,
   ConfigureExternalEndpointsGetSchema,
   ConfigureExternalEndpointsPostSchema,
-} from "./externalEndpointStubs.js";
-import type { FastifyTypeboxInstance } from "../app.js";
+} from "./index.js";
+import type { FastifyTypeboxInstance } from "../../app.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
-vi.mock("@fastify/cookie");
 vi.mock("@fastify/formbody");
-vi.mock("../utils/nunjucksRender/index.js");
-vi.mock("../utils/setUpI18n/index.js");
-vi.mock("./handlers/externalEndpointStubs/utils/config/index.js");
-vi.mock("./handlers/externalEndpointStubs/utils/paths/index.js");
+vi.mock("./handlers/utils/config/index.js");
+vi.mock("./handlers/utils/paths/index.js");
 
 describe("externalEndpointStubs", () => {
   let mockApp: FastifyTypeboxInstance;
@@ -37,24 +34,16 @@ describe("externalEndpointStubs", () => {
   });
 
   it("registers required plugins", async () => {
-    const { nunjucksRender } = await import("../utils/nunjucksRender/index.js");
-    const { setUpI18n } = await import("../utils/setUpI18n/index.js");
     const { default: fastifyFormBody } = await import("@fastify/formbody");
-    const { default: fastifyCookie } = await import("@fastify/cookie");
 
     externalEndpointStubs(mockApp);
 
-    expect(mockRegister).toHaveBeenCalledTimes(4);
+    expect(mockRegister).toHaveBeenCalledTimes(1);
     expect(mockRegister).toHaveBeenNthCalledWith(1, fastifyFormBody);
-    expect(mockRegister).toHaveBeenNthCalledWith(2, fastifyCookie);
-    expect(mockRegister).toHaveBeenNthCalledWith(3, nunjucksRender);
-    expect(mockRegister).toHaveBeenNthCalledWith(4, setUpI18n);
   });
 
   it("registers configure GET route", async () => {
-    const { getPath } = await import(
-      "./handlers/externalEndpointStubs/utils/paths/index.js"
-    );
+    const { getPath } = await import("./handlers/utils/paths/index.js");
     vi.mocked(getPath).mockReturnValue("/configure");
 
     externalEndpointStubs(mockApp);
@@ -67,9 +56,7 @@ describe("externalEndpointStubs", () => {
   });
 
   it("registers configure POST route", async () => {
-    const { getPath } = await import(
-      "./handlers/externalEndpointStubs/utils/paths/index.js"
-    );
+    const { getPath } = await import("./handlers/utils/paths/index.js");
     vi.mocked(getPath).mockReturnValue("/configure");
 
     externalEndpointStubs(mockApp);
@@ -86,7 +73,7 @@ describe("externalEndpointStubs", () => {
     const mockRequest = {} as FastifyRequest;
     const mockReply = {} as FastifyReply;
 
-    vi.doMock("./handlers/externalEndpointStubs/configure/index.js", () => ({
+    vi.doMock("./handlers/configure/index.js", () => ({
       getHandler: mockGetHandler,
     }));
 
@@ -103,7 +90,7 @@ describe("externalEndpointStubs", () => {
     const mockRequest = {} as FastifyRequest;
     const mockReply = {} as FastifyReply;
 
-    vi.doMock("./handlers/externalEndpointStubs/configure/index.js", () => ({
+    vi.doMock("./handlers/configure/index.js", () => ({
       postHandler: mockPostHandler,
     }));
 

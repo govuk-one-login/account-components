@@ -1,11 +1,8 @@
-import fastifyCookie from "@fastify/cookie";
 import fastifyFormbody from "@fastify/formbody";
-import { nunjucksRender } from "../utils/nunjucksRender/index.js";
-import type { FastifyTypeboxInstance } from "../app.js";
+import type { FastifyTypeboxInstance } from "../../app.js";
 import * as Type from "@fastify/type-provider-typebox";
-import { getCurrentExternalEndpointStubScenario } from "./handlers/externalEndpointStubs/utils/config/index.js";
-import { getPath } from "./handlers/externalEndpointStubs/utils/paths/index.js";
-import { setUpI18n } from "../utils/setUpI18n/index.js";
+import { getCurrentExternalEndpointStubScenario } from "./handlers/utils/config/index.js";
+import { getPath } from "./handlers/utils/paths/index.js";
 
 export const ConfigureExternalEndpointsGetSchema = {
   querystring: Type.Object({
@@ -19,9 +16,6 @@ export const ConfigureExternalEndpointsPostSchema = {
 
 export const externalEndpointStubs = function (app: FastifyTypeboxInstance) {
   app.register(fastifyFormbody);
-  app.register(fastifyCookie);
-  app.register(nunjucksRender);
-  app.register(setUpI18n);
 
   app.get(
     getPath("configure"),
@@ -29,9 +23,10 @@ export const externalEndpointStubs = function (app: FastifyTypeboxInstance) {
       schema: ConfigureExternalEndpointsGetSchema,
     },
     async function (request, reply) {
-      return (
-        await import("./handlers/externalEndpointStubs/configure/index.js")
-      ).getHandler(request, reply);
+      return (await import("./handlers/configure/index.js")).getHandler(
+        request,
+        reply,
+      );
     },
   );
 
@@ -41,9 +36,10 @@ export const externalEndpointStubs = function (app: FastifyTypeboxInstance) {
       schema: ConfigureExternalEndpointsPostSchema,
     },
     async function (request, reply) {
-      return (
-        await import("./handlers/externalEndpointStubs/configure/index.js")
-      ).postHandler(request, reply);
+      return (await import("./handlers/configure/index.js")).postHandler(
+        request,
+        reply,
+      );
     },
   );
 

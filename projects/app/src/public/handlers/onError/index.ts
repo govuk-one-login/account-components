@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import type { FastifyTypeboxInstance } from "../../../../app.js";
+import type { FastifyTypeboxInstance } from "../../../app.js";
 
 type ErrorHandler = Parameters<FastifyTypeboxInstance["setErrorHandler"]>[0];
 
@@ -8,8 +8,8 @@ export const onError = (
   request: Parameters<ErrorHandler>[1],
   reply: Parameters<ErrorHandler>[2],
 ): ReturnType<ErrorHandler> => {
-  request.log.error(error, "A frontend error occurred");
+  request.log.error(error, "An error occurred");
   reply.statusCode = 500;
   assert.ok(reply.render);
-  return reply.render("public/handlers/frontend/onError/index.njk");
+  return reply.render("public/handlers/onError/index.njk");
 };

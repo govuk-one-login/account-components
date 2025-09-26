@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import type { FastifyTypeboxInstance } from "../../../../app.js";
+import type { FastifyTypeboxInstance } from "../../../app.js";
 
 type NotFoundHandler = Parameters<
   FastifyTypeboxInstance["setNotFoundHandler"]
@@ -11,5 +11,5 @@ export const onNotFound = (
 ): ReturnType<NotFoundHandler> => {
   reply.statusCode = 404;
   assert.ok(reply.render);
-  return reply.render("public/handlers/frontend/onNotFound/index.njk");
+  return reply.render("public/handlers/onNotFound/index.njk");
 };
