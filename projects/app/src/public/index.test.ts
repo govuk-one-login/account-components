@@ -111,4 +111,47 @@ describe("frontend", () => {
       mockReply,
     );
   });
+
+  it("healthcheck GET handler behaves as expected", async () => {
+    const mockRequest = {};
+    const mockReply = {
+      send: vi.fn(),
+    };
+    const mockThis = {};
+
+    await publicRoutes(mockApp);
+
+    expect(mockGetHandler).toHaveBeenCalledWith(
+      "/healthcheck",
+      expect.any(Function),
+    );
+
+    const handler = mockGetHandler.mock.calls[0]![1] as (...args: any) => any;
+    await handler.call(mockThis, mockRequest, mockReply);
+
+    expect(mockReply.send).toHaveBeenCalledWith("ok");
+  });
+
+  it("robots.txt GET handler dynamically imports and calls handler", async () => {
+    const mockGetRobotsDotTxt = vi.fn();
+    const mockRequest = {} as FastifyRequest;
+    const mockReply = {} as FastifyReply;
+    const mockThis = {};
+
+    vi.doMock("./handlers/robots.txt/index.js", () => ({
+      handler: mockGetRobotsDotTxt,
+    }));
+
+    await publicRoutes(mockApp);
+
+    expect(mockGetHandler).toHaveBeenCalledWith(
+      "/robots.txt",
+      expect.any(Function),
+    );
+
+    const handler = mockGetHandler.mock.calls[1]![1] as (...args: any) => any;
+    await handler.call(mockThis, mockRequest, mockReply);
+
+    expect(mockGetRobotsDotTxt).toHaveBeenCalledWith(mockRequest, mockReply);
+  });
 });
