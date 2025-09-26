@@ -11,6 +11,12 @@ export enum Algorithms {
   INVALID = "AB123",
 }
 
+export enum JWEAlgorithms {
+  EC = "ECDH-ES+A256KW",
+  RSA = "RSA-OAEP-256",
+  INVALID = "AB123",
+}
+
 export enum Scenarios {
   VALID = "valid",
   INVALID_ALGORITHM = "invalidAlg",
@@ -31,15 +37,30 @@ export enum SignatureTypes {
 }
 
 export enum Kids {
-  AUTH_EC = "AuthEcKid123",
-  AUTH_RSA = "AuthRsaKid123",
   EC = "ecKid123",
   RSA = "rsaKid123",
   WRONG = "wrongKid123",
 }
 
+export type SignatureAndScenario = {
+    signature: SignatureTypes;
+    scenario: Scenarios;
+}
+
+export interface JwksKeyType {
+  kty: SignatureTypes;
+  alg: Algorithms;
+  kid: string;
+  jweAlg: JWEAlgorithms;
+}
+
+export const JWKS_KEY_TYPES: JwksKeyType[] = [
+  { kty: SignatureTypes.EC, alg: Algorithms.EC, kid: Kids.EC, jweAlg: JWEAlgorithms.EC },
+  { kty: SignatureTypes.RSA, alg: Algorithms.RSA, kid: Kids.RSA, jweAlg: JWEAlgorithms.RSA },
+];
+
 export const ALG: AlgType = { EC: Algorithms.EC, RSA: Algorithms.RSA };
-export const DEFAULT_SIGNATURE_TYPE = SignatureTypes.EC;
+export const DEFAULT_SIGNATURE_TYPE = SignatureTypes.RSA;
 export const DEFAULT_SCENARIO = Scenarios.VALID;
 export const DEFAULT_TOKEN_EXPIRY = 5;
 export const DEFAULT_TOKEN_INITIATED_AT = 0;

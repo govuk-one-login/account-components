@@ -7,7 +7,7 @@ export const DEFAULT_AUDIENCE = process.env["DEFAULT_AUDIENCE"];
 export const getPrivateKeyName = (keyType: SignatureTypes): string => {
   const keyEnvironment =
     keyType == SignatureTypes.EC
-      ? " EC_PRIVATE_KEY_SSM_NAME"
+      ? "EC_PRIVATE_KEY_SSM_NAME"
       : "RSA_PRIVATE_KEY_SSM_NAME";
 
   const privateKey = process.env[keyEnvironment];
@@ -20,7 +20,7 @@ export const getPrivateKeyName = (keyType: SignatureTypes): string => {
 export const getPublicKeyName = (keyType: SignatureTypes): string => {
   const keyEnvironment =
     keyType == SignatureTypes.EC
-      ? " EC_PUBLIC_KEY_SSM_NAME"
+      ? "EC_PUBLIC_KEY_SSM_NAME"
       : "RSA_PUBLIC_KEY_SSM_NAME";
 
   const publicKey = process.env[keyEnvironment];

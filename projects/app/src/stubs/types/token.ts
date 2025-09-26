@@ -1,4 +1,5 @@
 import type { Algorithms, SignatureTypes } from "../types/common.js";
+import {JWEAlgorithms} from "../types/common.js";
 
 export type AlgType = Record<SignatureTypes, Algorithms>;
 
@@ -26,10 +27,4 @@ export interface RequestBody {
   lng: string;
   scenario: string;
   signatureType: string;
-}
-
-export interface JwksKeyType {
-  kty: SignatureTypes;
-  alg: Algorithms;
-  kid: string;
 }

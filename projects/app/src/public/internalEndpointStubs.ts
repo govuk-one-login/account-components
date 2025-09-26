@@ -5,10 +5,11 @@ import type { FastifyTypeboxInstance } from "../app.js";
 import * as Type from "@fastify/type-provider-typebox";
 import { getCurrentInternalEndpointStubScenario } from "./handlers/internalEndpointStubs/utils/config/index.js";
 import { getPath } from "./handlers/internalEndpointStubs/utils/paths/index.js";
-import { generateAccessToken } from "../stubs/tokenGenerator/index.js";
+import {generateAccessToken, getScenarioAndSignature} from "../stubs/tokenGenerator/index.js";
 import logger from "../stubs/utils/logger.js";
-import { buildJWK } from "../stubs/jwks/index.js";
 import type { RequestBody } from "../stubs/types/token.js";
+import {buildJar} from "../stubs/buildJar/index.js";
+import {SignatureAndScenario} from "../stubs/types/common.js";
 export const ConfigureInternalEndpointsGetSchema = {
   querystring: Type.Object({
     updated: Type.Optional(Type.Number()),
@@ -54,24 +55,22 @@ export const internalEndpointStubs = function (app: FastifyTypeboxInstance) {
       schema: ConfigureInternalEndpointsPostSchema,
     },
     async function (request, reply) {
-      //generate access token
-      const token = await generateAccessToken(request);
 
-      logger.debug("Token is" + token);
+        const signatureAndScenario: SignatureAndScenario = getScenarioAndSignature(request.body as RequestBody);
 
-      const jwkString = await buildJWK(request.body as unknown as RequestBody);
-
-      logger.debug("Jwk is" + jwkString);
+        logger.info(`Signature and scenario selected: ${JSON.stringify(signatureAndScenario)}`);
 
       //Create a signed JWT of the Request object
+      const token = await generateAccessToken(request, signatureAndScenario);
 
-      //Get private signing key for the client
+      logger.info(`Token is ${token}`);
 
-      //Create a JAR by encrypting the JWT using a public encryption key for the respective client
+        //Create a JAR by encrypting the JWT using a public encryption key for the respective client
+      const encryptedJar = await buildJar(token, signatureAndScenario.signature);
 
-      //returns the JAR
+      logger.info(`Encrypted JAR is: ${encryptedJar}`);
 
-      return reply.send(token);
+      return reply.send(encryptedJar);
     },
   );
 

@@ -7,27 +7,22 @@ import {
   getPercentageReturn5xx,
   getPercentageTimeout,
   getPercentageDelay,
-  getMaximumDelayMilliseconds,
+  getMaximumDelayMilliseconds, getPrivateKeyName,
 } from "../utils/app-config.js";
 import {
   Algorithms,
   SignatureTypes,
   Kids,
   JWKS_TIMEOUT_MILLISECONDS,
-  HttpCodesEnum,
+  HttpCodesEnum, JWKS_KEY_TYPES,
 } from "../types/common.js";
 import logger from "../utils/logger.js";
 import { CustomError } from "../utils/errors.js";
 
 import { importSPKI, exportJWK } from "jose";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
+import {getLocalParameter, isLocalhost} from "../utils/get-parameter.js";
 
-const JWKS_KEY_TYPES: JwksKeyType[] = [
-  { kty: SignatureTypes.EC, alg: Algorithms.EC, kid: Kids.EC },
-  { kty: SignatureTypes.RSA, alg: Algorithms.RSA, kid: Kids.RSA },
-  { kty: SignatureTypes.EC, alg: Algorithms.EC, kid: Kids.AUTH_EC },
-  { kty: SignatureTypes.RSA, alg: Algorithms.RSA, kid: Kids.AUTH_RSA },
-];
 
 let cachedJwks: { keys: JsonWebKey[] };
 const publicKeyMap = new Map<string, string>();
@@ -38,29 +33,31 @@ const publicKeyMap = new Map<string, string>();
 export const buildJWK = async (requestBody: RequestBody): Promise<string> => {
   const error = await simulateError();
   if (error) return error;
-
-  logger.debug(JSON.stringify(requestBody));
-
-  if (Object.keys(cachedJwks).length <= 0) {
+  logger.info(`Cached JWKS: ${JSON.stringify(cachedJwks)}`);
+  if (!cachedJwks || cachedJwks.keys.length <= 0) {
     logger.info("building JWKS");
     const jwks: { keys: JsonWebKey[] } = { keys: [] };
+
+    const {signature, scenario} = getScenario(request.body as RequestBody);
 
     for (const keyType of JWKS_KEY_TYPES) {
       const { alg, kty, kid } = keyType;
       let publicKeyPem;
       if (!publicKeyMap.has(kid)) {
         try {
-          publicKeyPem = await getParameter(getPublicKeyName(kty));
-        } catch (error: unknown) {
-          logger.error(`Failed to retrieve ${kty} public key from SSM`, {
-            error,
-          });
-          throw new CustomError(
-            HttpCodesEnum.BAD_REQUEST,
-            "Failed to retrieve key from SSM",
+          if(isLocalhost()){
+            logger.info("Running in Local mode, fetching parameters from local ssm");
+            publicKeyPem = await getLocalParameter(getPublicKeyName(kty));
+          } else {
+            publicKeyPem = await getParameter(getPublicKeyName(kty));
+          }
+
+        } catch (error) {
+          logger.error(
+              `Failed to retrieve ${kty} private key from SSM`,
+              {error},
           );
         }
-
         if (
           !publicKeyPem ||
           publicKeyPem.trim().length === 0 ||
@@ -133,7 +130,7 @@ export const buildJWK = async (requestBody: RequestBody): Promise<string> => {
 async function simulateError(): Promise<string> {
   if (getPercentageReturn4xx() > Math.random()) {
     const statusCode = selectRandomItem([404, 400, 401, 403, 429]);
-    logger.info("Intentionally returned error from Mock JWKS.");
+    logger.info("Intentionally returned error 400s from Mock JWKS.");
     return JSON.stringify({
       statusCode,
       body: JSON.stringify({
@@ -144,7 +141,7 @@ async function simulateError(): Promise<string> {
 
   if (getPercentageReturn5xx() > Math.random()) {
     const statusCode = selectRandomItem([500, 501, 502]);
-    logger.info("Intentionally returned error from Mock JWKS.");
+    logger.info("Intentionally returned error 500S from Mock JWKS.");
     return JSON.stringify({
       statusCode,
       body: JSON.stringify({
