@@ -13,7 +13,9 @@ export const frontend = function (app: FastifyTypeboxInstance) {
   app.register(fastifyHelmet);
   app.register(fastifyCookie);
   app.register(fastifySession, {
-    secret: ["TODO a secret with minimum length of 32 characters!!!!!"],
+    secret: [
+      "TODO a secret with minimum length of 32 characters fron an env variable which is populated from a secret in secrets manager!!!!!",
+    ],
     cookie: {
       secure: getEnvironment() !== "local",
       sameSite: "lax",
@@ -24,4 +26,17 @@ export const frontend = function (app: FastifyTypeboxInstance) {
   });
   app.register(nunjucksRender);
   app.register(setUpI18n);
+
+  app.setNotFoundHandler(async function (request, reply) {
+    const onNotFound = (await import("./handlers/frontend/onNotFound/index.js"))
+      .onNotFound;
+    return onNotFound.bind(this)(request, reply);
+  });
+
+  app.setErrorHandler(async function (error, request, reply) {
+    const onError = (await import("./handlers/frontend/onError/index.js"))
+      .onError;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return onError.bind(this)(error, request, reply);
+  });
 };

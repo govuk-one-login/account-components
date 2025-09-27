@@ -6,6 +6,7 @@ import assert from "node:assert";
 const { Then, Given } = bdd;
 
 const pageTitleToPath: Record<string, string> = {
+  "Non-existent page": "/non-existent-page",
   Healthcheck: "/healthcheck",
 };
 
