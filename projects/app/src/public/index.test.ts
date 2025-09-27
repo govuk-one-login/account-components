@@ -2,6 +2,7 @@ import { expect, it, describe, vi, beforeEach, afterEach } from "vitest";
 import { publicRoutes } from "./index.js";
 import type { FastifyTypeboxInstance } from "../app.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
+import { includeRouteInOpenApiDocsTag } from "../utils/includeRouteInOpenApiDocsTag.js";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -104,10 +105,11 @@ describe("publicRoutes plugin", () => {
 
     expect(mockGetHandler).toHaveBeenCalledWith(
       "/healthcheck",
+      { schema: { tags: [includeRouteInOpenApiDocsTag] } },
       expect.any(Function),
     );
 
-    const handler = mockGetHandler.mock.calls[0]![1] as (...args: any) => any;
+    const handler = mockGetHandler.mock.calls[0]![2] as (...args: any) => any;
     await handler.call(mockThis, mockRequest, mockReply);
 
     expect(mockReply.send).toHaveBeenCalledWith("ok");

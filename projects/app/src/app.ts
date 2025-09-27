@@ -93,6 +93,7 @@ const initApp = async function (
 
   if (isGeneratingOpenApiDocs) {
     app.register((await import("@fastify/swagger")).default, {
+      hideUntagged: true,
       openapi: {},
     });
   }

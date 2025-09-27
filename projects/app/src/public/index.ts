@@ -1,6 +1,7 @@
 import { resolveEnvVarToBool } from "../utils/resolveEnvVarToBool/index.js";
 import type { FastifyTypeboxInstance } from "../app.js";
 import fastifyCookie from "@fastify/cookie";
+import { includeRouteInOpenApiDocsTag } from "../utils/includeRouteInOpenApiDocsTag.js";
 import { render } from "./handlers/render/index.js";
 import { setUpI18n } from "./handlers/setUpI18n/index.js";
 
@@ -51,9 +52,17 @@ export const publicRoutes = async function (app: FastifyTypeboxInstance) {
     });
   }
 
-  app.get("/healthcheck", async function (_request, reply) {
-    return reply.send("ok");
-  });
+  app.get(
+    "/healthcheck",
+    {
+      schema: {
+        tags: [includeRouteInOpenApiDocsTag],
+      },
+    },
+    async function (_request, reply) {
+      return reply.send("ok");
+    },
+  );
 
   app.get("/robots.txt", async function (request, reply) {
     return (await import("./handlers/robots.txt/index.js")).handler(
