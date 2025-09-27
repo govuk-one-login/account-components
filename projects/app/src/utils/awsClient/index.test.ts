@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { getDynamoDbClient, getSqsClient } from "./index.js";
 
-describe("awsClient index", () => {
+describe("awsClient", () => {
   it("should return a DynamoDB client", () => {
     const client = getDynamoDbClient();
 

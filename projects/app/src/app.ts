@@ -11,10 +11,10 @@ import type {
 } from "fastify";
 import type { APIGatewayEvent, Context } from "aws-lambda";
 import { resolveEnvVarToBool } from "./utils/resolveEnvVarToBool/index.js";
-import { removeTrailingSlash } from "./utils/removeTrailingSlash/index.js";
-import { logRequest } from "./utils/logRequest/index.js";
-import { logResponse } from "./utils/logResponse/index.js";
-import { addDefaultCaching } from "./utils/addDefaultCaching/index.js";
+import { removeTrailingSlash } from "./handlers/removeTrailingSlash/index.js";
+import { logRequest } from "./handlers/logRequest/index.js";
+import { logResponse } from "./handlers/logResponse/index.js";
+import { addDefaultCaching } from "./handlers/addDefaultCaching/index.js";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import type { IncomingMessage } from "node:http";
 import type { ResolveFastifyRequestType } from "fastify/types/type-provider.js";
