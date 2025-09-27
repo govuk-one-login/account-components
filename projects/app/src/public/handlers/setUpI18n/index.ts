@@ -1,8 +1,7 @@
-import fp from "fastify-plugin";
 import i18next from "i18next";
-import { Lang } from "../../app.js";
-import en from "../../translations/en.json" with { type: "json" };
-import cy from "../../translations/cy.json" with { type: "json" };
+import { Lang } from "../../../app.js";
+import en from "../../../translations/en.json" with { type: "json" };
+import cy from "../../../translations/cy.json" with { type: "json" };
 import type {
   onRequestAsyncHookHandler,
   RawReplyDefaultExpression,
@@ -10,7 +9,7 @@ import type {
   RawServerDefault,
 } from "fastify";
 
-type Handler = onRequestAsyncHookHandler<
+type SetUpI18n = onRequestAsyncHookHandler<
   RawServerDefault,
   RawRequestDefaultExpression,
   RawReplyDefaultExpression,
@@ -21,7 +20,7 @@ type Handler = onRequestAsyncHookHandler<
   }
 >;
 
-const handler: Handler = async (request, reply) => {
+export const setUpI18n: SetUpI18n = async function (request, reply) {
   request.lang =
     Object.values(Lang).find(
       (lng) => lng === request.query.lng || lng === request.cookies["lng"],
@@ -42,7 +41,3 @@ const handler: Handler = async (request, reply) => {
 
   reply.i18next = i18next;
 };
-
-export const setUpI18n = fp(function (app) {
-  app.addHook("onRequest", handler);
-});

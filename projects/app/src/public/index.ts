@@ -1,13 +1,13 @@
 import { resolveEnvVarToBool } from "../utils/resolveEnvVarToBool/index.js";
 import type { FastifyTypeboxInstance } from "../app.js";
-import { nunjucksRender } from "../utils/nunjucksRender/index.js";
-import { setUpI18n } from "../utils/setUpI18n/index.js";
 import fastifyCookie from "@fastify/cookie";
+import { render } from "./handlers/render/index.js";
+import { setUpI18n } from "./handlers/setUpI18n/index.js";
 
 export const publicRoutes = async function (app: FastifyTypeboxInstance) {
   app.register(fastifyCookie);
-  app.register(nunjucksRender);
-  app.register(setUpI18n);
+  app.decorateReply("render", render);
+  app.addHook("onRequest", setUpI18n);
 
   app.setNotFoundHandler(async function (request, reply) {
     const onNotFound = (await import("./handlers/onNotFound/index.js"))
@@ -42,6 +42,12 @@ export const publicRoutes = async function (app: FastifyTypeboxInstance) {
   if (resolveEnvVarToBool("REGISTER_PUBLIC_FRONTEND_ROUTES")) {
     app.register(async (app) => {
       (await import("./frontend/index.js")).frontend(app);
+    });
+  }
+
+  if (resolveEnvVarToBool("REGISTER_PUBLIC_API_ROUTES")) {
+    app.register(async () => {
+      (await import("./api/index.js")).api();
     });
   }
 

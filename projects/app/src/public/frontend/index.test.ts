@@ -5,7 +5,7 @@ import type { FastifyTypeboxInstance } from "../../app.js";
 vi.mock("@fastify/session");
 vi.mock("../../utils/getEnvironment/index.js");
 
-describe("frontend", () => {
+describe("frontend plugin", () => {
   let mockApp: FastifyTypeboxInstance;
   let mockRegister: ReturnType<typeof vi.fn>;
 

@@ -40,6 +40,7 @@ jobs:
           echo "REGISTER_PUBLIC_STUB_ROUTES=1" >> .env.integration-tests
           echo "REGISTER_PUBLIC_STATIC_ROUTES=1" >> .env.integration-tests
           echo "REGISTER_PUBLIC_FRONTEND_ROUTES=1" >> .env.integration-tests
+          echo "REGISTER_PUBLIC_API_ROUTES=1" >> .env.integration-tests
 
       - name: Install integration tests dependencies
         run: cd projects/integration-tests && npm ci

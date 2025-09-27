@@ -11,7 +11,7 @@ vi.mock("@fastify/formbody");
 vi.mock("./handlers/utils/config/index.js");
 vi.mock("./handlers/utils/paths/index.js");
 
-describe("externalEndpointStubs", () => {
+describe("externalEndpointStubs plugin", () => {
   let mockApp: FastifyTypeboxInstance;
   let mockRegister: ReturnType<typeof vi.fn>;
   let mockGet: ReturnType<typeof vi.fn>;

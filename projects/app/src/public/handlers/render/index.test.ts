@@ -1,12 +1,11 @@
 import { expect, it, describe, vi, beforeEach, afterEach } from "vitest";
-import { nunjucksRender } from "./index.js";
-import { getEnvironment } from "../getEnvironment/index.js";
+import { render } from "./index.js";
+import { getEnvironment } from "../../../utils/getEnvironment/index.js";
 import type { FastifyReply } from "fastify";
-import type { FastifyTypeboxInstance } from "../../app.js";
 import type i18next from "i18next";
 import assert from "node:assert";
 
-vi.mock("../getEnvironment/index.js", () => ({
+vi.mock("../../../utils/getEnvironment/index.js", () => ({
   getEnvironment: vi.fn(),
 }));
 
@@ -23,15 +22,10 @@ vi.mock("nunjucks", () => ({
   default: nunjucks,
 }));
 
-describe("nunjucksRender", () => {
-  let app: Partial<FastifyTypeboxInstance>;
+describe("render", () => {
   let reply: Partial<FastifyReply>;
 
   beforeEach(() => {
-    app = {
-      decorateReply: vi.fn(),
-    } as unknown as FastifyTypeboxInstance;
-
     reply = {
       type: vi.fn().mockReturnThis(),
       send: vi.fn(),
@@ -45,23 +39,12 @@ describe("nunjucksRender", () => {
     vi.clearAllMocks();
   });
 
-  it("decorates reply with render function", async () => {
-    nunjucksRender(app as FastifyTypeboxInstance);
-
-    expect(app.decorateReply).toHaveBeenCalledExactlyOnceWith(
-      "render",
-      expect.any(Function),
-    );
-  });
-
   it("configures nunjucks with 'dist' path when environment is local", async () => {
     vi.mocked(getEnvironment).mockReturnValue("local");
 
-    nunjucksRender(app as FastifyTypeboxInstance);
-    const renderFunction = vi.mocked(app.decorateReply!).mock
-      .calls[0]![1] as unknown as (...args: any) => Promise<void>;
-
-    await renderFunction.call(reply, "template.html", { prop: "value" });
+    await render.call(reply as FastifyReply, "template.html", {
+      prop: "value",
+    });
 
     expect(nunjucks.configure).toHaveBeenCalledExactlyOnceWith("dist", {
       autoescape: true,
@@ -72,11 +55,9 @@ describe("nunjucksRender", () => {
   it("configures nunjucks with empty path when environment is not local", async () => {
     vi.mocked(getEnvironment).mockReturnValue("production");
 
-    nunjucksRender(app as FastifyTypeboxInstance);
-    const renderFunction = vi.mocked(app.decorateReply!).mock
-      .calls[0]![1] as unknown as (...args: any) => Promise<void>;
-
-    await renderFunction.call(reply, "template.html", { prop: "value" });
+    await render.call(reply as FastifyReply, "template.html", {
+      prop: "value",
+    });
 
     expect(nunjucks.configure).toHaveBeenCalledExactlyOnceWith("", {
       autoescape: true,
@@ -88,11 +69,9 @@ describe("nunjucksRender", () => {
     vi.mocked(getEnvironment).mockReturnValue("local");
     nunjucks.render.mockReturnValue("<html>rendered content</html>");
 
-    nunjucksRender(app as FastifyTypeboxInstance);
-    const renderFunction = vi.mocked(app.decorateReply!).mock
-      .calls[0]![1] as unknown as (...args: any) => Promise<void>;
-
-    await renderFunction.call(reply, "template.html", { title: "Test" });
+    await render.call(reply as FastifyReply, "template.html", {
+      title: "Test",
+    });
 
     assert.ok(reply.i18next?.t);
 
