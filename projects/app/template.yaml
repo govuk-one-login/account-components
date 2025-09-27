@@ -234,6 +234,7 @@ Resources:
           REGISTER_PUBLIC_ROUTES: "1"
           REGISTER_PUBLIC_STATIC_ROUTES: "1"
           REGISTER_PUBLIC_FRONTEND_ROUTES: "1"
+          REGISTER_PUBLIC_API_ROUTES: "1"
       Events:
         Root:
           Type: Api

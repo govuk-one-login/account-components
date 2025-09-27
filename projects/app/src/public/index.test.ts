@@ -6,29 +6,36 @@ import { includeRouteInOpenApiDocsTag } from "../utils/includeRouteInOpenApiDocs
 
 const ORIGINAL_ENV = { ...process.env };
 
-describe("frontend", () => {
+describe("publicRoutes plugin", () => {
   let mockApp: FastifyTypeboxInstance;
   let mockRegister: ReturnType<typeof vi.fn>;
   let mockSetNotFoundHandler: ReturnType<typeof vi.fn>;
   let mockSetErrorHandler: ReturnType<typeof vi.fn>;
   let mockGetHandler: ReturnType<typeof vi.fn>;
+  let mockDecorateReplyHandler: ReturnType<typeof vi.fn>;
+  let mockAddHookHandler: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     mockRegister = vi.fn();
     mockSetNotFoundHandler = vi.fn();
     mockSetErrorHandler = vi.fn();
     mockGetHandler = vi.fn();
+    mockDecorateReplyHandler = vi.fn();
+    mockAddHookHandler = vi.fn();
 
     mockApp = {
       register: mockRegister,
       setNotFoundHandler: mockSetNotFoundHandler,
       setErrorHandler: mockSetErrorHandler,
       get: mockGetHandler,
+      decorateReply: mockDecorateReplyHandler,
+      addHook: mockAddHookHandler,
     } as unknown as FastifyTypeboxInstance;
 
     process.env["REGISTER_PUBLIC_STUB_ROUTES"] = "1";
     process.env["REGISTER_PUBLIC_STATIC_ROUTES"] = "1";
     process.env["REGISTER_PUBLIC_FRONTEND_ROUTES"] = "1";
+    process.env["REGISTER_PUBLIC_API_ROUTES"] = "1";
   });
 
   afterEach(() => {

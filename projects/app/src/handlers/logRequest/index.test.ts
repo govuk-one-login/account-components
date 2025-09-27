@@ -1,9 +1,9 @@
 import { expect, it, describe, vi, afterEach } from "vitest";
 import { logRequest } from "./index.js";
 import type { FastifyRequest } from "fastify";
-import { getRequestParamsToLog } from "../getRequestParamsToLog/index.js";
+import { getRequestParamsToLog } from "../../utils/getRequestParamsToLog/index.js";
 
-vi.mock("../getRequestParamsToLog/index.js", () => ({
+vi.mock("../../utils/getRequestParamsToLog/index.js", () => ({
   getRequestParamsToLog: vi.fn(() => "fakeRequestParams"),
 }));
 
