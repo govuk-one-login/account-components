@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  version: 9.5.1
+  version: 9.5.2
   title: "@fastify/swagger"
 components:
   schemas: {}
