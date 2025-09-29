@@ -136,6 +136,39 @@ Globals:
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
 
 Resources:
+  LambdaEnvironmentVariableEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key used to encrypt lambda environment variables
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: "Allow"
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - "kms:Decrypt"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-LambdaEnvironmentVariableEncryptionKey"
+
+  LambdaEnvironmentVariableEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-LambdaEnvironmentVariableEncryptionKey"
+      TargetKeyId: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
+
   UserInfoTable:
     Type: AWS::DynamoDB::Table
     Properties:
@@ -247,6 +280,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
+      KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
       Environment:
         Variables:
           REGISTER_PRIVATE_ROUTES: "1"
@@ -271,6 +305,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
+      KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
       Environment:
         Variables:
           REGISTER_PUBLIC_ROUTES: "1"
@@ -303,6 +338,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
+      KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
       Environment:
         Variables:
           REGISTER_PUBLIC_ROUTES: "1"
