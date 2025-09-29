@@ -1,0 +1,59 @@
+import type { Mock } from "vitest";
+import { expect, it, describe, vi, afterEach, beforeEach } from "vitest";
+import { onError } from "./index.js";
+import type { FastifyRequest, FastifyReply } from "fastify";
+
+describe("onError handler", () => {
+  let mockLog: {
+    error: Mock;
+  };
+  let mockRequest: FastifyRequest;
+  let mockReply: FastifyReply;
+
+  beforeEach(() => {
+    mockLog = {
+      error: vi.fn(),
+    };
+    mockRequest = {
+      log: mockLog,
+    } as unknown as FastifyRequest;
+
+    mockReply = {
+      statusCode: 200,
+      render: vi.fn(),
+    } as unknown as FastifyReply;
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("logs the error with correct message", () => {
+    const testError = new Error("Test error");
+
+    onError(testError, mockRequest, mockReply);
+
+    expect(mockLog.error).toHaveBeenCalledExactlyOnceWith(
+      testError,
+      "An error occurred",
+    );
+  });
+
+  it("sets status code to 500", () => {
+    const testError = new Error("Test error");
+
+    onError(testError, mockRequest, mockReply);
+
+    expect(mockReply.statusCode).toBe(500);
+  });
+
+  it("renders the error template", () => {
+    const testError = new Error("Test error");
+
+    onError(testError, mockRequest, mockReply);
+
+    expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(
+      "public/handlers/onError/index.njk",
+    );
+  });
+});
