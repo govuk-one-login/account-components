@@ -14,7 +14,7 @@ import {
     MILLISECONDS_IN_MINUTES,
     Scenarios,
     Scope,
-    SignatureAndScenario,
+    Scenario,
     SignatureTypes,
 } from "../types/common.js";
 import logger from "../utils/logger.js";
@@ -23,7 +23,7 @@ import type {JwtHeader, RequestBody} from "../types/token.js";
 import type {FastifyRequest} from "fastify";
 
 export const generateAccessToken = async (
-    request: FastifyRequest, signatureAndScenario:SignatureAndScenario
+    request: FastifyRequest, signatureAndScenario:Scenario
 ): Promise<string> => {
 
     const {signature, scenario} = signatureAndScenario;
@@ -40,7 +40,7 @@ export const generateAccessToken = async (
     return token
 };
 
-export function getScenarioAndSignature(body: RequestBody): SignatureAndScenario {
+export function getScenario(body: RequestBody): Scenarios {
     const retrievedScenario = Object.values(Scenarios).find(
         (scenario): scenario is Scenarios =>
             scenario === (body.scenario as Scenarios),
@@ -48,12 +48,7 @@ export function getScenarioAndSignature(body: RequestBody): SignatureAndScenario
     logger.info(`Retrieved scenario: ${retrievedScenario}`);
     const scenario: Scenarios = retrievedScenario ?? DEFAULT_SCENARIO;
     logger.info(`Actual scenario: ${scenario}`);
-    const signature: SignatureTypes =
-        Object.values(SignatureTypes).find(
-            (validType): validType is SignatureTypes =>
-                validType === (body.signatureType as SignatureTypes),
-        ) ?? DEFAULT_SIGNATURE_TYPE;
-    return {signature, scenario};
+    return scenario;
 }
 
 function getJwtHeader(

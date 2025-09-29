@@ -42,7 +42,7 @@ export enum Kids {
   WRONG = "wrongKid123",
 }
 
-export type SignatureAndScenario = {
+export type Scenario = {
     signature: SignatureTypes;
     scenario: Scenarios;
 }

@@ -15,16 +15,19 @@ export interface RequestBody {
   client_id: string;
   client_secret: string;
   aud: string;
+  response_type: string;
   redirect_uri: string;
   scope: string;
   state: string;
-  nonce: string;
-  expiry: number;
+  jti: string;
+  iat: string;
+  exp: string;
+  access_token: string;
+  refresh_token: string;
   sub: string;
   email: string;
   govuk_signin_journey_id: string;
-  access_token: string;
   lng: string;
+  rp_client_id: string;
   scenario: string;
-  signatureType: string;
 }

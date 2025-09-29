@@ -5,11 +5,11 @@ import type { FastifyTypeboxInstance } from "../app.js";
 import * as Type from "@fastify/type-provider-typebox";
 import { getCurrentInternalEndpointStubScenario } from "./handlers/internalEndpointStubs/utils/config/index.js";
 import { getPath } from "./handlers/internalEndpointStubs/utils/paths/index.js";
-import {generateAccessToken, getScenarioAndSignature} from "../stubs/tokenGenerator/index.js";
+import {generateAccessToken, getScenario} from "../stubs/tokenGenerator/index.js";
 import logger from "../stubs/utils/logger.js";
 import type { RequestBody } from "../stubs/types/token.js";
 import {buildJar} from "../stubs/buildJar/index.js";
-import {SignatureAndScenario} from "../stubs/types/common.js";
+import {Scenario} from "../stubs/types/common.js";
 export const ConfigureInternalEndpointsGetSchema = {
   querystring: Type.Object({
     updated: Type.Optional(Type.Number()),
@@ -59,21 +59,20 @@ export const internalEndpointStubs = function (app: FastifyTypeboxInstance) {
 
         //generate access token
 
+        const scenario: Scenario = getScenario(request.body as RequestBody);
 
-        const signatureAndScenario: SignatureAndScenario = getScenarioAndSignature(request.body as RequestBody);
-
-        logger.info(`Signature and scenario selected: ${JSON.stringify(signatureAndScenario)}`);
+        logger.info(`Signature and scenario selected: ${JSON.stringify(scenario)}`);
 
       //Create a signed JWT of the Request object
         // Sign with EC
         //use ECC_NIST_P256 at point of generating key
-      const token = await generateAccessToken(request, signatureAndScenario);
+      const token = await generateAccessToken(request, scenario);
 
       logger.info(`Token is ${token}`);
 
         //Create a JAR by encrypting the JWT using a public encryption key for the respective client
         //eNCRYPT WITH RSA
-      const encryptedJar = await buildJar(token, signatureAndScenario.signature);
+      const encryptedJar = await buildJar(token, scenario.signature);
 
       logger.info(`Encrypted JAR is: ${encryptedJar}`);
 
