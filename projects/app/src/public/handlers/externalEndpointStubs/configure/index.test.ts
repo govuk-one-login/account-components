@@ -15,8 +15,8 @@ vi.mock("../../../../utils/getEnvironment/index.js", () => ({
   getEnvironment: vi.fn(() => "local"),
 }));
 
-vi.mock("./utils/paths/index.js", () => ({
-  getPath: vi.fn(() => "/stubs/external-endpoints"),
+vi.mock("../utils/paths/index.js", () => ({
+  getPath: vi.fn(() => "/stubs/external-endpoints/configure"),
 }));
 
 describe("externalEndpointStubs handlers", () => {
@@ -96,7 +96,7 @@ describe("externalEndpointStubs handlers", () => {
         },
       );
       expect(reply.redirect).toHaveBeenCalledWith(
-        "/stubs/external-endpoints/?updated=1",
+        "/stubs/external-endpoints/configure?updated=1",
       );
     });
   });

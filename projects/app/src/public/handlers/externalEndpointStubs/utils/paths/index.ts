@@ -1,5 +1,5 @@
 const paths = {
-  root: "/",
+  configure: "/configure",
 } as const;
 
 export const getPath = (key: keyof typeof paths, withPrefix = false) => {

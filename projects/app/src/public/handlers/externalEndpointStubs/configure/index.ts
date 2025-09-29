@@ -44,7 +44,7 @@ export async function postHandler(
       externalEndpointStubsConfig,
     )) {
       if (
-        Object.entries(groupValue).find(([endpointKey, endpointValue]) => {
+        Object.entries(groupValue).some(([endpointKey, endpointValue]) => {
           return (
             generateExternalEndpointStubConfigCookieKey(
               groupKey,
@@ -66,5 +66,5 @@ export async function postHandler(
     }
   });
 
-  return reply.redirect(`${getPath("root", true)}?updated=1`);
+  return reply.redirect(`${getPath("configure", true)}?updated=1`);
 }
