@@ -11,7 +11,7 @@ export async function buildJar(signedJwt: string, signatureType: SignatureTypes)
 let publicKeyPem;
     try {
         if(isLocalhost()) {
-            logger.info("Running in Local mode, fetching public key from local ssm");
+            logger.info("Running in Local mode, fetching public key from local stack");
             publicKeyPem = await getLocalParameter(getPublicKeyName(signatureType));
         } else {
             publicKeyPem = await getParameter(getPublicKeyName(signatureType));

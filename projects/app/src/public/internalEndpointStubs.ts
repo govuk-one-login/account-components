@@ -55,17 +55,24 @@ export const internalEndpointStubs = function (app: FastifyTypeboxInstance) {
       schema: ConfigureInternalEndpointsPostSchema,
     },
     async function (request, reply) {
+        //update RequestBody as per https://govukverify.atlassian.net/wiki/spaces/DID/pages/5654708312/High+Level+Architecture#Happy-Path-Sequence
+
+        //generate access token
+
 
         const signatureAndScenario: SignatureAndScenario = getScenarioAndSignature(request.body as RequestBody);
 
         logger.info(`Signature and scenario selected: ${JSON.stringify(signatureAndScenario)}`);
 
       //Create a signed JWT of the Request object
+        // Sign with EC
+        //use ECC_NIST_P256 at point of generating key
       const token = await generateAccessToken(request, signatureAndScenario);
 
       logger.info(`Token is ${token}`);
 
         //Create a JAR by encrypting the JWT using a public encryption key for the respective client
+        //eNCRYPT WITH RSA
       const encryptedJar = await buildJar(token, signatureAndScenario.signature);
 
       logger.info(`Encrypted JAR is: ${encryptedJar}`);
