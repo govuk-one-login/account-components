@@ -1,4 +1,5 @@
 import path from "node:path";
+import type { PlaywrightTestConfig } from "@playwright/test";
 import { defineConfig, devices } from "@playwright/test";
 import { cucumberReporter, defineBddConfig } from "playwright-bdd";
 import { env } from "./env.js";
@@ -8,6 +9,30 @@ const testDir = defineBddConfig({
   features: "tests/features/**/*.feature",
   steps: "tests/steps/**/*.ts",
 });
+
+const webServers: PlaywrightTestConfig["webServer"] = [];
+
+if (env.TEST_TARGET === "local") {
+  webServers.push({
+    command: "npm run run:app",
+    url: "http://localhost:6002/healthcheck",
+    reuseExistingServer: true,
+    timeout: 300000,
+    name: "app-server",
+    gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
+  });
+}
+
+if (env.PRE_OR_POST_DEPLOY === "pre") {
+  webServers.push({
+    command: "npm run start-test-server",
+    url: "http://localhost:8000",
+    reuseExistingServer: true,
+    timeout: 300000,
+    name: "test-server",
+    gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
+  });
+}
 
 // eslint-disable-next-line no-restricted-exports
 export default defineConfig({
@@ -23,27 +48,7 @@ export default defineConfig({
         }),
       ]
     : "list",
-  webServer:
-    env.TEST_TARGET === "local"
-      ? [
-          {
-            command: "npm run run:app",
-            url: "http://localhost:6002/healthcheck",
-            reuseExistingServer: true,
-            timeout: 300000,
-            name: "app-server",
-            gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
-          },
-          {
-            command: "npm run start-test-server",
-            url: "http://localhost:8000",
-            reuseExistingServer: true,
-            timeout: 300000,
-            name: "test-server",
-            gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
-          },
-        ]
-      : [],
+  webServer: webServers,
   use: {
     baseURL: getBaseUrl(),
   },
