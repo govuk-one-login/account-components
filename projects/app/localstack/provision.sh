@@ -25,12 +25,6 @@ RSA_PUBLIC_KEY=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' "$RSA_PUBLIC_KEY_F
 
 echo "Installing dependencies..."
 
-install_localstack() {
-  echo " Install LocalStack and AWS CLI if not present!"
-  pip3 install --quiet localstack awscli || true
-  echo "Finished install localstack!"
-}
-
 configure_cli_for_localstack() {
   echo "Configuring AWS CLI for LocalStack..."
   aws configure set aws_access_key_id test
@@ -82,7 +76,6 @@ list_resources() {
 }
 
 
-install_localstack
 configure_cli_for_localstack
 start_localstack
 create_ssm_parameters
