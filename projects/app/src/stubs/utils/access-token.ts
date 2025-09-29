@@ -7,16 +7,8 @@ import {
     KeyLike,
     SignJWT,
 } from "jose";
-import { DynamoDBDocumentClient, GetCommand } from "@aws-sdk/lib-dynamodb";
-import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { APIGatewayProxyEvent } from "aws-lambda";
-import { Token } from "../common/models";
-import {
-    validateClientIdMatches,
-    validateRedirectURLSupported,
-    validateSupportedGrantType,
-    verifyParametersExistAndOnlyOnce,
-} from "./validate-token";
+import { Token } from "../types/token.js";
+import {RequestBody} from "../types/token.js";
 
 export interface Response {
     statusCode: number;
@@ -28,13 +20,9 @@ interface OicdPersistedData {
     nonce: string;
 }
 
-const dynamoClient = new DynamoDBClient({});
-const dynamoDocClient = DynamoDBDocumentClient.from(dynamoClient, {
-    marshallOptions: {
-        convertClassInstanceToMap: true,
-    },
-});
-const { OIDC_CLIENT_ID, ENVIRONMENT, JWK_KEY_SECRET } = process.env;
+const JWK_KEY_SECRET='"{\"kty\":\"EC\",\"d\":\"Ob4_qMu1nkkBLEw97u--PHVsShP3xOKOJ6z0WsdU0Xw\",\"use\":\"sig\",\"crv\":\"P-256\",\"kid\":\"B-QMUxdJOJ8ubkmArc4i1SGmfZnNNlM-va9h0HJ0jCo\",\"x\":\"YrTTzbuUwQhWyaj11w33k-K8bFydLfQssVqr8mx6AVE\",\"y\":\"8UQcw-6Wp0bp8iIIkRw8PW2RSSjmj1I_8euyKEDtWRk\",\"alg\":\"ES256\"}"'
+const OIDC_CLIENT_ID="OIDC_CLIENT_ID"
+
 const algorithm = "ES256";
 const jwtHeader: JWTHeaderParameters = {
     kid: "B-QMUxdJOJ8ubkmArc4i1SGmfZnNNlM-va9h0HJ0jCo",
@@ -62,14 +50,14 @@ getPrivateKey(); //populate cache on runtime
 const epochDateNow = (): number => Math.round(Date.now() / 1000);
 
 const newClaims = (
-    oidcClientId: string,
-    environment: string,
+    rpClientId: string,
+    iss: string,
     randomString: string,
     nonce: string
 ): JWTPayload => ({
     sub: `urn:fdc:gov.uk:2022:${randomString}`,
-    iss: `https://oidc-stub.home.${environment}.account.gov.uk/`,
-    aud: oidcClientId,
+    iss: iss,
+    aud: rpClientId,
     exp: epochDateNow() + 3600,
     iat: epochDateNow(),
     sid: uuid(),
@@ -77,10 +65,10 @@ const newClaims = (
     vot: "Cl.Cm",
 });
 
-export const generateAccessToken = async (nonce: string): Promise<string> => {
+export const generateAccessToken = async (requestBody: RequestBody): Promise<string> => {
     const privateKey = await getPrivateKey(); // Retrieve cached private key
     const jwt = await new SignJWT(
-        newClaims(OIDC_CLIENT_ID, ENVIRONMENT, uuid(), nonce)
+        newClaims(requestBody.client_id, requestBody.iss, uuid(), requestBody.jti)
     ).setProtectedHeader(jwtHeader).sign(privateKey);
 
     const tokenResponse: Token = {

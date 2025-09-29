@@ -42,11 +42,6 @@ export enum Kids {
   WRONG = "wrongKid123",
 }
 
-export type Scenario = {
-    signature: SignatureTypes;
-    scenario: Scenarios;
-}
-
 export interface JwksKeyType {
   kty: SignatureTypes;
   alg: Algorithms;

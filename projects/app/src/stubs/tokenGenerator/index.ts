@@ -2,11 +2,9 @@ import {AUTHENTICATION_ISSUER, DEFAULT_AUDIENCE,} from "../utils/app-config.js";
 import {JwtAdapter} from "../utils/jwt-adapter.js";
 import {CustomError} from "../utils/errors.js";
 import {
-    ALG,
     Algorithms,
     CONVERT_TO_SECONDS,
     DEFAULT_SCENARIO,
-    DEFAULT_SIGNATURE_TYPE,
     DEFAULT_TOKEN_EXPIRY,
     DEFAULT_TOKEN_INITIATED_AT,
     HttpCodesEnum,
@@ -14,26 +12,19 @@ import {
     MILLISECONDS_IN_MINUTES,
     Scenarios,
     Scope,
-    Scenario,
-    SignatureTypes,
 } from "../types/common.js";
 import logger from "../utils/logger.js";
 import type {JWTPayload} from "jose";
 import type {JwtHeader, RequestBody} from "../types/token.js";
-import type {FastifyRequest} from "fastify";
 
-export const generateAccessToken = async (
-    request: FastifyRequest, signatureAndScenario:Scenario
-): Promise<string> => {
+export const generateJwtToken = async (requestBody: RequestBody, scenario:Scenarios): Promise<string> => {
 
-    const {signature, scenario} = signatureAndScenario;
-
-    const jwtHeader = getJwtHeader(scenario, signature);
-    const jwtPayload = getJwtPayload(scenario, request.body as string);
+    const jwtHeader = getJwtHeader(scenario);
+    const jwtPayload = getJwtPayload(scenario, requestBody);
 
     logger.debug("token header & payload", {jwtHeader, jwtPayload});
 
-    const token = await generateToken(jwtHeader, jwtPayload, signature);
+    const token = await generateToken(jwtHeader, jwtPayload);
     if (!token) {
         throw new CustomError(HttpCodesEnum.BAD_REQUEST, "Token not generated");
     }
@@ -52,11 +43,10 @@ export function getScenario(body: RequestBody): Scenarios {
 }
 
 function getJwtHeader(
-    scenario: Scenarios,
-    signatureType: SignatureTypes,
+    scenario: Scenarios
 ): JwtHeader {
-    let alg: Algorithms = ALG[signatureType];
-    let kid: string | undefined = signatureType === SignatureTypes.EC ? Kids.EC : Kids.RSA;
+    let alg: Algorithms = Algorithms.EC
+    let kid: Kids.EC
     switch (scenario) {
         case Scenarios.INVALID_ALGORITHM: {
             alg = Algorithms.INVALID;
@@ -140,7 +130,7 @@ function getJwtPayload(scenario: Scenarios, body: string | RequestBody): JWTPayl
  * @param signatureType - the signature types.
  * @throws {@link CustomError} - if the token could not be signed.
  */
-async function generateToken(header: JwtHeader, payload: JWTPayload, signatureType: SignatureTypes): Promise<string> {
+async function generateToken(header: JwtHeader, payload: JWTPayload): Promise<string> {
     try {
         const jwtAdapter = new JwtAdapter();
         return await jwtAdapter.sign(header, payload, signatureType);
