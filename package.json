@@ -44,7 +44,7 @@
     "eslint-plugin-n": "^17.23.1",
     "eslint-plugin-playwright": "^2.2.2",
     "fastify-cli": "^7.4.0",
-    "knip": "^5.64.0",
+    "knip": "^5.64.1",
     "prettier": "^3.6.2",
     "rolldown": "^1.0.0-beta.40",
     "sass": "^1.93.2",
