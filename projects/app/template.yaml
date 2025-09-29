@@ -26,6 +26,11 @@ Parameters:
     Type: String
     Description: >
       The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
+  CoreStackName:
+    Type: String
+    Description: >
+      The name of the core stack that provides shared resources such as the DynamoDB KMS key
+    Default: "components-core"
 
 Mappings:
   EnvironmentConfiguration:
@@ -131,6 +136,108 @@ Globals:
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
 
 Resources:
+  LambdaEnvironmentVariableEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key used to encrypt lambda environment variables
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: "Allow"
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - "kms:Decrypt"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-LambdaEnvironmentVariableEncryptionKey"
+
+  LambdaEnvironmentVariableEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-LambdaEnvironmentVariableEncryptionKey"
+      TargetKeyId: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
+
+  UserInfoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-UserInfo
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: outcome_id
+          AttributeType: S
+        - AttributeName: outcome_type
+          AttributeType: S
+        - AttributeName: access_token
+          AttributeType: S
+      KeySchema:
+        - AttributeName: outcome_id
+          KeyType: HASH
+        - AttributeName: outcome_type
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: AccessTokenIndex
+          KeySchema:
+            - AttributeName: access_token
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      SSESpecification:
+        KMSMasterKeyId:
+          Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"
+        SSEEnabled: true
+        SSEType: KMS
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-user_info"
+
+  SessionsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-SessionStore
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+        - AttributeName: "user_id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      TimeToLiveSpecification:
+        AttributeName: "expires"
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      GlobalSecondaryIndexes:
+        - IndexName: "users-sessions"
+          KeySchema:
+            - AttributeName: "user_id"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: KEYS_ONLY
+      SSESpecification:
+        KMSMasterKeyId:
+          Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+
   AppPublicApiGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -173,6 +280,7 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
+      KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
       Environment:
         Variables:
           REGISTER_PRIVATE_ROUTES: "1"
@@ -197,10 +305,11 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
+      KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
       Environment:
         Variables:
           REGISTER_PUBLIC_ROUTES: "1"
-          REGISTER_STUB_ROUTES:
+          REGISTER_PUBLIC_STUB_ROUTES:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, enableStubs]
       Events:
         Root:
@@ -229,9 +338,13 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
+      KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
       Environment:
         Variables:
           REGISTER_PUBLIC_ROUTES: "1"
+          REGISTER_PUBLIC_STATIC_ROUTES: "1"
+          REGISTER_PUBLIC_FRONTEND_ROUTES: "1"
+          REGISTER_PUBLIC_API_ROUTES: "1"
       Events:
         Root:
           Type: Api

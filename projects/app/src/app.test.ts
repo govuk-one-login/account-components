@@ -11,7 +11,6 @@ describe("app", () => {
   it("doesn't register routes", async () => {
     process.env = {
       ...process.env,
-      REGISTER_STUB_ROUTES: "0",
       REGISTER_PUBLIC_ROUTES: "0",
       REGISTER_PRIVATE_ROUTES: "0",
     };
@@ -40,7 +39,6 @@ describe("app", () => {
   it("does register routes", async () => {
     process.env = {
       ...process.env,
-      REGISTER_STUB_ROUTES: "1",
       REGISTER_PUBLIC_ROUTES: "1",
       REGISTER_PRIVATE_ROUTES: "1",
     };
@@ -64,5 +62,21 @@ describe("app", () => {
         })
       ).statusCode,
     ).toBe(200);
+  });
+
+  it("handles errors with setErrorHandler and doesn't reveal error details", async () => {
+    const app = await initApp();
+
+    app.get("/test-error", async () => {
+      throw new Error("Test error");
+    });
+
+    const response = await app.inject({
+      method: "GET",
+      url: "/test-error",
+    });
+
+    expect(response.statusCode).toBe(500);
+    expect(response.body).toBe("An error occurred");
   });
 });
