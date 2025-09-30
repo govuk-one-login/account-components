@@ -85,12 +85,6 @@ const initApp = async function (
       })
       .withTypeProvider<TypeBoxTypeProvider>();
 
-  app.setErrorHandler((error, request, reply) => {
-    request.log.error(error, "An error occurred");
-    reply.statusCode = 500;
-    return reply.send("An error occurred");
-  });
-
   if (isGeneratingOpenApiDocs) {
     app.register((await import("@fastify/swagger")).default, {
       openapi: {},
