@@ -12,6 +12,7 @@ import {
     MILLISECONDS_IN_MINUTES,
     Scenarios,
     Scope,
+    SignatureTypes,
 } from "../types/common.js";
 import logger from "../utils/logger.js";
 import type {JWTPayload} from "jose";
@@ -133,7 +134,7 @@ function getJwtPayload(scenario: Scenarios, body: string | RequestBody): JWTPayl
 async function generateToken(header: JwtHeader, payload: JWTPayload): Promise<string> {
     try {
         const jwtAdapter = new JwtAdapter();
-        return await jwtAdapter.sign(header, payload, signatureType);
+        return await jwtAdapter.sign(header, payload, SignatureTypes.EC);
     } catch (error) {
         logger.error("Failed to sign the token", {error});
         throw new CustomError(HttpCodesEnum.BAD_REQUEST, "Failed to sign token");

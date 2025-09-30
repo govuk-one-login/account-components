@@ -7,28 +7,28 @@ import {getLocalParameter, isLocalhost} from "../utils/get-parameter.js";
 import {convertPemToJwk} from "../utils/convert-pem-to-jwk.js";
 
 
-export async function buildJar(signedJwt: string, signatureType: SignatureTypes): Promise<string> {
+export async function buildJar(signedJwt: string): Promise<string> {
 let publicKeyPem;
     try {
         if(isLocalhost()) {
             logger.info("Running in Local mode, fetching public key from local stack");
-            publicKeyPem = await getLocalParameter(getPublicKeyName(signatureType));
+            publicKeyPem = await getLocalParameter(getPublicKeyName(SignatureTypes.RSA));
         } else {
-            publicKeyPem = await getParameter(getPublicKeyName(signatureType));
+            publicKeyPem = await getParameter(getPublicKeyName(SignatureTypes.RSA));
         }
     } catch (error) {
         logger.error(
-            `Failed to retrieve ${signatureType} public key from SSM`,
+            `Failed to retrieve ${SignatureTypes.RSA} public key from SSM`,
             { error },
         );
         throw new Error("Failed to retrieve key from SSM for param ");
     }
 
-    const keyType = JWKS_KEY_TYPES.find(kt => kt.kty === signatureType);
+    const keyType = JWKS_KEY_TYPES.find(kt => kt.kty === SignatureTypes.RSA);
     if(!keyType) {
-        throw new Error(`Unsupported signature type: ${signatureType}`);
+        throw new Error(`Unsupported signature type: ${SignatureTypes.RSA}`);
     }
-    const jwk = await convertPemToJwk(publicKeyPem, signatureType, keyType as JwksKeyType);
+    const jwk = await convertPemToJwk(publicKeyPem, SignatureTypes.RSA, keyType as JwksKeyType);
 
     const encoder = new TextEncoder();
     const encryptedJwt = await new CompactEncrypt(encoder.encode(signedJwt))

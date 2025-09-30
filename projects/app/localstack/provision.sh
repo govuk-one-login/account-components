@@ -17,11 +17,16 @@ echo "Extracting public key..."
 openssl ec -in "$EC_PRIVATE_KEY_FILE" -pubout -out "$EC_PUBLIC_KEY_FILE"
 openssl rsa -in "$RSA_PRIVATE_KEY_FILE" -pubout -out "$RSA_PUBLIC_KEY_FILE"
 
+# 2. Converting the Private Key to PKCS#8 format)
+echo "Converting the Private Key to PKCS#8 format)"
+openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in "$EC_PRIVATE_KEY_FILE" -out "$EC_PRIVATE_KEY_FILE"
+openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in "$RSA_PRIVATE_KEY_FILE" -out "$RSA_PRIVATE_KEY_FILE"
+
 # 3. Read keys into environment-safe string (newline escaped)
-EC_PRIVATE_KEY=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' "$EC_PRIVATE_KEY_FILE")
-EC_PUBLIC_KEY=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' "$EC_PUBLIC_KEY_FILE")
-RSA_PRIVATE_KEY=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' "$RSA_PRIVATE_KEY_FILE")
-RSA_PUBLIC_KEY=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' "$RSA_PUBLIC_KEY_FILE")
+EC_PRIVATE_KEY=$(<./"$EC_PRIVATE_KEY_FILE")
+EC_PUBLIC_KEY=$(<./"$EC_PUBLIC_KEY_FILE")
+RSA_PRIVATE_KEY=$(<./"$RSA_PRIVATE_KEY_FILE")
+RSA_PUBLIC_KEY=$(<./"$RSA_PUBLIC_KEY_FILE")
 
 echo "Installing dependencies..."
 

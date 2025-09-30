@@ -27,6 +27,7 @@ export class JwtAdapter {
         if(isLocalhost()){
           logger.info("Running in Local mode, fetching parameters from local ssm");
           privateKeyPem = await getLocalParameter(privateKeyName);
+          logger.info(`Private key pem is: ${privateKeyPem}`);
         } else {
           privateKeyPem = await getParameter(privateKeyName);
         }

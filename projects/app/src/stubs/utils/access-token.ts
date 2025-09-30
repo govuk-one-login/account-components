@@ -1,13 +1,13 @@
-import { v4 as uuid } from "uuid";
+import {v4 as uuid} from "uuid";
 import {
+    CryptoKey,
     importJWK,
     JWK,
     JWTHeaderParameters,
     JWTPayload,
-    KeyLike,
     SignJWT,
 } from "jose";
-import { Token } from "../types/token.js";
+import {Token} from "../types/token.js";
 import {RequestBody} from "../types/token.js";
 
 export interface Response {
@@ -15,13 +15,16 @@ export interface Response {
     body: string;
 }
 
-interface OicdPersistedData {
-    code: string;
-    nonce: string;
-}
-
-const JWK_KEY_SECRET='"{\"kty\":\"EC\",\"d\":\"Ob4_qMu1nkkBLEw97u--PHVsShP3xOKOJ6z0WsdU0Xw\",\"use\":\"sig\",\"crv\":\"P-256\",\"kid\":\"B-QMUxdJOJ8ubkmArc4i1SGmfZnNNlM-va9h0HJ0jCo\",\"x\":\"YrTTzbuUwQhWyaj11w33k-K8bFydLfQssVqr8mx6AVE\",\"y\":\"8UQcw-6Wp0bp8iIIkRw8PW2RSSjmj1I_8euyKEDtWRk\",\"alg\":\"ES256\"}"'
-const OIDC_CLIENT_ID="OIDC_CLIENT_ID"
+const JWK_KEY_SECRET = {
+    "kty": "EC",
+    "d": "Ob4_qMu1nkkBLEw97u--PHVsShP3xOKOJ6z0WsdU0Xw",
+    "use": "sig",
+    "crv": "P-256",
+    "kid": "B-QMUxdJOJ8ubkmArc4i1SGmfZnNNlM-va9h0HJ0jCo",
+    "x": "YrTTzbuUwQhWyaj11w33k-K8bFydLfQssVqr8mx6AVE",
+    "y": "8UQcw-6Wp0bp8iIIkRw8PW2RSSjmj1I_8euyKEDtWRk",
+    "alg": "ES256"
+};
 
 const algorithm = "ES256";
 const jwtHeader: JWTHeaderParameters = {
@@ -33,14 +36,14 @@ const tokenResponseTemplate: Omit<Token, "access_token" | "id_token"> = {
     token_type: "Bearer",
     expires_in: 3600,
 };
-let cachedPrivateKey: Uint8Array | KeyLike;
+let cachedPrivateKey: Uint8Array | CryptoKey;
 const getPrivateKey = async () => {
     if (!cachedPrivateKey) {
         if (typeof JWK_KEY_SECRET === "undefined") {
             throw new Error("JWK_KEY_SECRET environment variable is undefined");
         }
-        const jwkSecret = JSON.parse(JWK_KEY_SECRET);
-        const jwk: JWK = JSON.parse(jwkSecret);
+        const jwkSecret = JWK_KEY_SECRET;
+        const jwk: JWK = jwkSecret;
         cachedPrivateKey = await importJWK(jwk, algorithm);
     }
     return cachedPrivateKey;
