@@ -15,6 +15,12 @@ export const publicRoutes = async function (app: FastifyTypeboxInstance) {
     return onNotFound.bind(this)(request, reply);
   });
 
+  app.setErrorHandler(async function (error, request, reply) {
+    const onError = (await import("./handlers/onError/index.js")).onError;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return onError.bind(this)(error, request, reply);
+  });
+
   if (resolveEnvVarToBool("REGISTER_PUBLIC_STUB_ROUTES")) {
     app.register(
       (await import("./externalEndpointStubs/index.js")).externalEndpointStubs,
