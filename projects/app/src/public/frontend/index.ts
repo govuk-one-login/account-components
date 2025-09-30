@@ -41,5 +41,10 @@ export const frontend = function (app: FastifyTypeboxInstance) {
     sessionPlugin: "@fastify/session",
   });
 
+  // TODO remove me
+  app.get("/", async function (_request, reply) {
+    return reply.send("ok");
+  });
+
   app.register(journeys);
 };
