@@ -20,7 +20,7 @@ export const frontend = function (app: FastifyTypeboxInstance) {
 
   // @ts-expect-error - TODO
   app.register(fastifySession, {
-    saveUninitialized: false,
+    saveUninitialized: true, // TODO
     secret: process.env["SESSIONS_SECRET"],
     rolling: false,
     store: new (ConnectDynamoDB(session))({
