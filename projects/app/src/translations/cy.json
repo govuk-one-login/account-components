@@ -1,1 +1,16 @@
-{}
+{
+  "general": {
+    "heading": "test heading cy",
+    "errorSummaryTitle": "Mae problem",
+    "back": "Yn ôl",
+    "phaseBanner": {
+      "testText": "Mae hwn yn amgylchedd profi."
+    },
+    "header": {
+      "productName": "One Login",
+      "accountNavHomeLink": "Eich gwasanaethau",
+      "accountNavSecurityLink": "Diogelwch",
+      "signOutLink": "Allgofnodi"
+    }
+  }
+}

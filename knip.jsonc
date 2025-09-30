@@ -17,6 +17,7 @@
         "sam",
         "cmp",
       ],
+      "ignoreDependencies": ["govuk-frontend"],
     },
     "projects/integration-tests": {
       "entry": ["tests/**/*.ts"],

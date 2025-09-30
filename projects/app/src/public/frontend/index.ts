@@ -23,4 +23,13 @@ export const frontend = function (app: FastifyTypeboxInstance) {
   });
 
   app.register(journeys);
+
+  app.get("/my-test-route", async function (_request, reply) {
+    if (typeof reply.render === "function") {
+      return reply.render("public/frontend/index.njk", {});
+    } else {
+      reply.code(500);
+      return "Template rendering is not available.";
+    }
+  });
 };

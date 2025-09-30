@@ -1,1 +1,16 @@
-{}
+{
+  "general": {
+    "heading": "test heading en",
+    "errorSummaryTitle": "There is a problem",
+    "back": "Back",
+    "phaseBanner": {
+      "testText": "This is a test environment."
+    },
+    "header": {
+      "productName": "One Login",
+      "accountNavHomeLink": "Your services",
+      "accountNavSecurityLink": "Security",
+      "signOutLink": "Sign out"
+    }
+  }
+}

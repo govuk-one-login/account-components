@@ -1,0 +1,116 @@
+{% extends "govuk/template.njk" %}
+{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+{% from "govuk/components/cookie-banner/macro.njk" import govukCookieBanner %}
+{% from "frontend-ui/build/components/footer/macro.njk" import frontendUiFooter %}
+{% from "frontend-ui/build/components/language-select/macro.njk" import frontendUiLanguageSelect %}
+
+{% block pageTitle %}
+  {%- if error or errors %} {{ 'general.errorTitlePrefix' | translate }} - {% endif -%}
+  {%- if pageTitleName -%}
+      {{ pageTitleName }}
+      {%- if not hideTitleProductName %} - {% endif -%}
+  {% endif -%}
+  {{ 'general.serviceNameTitle' | translate if not hideTitleProductName}}
+{%- endblock %}
+
+{% block bodyStart %}
+  {% include 'public/frontend/layout/banner.njk' %}
+{% endblock %}
+
+{% block head %}
+  {# TODO: add Dynatrace RUM config #}
+  {% if dynatraceRumUrl %}
+  <script src='{{ dynatraceRumUrl }}' crossorigin="anonymous" nonce='{{ scriptNonce }}'></script>
+  {% endif %}
+  {# TODO rename this to something nicer? #}
+ <link href="/static/shared-cache/application.css" rel="stylesheet">
+{% endblock %}
+
+{% block skipLink %}
+  {{ govukSkipLink({
+    text: "FECTranslations.skipLink.title" | translate,
+    href: "#main-content"
+  }) }}
+{% endblock %}
+
+{% block header %}
+    {% include 'public/frontend/layout/header.njk' %}
+    {% if not hideAccountNavigation and isUserLoggedIn %}
+      {% include 'public/frontend/layout/navigation.njk' %}
+    {% endif %}
+{% endblock %}
+
+{% block main %}
+  <div class="govuk-width-container {{ containerClasses }}">
+    {% if isProd %}
+      {% set bannerHtml %}
+        {{ 'FECTranslations.phaseBanner.text' | translate }} <a href='{{ authFrontEndUrl + "/contact-us-questions?theme=suggestions_feedback" }}' class="govuk-link" rel="noreferrer noopener" target="_blank">{{ 'FECTranslations.phaseBanner.link' | translate | replace(".","") }}</a>.
+      {% endset %}
+      {{ govukPhaseBanner({
+          tag: {
+            text: 'FECTranslations.phaseBanner.tag' | translate
+          },
+          html: bannerHtml
+      })}}
+    {% else %}
+      {{ govukPhaseBanner({
+          tag: {
+            text: "TEST",
+            classes: "govuk-tag--yellow"
+          },
+          text: 'general.phaseBanner.testText' | translate
+      })}}
+    {% endif %}
+    {{ frontendUiLanguageSelect({
+        url: currentUrl,
+        activeLanguage: htmlLang,
+        translations: 'FECTranslations.languageSelect' | translate
+      }) 
+    }}
+    {% block backLinkBlock %}
+      {% if backLink %}
+        <a href="{{backLink}}" class="govuk-back-link js-back-link">
+          {{ backLinkText }}
+          {{'general.back' | translate if not backLinkText}}
+        </a>
+      {% endif %}
+    {% endblock %}
+    {% block beforeContent %}{% endblock %}
+    <main class="govuk-main-wrapper {{ mainClasses }}" id="main-content" {% if mainLang %} lang="{{ mainLang }}" {% endif %}>
+        {% block content %}{% endblock %}
+    </main>
+  </div>
+{% endblock %}
+
+{% block footer %}
+  {{ frontendUiFooter({ translations: 'FECTranslations.footer' | translate({returnObjects: true}) })}}
+{% endblock %}
+
+
+{% block bodyEnd %}
+    {% block scripts %}{% endblock %}
+    {# todo fix analytics/cookies and govuk-frontend scripts #}
+    {# <script type="module" src="/public/scripts/govuk-frontend.min.js" {% if scriptNonce %} nonce="{{ scriptNonce }}"{% endif %}></script>
+
+    <script type="module" {% if scriptNonce %} nonce="{{ scriptNonce }}"{%  endif %}>
+      import { initAll } from '/public/scripts/govuk-frontend.min.js'
+      initAll()
+    </script>
+    <script type="text/javascript" src="/public/scripts/analytics.js" nonce='{{scriptNonce}}'></script> #}
+    <script type="text/javascript" nonce='{{scriptNonce}}'>
+      {% if backLinkJS %}
+        var backLink = document.querySelector('.js-back-link');
+        if (backLink) {
+          backLink.addEventListener('click', function(e) {
+            var referrer = new URL(document.referrer).hostname;
+
+            if (referrer === document.location.hostname && window.history.length > 2) {
+              event.preventDefault();
+              window.history.back();
+            }
+          });
+        }
+      {% endif %}
+    </script>
+
+{% endblock %}

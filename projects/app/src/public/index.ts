@@ -1,8 +1,10 @@
 import { resolveEnvVarToBool } from "../utils/resolveEnvVarToBool/index.js";
 import type { FastifyTypeboxInstance } from "../app.js";
 import fastifyCookie from "@fastify/cookie";
+import fastifyStatic from "@fastify/static";
 import { render } from "./handlers/render/index.js";
 import { setUpI18n } from "./handlers/setUpI18n/index.js";
+import * as path from "node:path";
 
 export const publicRoutes = async function (app: FastifyTypeboxInstance) {
   app.register(fastifyCookie);
@@ -60,5 +62,18 @@ export const publicRoutes = async function (app: FastifyTypeboxInstance) {
       request,
       reply,
     );
+  });
+
+  app.register(fastifyStatic, {
+    root: path.join(
+      import.meta.dirname,
+      "/node_modules/govuk-frontend/dist/govuk/assets",
+    ),
+    prefix: "/assets",
+    decorateReply: false,
+    cacheControl: false,
+    setHeaders: (res) => {
+      res.setHeader("cache-control", "no-cache");
+    },
   });
 };
