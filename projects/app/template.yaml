@@ -136,6 +136,25 @@ Globals:
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
 
 Resources:
+  SecretsKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+
+  SessionSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      GenerateSecretString:
+        PasswordLength: 64
+      KmsKeyId: !Ref SecretsKmsKey
+
   LambdaEnvironmentVariableEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -345,6 +364,19 @@ Resources:
           REGISTER_PUBLIC_STATIC_ROUTES: "1"
           REGISTER_PUBLIC_FRONTEND_ROUTES: "1"
           REGISTER_PUBLIC_API_ROUTES: "1"
+          SESSIONS_SECRET: !Sub "{{resolve:secretsmanager:${SessionSecret}:SecretString}}"
+          SESSIONS_TABLE_NAME: !Sub ${AWS::StackName}-SessionStore
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:DescribeTable
+                - dynamodb:PutItem
+                - dynamodb:DeleteItem
+                - dynamodb:GetItem
+                - dynamodb:Scan
+                - dynamodb:UpdateItem
+              Resource: !GetAtt SessionsTable.Arn
       Events:
         Root:
           Type: Api
