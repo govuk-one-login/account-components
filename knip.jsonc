@@ -2,10 +2,14 @@
   "workspaces": {
     ".": {
       "entry": [
-        "projects/app/src/lambda.ts",
-        "projects/app/src/local.ts",
-        "projects/app/rolldown.config.ts",
-        "projects/app/rolldown.local.config.ts",
+        "solutions/frontend/src/lambda.ts",
+        "solutions/frontend/src/local.ts",
+        "solutions/frontend/rolldown.config.ts",
+        "solutions/frontend/rolldown.local.config.ts",
+        "solutions/stubs/src/lambda.ts",
+        "solutions/stubs/src/local.ts",
+        "solutions/stubs/rolldown.config.ts",
+        "solutions/stubs/rolldown.local.config.ts",
       ],
       "ignoreBinaries": [
         "zizmor",
@@ -15,10 +19,9 @@
         "cfn-lint",
         "read",
         "sam",
-        "cmp",
       ],
     },
-    "projects/integration-tests": {
+    "solutions/integration-tests": {
       "entry": ["tests/**/*.ts"],
     },
   },

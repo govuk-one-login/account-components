@@ -39,7 +39,7 @@ jobs:
         uses: scottbrenner/cfn-lint-action@25ee47d1ab3146bda904df745511735cc0b9a970
 
       - name: Install dependencies
-        run: npm ci && cd projects/integration-tests && npm ci
+        run: npm ci && cd solutions/integration-tests && npm ci
 
       - name: Check types
         run: npm run check-types
@@ -47,14 +47,14 @@ jobs:
       - name: ESLint
         run: npm run eslint
 
-      - name: Check OpenAPI spec
-        run: npm run check-openapi:app
-
       - name: Lint Terraform
         run: npm run tflint
 
-      - name: SAM validate app
-        run: npm run sam-validate:app
+      - name: SAM validate frontend
+        run: npm run sam-validate:frontend
+
+      - name: SAM validate stubs
+        run: npm run sam-validate:stubs
 
       - name: SAM validate core
         run: npm run sam-validate:core

@@ -28,26 +28,28 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Configure app environment
+      - name: Configure frontend environment
         run: |
-          cd projects/app
+          cd solutions/frontend
           touch .env.integration-tests
           echo "IS_INTEGRATION_TEST=1" >> .env.integration-tests
           echo "ENVIRONMENT=local" >> .env.integration-tests
           echo "NODE_ENV=production" >> .env.integration-tests
-          echo "REGISTER_PUBLIC_ROUTES=1" >> .env.integration-tests
-          echo "REGISTER_PRIVATE_ROUTES=1" >> .env.integration-tests
-          echo "REGISTER_PUBLIC_STUB_ROUTES=1" >> .env.integration-tests
-          echo "REGISTER_PUBLIC_STATIC_ROUTES=1" >> .env.integration-tests
-          echo "REGISTER_PUBLIC_FRONTEND_ROUTES=1" >> .env.integration-tests
-          echo "REGISTER_PUBLIC_API_ROUTES=1" >> .env.integration-tests
+
+      - name: Configure stubs environment
+        run: |
+          cd solutions/stubs
+          touch .env.integration-tests
+          echo "IS_INTEGRATION_TEST=1" >> .env.integration-tests
+          echo "ENVIRONMENT=local" >> .env.integration-tests
+          echo "NODE_ENV=production" >> .env.integration-tests
 
       - name: Install integration tests dependencies
-        run: cd projects/integration-tests && npm ci
+        run: cd solutions/integration-tests && npm ci
 
       - name: Run integration tests
         run: |
-          cd projects/integration-tests
+          cd solutions/integration-tests
           touch .env
           echo "PRE_OR_POST_DEPLOY=pre" >> .env
           echo "PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:3000/" >> .env
