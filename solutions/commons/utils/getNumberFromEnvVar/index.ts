@@ -4,9 +4,9 @@ export const getNumberFromEnvVar = (
 ): number => {
   const value = process.env[key];
   if (value !== undefined) {
-    const parsed = parseInt(value, 10);
-    if (isNaN(parsed)) {
-      throw new Error(`${key} is not a number`);
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isNaN(parsed)) {
+      throw new TypeError(`${key} is not a number`);
     }
     return parsed;
   }
