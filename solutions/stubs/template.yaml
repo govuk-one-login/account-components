@@ -161,6 +161,9 @@ Resources:
         Type: REGIONAL
       BinaryMediaTypes:
         - "*/*"
+      Tags:
+        FMSRegionalPolicy: false
+        CustomPolicy: true
 
   StubsLambda:
     Type: AWS::Serverless::Function
