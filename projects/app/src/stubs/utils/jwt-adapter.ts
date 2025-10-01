@@ -5,15 +5,22 @@ import type { JwtHeader } from "../types/token.js";
 import { ALG, Algorithms, SignatureTypes } from "../types/common.js";
 import { getDefaultKeyValue, getPrivateKeyName } from "./app-config.js";
 import logger from "./logger.js";
-import {getParameter} from "@aws-lambda-powertools/parameters/ssm";
-import {getLocalParameter, isLocalhost} from "./get-parameter.js";
+import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
+import { getLocalParameter, isLocalhost } from "./get-parameter.js";
 
 export class JwtAdapter {
   ALG = ALG;
   signingKeyMap = new Map<string, string>();
 
-  async sign( jwtHeader: JwtHeader,jwtPayload: JWTPayload,signatureType: SignatureTypes): Promise<string> {
-    if (jwtHeader.alg === Algorithms.NONE || jwtHeader.alg === Algorithms.INVALID) {
+  async sign(
+    jwtHeader: JwtHeader,
+    jwtPayload: JWTPayload,
+    signatureType: SignatureTypes,
+  ): Promise<string> {
+    if (
+      jwtHeader.alg === Algorithms.NONE ||
+      jwtHeader.alg === Algorithms.INVALID
+    ) {
       logger.info("creating token without a signature.");
       const header = base64url.encode(Buffer.from(JSON.stringify(jwtHeader)));
       const payload = base64url.encode(Buffer.from(JSON.stringify(jwtPayload)));
@@ -22,21 +29,32 @@ export class JwtAdapter {
 
     let privateKeyPem;
     if (!this.signingKeyMap.has(signatureType)) {
-      let privateKeyName = getPrivateKeyName(signatureType);
+      const privateKeyName = getPrivateKeyName(signatureType);
       try {
-        if(isLocalhost()){
-          logger.info("Running in Local mode, fetching parameters from local ssm");
+        if (isLocalhost()) {
+          logger.info(
+            "Running in Local mode, fetching parameters from local ssm",
+          );
           privateKeyPem = await getLocalParameter(privateKeyName);
           logger.info(`Private key pem is: ${privateKeyPem}`);
         } else {
           privateKeyPem = await getParameter(privateKeyName);
         }
       } catch (error) {
-        logger.error(`Failed to retrieve ${signatureType} private key from SSM`, { error });
-        throw new Error(`Failed to retrieve key from SSM for param ${privateKeyName}`);
+        logger.error(
+          `Failed to retrieve ${signatureType} private key from SSM`,
+          { error },
+        );
+        throw new Error(
+          `Failed to retrieve key from SSM for param ${privateKeyName}`,
+        );
       }
 
-      if (!privateKeyPem || privateKeyPem.trim().length === 0 || privateKeyPem === getDefaultKeyValue()) {
+      if (
+        !privateKeyPem ||
+        privateKeyPem.trim().length === 0 ||
+        privateKeyPem === getDefaultKeyValue()
+      ) {
         logger.error("Unable to retrieve private key");
         throw new Error("Unable to retrieve private key");
       }
@@ -48,7 +66,8 @@ export class JwtAdapter {
       logger.error("Unable to retrieve private key from cache");
       throw new Error("Unable to retrieve private key from cache");
     }
-    const algorithm = signatureType === SignatureTypes.EC ? Algorithms.EC : Algorithms.RSA;
+    const algorithm =
+      signatureType === SignatureTypes.EC ? Algorithms.EC : Algorithms.RSA;
     const privateKey = await importPKCS8(privateKeyPem, algorithm);
 
     let jwt;

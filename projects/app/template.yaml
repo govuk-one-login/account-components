@@ -306,6 +306,9 @@ Resources:
         Type: REGIONAL
       BinaryMediaTypes:
         - "*/*"
+      Tags:
+        FMSGlobalCustomPolicy: true
+        FMSGlobalCustomPolicyName: "api-gateway"
 
   AppPrivateApiGateway:
     Type: AWS::Serverless::Api
@@ -334,6 +337,9 @@ Resources:
                   # API Gateway from this VPC. Once there is another VPCE here then remove this
                   # example entry
                   - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
+      Tags:
+        FMSGlobalCustomPolicy: true
+        FMSGlobalCustomPolicyName: "api-gateway"
 
   PrivateRoutesLambda:
     Type: AWS::Serverless::Function

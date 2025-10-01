@@ -1,5 +1,4 @@
 import type { Algorithms, SignatureTypes } from "../types/common.js";
-import {JWEAlgorithms} from "../types/common.js";
 
 export type AlgType = Record<SignatureTypes, Algorithms>;
 
@@ -22,20 +21,13 @@ export interface RequestBody {
   jti: string;
   iat: string;
   exp: string;
-  access_token: string;
-  refresh_token: string;
+  access_token?: string;
+  refresh_token?: string;
   sub: string;
   email: string;
-  govuk_signin_journey_id: string;
-  lng: string;
-  rp_client_id: string;
+  govuk_signin_journey_id?: string;
+  lng?: string;
+  rp_client_id?: string;
   scenario: string;
-}
-
-export interface Token {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  expires_in: number;
-  id_token: string;
+  [key: string]: unknown;
 }

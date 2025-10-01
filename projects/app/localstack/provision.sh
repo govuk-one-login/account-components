@@ -12,15 +12,16 @@ echo "Generating ECDSA (NIST P-256) private key..."
 openssl ecparam -name prime256v1 -genkey -noout -out "$EC_PRIVATE_KEY_FILE"
 openssl genpkey -algorithm RSA -out "$RSA_PRIVATE_KEY_FILE" -pkeyopt rsa_keygen_bits:2048
 
-# 2. Extract Public Key from the Private Key
-echo "Extracting public key..."
-openssl ec -in "$EC_PRIVATE_KEY_FILE" -pubout -out "$EC_PUBLIC_KEY_FILE"
-openssl rsa -in "$RSA_PRIVATE_KEY_FILE" -pubout -out "$RSA_PUBLIC_KEY_FILE"
-
 # 2. Converting the Private Key to PKCS#8 format)
 echo "Converting the Private Key to PKCS#8 format)"
 openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in "$EC_PRIVATE_KEY_FILE" -out "$EC_PRIVATE_KEY_FILE"
 openssl pkcs8 -topk8 -inform PEM -outform PEM -nocrypt -in "$RSA_PRIVATE_KEY_FILE" -out "$RSA_PRIVATE_KEY_FILE"
+
+
+# 3. Extract Public Key from the Private Key
+echo "Extracting public key..."
+openssl ec -in "$EC_PRIVATE_KEY_FILE" -pubout -out "$EC_PUBLIC_KEY_FILE"
+openssl rsa -in "$RSA_PRIVATE_KEY_FILE" -pubout -out "$RSA_PUBLIC_KEY_FILE"
 
 # 3. Read keys into environment-safe string (newline escaped)
 EC_PRIVATE_KEY=$(<./"$EC_PRIVATE_KEY_FILE")
