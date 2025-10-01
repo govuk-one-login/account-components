@@ -26,7 +26,7 @@ describe("resolveEnvVarToBool", () => {
     expect(resolveEnvVarToBool("FAKE_ENV_VAR")).toBe(false);
   });
 
-  it("returns true when env variable is undefined", () => {
+  it("returns false when env variable is undefined", () => {
     expect(resolveEnvVarToBool("FAKE_ENV_VAR")).toBe(false);
   });
 });

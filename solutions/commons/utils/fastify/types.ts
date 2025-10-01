@@ -2,18 +2,18 @@ import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import type {
   FastifyBaseLogger,
   FastifyInstance,
-  FastifyRequest,
-  FastifySchema,
+  //FastifyRequest,
+  //FastifySchema,
   RawReplyDefaultExpression,
   RawRequestDefaultExpression,
   RawServerDefault,
-  RouteGenericInterface,
+  //RouteGenericInterface,
 } from "fastify";
 import type { Lang } from "./setUpI18n/index.js";
 import type { APIGatewayEvent, Context } from "aws-lambda";
 import type i18next from "i18next";
-import type { IncomingMessage } from "node:http";
-import type { ResolveFastifyRequestType } from "fastify/types/type-provider.js";
+//import type { IncomingMessage } from "node:http";
+//import type { ResolveFastifyRequestType } from "fastify/types/type-provider.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -47,6 +47,8 @@ export type FastifyTypeboxInstance = FastifyInstance<
   TypeBoxTypeProvider
 >;
 
+/*
+Commenting out as it's not actually used yet, but will be used later
 export type FastifyRequestWithTypeboxSchema<
   Schema extends FastifySchema = FastifySchema,
 > = FastifyRequest<
@@ -59,3 +61,4 @@ export type FastifyRequestWithTypeboxSchema<
   FastifyBaseLogger,
   ResolveFastifyRequestType<TypeBoxTypeProvider, Schema, RouteGenericInterface>
 >;
+*/
