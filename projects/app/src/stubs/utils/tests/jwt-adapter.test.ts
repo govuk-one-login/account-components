@@ -44,6 +44,8 @@ describe("jwtAdapter", () => {
       it("throws error if it fails to retrieve public key from SSM", async () => {
         getParameterCommand.mockRejectedValue("error");
         const signatureType = SignatureTypes.EC;
+        process.env["EC_PRIVATE_KEY_SSM_NAME"] =
+          "/components-main/EcPrivateKey";
 
         const jwtAdapter = new JwtAdapter();
 

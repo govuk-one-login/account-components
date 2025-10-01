@@ -307,8 +307,8 @@ Resources:
       BinaryMediaTypes:
         - "*/*"
       Tags:
-        FMSGlobalCustomPolicy: true
-        FMSGlobalCustomPolicyName: "api-gateway"
+        FMSRegionalPolicy: false
+        CustomPolicy: true
 
   AppPrivateApiGateway:
     Type: AWS::Serverless::Api
@@ -338,8 +338,8 @@ Resources:
                   # example entry
                   - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
       Tags:
-        FMSGlobalCustomPolicy: true
-        FMSGlobalCustomPolicyName: "api-gateway"
+        FMSRegionalPolicy: false
+        CustomPolicy: true
 
   PrivateRoutesLambda:
     Type: AWS::Serverless::Function
