@@ -20,7 +20,7 @@ Tests are run on your local machine but control browsers running in a Docker con
 
 If using Docker Desktop on Mac or Windows you will need to `Enable host networking` in `Settings > Resources > Network`.
 
-When running tests locally they are run against `http://localhost:6002` by default. Change the value of the environment variable `TEST_ENVIRONMENT` to one of `dev | build | staging | integration | production` to run tests against the corresponding deployment instead.
+When running tests locally they are run against a locally running version of the frontend by default. Change the value of the environment variable `TEST_ENVIRONMENT` to one of `dev | build | staging | integration | production` to run tests against the corresponding deployment instead.
 
 ### Steps to run the tests:
 
@@ -51,7 +51,7 @@ cd /solutions/integration-tests
 npm run test:update-snapshots
 ```
 
-Before running the tests these commands will start the frontend and stubs servers, and also start the test server in which the browsers will run. These servers are also stopped once the tests have run. Starting the servers can take some time. If you’re writing or updating tests and will need to frequently run them whilst doing so then prefer starting the servers manually:
+Before running the tests these commands will start the test server in which the browsers will run (when `PRE_OR_POST_DEPLOY` is `pre`), and if `TEST_ENVIRONMENT` is `local` they will also start the necessary local servers. These servers are also stopped once the tests have run. Starting the servers can take some time. If you’re writing or updating tests and will need to frequently run them whilst doing so then prefer starting the servers manually:
 
 To run the frontend:
 
@@ -93,7 +93,7 @@ To skip a test in the pre-deployment environment tag the test with `@skipPreDepl
 
 ## Post-deploy
 
-Integration tests can also run in the frontend deployment pipeline once the frontend has been deployed. By default tests will not run in the post-deployment environment. To run a test in the post-deployment tag it with `@postDeploy`. Currently they run against the `build` deployment but can also be configured to run against other deployments e.g. `staging`.
+Integration tests can also run in the frontend deployment pipeline once the frontend has been deployed. By default tests will not run in the post-deployment environment. To run a test in the post-deployment pipeline tag it with `@postDeploy`. Currently tests are run against the `build` deployment but can also be configured to run against other deployments e.g. `staging`.
 
 Prefer running tests in GitHub Actions against local servers and only run tests which target actual deployments when it is not possible to test the functionality earlier.
 

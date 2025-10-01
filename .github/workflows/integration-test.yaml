@@ -32,7 +32,6 @@ jobs:
         run: |
           cd solutions/frontend
           touch .env.integration-tests
-          echo "IS_INTEGRATION_TEST=1" >> .env.integration-tests
           echo "ENVIRONMENT=local" >> .env.integration-tests
           echo "NODE_ENV=production" >> .env.integration-tests
 
@@ -40,7 +39,6 @@ jobs:
         run: |
           cd solutions/stubs
           touch .env.integration-tests
-          echo "IS_INTEGRATION_TEST=1" >> .env.integration-tests
           echo "ENVIRONMENT=local" >> .env.integration-tests
           echo "NODE_ENV=production" >> .env.integration-tests
 

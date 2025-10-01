@@ -12,7 +12,7 @@ const testDir = defineBddConfig({
 
 const webServers: PlaywrightTestConfig["webServer"] = [];
 
-if (env.TEST_TARGET === "local") {
+if (env.PRE_OR_POST_DEPLOY === "pre") {
   webServers.push({
     command: "npm run start-test-server",
     url: "http://localhost:8000",
@@ -23,7 +23,7 @@ if (env.TEST_TARGET === "local") {
   });
 }
 
-if (env.PRE_OR_POST_DEPLOY === "pre") {
+if (env.TEST_TARGET === "local") {
   webServers.push(
     {
       command: "npm run run:frontend",
