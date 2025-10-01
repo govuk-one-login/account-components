@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createDynamoDbClient } from "./dynamodbClient.js";
+import { createDynamoDbClient } from "./index.js";
 
 const ORIGINAL_ENV = { ...process.env };
 

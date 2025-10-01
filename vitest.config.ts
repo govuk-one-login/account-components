@@ -6,12 +6,13 @@ export default defineConfig({
     include: [
       "solutions/frontend/src/**/*.test.ts",
       "solutions/stubs/src/**/*.test.ts",
+      "solutions/commons/**/*.test.ts",
     ],
     expect: {
       requireAssertions: true,
     },
     coverage: {
-      include: ["solutions/frontend/src/**/*", "solutions/stubs/src/**/*"],
+      include: ["solutions/**/*"],
       reporter: ["lcov", "text"],
     },
   },

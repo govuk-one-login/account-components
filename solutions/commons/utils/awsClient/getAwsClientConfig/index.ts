@@ -1,6 +1,6 @@
 import { NodeHttpHandler } from "@smithy/node-http-handler";
-import { getNumberFromEnvVar } from "../getNumberFromEnvVar/index.js";
-import { resolveEnvVarToBool } from "../resolveEnvVarToBool/index.js";
+import { getNumberFromEnvVar } from "../../getNumberFromEnvVar/index.js";
+import { resolveEnvVarToBool } from "../../resolveEnvVarToBool/index.js";
 import http from "node:http";
 import https from "node:https";
 

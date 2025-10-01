@@ -1,6 +1,6 @@
 import { SQSClient } from "@aws-sdk/client-sqs";
-import { getAwsClientConfig } from "./getAwsClientConfig.js";
-import { getEnvironment } from "../getEnvironment/index.js";
+import { getAwsClientConfig } from "../getAwsClientConfig/index.js";
+import { getEnvironment } from "../../getEnvironment/index.js";
 import * as AWSXRay from "aws-xray-sdk";
 
 const createSqsClient = () => {

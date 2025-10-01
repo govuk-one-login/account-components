@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { getAwsClientConfig } from "./getAwsClientConfig.js";
+import { getAwsClientConfig } from "./index.js";
 import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 const ORIGINAL_ENV = { ...process.env };

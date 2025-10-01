@@ -1,5 +1,5 @@
-import { createDynamoDbClient } from "./dynamodbClient.js";
-import { createSqsClient } from "./sqsClient.js";
+import { createDynamoDbClient } from "./dynamodbClient/index.js";
+import { createSqsClient } from "./sqsClient/index.js";
 
 let cachedDynamoDbClient: ReturnType<typeof createDynamoDbClient> | undefined;
 const getDynamoDbClient = (): ReturnType<typeof createDynamoDbClient> => {

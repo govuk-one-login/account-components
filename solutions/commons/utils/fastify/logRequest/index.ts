@@ -1,5 +1,5 @@
 import type { FastifyRequest } from "fastify";
-import { getRequestParamsToLog } from "../../getRequestParamsToLog/index.js";
+import { getRequestParamsToLog } from "../getRequestParamsToLog/index.js";
 
 export const logRequest = async (request: FastifyRequest) => {
   request.log.info(

@@ -12,8 +12,8 @@ import type {
 } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import * as AWSXRay from "aws-xray-sdk";
-import { getEnvironment } from "../getEnvironment/index.js";
-import { getAwsClientConfig } from "./getAwsClientConfig.js";
+import { getEnvironment } from "../../getEnvironment/index.js";
+import { getAwsClientConfig } from "../getAwsClientConfig/index.js";
 
 const createDynamoDbClient = () => {
   const dynamoDbClient = new DynamoDBClient(getAwsClientConfig());

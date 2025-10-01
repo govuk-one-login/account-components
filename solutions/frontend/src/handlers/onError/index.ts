@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import type { FastifyTypeboxInstance } from "../../frontend.js";
+import type { FastifyTypeboxInstance } from "../../../../commons/utils/fastify/types.js";
 
 type ErrorHandler = Parameters<FastifyTypeboxInstance["setErrorHandler"]>[0];
 

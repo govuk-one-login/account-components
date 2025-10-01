@@ -1,4 +1,4 @@
-import type { FastifyTypeboxInstance } from "../frontend.js";
+import type { FastifyTypeboxInstance } from "../../../commons/utils/fastify/types.js";
 import { deleteAccount } from "./deleteAccount/index.js";
 
 export const journeys = function (fastify: FastifyTypeboxInstance) {

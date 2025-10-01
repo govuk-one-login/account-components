@@ -1,5 +1,5 @@
 import type { FastifyRequest } from "fastify";
-import { getDiSessionIdsFromRequest } from "../fastify/getDiSessionIdsFromRequest/index.js";
+import { getDiSessionIdsFromRequest } from "../getDiSessionIdsFromRequest/index.js";
 
 export const getRequestParamsToLog = (req?: FastifyRequest) => {
   return {

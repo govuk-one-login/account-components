@@ -1,11 +1,6 @@
 import { expect, it, describe, vi, afterEach } from "vitest";
 import { handler } from "./index.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.js";
-
-vi.mock("../../../../commons/utils/getEnvironment/index.js", () => ({
-  getEnvironment: vi.fn(),
-}));
 
 describe("robots.txt handler", () => {
   const mockReply = {
@@ -18,23 +13,7 @@ describe("robots.txt handler", () => {
     vi.clearAllMocks();
   });
 
-  it("allows all crawling in production", async () => {
-    vi.mocked(getEnvironment).mockReturnValue("production");
-
-    await handler({} as FastifyRequest, mockReply as unknown as FastifyReply);
-
-    expect(mockReply.type).toHaveBeenCalledExactlyOnceWith("text/plain");
-    expect(mockReply.send).toHaveBeenCalledExactlyOnceWith(`User-agent: *
-Disallow:`);
-    expect(mockReply.header).toHaveBeenCalledExactlyOnceWith(
-      "cache-control",
-      "public, max-age=300, immutable",
-    );
-  });
-
-  it("disallows all crawling in non-production environments", async () => {
-    vi.mocked(getEnvironment).mockReturnValue("dev");
-
+  it("disallows all crawling", async () => {
     await handler({} as FastifyRequest, mockReply as unknown as FastifyReply);
 
     expect(mockReply.type).toHaveBeenCalledExactlyOnceWith("text/plain");

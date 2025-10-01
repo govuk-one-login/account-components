@@ -1,7 +1,7 @@
 import { expect, it, describe, vi, afterEach } from "vitest";
 import { getRequestParamsToLog } from "./index.js";
 import type { FastifyRequest } from "fastify";
-import { getDiSessionIdsFromRequest } from "../fastify/getDiSessionIdsFromRequest/index.js";
+import { getDiSessionIdsFromRequest } from "../getDiSessionIdsFromRequest/index.js";
 
 vi.mock("../getDiSessionIdsFromRequest/index.js", () => ({
   getDiSessionIdsFromRequest: vi.fn(() => "fakeDiSessionIds"),

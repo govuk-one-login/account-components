@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import fastifyStatic from "@fastify/static";
-import type { FastifyTypeboxInstance } from "../../../../frontend/src/frontend.js";
+import type { FastifyTypeboxInstance } from "../types.js";
 
 export const staticFiles = function (fastify: FastifyTypeboxInstance) {
   const oneYearInSeconds = "31536000";

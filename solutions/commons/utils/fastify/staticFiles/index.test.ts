@@ -1,6 +1,6 @@
 import { expect, it, describe, vi, beforeEach } from "vitest";
 import { staticFiles } from "./index.js";
-import type { FastifyTypeboxInstance } from "../../../../frontend/src/frontend.js";
+import type { FastifyTypeboxInstance } from "../types.js";
 
 describe("staticFiles", () => {
   let mockFastify: FastifyTypeboxInstance;

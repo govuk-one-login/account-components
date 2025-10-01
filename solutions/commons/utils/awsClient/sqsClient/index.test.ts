@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createSqsClient } from "./sqsClient.js";
+import { createSqsClient } from "./index.js";
 
 const ORIGINAL_ENV = { ...process.env };
 
