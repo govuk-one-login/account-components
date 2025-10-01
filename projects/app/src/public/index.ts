@@ -64,6 +64,8 @@ export const publicRoutes = async function (app: FastifyTypeboxInstance) {
     );
   });
 
+  // consider caching strategy for production
+  // Serve assets from govuk-frontend package. Format must begin with /assets
   app.register(fastifyStatic, {
     root: path.join(
       import.meta.dirname,
