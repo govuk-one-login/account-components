@@ -77,7 +77,7 @@
     "build:app": "npm run build:app:shared && cd projects/app && rolldown -c rolldown.config.ts && cp ./Makefile dist && cp ../../package.json ./dist/package.json",
     "build-local:app": "npm run build:app:shared && cd projects/app && rolldown -c rolldown.local.config.ts",
     "watch:app": "chokidar \"./projects/app/src/**/*\" -c \"npm run build-local:app\"",
-    "run:app": "npm run build-local:app && concurrently 'npm run watch:app' 'cd projects/app && node --watch ./dist/local.js' --kill-others",
+    "run:app": "./projects/app/localstack/provision.sh && npm run build-local:app && concurrently 'npm run watch:app' 'cd projects/app && node --watch ./dist/local.js' --kill-others",
     "generate-openapi:public:app": "export $(cat projects/app/.env.openapi | xargs); export REGISTER_PUBLIC_ROUTES=1; cd projects/app && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi.public.yaml",
     "generate-openapi:private:app": "export $(cat projects/app/.env.openapi | xargs); export REGISTER_PRIVATE_ROUTES=1; cd projects/app && fastify generate-swagger --yaml=true dist_openapi/src/app.js > openapi.private.yaml",
     "generate-openapi:app": "cd projects/app && rm -rf dist_openapi && tsc && npm run generate-openapi:public:app && npm run generate-openapi:private:app",

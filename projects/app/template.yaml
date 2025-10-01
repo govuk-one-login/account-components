@@ -268,6 +268,36 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-auth_code"
 
+  ReplayAttackTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-ReplayAttack
+      AttributeDefinitions:
+        - AttributeName: nonce
+          AttributeType: S
+      KeySchema:
+        - AttributeName: nonce
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expires
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      SSESpecification:
+        KMSMasterKeyId:
+          Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-replay_attack"
+
   AppPublicApiGateway:
     Type: AWS::Serverless::Api
     Properties:
