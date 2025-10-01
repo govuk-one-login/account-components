@@ -39,12 +39,12 @@ export async function postHandler(
   >,
   reply: FastifyReply,
 ) {
-  Object.entries(request.body).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(request.body)) {
     for (const [groupKey, groupValue] of Object.entries(
       internalEndpointStubsConfig,
     )) {
-      if (
-        Object.entries(groupValue).find(([endpointKey, endpointValue]) => {
+      const match = Object.entries(groupValue).some(
+        ([endpointKey, endpointValue]) => {
           return (
             generateInternalEndpointStubConfigCookieKey(
               groupKey,
@@ -53,18 +53,19 @@ export async function postHandler(
             // @ts-expect-error
             endpointValue.includes(value)
           );
-        })
-      ) {
+        },
+      );
+
+      if (match) {
         reply.setCookie(key, value, {
           httpOnly: true,
           maxAge: 31536000,
           sameSite: "lax",
           secure: getEnvironment() !== "local",
         });
-        break;
+        break; // Stop looping groupValue entries
       }
     }
-  });
-
+  }
   return reply.redirect(`${getPath("root", true)}?updated=1`);
 }

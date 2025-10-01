@@ -29,12 +29,13 @@ export const internalEndpointStubs = function (app: FastifyTypeboxInstance) {
     },
     async function (request, reply) {
       const body = request.body as unknown as RequestBody;
+
       const accessToken = await generateAccessToken(body);
+      body.access_token = accessToken;
 
       const scenario: Scenarios = getScenario(body);
       logger.info(`Scenario selected: ${JSON.stringify(scenario)}`);
 
-      body.access_token = accessToken;
       const token = await generateJwtToken(body, scenario);
 
       logger.info(`Token is ${token}`);
