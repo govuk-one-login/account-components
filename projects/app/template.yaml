@@ -375,6 +375,10 @@ Resources:
       Environment:
         Variables:
           REGISTER_PUBLIC_ROUTES: "1"
+          EC_PRIVATE_KEY_SSM_NAME: "/components-main/EcPrivateKey"
+          RSA_PRIVATE_KEY_SSM_NAME: "/components-main/RsaPrivateKey"
+          EC_PUBLIC_KEY_SSM_NAME: "/components-main/EcPublicKey"
+          RSA_PUBLIC_KEY_SSM_NAME: "/components-main/RsaPublicKey"
           REGISTER_PUBLIC_STUB_ROUTES:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, enableStubs]
       Events:
