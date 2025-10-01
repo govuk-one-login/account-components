@@ -5,6 +5,7 @@ coverage
 .env*
 !.env*.sample
 .aws-sam
+.idea
 
 solutions/frontend/dist
 
