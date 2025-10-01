@@ -11,6 +11,8 @@ solutions/frontend/dist
 
 solutions/stubs/dist
 
+solutions/localstack/keys
+
 solutions/infra/.terraform
 solutions/infra/.terraform.lock.hcl
 
