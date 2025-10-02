@@ -17,7 +17,7 @@
         "sam",
         "cmp",
       ],
-      "ignoreDependencies": ["govuk-frontend"],
+      "ignoreDependencies": ["csso-cli", "sass"],
     },
     "projects/integration-tests": {
       "entry": ["tests/**/*.ts"],

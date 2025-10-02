@@ -75,7 +75,7 @@ export const publicRoutes = async function (app: FastifyTypeboxInstance) {
     decorateReply: false,
     cacheControl: false,
     setHeaders: (res) => {
-      res.setHeader("cache-control", "no-cache");
+      res.setHeader("cache-control", "public, max-age=31536000, immutable");
     },
   });
 };

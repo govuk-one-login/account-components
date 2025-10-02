@@ -50,8 +50,8 @@ describe("render", () => {
     expect(nunjucks.configure).toHaveBeenCalledExactlyOnceWith(
       [
         "dist",
-        "../../node_modules/govuk-frontend/dist",
-        "../../node_modules/@govuk-one-login/",
+        "dist/node_modules/govuk-frontend/dist",
+        "dist/node_modules/@govuk-one-login",
       ],
       {
         autoescape: true,
@@ -68,11 +68,7 @@ describe("render", () => {
     });
 
     expect(nunjucks.configure).toHaveBeenCalledExactlyOnceWith(
-      [
-        "",
-        "../../node_modules/govuk-frontend/dist",
-        "../../node_modules/@govuk-one-login/",
-      ],
+      ["", "node_modules/govuk-frontend/dist", "node_modules/@govuk-one-login"],
       {
         autoescape: true,
         noCache: true,

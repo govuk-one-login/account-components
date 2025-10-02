@@ -2,6 +2,7 @@ import assert from "node:assert";
 import { getEnvironment } from "../../../utils/getEnvironment/index.js";
 import type { FastifyReply } from "fastify";
 import { addLanguageParam, contactUsUrl } from "@govuk-one-login/frontend-ui";
+import * as path from "node:path";
 
 export const render = async function (
   this: FastifyReply,
@@ -9,12 +10,12 @@ export const render = async function (
   props = {},
 ) {
   const { default: nunjucks } = await import("nunjucks");
-
+  const nunjucksPath = getEnvironment() === "local" ? "dist" : "";
   const env = nunjucks.configure(
     [
-      getEnvironment() === "local" ? "dist" : "",
-      "../../node_modules/govuk-frontend/dist",
-      "../../node_modules/@govuk-one-login/",
+      nunjucksPath,
+      path.join(nunjucksPath, "node_modules/govuk-frontend/dist"),
+      path.join(nunjucksPath, "node_modules/@govuk-one-login"),
     ],
     {
       autoescape: true,
