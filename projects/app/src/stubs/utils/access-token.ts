@@ -1,7 +1,8 @@
 import { v4 as uuid } from "uuid";
 import { importJWK, SignJWT } from "jose";
 import type { CryptoKey, JWK, JWTHeaderParameters, JWTPayload } from "jose";
-import type { RequestBody } from "../types/token.js";
+
+import type { RequestBody } from "../types/common.js";
 
 const JWK_KEY_SECRET = {
   kty: "EC",
@@ -21,12 +22,6 @@ const jwtHeader: JWTHeaderParameters = {
 };
 let cachedPrivateKey: Uint8Array | CryptoKey;
 const getPrivateKey = async () => {
-  if (
-    typeof JWK_KEY_SECRET === // pragma: allowlist secret
-    "undefined"
-  ) {
-    throw new Error("JWK_KEY_SECRET environment variable is undefined");
-  }
   const jwk: JWK = JWK_KEY_SECRET;
   cachedPrivateKey = await importJWK(jwk, algorithm);
   return cachedPrivateKey;

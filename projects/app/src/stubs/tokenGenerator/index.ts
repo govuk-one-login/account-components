@@ -1,6 +1,7 @@
 import { AUTHENTICATION_ISSUER } from "../utils/app-config.js";
 import { JwtAdapter } from "../utils/jwt-adapter.js";
 import { CustomError } from "../utils/errors.js";
+import type { JwtHeader, RequestBody } from "../types/common.js";
 import {
   Algorithms,
   CONVERT_TO_SECONDS,
@@ -16,7 +17,6 @@ import {
 } from "../types/common.js";
 import logger from "../utils/logger.js";
 import type { JWTPayload } from "jose";
-import type { JwtHeader, RequestBody } from "../types/token.js";
 
 export const generateJwtToken = async (
   requestBody: RequestBody,

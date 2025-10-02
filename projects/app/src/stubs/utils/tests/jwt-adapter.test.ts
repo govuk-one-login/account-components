@@ -2,8 +2,8 @@ import type { MockInstance } from "vitest";
 import { expect, describe, it, vi, beforeEach } from "vitest";
 import { JwtAdapter } from "../jwt-adapter.js";
 import * as jose from "jose";
-import type { JwtHeader } from "../../types/token.js";
 import { Algorithms, SignatureTypes } from "../../types/common.js";
+import type { JwtHeader } from "../../types/common.js";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import { SignJWT } from "jose";
 

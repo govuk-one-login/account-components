@@ -3,8 +3,8 @@ import type { MockInstance } from "vitest";
 import * as jose from "jose";
 import * as uuidModule from "uuid";
 import { generateAccessToken } from "../access-token.js";
-import type { RequestBody } from "../../types/token.js";
 import { Scenarios } from "../../types/common.js";
+import type { RequestBody } from "../../types/common.js";
 
 vi.mock("uuid", async () => {
   const actual = await vi.importActual<typeof uuidModule>("uuid");

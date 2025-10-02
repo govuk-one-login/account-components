@@ -1,5 +1,3 @@
-import type { AlgType } from "./token.js";
-
 export enum HttpCodesEnum {
   BAD_REQUEST = 400,
 }
@@ -62,6 +60,40 @@ export const JWKS_KEY_TYPES: JwksKeyType[] = [
     jweAlg: JWEAlgorithms.RSA,
   },
 ];
+
+type AlgType = Record<SignatureTypes, Algorithms>;
+
+export interface JwtHeader {
+  alg: Algorithms;
+  typ?: string;
+  kid?: string;
+
+  [propName: string]: unknown;
+}
+
+export interface RequestBody {
+  iss: string;
+  client_id: string;
+  client_secret?: string;
+  aud?: string;
+  response_type?: string;
+  redirect_uri?: string;
+  scope?: string;
+  state?: string;
+  jti: string;
+  iat?: string;
+  exp?: string;
+  access_token?: string;
+  refresh_token?: string;
+  sub?: string;
+  email?: string;
+  govuk_signin_journey_id?: string;
+  lng?: string;
+  rp_client_id?: string;
+  scenario: string;
+
+  [key: string]: unknown;
+}
 
 export const ALG: AlgType = { EC: Algorithms.EC, RSA: Algorithms.RSA };
 export const DEFAULT_SCENARIO = Scenarios.VALID;

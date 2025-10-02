@@ -1,8 +1,8 @@
 import { Buffer } from "node:buffer";
 import type { JWTPayload } from "jose";
 import { base64url, importPKCS8, SignJWT } from "jose";
-import type { JwtHeader } from "../types/token.js";
 import { ALG, Algorithms, SignatureTypes } from "../types/common.js";
+import type { JwtHeader } from "../types/common.js";
 import { getDefaultKeyValue, getPrivateKeyName } from "./app-config.js";
 import logger from "./logger.js";
 import { getParameter } from "@aws-lambda-powertools/parameters/ssm";

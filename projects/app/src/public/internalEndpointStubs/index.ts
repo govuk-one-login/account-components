@@ -6,9 +6,8 @@ import {
   getScenario,
 } from "../../stubs/tokenGenerator/index.js";
 import logger from "../../stubs/utils/logger.js";
-import type { RequestBody } from "../../stubs/types/token.js";
 import { buildJar } from "../../stubs/buildJar/index.js";
-import type { Scenarios } from "../../stubs/types/common.js";
+import type { RequestBody, Scenarios } from "../../stubs/types/common.js";
 import { generateAccessToken } from "../../stubs/utils/access-token.js";
 
 export const ConfigureInternalEndpointsPostSchema = {

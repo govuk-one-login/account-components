@@ -13,8 +13,8 @@ import {
   Kids,
   DEFAULT_SCENARIO,
 } from "../types/common.js";
+import type { RequestBody } from "../types/common.js";
 import type { JWTPayload } from "jose";
-import type { RequestBody } from "../types/token.js";
 
 vi.mock("../utils/jwt-adapter.js");
 vi.mock("../utils/logger.js", () => ({
