@@ -115,9 +115,9 @@ export function getJwtPayload(
     ...payload,
     exp,
     iat,
-    ...{ iss },
-    ...(aud && { aud }),
-    ...{ scope },
+    iss,
+    scope,
+    ...(aud ? { aud } : {}),
   } as JWTPayload;
 }
 
