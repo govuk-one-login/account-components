@@ -26,6 +26,7 @@ export const render = async function (
   assert.ok(this.i18next);
   env.addFilter("translate", this.i18next.t);
   env.addGlobal("govukRebrand", true);
+  env.addGlobal("isUserLoggedIn", true);
 
   env.addGlobal("addLanguageParam", addLanguageParam);
   env.addGlobal("contactUsUrl", contactUsUrl);
