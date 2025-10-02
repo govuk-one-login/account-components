@@ -1,9 +1,7 @@
+import type { FastifyInstance } from "fastify";
 import assert from "node:assert";
-import type { FastifyTypeboxInstance } from "../../../../commons/utils/fastify/types.js";
 
-type NotFoundHandler = Parameters<
-  FastifyTypeboxInstance["setNotFoundHandler"]
->[1];
+type NotFoundHandler = Parameters<FastifyInstance["setNotFoundHandler"]>[1];
 
 export const onNotFound = (
   _request: Parameters<NotFoundHandler>[0],

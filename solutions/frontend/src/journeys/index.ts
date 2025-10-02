@@ -1,7 +1,7 @@
-import type { FastifyTypeboxInstance } from "../../../commons/utils/fastify/types.js";
+import type { FastifyInstance } from "fastify";
 import { deleteAccount } from "./deleteAccount/index.js";
 
-export const journeys = function (fastify: FastifyTypeboxInstance) {
+export const journeys = function (fastify: FastifyInstance) {
   fastify.addHook("onRequest", () => {
     // TODO signed in check e.g.
     // if (not signed in) {

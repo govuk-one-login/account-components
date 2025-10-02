@@ -1,8 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import i18next from "i18next";
 import { setUpI18n, Lang } from "./index.js";
-import type { FastifyRequest, FastifyReply } from "fastify";
-import type { FastifyTypeboxInstance } from "../types.js";
+import type { FastifyRequest, FastifyReply, FastifyInstance } from "fastify";
 
 vi.mock("i18next", () => ({
   default: {
@@ -31,7 +30,7 @@ describe("setUpI18n", () => {
   it("should set language to English by default", async () => {
     const handler = setUpI18n(translations);
     await handler.call(
-      {} as FastifyTypeboxInstance,
+      {} as FastifyInstance,
       request as Parameters<typeof handler>[0],
       reply as Parameters<typeof handler>[1],
     );
@@ -43,7 +42,7 @@ describe("setUpI18n", () => {
     request.query = { lng: Lang.Welsh };
     const handler = setUpI18n(translations);
     await handler.call(
-      {} as FastifyTypeboxInstance,
+      {} as FastifyInstance,
       request as Parameters<typeof handler>[0],
       reply as Parameters<typeof handler>[1],
     );
@@ -55,7 +54,7 @@ describe("setUpI18n", () => {
     request.cookies = { lng: Lang.Welsh };
     const handler = setUpI18n(translations);
     await handler.call(
-      {} as FastifyTypeboxInstance,
+      {} as FastifyInstance,
       request as Parameters<typeof handler>[0],
       reply as Parameters<typeof handler>[1],
     );
@@ -68,7 +67,7 @@ describe("setUpI18n", () => {
     request.cookies = { lng: Lang.Welsh };
     const handler = setUpI18n(translations);
     await handler.call(
-      {} as FastifyTypeboxInstance,
+      {} as FastifyInstance,
       request as Parameters<typeof handler>[0],
       reply as Parameters<typeof handler>[1],
     );
@@ -80,7 +79,7 @@ describe("setUpI18n", () => {
     request.query = { lng: "invalid" };
     const handler = setUpI18n(translations);
     await handler.call(
-      {} as FastifyTypeboxInstance,
+      {} as FastifyInstance,
       request as Parameters<typeof handler>[0],
       reply as Parameters<typeof handler>[1],
     );
@@ -92,7 +91,7 @@ describe("setUpI18n", () => {
     request.query = { lng: Lang.Welsh };
     const handler = setUpI18n(translations);
     await handler.call(
-      {} as FastifyTypeboxInstance,
+      {} as FastifyInstance,
       request as Parameters<typeof handler>[0],
       reply as Parameters<typeof handler>[1],
     );
@@ -115,7 +114,7 @@ describe("setUpI18n", () => {
   it("should set i18next instance on reply", async () => {
     const handler = setUpI18n(translations);
     await handler.call(
-      {} as FastifyTypeboxInstance,
+      {} as FastifyInstance,
       request as Parameters<typeof handler>[0],
       reply as Parameters<typeof handler>[1],
     );

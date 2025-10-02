@@ -1,11 +1,11 @@
 import type { Mock } from "vitest";
 import { expect, it, describe, vi, beforeEach } from "vitest";
 import { journeys } from "./index.js";
-import type { FastifyTypeboxInstance } from "../../../commons/utils/fastify/types.js";
 import { deleteAccount } from "./deleteAccount/index.js";
+import type { FastifyInstance } from "fastify";
 
 describe("journeys plugin", () => {
-  let mockFastify: FastifyTypeboxInstance;
+  let mockFastify: FastifyInstance;
   let mockAddHook: Mock;
   let mockRegister: Mock;
 
@@ -16,7 +16,7 @@ describe("journeys plugin", () => {
     mockFastify = {
       addHook: mockAddHook,
       register: mockRegister,
-    } as unknown as FastifyTypeboxInstance;
+    } as unknown as FastifyInstance;
   });
 
   it("adds onRequest hook", () => {
