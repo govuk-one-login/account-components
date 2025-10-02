@@ -75,6 +75,6 @@ describe("isLocalhost", () => {
   it("should return undefined if AWS_SSM_ENDPOINT is not set", () => {
     delete process.env["AWS_SSM_ENDPOINT"];
 
-    expect(isLocalhost()).toBeUndefined();
+    expect(isLocalhost()).toBe(false);
   });
 });
