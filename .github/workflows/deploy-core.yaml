@@ -9,6 +9,11 @@ on:
     paths:
       - solutions/core/**
       - .github/workflows/deploy-core.yaml
+      - package.json
+      - package-lock.json
+      - .npmrc
+      - .nvmrc
+      - tsconfig.json
 
 concurrency:
   group: ${{ github.workflow }}

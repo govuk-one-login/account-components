@@ -6,6 +6,14 @@ on:
   push:
     branches:
       - main
+    paths:
+      - solutions/frontend/**
+      - .github/workflows/deploy-frontend.yaml
+      - package.json
+      - package-lock.json
+      - .npmrc
+      - .nvmrc
+      - tsconfig.json
 
 concurrency:
   group: ${{ github.workflow }}

@@ -6,6 +6,14 @@ on:
   push:
     branches:
       - main
+    paths:
+      - solutions/stubs/**
+      - .github/workflows/deploy-stubs.yaml
+      - package.json
+      - package-lock.json
+      - .npmrc
+      - .nvmrc
+      - tsconfig.json
 
 concurrency:
   group: ${{ github.workflow }}
