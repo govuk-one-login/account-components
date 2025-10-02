@@ -8,6 +8,9 @@
 {%- if isUserLoggedIn %} govuk-header--with-signout {%- endif -%}
 {%- endset-%}
 
+{% set isGa4Enabled = false %}
+{% set isSelectContentTrackingEnabled = false %}
+
 {% block pageTitle %}
   {%- if error or errors %} {{ 'general.errorTitlePrefix' | translate }} - {% endif -%}
   {%- if pageTitleName -%}
@@ -93,15 +96,16 @@
 
 {% block bodyEnd %}
     {% block scripts %}{% endblock %}
-    {# todo fix analytics/cookies and govuk-frontend scripts #}
-    {# <script type="module" src="/public/scripts/govuk-frontend.min.js" {% if scriptNonce %} nonce="{{ scriptNonce }}"{% endif %}></script>
 
-    <script type="module" {% if scriptNonce %} nonce="{{ scriptNonce }}"{%  endif %}>
+    {# TODO: Implement CSP config and add nonces #}
+    <script type="module" src="/public/scripts/govuk-frontend.min.js"></script>
+
+    <script type="module">
       import { initAll } from '/public/scripts/govuk-frontend.min.js'
       initAll()
     </script>
-    <script type="text/javascript" src="/public/scripts/analytics.js" nonce='{{scriptNonce}}'></script> #}
-    <script type="text/javascript" nonce='{{scriptNonce}}'>
+    <script type="text/javascript" src="/public/scripts/analytics.js"></script>
+    <script type="text/javascript">
       {% if backLinkJS %}
         var backLink = document.querySelector('.js-back-link');
         if (backLink) {
@@ -116,5 +120,22 @@
         }
       {% endif %}
     </script>
-
+    <script type="text/javascript">
+    if (window.DI) {
+      window.DI.appInit({
+        ga4ContainerId: "{{ga4ContainerId}}"
+      }, {
+        enableGa4Tracking: {{isGa4Enabled}},
+        cookieDomain: "{{analyticsCookieDomain}}",
+        isDataSensitive: false,
+        isPageDataSensitive: {{ opl.isPageDataSensitive | default("true") }},
+        enablePageViewTracking: true,
+        enableFormResponseTracking: true,
+        enableFormChangeTracking: true,
+        enableFormErrorTracking: true,
+        enableNavigationTracking: true,
+        enableSelectContentTracking: {{isSelectContentTrackingEnabled}}
+      });
+    }
+  </script>
 {% endblock %}

@@ -78,4 +78,20 @@ export const publicRoutes = async function (app: FastifyTypeboxInstance) {
       res.setHeader("cache-control", "public, max-age=31536000, immutable");
     },
   });
+
+  app.register(fastifyStatic, {
+    root: [
+      path.join(
+        import.meta.dirname,
+        "/node_modules/@govuk-one-login/frontend-analytics/lib",
+      ),
+      path.join(import.meta.dirname, "/node_modules/govuk-frontend/dist/govuk"),
+    ],
+    prefix: "/public/scripts",
+    decorateReply: false,
+    cacheControl: false,
+    setHeaders: (res) => {
+      res.setHeader("cache-control", "public, max-age=31536000, immutable");
+    },
+  });
 };
