@@ -1,7 +1,4 @@
-import {
-  AUTHENTICATION_ISSUER,
-  DEFAULT_AUDIENCE,
-} from "../utils/app-config.js";
+import { AUTHENTICATION_ISSUER } from "../utils/app-config.js";
 import { JwtAdapter } from "../utils/jwt-adapter.js";
 import { CustomError } from "../utils/errors.js";
 import {
@@ -45,7 +42,7 @@ export function getScenario(body: RequestBody): Scenarios {
   return retrievedScenario ?? DEFAULT_SCENARIO;
 }
 
-function getJwtHeader(scenario: Scenarios): JwtHeader {
+export function getJwtHeader(scenario: Scenarios): JwtHeader {
   let alg: Algorithms = Algorithms.EC;
   let kid: Kids | undefined = Kids.EC;
   switch (scenario) {
@@ -73,14 +70,7 @@ function getJwtHeader(scenario: Scenarios): JwtHeader {
   return header;
 }
 
-/**
- * A function for returning the JWT Payload.
- *
- * @param scenario - the types of scenario: valid, invalid, none-algorithm, missing-kid, expired, iat in future.
- * @param body - the body string.
- * @throws {@link CustomError} - if the event body is invalid JSON.
- */
-function getJwtPayload(
+export function getJwtPayload(
   scenario: Scenarios,
   body: string | RequestBody,
 ): JWTPayload {
@@ -118,7 +108,7 @@ function getJwtPayload(
       ? getDateEpoch(5)
       : getDateEpoch(initiatedAt);
   const iss = AUTHENTICATION_ISSUER;
-  const aud = bodyAud ?? DEFAULT_AUDIENCE;
+  const aud = bodyAud ?? process.env["DEFAULT_AUDIENCE"];
   const scope = bodyScope ?? Scope.REVERIFICATION;
 
   return {
@@ -131,14 +121,6 @@ function getJwtPayload(
   } as JWTPayload;
 }
 
-/**
- * A function for returning the promise for generating the token.
- *
- * @param header - the JWT Header
- * @param payload - the JWT Payload.
- * @param signatureType - the signature types.
- * @throws {@link CustomError} - if the token could not be signed.
- */
 async function generateToken(
   header: JwtHeader,
   payload: JWTPayload,
@@ -152,12 +134,6 @@ async function generateToken(
   }
 }
 
-/**
- * A function for getting the Date in EPOCH format.
- *
- * @returns the epoch equivalent for the date.
- * @param minutes - minutes
- */
 function getDateEpoch(minutes: number) {
   return Math.floor(
     (Date.now() + minutes * MILLISECONDS_IN_MINUTES) / CONVERT_TO_SECONDS,

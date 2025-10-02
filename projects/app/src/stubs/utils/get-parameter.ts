@@ -22,5 +22,5 @@ export const getLocalParameter = async (name: string): Promise<string> => {
   return value;
 };
 
-export const isLocalhost = () =>
-  process.env["AWS_SSM_ENDPOINT"]?.includes("localhost");
+export const isLocalhost = (): boolean =>
+  !!process.env["AWS_SSM_ENDPOINT"]?.includes("localhost");

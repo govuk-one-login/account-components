@@ -53,17 +53,6 @@ describe("jwtAdapter", () => {
           jwtAdapter.sign(header, payload, signatureType),
         ).rejects.toThrow("Failed to retrieve key from SSM");
       });
-
-      it.skip("throws error if public key from SSM is equal to the default value", async () => {
-        getParameterCommand.mockResolvedValue("mock-value");
-        const signatureType = SignatureTypes.EC;
-
-        const jwtAdapter = new JwtAdapter();
-
-        await expect(
-          jwtAdapter.sign(header, payload, signatureType),
-        ).rejects.toThrow("Unable to retrieve private key");
-      });
     });
 
     describe("when private keys are cached", () => {
@@ -111,17 +100,6 @@ describe("jwtAdapter", () => {
         const token = await jwtAdapter.sign(header, payload, signatureType);
 
         expect(token).to.eq("encodedHeader.encodedPayload.");
-      });
-
-      it.skip("throws error when token fails to be signed", async () => {
-        vi.spyOn(SignJWT.prototype, "sign").mockResolvedValue("error!!");
-        const signatureType = SignatureTypes.EC;
-
-        const jwtAdapter = new JwtAdapter();
-
-        await expect(
-          jwtAdapter.sign(header, payload, signatureType),
-        ).rejects.toThrow("Failed to sign Jwt");
       });
     });
   });

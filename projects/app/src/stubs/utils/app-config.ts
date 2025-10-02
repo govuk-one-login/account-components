@@ -2,8 +2,6 @@ import { SignatureTypes } from "../types/common.js";
 
 export const AUTHENTICATION_ISSUER = "authentication-issuer";
 
-export const DEFAULT_AUDIENCE = process.env["DEFAULT_AUDIENCE"];
-
 export const getPrivateKeyName = (keyType: SignatureTypes): string => {
   const keyEnvironment =
     keyType == SignatureTypes.EC

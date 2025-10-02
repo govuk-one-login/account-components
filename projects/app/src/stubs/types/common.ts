@@ -11,10 +11,9 @@ export enum Algorithms {
   INVALID = "AB123",
 }
 
-enum JWEAlgorithms {
+export enum JWEAlgorithms {
   EC = "ECDH-ES+A256KW",
   RSA = "RSA-OAEP-256",
-  INVALID = "AB123",
 }
 
 export enum Scenarios {

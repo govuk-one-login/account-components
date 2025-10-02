@@ -1,15 +1,8 @@
 import { expect, it, describe, vi, beforeEach } from "vitest";
 import type { FastifyReply } from "fastify";
-import { getHandler, postHandler } from "./index.js";
+import { postHandler } from "./index.js";
 import type { FastifyRequestWithSchema } from "../../../../app.js";
-import type {
-  ConfigureInternalEndpointsGetSchema,
-  ConfigureInternalEndpointsPostSchema,
-} from "../../../internalEndpointStubs.js";
-import {
-  internalEndpointStubsConfig,
-  generateInternalEndpointStubConfigCookieKey,
-} from "../utils/config/index.js";
+import type { ConfigureInternalEndpointsPostSchema } from "../../index.js";
 
 vi.mock("../../../../utils/getEnvironment/index.js", () => ({
   getEnvironment: vi.fn(() => "local"),
@@ -28,42 +21,6 @@ describe("internalEndpointStubs handlers", () => {
       setCookie: vi.fn(),
       redirect: vi.fn(),
     } as unknown as FastifyReply;
-  });
-
-  describe("getHandler", () => {
-    it("renders template without a success message", async () => {
-      const request = {
-        query: {},
-      } as FastifyRequestWithSchema<typeof ConfigureInternalEndpointsGetSchema>;
-
-      await getHandler(request, reply as FastifyReply);
-
-      expect(reply.render).toHaveBeenCalledWith(
-        "public/handlers/internalEndpointStubs/configure/index.njk",
-        expect.objectContaining({
-          showSuccessMessage: false,
-          internalEndpointStubsConfig,
-          generateInternalEndpointStubConfigCookieKey,
-        }),
-      );
-    });
-
-    it("renders template with a success message", async () => {
-      const request = {
-        query: { updated: 1 },
-      } as FastifyRequestWithSchema<typeof ConfigureInternalEndpointsGetSchema>;
-
-      await getHandler(request, reply as FastifyReply);
-
-      expect(reply.render).toHaveBeenCalledWith(
-        "public/handlers/internalEndpointStubs/configure/index.njk",
-        expect.objectContaining({
-          showSuccessMessage: true,
-          internalEndpointStubsConfig,
-          generateInternalEndpointStubConfigCookieKey,
-        }),
-      );
-    });
   });
 
   describe("postHandler", () => {

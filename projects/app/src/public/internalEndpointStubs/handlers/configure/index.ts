@@ -1,37 +1,12 @@
 import type { FastifyReply } from "fastify";
-import assert from "node:assert";
 import {
   generateInternalEndpointStubConfigCookieKey,
-  getCurrentInternalEndpointStubScenario,
   internalEndpointStubsConfig,
 } from "../utils/config/index.js";
-import type {
-  ConfigureInternalEndpointsGetSchema,
-  ConfigureInternalEndpointsPostSchema,
-} from "../../../internalEndpointStubs.js";
+import type { ConfigureInternalEndpointsPostSchema } from "../../index.js";
 import { getEnvironment } from "../../../../utils/getEnvironment/index.js";
 import { getPath } from "../utils/paths/index.js";
 import type { FastifyRequestWithSchema } from "../../../../app.js";
-
-export async function getHandler(
-  request: FastifyRequestWithSchema<typeof ConfigureInternalEndpointsGetSchema>,
-  reply: FastifyReply,
-) {
-  assert.ok(reply.render);
-
-  return reply.render(
-    "public/handlers/internalEndpointStubs/configure/index.njk",
-    {
-      showSuccessMessage: request.query.updated === 1,
-      internalEndpointStubsConfig,
-      getCurrentInternalEndpointStubScenario: (
-        group: Parameters<typeof getCurrentInternalEndpointStubScenario>[1],
-        endpoint: Parameters<typeof getCurrentInternalEndpointStubScenario>[2],
-      ) => getCurrentInternalEndpointStubScenario(request, group, endpoint),
-      generateInternalEndpointStubConfigCookieKey,
-    },
-  );
-}
 
 export async function postHandler(
   request: FastifyRequestWithSchema<
