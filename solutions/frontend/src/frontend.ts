@@ -34,6 +34,11 @@ export const initFrontend = async function () {
   fastify.addHook("onResponse", logResponse);
 
   fastify.register(fastifyCookie);
+  fastify.decorateReply("globals", {
+    getter() {
+      return {};
+    },
+  });
   fastify.decorateReply("render", render);
   fastify.addHook(
     "onRequest",

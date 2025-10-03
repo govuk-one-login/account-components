@@ -17,6 +17,9 @@ declare module "fastify" {
       props?: Record<string, any>,
     ) => Promise<void>;
     i18next?: typeof i18next;
+    globals: {
+      example?: string; // TODO remove this once there is at least one real property
+    };
   }
 }
 
