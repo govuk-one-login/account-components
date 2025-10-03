@@ -7,8 +7,13 @@ on:
     branches:
       - main
     paths:
-      - projects/core/**
+      - solutions/core/**
       - .github/workflows/deploy-core.yaml
+      - package.json
+      - package-lock.json
+      - .npmrc
+      - .nvmrc
+      - tsconfig.json
 
 concurrency:
   group: ${{ github.workflow }}
@@ -39,11 +44,11 @@ jobs:
           aws-region: "eu-west-2"
 
       - name: Build SAM template
-        run: cd ./projects/core && sam build
+        run: cd ./solutions/core && sam build
 
       - name: Deploy core
         uses: govuk-one-login/devplatform-upload-action@fda75612a1b0e5a8c84ae7c44a23340e50e5bbde
         with:
           artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET_NAME_CORE }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
-          working-directory: ./projects/core
+          working-directory: ./solutions/core

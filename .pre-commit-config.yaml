@@ -67,16 +67,6 @@ repos:
 
   - repo: local
     hooks:
-      - id: check-open-api-spec
-        name: Check OpenAPI spec
-        entry: npm run check-openapi:app
-        language: system
-        exclude: .*
-        always_run: true
-        stages: [pre-commit]
-
-  - repo: local
-    hooks:
       - id: tflint
         name: Lint Terraform
         entry: npm run tflint
@@ -87,9 +77,19 @@ repos:
 
   - repo: local
     hooks:
-      - id: sam-validate-app
-        name: SAM validate app
-        entry: npm run sam-validate:app
+      - id: sam-validate-frontend
+        name: SAM validate frontend
+        entry: npm run sam-validate:frontend
+        language: system
+        exclude: .*
+        always_run: true
+        stages: [pre-commit]
+
+  - repo: local
+    hooks:
+      - id: sam-validate-stubs
+        name: SAM validate stubs
+        entry: npm run sam-validate:stubs
         language: system
         exclude: .*
         always_run: true

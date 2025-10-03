@@ -91,7 +91,7 @@ export default defineConfig(
   },
   {
     ...playwrightEslint.configs["flat/recommended"],
-    files: ["projects/integration-tests/tests/**"],
+    files: ["solutions/integration-tests/tests/**"],
     rules: {
       ...playwrightEslint.configs["flat/recommended"].rules,
       "playwright/no-standalone-expect": "off",

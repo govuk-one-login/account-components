@@ -1,0 +1,15 @@
+{% extends "templates/layout/base-page.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% set pageTitleName = 'error.error404.title' | translate %}
+{% set buttonText = 'error.error404.content.buttonText' | translate %}
+
+{% block pageContent %}
+  <h1 class="govuk-heading-l">{{ 'error.error404.header' | translate }}</h1>
+  <p class="govuk-body">{{ 'error.error404.content.paragraph1' | translate }}</p>
+  <p class="govuk-body">{{ 'error.error404.content.paragraph2' | translate }}</p>
+  {# TODO: change this URL? #}
+  {{ govukButton({
+    text: buttonText,
+    href: 'https://home.account.gov.uk'
+  })}}
+{% endblock %}

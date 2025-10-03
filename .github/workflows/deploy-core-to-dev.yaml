@@ -17,6 +17,10 @@ on:
         type: string
         default: main
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 jobs:
   deploy-core-to-dev:
     runs-on: ubuntu-latest
@@ -67,11 +71,11 @@ jobs:
           aws-region: "eu-west-2"
 
       - name: Build SAM template
-        run: cd ./projects/core && sam build
+        run: cd ./solutions/core && sam build
 
       - name: Deploy core
         uses: govuk-one-login/devplatform-upload-action@fda75612a1b0e5a8c84ae7c44a23340e50e5bbde
         with:
           artifact-bucket-name: ${{ secrets.DEV_ARTIFACT_BUCKET_NAME_CORE }}
           signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
-          working-directory: ./projects/core
+          working-directory: ./solutions/core
