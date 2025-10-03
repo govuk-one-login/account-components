@@ -20,6 +20,7 @@
         "read",
         "sam",
       ],
+      "ignoreDependencies": ["csso-cli", "sass"],
     },
     "solutions/integration-tests": {
       "entry": ["tests/**/*.ts"],
