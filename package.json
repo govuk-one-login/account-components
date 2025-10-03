@@ -6,9 +6,9 @@
     "node": ">=22.16.0 <23"
   },
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.899.0",
-    "@aws-sdk/client-sqs": "^3.899.0",
-    "@aws-sdk/lib-dynamodb": "^3.899.0",
+    "@aws-sdk/client-dynamodb": "^3.902.0",
+    "@aws-sdk/client-sqs": "^3.901.0",
+    "@aws-sdk/lib-dynamodb": "^3.902.0",
     "@fastify/aws-lambda": "^6.0.0",
     "@fastify/cookie": "^11.0.2",
     "@fastify/csrf-protection": "^7.1.0",
@@ -22,7 +22,7 @@
     "aws-xray-sdk": "^3.10.3",
     "fastify": "^5.6.1",
     "govuk-frontend": "^5.12.0",
-    "i18next": "^25.5.2",
+    "i18next": "^25.5.3",
     "nunjucks": "^3.2.4"
   },
   "devDependencies": {
