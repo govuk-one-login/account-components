@@ -86,28 +86,30 @@ start_localstack() {
 create_ssm_parameters() {
   echo "Creating SSM parameters"
 
+  STRING="String"
+
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
     --name "/components-main/EcPrivateKey" \
     --value "${EC_PRIVATE_KEY}" \
-    --type "String" \
+    --type "${STRING}" \
       2>/dev/null || true
 
     aws --endpoint-url=http://localhost:4566 ssm put-parameter \
         --name "/components-main/EcPublicKey" \
         --value "${EC_PUBLIC_KEY}" \
-        --type "String" \
+        --type "${STRING}" \
           2>/dev/null || true
 
     aws --endpoint-url=http://localhost:4566 ssm put-parameter \
             --name "/components-main/RsaPrivateKey" \
             --value "${RSA_PRIVATE_KEY}" \
-            --type "String" \
+            --type "${STRING}" \
               2>/dev/null || true
 
     aws --endpoint-url=http://localhost:4566 ssm put-parameter \
             --name "/components-main/RsaPublicKey" \
             --value "${RSA_PUBLIC_KEY}" \
-            --type "String" \
+            --type "${STRING}" \
              2>/dev/null || true
   
   echo "Finished creating SSM parameters"
