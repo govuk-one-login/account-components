@@ -13,20 +13,22 @@ generate_keys() {
   RSA_PUBLIC_KEY_FILE="./solutions/localstack/keys/rsa-public.crt"
 
   echo "Generating private keys"
-  openssl ecparam -name prime256v1 -genkey -noout -out "$EC_PRIVATE_KEY_FILE"
-  openssl genpkey -algorithm RSA -out "$RSA_PRIVATE_KEY_FILE" -pkeyopt rsa_keygen_bits:2048
+  openssl ecparam -name prime256v1 -genkey -noout -out "${EC_PRIVATE_KEY_FILE}"
+  openssl genpkey -algorithm RSA -out "${RSA_PRIVATE_KEY_FILE}" -pkeyopt rsa_keygen_bits:2048
 
   echo "Extracting public keys"
-  openssl ec -in "$EC_PRIVATE_KEY_FILE" -pubout -out "$EC_PUBLIC_KEY_FILE"
-  openssl rsa -in "$RSA_PRIVATE_KEY_FILE" -pubout -out "$RSA_PUBLIC_KEY_FILE"
+  openssl ec -in "${EC_PRIVATE_KEY_FILE}" -pubout -out "${EC_PUBLIC_KEY_FILE}"
+  openssl rsa -in "${RSA_PRIVATE_KEY_FILE}" -pubout -out "${RSA_PUBLIC_KEY_FILE}"
 
   echo "Reading keys into environment variables"
-  EC_PRIVATE_KEY=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' "$EC_PRIVATE_KEY_FILE")
-  EC_PUBLIC_KEY=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' "$EC_PUBLIC_KEY_FILE")
-  RSA_PRIVATE_KEY=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' "$RSA_PRIVATE_KEY_FILE")
-  RSA_PUBLIC_KEY=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' "$RSA_PUBLIC_KEY_FILE")
+  AWK_FORMAT_PATTERN='NF {sub(/\r/, ""); printf "%s\\n",$0;}'
+  EC_PRIVATE_KEY=$(awk "${AWK_FORMAT_PATTERN}" "${EC_PRIVATE_KEY_FILE}")
+  EC_PUBLIC_KEY=$(awk "${AWK_FORMAT_PATTERN}" "${EC_PUBLIC_KEY_FILE}")
+  RSA_PRIVATE_KEY=$(awk "${AWK_FORMAT_PATTERN}" "${RSA_PRIVATE_KEY_FILE}")
+  RSA_PUBLIC_KEY=$(awk "${AWK_FORMAT_PATTERN}" "${RSA_PUBLIC_KEY_FILE}")
 
   echo "Finished generating keys"
+  return 0
 }
 
 install_dependencies() { 
@@ -53,6 +55,7 @@ install_dependencies() {
   fi
   
   echo "Finished installing dependencies"
+  return 0
 }
 
 configure_cli_for_localstack() {
@@ -63,6 +66,7 @@ configure_cli_for_localstack() {
   aws configure set region eu-west-2
 
   echo "Finished configuring AWS CLI for Localstack"
+  return 0
 }
 
 start_localstack() {
@@ -76,6 +80,7 @@ start_localstack() {
   done
 
   echo "Localstack is ready"
+  return 0
 }
 
 create_ssm_parameters() {
@@ -83,35 +88,37 @@ create_ssm_parameters() {
 
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
     --name "/components-main/EcPrivateKey" \
-    --value "$EC_PRIVATE_KEY" \
+    --value "${EC_PRIVATE_KEY}" \
     --type "String" \
       2>/dev/null || true
 
     aws --endpoint-url=http://localhost:4566 ssm put-parameter \
         --name "/components-main/EcPublicKey" \
-        --value "$EC_PUBLIC_KEY" \
+        --value "${EC_PUBLIC_KEY}" \
         --type "String" \
           2>/dev/null || true
 
     aws --endpoint-url=http://localhost:4566 ssm put-parameter \
             --name "/components-main/RsaPrivateKey" \
-            --value "$RSA_PRIVATE_KEY" \
+            --value "${RSA_PRIVATE_KEY}" \
             --type "String" \
               2>/dev/null || true
 
     aws --endpoint-url=http://localhost:4566 ssm put-parameter \
             --name "/components-main/RsaPublicKey" \
-            --value "$RSA_PUBLIC_KEY" \
+            --value "${RSA_PUBLIC_KEY}" \
             --type "String" \
              2>/dev/null || true
   
   echo "Finished creating SSM parameters"
+  return 0
 }
 
 list_resources() {
   echo "List resources"
 
   aws --endpoint-url=http://localhost:4566 ssm describe-parameters
+  return 0
 }
 
 generate_keys

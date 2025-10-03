@@ -16,7 +16,7 @@ export UPDATE_SNAPSHOTS=1
 rm -rf snapshots-updated
 playwright test --update-snapshots
 
-if [ $? -eq 0 ]; then
+if [[ $? -eq 0 ]]; then
   rm -rf snapshots
   mv snapshots-updated snapshots
 else
