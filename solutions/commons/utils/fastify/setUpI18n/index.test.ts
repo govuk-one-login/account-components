@@ -6,6 +6,7 @@ import type { FastifyRequest, FastifyReply, FastifyInstance } from "fastify";
 vi.mock("i18next", () => ({
   default: {
     init: vi.fn(),
+    addResourceBundle: vi.fn(),
   },
 }));
 

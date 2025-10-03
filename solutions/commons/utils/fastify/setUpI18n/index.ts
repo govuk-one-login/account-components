@@ -5,6 +5,10 @@ import type {
   RawRequestDefaultExpression,
   RawServerDefault,
 } from "fastify";
+import {
+  frontendUiTranslationCy,
+  frontendUiTranslationEn,
+} from "@govuk-one-login/frontend-ui";
 
 export enum Lang {
   English = "en",
@@ -43,6 +47,14 @@ export const setUpI18n = (translations: {
           translation: translations[Lang.Welsh],
         },
       },
+    });
+
+    i18next.addResourceBundle(Lang.Welsh, "translation", {
+      FECTranslations: frontendUiTranslationCy,
+    });
+
+    i18next.addResourceBundle(Lang.English, "translation", {
+      FECTranslations: frontendUiTranslationEn,
     });
 
     reply.i18next = i18next;

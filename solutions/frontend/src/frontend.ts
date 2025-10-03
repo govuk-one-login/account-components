@@ -64,6 +64,43 @@ export const initFrontend = async function () {
     },
   });
 
+  const oneYearInSeconds = "31536000";
+
+  fastify.register(fastifyStatic, {
+    root: path.join(
+      import.meta.dirname,
+      "/node_modules/govuk-frontend/dist/govuk/assets",
+    ),
+    prefix: "/assets",
+    decorateReply: false,
+    cacheControl: false,
+    setHeaders: (res) => {
+      res.setHeader(
+        "cache-control",
+        `public, max-age=${oneYearInSeconds}, immutable`,
+      );
+    },
+  });
+
+  fastify.register(fastifyStatic, {
+    root: [
+      path.join(
+        import.meta.dirname,
+        "/node_modules/@govuk-one-login/frontend-analytics/lib",
+      ),
+      path.join(import.meta.dirname, "/node_modules/govuk-frontend/dist/govuk"),
+    ],
+    prefix: "/public/scripts",
+    decorateReply: false,
+    cacheControl: false,
+    setHeaders: (res) => {
+      res.setHeader(
+        "cache-control",
+        `public, max-age=${oneYearInSeconds}, immutable`,
+      );
+    },
+  });
+
   fastify.get("/healthcheck", async function (_request, reply) {
     return reply.send("ok");
   });

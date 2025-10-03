@@ -1,0 +1,136 @@
+{% extends "govuk/template.njk" %}
+{% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
+{% from "govuk/components/cookie-banner/macro.njk" import govukCookieBanner %}
+{% from "frontend-ui/build/components/footer/macro.njk" import frontendUiFooter %}
+{% from "frontend-ui/build/components/language-select/macro.njk" import frontendUiLanguageSelect %}
+{%- set headerClasses -%}
+{%- if not hideAccountNavigation -%} govuk-header--with-account-navigation {%- endif -%}
+{%- endset-%}
+
+{% set isGa4Enabled = false %}
+{% set isSelectContentTrackingEnabled = false %}
+
+{% block pageTitle %}
+  {%- if error or errors %} {{ 'general.errorTitlePrefix' | translate }} - {% endif -%}
+  {%- if pageTitleName -%}
+      {{ pageTitleName }}
+      {%- if not hideTitleProductName %} - {% endif -%}
+  {% endif -%}
+  {{ 'general.serviceNameTitle' | translate if not hideTitleProductName}}
+{%- endblock %}
+
+{% block bodyStart %}
+  {% include 'templates/layout/banner.njk' %}
+{% endblock %}
+
+{% block head %}
+  {# TODO: add Dynatrace RUM config #}
+  {% if dynatraceRumUrl %}
+  <script src='{{ dynatraceRumUrl }}' crossorigin="anonymous" nonce='{{ scriptNonce }}'></script>
+  {% endif %}
+ <link href="/static/application.css" rel="stylesheet">
+{% endblock %}
+
+{% block skipLink %}
+  {{ govukSkipLink({
+    text: "FECTranslations.skipLink.title" | translate,
+    href: "#main-content"
+  }) }}
+{% endblock %}
+
+{% block header %}
+    {% include 'templates/layout/header.njk' %}
+{% endblock %}
+
+{% block main %}
+  <div class="govuk-width-container {{ containerClasses }}">
+    {% if isProd %}
+      {% set bannerHtml %}
+        {{ 'FECTranslations.phaseBanner.text' | translate }} <a href='{{ authFrontEndUrl + "/contact-us-questions?theme=suggestions_feedback" }}' class="govuk-link" rel="noreferrer noopener" target="_blank">{{ 'FECTranslations.phaseBanner.link' | translate | replace(".","") }}</a>.
+      {% endset %}
+      {{ govukPhaseBanner({
+          tag: {
+            text: 'FECTranslations.phaseBanner.tag' | translate
+          },
+          html: bannerHtml
+      })}}
+    {% else %}
+      {{ govukPhaseBanner({
+          tag: {
+            text: "TEST",
+            classes: "govuk-tag--yellow"
+          },
+          text: 'general.phaseBanner.testText' | translate
+      })}}
+    {% endif %}
+    {{ frontendUiLanguageSelect({
+        url: currentUrl,
+        activeLanguage: htmlLang,
+        translations: 'FECTranslations.languageSelect' | translate
+      }) 
+    }}
+    {% block backLinkBlock %}
+      {% if backLink %}
+        <a href="{{backLink}}" class="govuk-back-link js-back-link">
+          {{ backLinkText }}
+          {{'general.back' | translate if not backLinkText}}
+        </a>
+      {% endif %}
+    {% endblock %}
+    {% block beforeContent %}{% endblock %}
+    <main class="govuk-main-wrapper {{ mainClasses }}" id="main-content" {% if mainLang %} lang="{{ mainLang }}" {% endif %}>
+        {% block content %}{% endblock %}
+    </main>
+  </div>
+{% endblock %}
+
+{% block footer %}
+  {{ frontendUiFooter({ translations: 'FECTranslations.footer' | translate({returnObjects: true}) })}}
+{% endblock %}
+
+
+{% block bodyEnd %}
+    {% block scripts %}{% endblock %}
+
+    {# TODO: Implement CSP config and add nonces #}
+    <script type="module" src="/public/scripts/govuk-frontend.min.js"></script>
+
+    <script type="module">
+      import { initAll } from '/public/scripts/govuk-frontend.min.js'
+      initAll()
+    </script>
+    <script type="text/javascript" src="/public/scripts/analytics.js"></script>
+    <script type="text/javascript">
+      {% if backLinkJS %}
+        var backLink = document.querySelector('.js-back-link');
+        if (backLink) {
+          backLink.addEventListener('click', function(e) {
+            var referrer = new URL(document.referrer).hostname;
+
+            if (referrer === document.location.hostname && window.history.length > 2) {
+              event.preventDefault();
+              window.history.back();
+            }
+          });
+        }
+      {% endif %}
+    </script>
+    <script type="text/javascript">
+    if (window.DI) {
+      window.DI.appInit({
+        ga4ContainerId: "{{ga4ContainerId}}"
+      }, {
+        enableGa4Tracking: {{isGa4Enabled}},
+        cookieDomain: "{{analyticsCookieDomain}}",
+        isDataSensitive: false,
+        isPageDataSensitive: {{ opl.isPageDataSensitive | default("true") }},
+        enablePageViewTracking: true,
+        enableFormResponseTracking: true,
+        enableFormChangeTracking: true,
+        enableFormErrorTracking: true,
+        enableNavigationTracking: true,
+        enableSelectContentTracking: {{isSelectContentTrackingEnabled}}
+      });
+    }
+  </script>
+{% endblock %}
