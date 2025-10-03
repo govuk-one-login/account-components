@@ -1,6 +1,5 @@
-import { v4 as uuid } from "uuid";
 import { importJWK, SignJWT } from "jose";
-import type { CryptoKey, JWK, JWTHeaderParameters, JWTPayload } from "jose";
+import type { JWTHeaderParameters, JWTPayload } from "jose";
 
 import type { RequestBody } from "../types/common.js";
 
@@ -20,13 +19,6 @@ const jwtHeader: JWTHeaderParameters = {
   kid: "B-QMUxdJOJ8ubkmArc4i1SGmfZnNNlM-va9h0HJ0jCo", // pragma: allowlist secret
   alg: algorithm,
 };
-let cachedPrivateKey: Uint8Array | CryptoKey;
-const getPrivateKey = async () => {
-  const jwk: JWK = JWK_KEY_SECRET;
-  cachedPrivateKey = await importJWK(jwk, algorithm);
-  return cachedPrivateKey;
-};
-await getPrivateKey(); //populate cache on runtime
 
 const epochDateNow = (): number => Math.round(Date.now() / 1000);
 
@@ -41,7 +33,8 @@ const newClaims = (
   aud: rpClientId,
   exp: epochDateNow() + 3600,
   iat: epochDateNow(),
-  sid: uuid(),
+  // eslint-disable-next-line n/no-unsupported-features/node-builtins
+  sid: crypto.randomUUID(),
   nonce: nonce,
   vot: "Cl.Cm",
 });
@@ -49,9 +42,15 @@ const newClaims = (
 export const generateAccessToken = async (
   requestBody: RequestBody,
 ): Promise<string> => {
-  const privateKey = await getPrivateKey();
+  const privateKey = await importJWK(JWK_KEY_SECRET, algorithm);
   return await new SignJWT(
-    newClaims(requestBody.client_id, requestBody.iss, uuid(), requestBody.jti),
+    newClaims(
+      requestBody.client_id,
+      requestBody.iss,
+      // eslint-disable-next-line n/no-unsupported-features/node-builtins
+      crypto.randomUUID(),
+      requestBody.jti,
+    ),
   )
     .setProtectedHeader(jwtHeader)
     .sign(privateKey);

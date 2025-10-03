@@ -1,5 +1,4 @@
 const paths = {
-  root: "/",
   requestObjectGenerator: "/generate-request-object",
 } as const;
 

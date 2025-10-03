@@ -8,7 +8,7 @@ import {
 import { JwtAdapter } from "../utils/jwt-adapter.js";
 import { CustomError } from "../utils/errors.js";
 import {
-  Scenarios,
+  MockRequestObjectScenarios,
   Algorithms,
   Kids,
   DEFAULT_SCENARIO,
@@ -18,11 +18,19 @@ import type { JWTPayload } from "jose";
 
 vi.mock("../utils/jwt-adapter.js");
 vi.mock("../utils/logger.js", () => ({
-  default: {
+  logger: {
     debug: vi.fn(),
     error: vi.fn(),
   },
 }));
+
+vi.mock(import("../utils/logger.js"), async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    // your mocked methods
+  };
+});
 
 describe("generateJwtToken", () => {
   beforeEach(() => {
@@ -33,7 +41,7 @@ describe("generateJwtToken", () => {
     client_id: "my-client-id",
     iss: "issuer.example.com",
     jti: "nonce-abc-123",
-    scenario: Scenarios.VALID,
+    scenario: MockRequestObjectScenarios.VALID,
   };
 
   it("should generate a JWT token successfully", async () => {
@@ -45,7 +53,7 @@ describe("generateJwtToken", () => {
         }) as unknown as JwtAdapter,
     );
 
-    const scenario = Scenarios.VALID;
+    const scenario = MockRequestObjectScenarios.VALID;
 
     const token = await generateJwtToken(requestBody, scenario);
 
@@ -60,7 +68,7 @@ describe("generateJwtToken", () => {
         }) as unknown as JwtAdapter,
     );
 
-    const scenario = Scenarios.VALID;
+    const scenario = MockRequestObjectScenarios.VALID;
 
     await expect(generateJwtToken(requestBody, scenario)).rejects.toThrow(
       CustomError,
@@ -75,7 +83,7 @@ describe("generateJwtToken", () => {
         }) as unknown as JwtAdapter,
     );
 
-    const scenario = Scenarios.VALID;
+    const scenario = MockRequestObjectScenarios.VALID;
 
     await expect(generateJwtToken(requestBody, scenario)).rejects.toThrow(
       CustomError,
@@ -86,13 +94,13 @@ describe("generateJwtToken", () => {
 describe("getScenario", () => {
   it("should return matching scenario", () => {
     const input = {
-      scenario: Scenarios.EXPIRED,
+      scenario: MockRequestObjectScenarios.EXPIRED,
       client_id: "my-client-id",
       iss: "issuer.example.com",
       jti: "nonce-abc-123",
     };
 
-    expect(getScenario(input)).toBe(Scenarios.EXPIRED);
+    expect(getScenario(input)).toBe(MockRequestObjectScenarios.EXPIRED);
   });
 
   it("should return DEFAULT_SCENARIO if no match", () => {
@@ -109,7 +117,7 @@ describe("getScenario", () => {
 
 describe("getJwtHeader", () => {
   it("should set correct alg and kid for DEFAULT", () => {
-    const header = getJwtHeader(Scenarios.VALID);
+    const header = getJwtHeader(MockRequestObjectScenarios.VALID);
 
     expect(header.alg).toBe(Algorithms.EC);
     expect(header.kid).toBe(Kids.EC);
@@ -117,25 +125,25 @@ describe("getJwtHeader", () => {
   });
 
   it("should handle INVALID_ALGORITHM scenario", () => {
-    const header = getJwtHeader(Scenarios.INVALID_ALGORITHM);
+    const header = getJwtHeader(MockRequestObjectScenarios.INVALID_ALGORITHM);
 
     expect(header.alg).toBe(Algorithms.INVALID);
   });
 
   it("should handle NONE_ALGORITHM scenario", () => {
-    const header = getJwtHeader(Scenarios.NONE_ALGORITHM);
+    const header = getJwtHeader(MockRequestObjectScenarios.NONE_ALGORITHM);
 
     expect(header.alg).toBe(Algorithms.NONE);
   });
 
   it("should handle MISSING_KID scenario", () => {
-    const header = getJwtHeader(Scenarios.MISSING_KID);
+    const header = getJwtHeader(MockRequestObjectScenarios.MISSING_KID);
 
     expect(header.kid).toBeUndefined();
   });
 
   it("should handle WRONG_KID scenario", () => {
-    const header = getJwtHeader(Scenarios.WRONG_KID);
+    const header = getJwtHeader(MockRequestObjectScenarios.WRONG_KID);
 
     expect(header.kid).toBe(Kids.WRONG);
   });
@@ -151,7 +159,7 @@ describe("getJwtPayload", () => {
       extra: "value",
     });
 
-    const payload = getJwtPayload(Scenarios.VALID, body);
+    const payload = getJwtPayload(MockRequestObjectScenarios.VALID, body);
 
     expect(payload.aud).toBe("customAudience");
     expect(payload["scope"]).toBe("customScope");
@@ -163,9 +171,9 @@ describe("getJwtPayload", () => {
   it("should throw CustomError on invalid JSON string", () => {
     const invalidBody = "{bad json";
 
-    expect(() => getJwtPayload(Scenarios.VALID, invalidBody)).toThrow(
-      CustomError,
-    );
+    expect(() =>
+      getJwtPayload(MockRequestObjectScenarios.VALID, invalidBody),
+    ).toThrow(CustomError);
   });
 
   it("should use default values if fields missing", () => {
@@ -173,11 +181,14 @@ describe("getJwtPayload", () => {
       client_id: "my-client-id",
       iss: "issuer.example.com",
       jti: "nonce-abc-123",
-      scenario: Scenarios.VALID,
+      scenario: MockRequestObjectScenarios.VALID,
     };
     process.env["DEFAULT_AUDIENCE"] = "default-audience";
 
-    const payload: JWTPayload = getJwtPayload(Scenarios.VALID, body);
+    const payload: JWTPayload = getJwtPayload(
+      MockRequestObjectScenarios.VALID,
+      body,
+    );
 
     expect(payload["scope"]).toBeDefined();
     expect(payload.aud).toBeDefined();
@@ -188,9 +199,9 @@ describe("getJwtPayload", () => {
       client_id: "my-client-id",
       iss: "issuer.example.com",
       jti: "nonce-abc-123",
-      scenario: Scenarios.VALID,
+      scenario: MockRequestObjectScenarios.VALID,
     };
-    const payload = getJwtPayload(Scenarios.EXPIRED, body);
+    const payload = getJwtPayload(MockRequestObjectScenarios.EXPIRED, body);
 
     expect(payload.exp).toBeLessThan(Math.floor(Date.now() / 1000));
   });
@@ -200,9 +211,12 @@ describe("getJwtPayload", () => {
       client_id: "my-client-id",
       iss: "issuer.example.com",
       jti: "nonce-abc-123",
-      scenario: Scenarios.VALID,
+      scenario: MockRequestObjectScenarios.VALID,
     };
-    const payload = getJwtPayload(Scenarios.IAT_IN_FUTURE, body);
+    const payload = getJwtPayload(
+      MockRequestObjectScenarios.IAT_IN_FUTURE,
+      body,
+    );
 
     expect(payload.iat).toBeGreaterThan(Math.floor(Date.now() / 1000));
   });

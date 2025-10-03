@@ -1,18 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { MockInstance } from "vitest";
 import * as jose from "jose";
-import * as uuidModule from "uuid";
 import { generateAccessToken } from "../access-token.js";
-import { Scenarios } from "../../types/common.js";
+import { MockRequestObjectScenarios } from "../../types/common.js";
 import type { RequestBody } from "../../types/common.js";
-
-vi.mock("uuid", async () => {
-  const actual = await vi.importActual<typeof uuidModule>("uuid");
-  return {
-    ...actual,
-    v4: vi.fn(),
-  };
-});
 
 vi.mock("jose", async () => {
   const actual = await vi.importActual<typeof jose>("jose");
@@ -24,7 +15,7 @@ vi.mock("jose", async () => {
 });
 
 describe("generateAccessToken", () => {
-  const mockUUID = "1234-uuid";
+  const mockUUID = "1234-uuid-1111-1111-1111";
   const mockSignedToken = "mock.jwt.token";
   const mockPrivateKey = { fake: "key" };
 
@@ -32,7 +23,7 @@ describe("generateAccessToken", () => {
     client_id: "my-client-id",
     iss: "issuer.example.com",
     jti: "nonce-abc-123",
-    scenario: Scenarios.VALID,
+    scenario: MockRequestObjectScenarios.VALID,
   };
 
   let setProtectedHeaderMock: {
@@ -43,8 +34,8 @@ describe("generateAccessToken", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    // Mock uuid
-    (uuidModule.v4 as unknown as MockInstance).mockReturnValue(mockUUID);
+    // eslint-disable-next-line n/no-unsupported-features/node-builtins
+    vi.spyOn(crypto, "randomUUID").mockReturnValue(mockUUID);
 
     // Mock jose.importJWK
     (jose.importJWK as unknown as MockInstance).mockResolvedValue(

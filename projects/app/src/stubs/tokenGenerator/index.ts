@@ -1,4 +1,3 @@
-import { AUTHENTICATION_ISSUER } from "../utils/app-config.js";
 import { JwtAdapter } from "../utils/jwt-adapter.js";
 import { CustomError } from "../utils/errors.js";
 import type { JwtHeader, RequestBody } from "../types/common.js";
@@ -11,16 +10,18 @@ import {
   HttpCodesEnum,
   Kids,
   MILLISECONDS_IN_MINUTES,
-  Scenarios,
+  MockRequestObjectScenarios,
   Scope,
   SignatureTypes,
 } from "../types/common.js";
-import logger from "../utils/logger.js";
+import { logger } from "../utils/logger.js";
 import type { JWTPayload } from "jose";
+
+const AUTHENTICATION_ISSUER = "authentication-issuer";
 
 export const generateJwtToken = async (
   requestBody: RequestBody,
-  scenario: Scenarios,
+  scenario: MockRequestObjectScenarios,
 ): Promise<string> => {
   const jwtHeader = getJwtHeader(scenario);
   const jwtPayload = getJwtPayload(scenario, requestBody);
@@ -34,31 +35,31 @@ export const generateJwtToken = async (
   return token;
 };
 
-export function getScenario(body: RequestBody): Scenarios {
-  const retrievedScenario = Object.values(Scenarios).find(
-    (scenario): scenario is Scenarios =>
-      scenario === (body.scenario as Scenarios),
+export function getScenario(body: RequestBody): MockRequestObjectScenarios {
+  const retrievedScenario = Object.values(MockRequestObjectScenarios).find(
+    (scenario): scenario is MockRequestObjectScenarios =>
+      scenario === (body.scenario as MockRequestObjectScenarios),
   );
   return retrievedScenario ?? DEFAULT_SCENARIO;
 }
 
-export function getJwtHeader(scenario: Scenarios): JwtHeader {
+export function getJwtHeader(scenario: MockRequestObjectScenarios): JwtHeader {
   let alg: Algorithms = Algorithms.EC;
   let kid: Kids | undefined = Kids.EC;
   switch (scenario) {
-    case Scenarios.INVALID_ALGORITHM: {
+    case MockRequestObjectScenarios.INVALID_ALGORITHM: {
       alg = Algorithms.INVALID;
       break;
     }
-    case Scenarios.NONE_ALGORITHM: {
+    case MockRequestObjectScenarios.NONE_ALGORITHM: {
       alg = Algorithms.NONE;
       break;
     }
-    case Scenarios.MISSING_KID: {
+    case MockRequestObjectScenarios.MISSING_KID: {
       kid = undefined;
       break;
     }
-    case Scenarios.WRONG_KID: {
+    case MockRequestObjectScenarios.WRONG_KID: {
       kid = Kids.WRONG;
       break;
     }
@@ -71,7 +72,7 @@ export function getJwtHeader(scenario: Scenarios): JwtHeader {
 }
 
 export function getJwtPayload(
-  scenario: Scenarios,
+  scenario: MockRequestObjectScenarios,
   body: string | RequestBody,
 ): JWTPayload {
   let bodyPayload: JWTPayload = {};
@@ -102,9 +103,11 @@ export function getJwtPayload(
   const initiatedAt =
     typeof bodyIat === "number" ? bodyIat * -1 : DEFAULT_TOKEN_INITIATED_AT;
   const exp =
-    scenario === Scenarios.EXPIRED ? getDateEpoch(-5) : getDateEpoch(expiresIn);
+    scenario === MockRequestObjectScenarios.EXPIRED
+      ? getDateEpoch(-5)
+      : getDateEpoch(expiresIn);
   const iat =
-    scenario === Scenarios.IAT_IN_FUTURE
+    scenario === MockRequestObjectScenarios.IAT_IN_FUTURE
       ? getDateEpoch(5)
       : getDateEpoch(initiatedAt);
   const iss = AUTHENTICATION_ISSUER;

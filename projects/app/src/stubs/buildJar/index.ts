@@ -1,24 +1,28 @@
 import { CompactEncrypt } from "jose";
-import logger from "../utils/logger.js";
-import { getPublicKeyName } from "../utils/app-config.js";
+import { logger } from "../utils/logger.js";
 import { JWKS_KEY_TYPES, SignatureTypes } from "../types/common.js";
-import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
-import { getLocalParameter, isLocalhost } from "../utils/get-parameter.js";
 import { convertPemToJwk } from "../utils/convert-pem-to-jwk.js";
+import { getParametersProvider } from "../../utils/awsClient/index.js";
+
+const getPublicKeyName = (keyType: SignatureTypes): string => {
+  const keyEnvironment =
+    keyType == SignatureTypes.EC
+      ? "EC_PUBLIC_KEY_SSM_NAME"
+      : "RSA_PUBLIC_KEY_SSM_NAME";
+
+  const publicKey = process.env[keyEnvironment];
+  if (!publicKey) {
+    throw new Error(`Environment variable ${keyEnvironment} is not set`);
+  }
+  return publicKey;
+};
 
 export async function buildJar(signedJwt: string): Promise<string> {
   let publicKeyPem;
   try {
-    if (isLocalhost()) {
-      logger.info(
-        "Running in Local mode, fetching public key from local stack",
-      );
-      publicKeyPem = await getLocalParameter(
-        getPublicKeyName(SignatureTypes.RSA),
-      );
-    } else {
-      publicKeyPem = await getParameter(getPublicKeyName(SignatureTypes.RSA));
-    }
+    publicKeyPem = await getParametersProvider().get(
+      getPublicKeyName(SignatureTypes.RSA),
+    );
   } catch (error) {
     logger.error(
       `Failed to retrieve ${SignatureTypes.RSA} public key from SSM`,

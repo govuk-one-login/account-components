@@ -14,7 +14,7 @@ export enum JWEAlgorithms {
   RSA = "RSA-OAEP-256",
 }
 
-export enum Scenarios {
+export enum MockRequestObjectScenarios {
   VALID = "valid",
   INVALID_ALGORITHM = "invalidAlg",
   NONE_ALGORITHM = "noneAlg",
@@ -96,7 +96,7 @@ export interface RequestBody {
 }
 
 export const ALG: AlgType = { EC: Algorithms.EC, RSA: Algorithms.RSA };
-export const DEFAULT_SCENARIO = Scenarios.VALID;
+export const DEFAULT_SCENARIO = MockRequestObjectScenarios.VALID;
 export const DEFAULT_TOKEN_EXPIRY = 5;
 export const DEFAULT_TOKEN_INITIATED_AT = 0;
 export const MILLISECONDS_IN_MINUTES = 60_000;

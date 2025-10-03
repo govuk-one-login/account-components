@@ -1,12 +1,27 @@
 import { Buffer } from "node:buffer";
 import type { JWTPayload } from "jose";
 import { base64url, importPKCS8, SignJWT } from "jose";
-import { ALG, Algorithms, SignatureTypes } from "../types/common.js";
 import type { JwtHeader } from "../types/common.js";
-import { getDefaultKeyValue, getPrivateKeyName } from "./app-config.js";
-import logger from "./logger.js";
-import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
-import { getLocalParameter, isLocalhost } from "./get-parameter.js";
+import { ALG, Algorithms, SignatureTypes } from "../types/common.js";
+import { logger } from "./logger.js";
+import { getParametersProvider } from "../../utils/awsClient/index.js";
+
+const getPrivateKeyName = (keyType: SignatureTypes): string => {
+  const keyEnvironment =
+    keyType == SignatureTypes.EC
+      ? "EC_PRIVATE_KEY_SSM_NAME"
+      : "RSA_PRIVATE_KEY_SSM_NAME";
+
+  const privateKey = process.env[keyEnvironment];
+  if (!privateKey) {
+    throw new Error(`Environment variable ${keyEnvironment} is not set`);
+  }
+  return privateKey;
+};
+
+export const getDefaultKeyValue = () => {
+  return process.env["DEFAULT_SSM_VALUE"];
+};
 
 export class JwtAdapter {
   ALG = ALG;
@@ -31,15 +46,7 @@ export class JwtAdapter {
     if (!this.signingKeyMap.has(signatureType)) {
       const privateKeyName = getPrivateKeyName(signatureType);
       try {
-        if (isLocalhost()) {
-          logger.info(
-            "Running in Local mode, fetching parameters from local ssm",
-          );
-          privateKeyPem = await getLocalParameter(privateKeyName);
-          logger.info(`Private key pem is: ${privateKeyPem}`);
-        } else {
-          privateKeyPem = await getParameter(privateKeyName);
-        }
+        privateKeyPem = await getParametersProvider().get(privateKeyName);
       } catch (error) {
         logger.error(
           `Failed to retrieve ${signatureType} private key from SSM`,

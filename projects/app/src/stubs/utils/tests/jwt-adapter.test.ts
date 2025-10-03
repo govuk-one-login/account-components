@@ -1,11 +1,11 @@
 import type { MockInstance } from "vitest";
-import { expect, describe, it, vi, beforeEach } from "vitest";
-import { JwtAdapter } from "../jwt-adapter.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { getDefaultKeyValue, JwtAdapter } from "../jwt-adapter.js";
 import * as jose from "jose";
-import { Algorithms, SignatureTypes } from "../../types/common.js";
-import type { JwtHeader } from "../../types/common.js";
-import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 import { SignJWT } from "jose";
+import type { JwtHeader } from "../../types/common.js";
+import { Algorithms, SignatureTypes } from "../../types/common.js";
+import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 
 vi.mock("jose");
 vi.mock("@aws-lambda-powertools/parameters/ssm");
@@ -51,7 +51,7 @@ describe("jwtAdapter", () => {
 
         await expect(
           jwtAdapter.sign(header, payload, signatureType),
-        ).rejects.toThrow("Failed to retrieve key from SSM");
+        ).rejects.toThrow("Unable to retrieve private key");
       });
     });
 
@@ -101,6 +101,15 @@ describe("jwtAdapter", () => {
 
         expect(token).to.eq("encodedHeader.encodedPayload.");
       });
+    });
+  });
+
+  describe("getDefaultKeyValue", () => {
+    it("returns the default key value", () => {
+      process.env["DEFAULT_SSM_VALUE"] = "mock-value";
+      const defaultKeyValue = getDefaultKeyValue();
+
+      expect(defaultKeyValue).to.eq("mock-value");
     });
   });
 });

@@ -7,7 +7,7 @@ import * as accessTokenUtils from "../../stubs/utils/access-token.js";
 import * as jarBuilder from "../../stubs/buildJar/index.js";
 import * as scenarioUtils from "../../stubs/tokenGenerator/index.js";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
-import type { Scenarios } from "../../stubs/types/common.js";
+import type { MockRequestObjectScenarios } from "../../stubs/types/common.js";
 
 vi.mock("./handlers/utils/config/index.js");
 
@@ -52,7 +52,9 @@ describe("internalEndpointStubs plugin", () => {
     vi.mocked(accessTokenUtils.generateAccessToken).mockResolvedValue(
       "mock-access-token",
     );
-    vi.mocked(scenarioUtils.getScenario).mockReturnValue("valid" as Scenarios);
+    vi.mocked(scenarioUtils.getScenario).mockReturnValue(
+      "valid" as MockRequestObjectScenarios,
+    );
     vi.mocked(tokenGenerator.generateJwtToken).mockResolvedValue(
       "mock-jwt-token",
     );
