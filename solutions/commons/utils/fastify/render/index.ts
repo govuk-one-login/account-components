@@ -28,7 +28,7 @@ export const render = async function (
   env.addGlobal("govukRebrand", true);
   env.addGlobal("addLanguageParam", addLanguageParam);
   env.addGlobal("contactUsUrl", contactUsUrl);
-  env.addGlobal("scriptNonce", this.cspNonce.script);
+  env.addGlobal("cspNonce", this.cspNonce.script);
   env.addGlobal("styleNonce", this.cspNonce.style);
   env.addGlobal("globals", this.globals);
 

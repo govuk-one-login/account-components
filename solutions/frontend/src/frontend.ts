@@ -20,6 +20,7 @@ import { getSessionOptions } from "./utils/getSessionOptions/index.js";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import { oneYearInSeconds } from "../../commons/utils/contstants.js";
+import staticHash from "./utils/static-hash.json" with { type: "json" };
 
 export const initFrontend = async function () {
   const fastify = Fastify.default({
@@ -36,7 +37,9 @@ export const initFrontend = async function () {
   fastify.register(fastifyCookie);
   fastify.decorateReply("globals", {
     getter() {
-      return {};
+      return {
+        staticHash: staticHash.hash,
+      };
     },
   });
   fastify.decorateReply("render", render);
@@ -66,7 +69,10 @@ export const initFrontend = async function () {
     decorateReply: false,
     cacheControl: false,
     setHeaders: (res) => {
-      res.setHeader("cache-control", "no-cache");
+      res.setHeader(
+        "cache-control",
+        `public, max-age=${oneYearInSeconds.toString()}, immutable`,
+      );
     },
   });
 

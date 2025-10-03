@@ -10,6 +10,7 @@ import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import fastifyHelmet from "@fastify/helmet";
 import { oneYearInSeconds } from "../../commons/utils/contstants.js";
+import staticHash from "./utils/static-hash.json" with { type: "json" };
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
@@ -53,7 +54,9 @@ export const initStubs = async function () {
   });
   fastify.decorateReply("globals", {
     getter() {
-      return {};
+      return {
+        staticHash: staticHash.hash,
+      };
     },
   });
   fastify.decorateReply("render", render);
@@ -76,7 +79,10 @@ export const initStubs = async function () {
     decorateReply: false,
     cacheControl: false,
     setHeaders: (res) => {
-      res.setHeader("cache-control", "no-cache");
+      res.setHeader(
+        "cache-control",
+        `public, max-age=${oneYearInSeconds.toString()}, immutable`,
+      );
     },
   });
 

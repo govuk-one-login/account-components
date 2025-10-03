@@ -26,9 +26,9 @@
 {% block head %}
   {# TODO: add Dynatrace RUM config #}
   {% if dynatraceRumUrl %}
-  <script src='{{ dynatraceRumUrl }}' crossorigin="anonymous" nonce='{{ scriptNonce }}'></script>
+  <script src='{{ dynatraceRumUrl }}' crossorigin="anonymous" nonce='{{ cspNonce }}'></script>
   {% endif %}
- <link href="/static/application.css" rel="stylesheet" nonce='{{ styleNonce }}'>
+ <link href="/static/application.css?{{ globals.staticHash }}" rel="stylesheet" nonce='{{ styleNonce }}'>
 {% endblock %}
 
 {% block skipLink %}
@@ -92,14 +92,14 @@
 {% block bodyEnd %}
     {% block scripts %}{% endblock %}
 
-    <script type="module" src="/public/scripts/govuk-frontend.min.js" nonce='{{ scriptNonce }}'></script>
+    <script type="module" src="/public/scripts/govuk-frontend.min.js" nonce='{{ cspNonce }}'></script>
 
-    <script type="module"  nonce='{{ scriptNonce }}'>
+    <script type="module"  nonce='{{ cspNonce }}'>
       import { initAll } from '/public/scripts/govuk-frontend.min.js'
       initAll()
     </script>
-    <script type="text/javascript" src="/public/scripts/analytics.js" nonce='{{ scriptNonce }}'></script>
-    <script type="text/javascript" nonce='{{ scriptNonce }}'>
+    <script type="text/javascript" src="/public/scripts/analytics.js" nonce='{{ cspNonce }}'></script>
+    <script type="text/javascript" nonce='{{ cspNonce }}'>
       {% if backLinkJS %}
         var backLink = document.querySelector('.js-back-link');
         if (backLink) {
@@ -114,7 +114,7 @@
         }
       {% endif %}
     </script>
-    <script type="text/javascript" nonce='{{ scriptNonce }}'>
+    <script type="text/javascript" nonce='{{ cspNonce }}'>
     if (window.DI) {
       window.DI.appInit({
         ga4ContainerId: "{{ga4ContainerId}}"

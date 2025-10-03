@@ -34,7 +34,7 @@ describe("render", () => {
         t: vi.fn(),
       } as unknown as typeof i18next,
       cspNonce: {
-        script: "scriptNonce",
+        script: "cspNonce",
         style: "styleNonce",
       },
     };

@@ -18,7 +18,7 @@ declare module "fastify" {
     ) => Promise<void>;
     i18next?: typeof i18next;
     globals: {
-      example?: string; // TODO remove this once there is at least one real property
+      staticHash: string;
     };
   }
 }
