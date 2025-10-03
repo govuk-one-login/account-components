@@ -19,6 +19,7 @@ import cy from "./translations/cy.json" with { type: "json" };
 import { getSessionOptions } from "./utils/getSessionOptions/index.js";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
+import { oneYearInSeconds } from "../../commons/utils/contstants.js";
 
 export const initFrontend = async function () {
   const fastify = Fastify.default({
@@ -64,8 +65,6 @@ export const initFrontend = async function () {
     },
   });
 
-  const oneYearInSeconds = "31536000";
-
   fastify.register(fastifyStatic, {
     root: path.join(
       import.meta.dirname,
@@ -77,7 +76,7 @@ export const initFrontend = async function () {
     setHeaders: (res) => {
       res.setHeader(
         "cache-control",
-        `public, max-age=${oneYearInSeconds}, immutable`,
+        `public, max-age=${oneYearInSeconds.toString()}, immutable`,
       );
     },
   });
@@ -96,7 +95,7 @@ export const initFrontend = async function () {
     setHeaders: (res) => {
       res.setHeader(
         "cache-control",
-        `public, max-age=${oneYearInSeconds}, immutable`,
+        `public, max-age=${oneYearInSeconds.toString()}, immutable`,
       );
     },
   });
@@ -113,7 +112,53 @@ export const initFrontend = async function () {
   });
 
   fastify.register(fastifyFormbody);
-  fastify.register(fastifyHelmet);
+  fastify.register(fastifyHelmet, {
+    enableCSPNonces: true,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "https://*.googletagmanager.com",
+          "https://*.google-analytics.com",
+          "https://*.analytics.google.com",
+          "https://*.ruxit.com",
+          "https://*.dynatrace.com",
+        ],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "https://*.googletagmanager.com",
+          "https://*.google-analytics.com",
+          "https://*.analytics.google.com",
+          "https://*.g.doubleclick.net",
+        ],
+        objectSrc: ["'none'"],
+        connectSrc: [
+          "'self'",
+          "https://*.google-analytics.com",
+          "https://*.analytics.google.com",
+          "https://*.g.doubleclick.net",
+          "https://*.ruxit.com",
+          "https://*.dynatrace.com",
+        ],
+        formAction: ["'self'", "https://*.account.gov.uk"],
+      },
+    },
+    dnsPrefetchControl: {
+      allow: false,
+    },
+    frameguard: {
+      action: "deny",
+    },
+    hsts: {
+      maxAge: oneYearInSeconds,
+      preload: true,
+      includeSubDomains: true,
+    },
+    referrerPolicy: false,
+    permittedCrossDomainPolicies: false,
+  });
   fastify.register(fastifySession, getSessionOptions());
   fastify.register(fastifyCsrfProtection, {
     sessionPlugin: "@fastify/session",

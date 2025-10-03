@@ -5,7 +5,7 @@ import type { FastifyReply } from "fastify";
 import type i18next from "i18next";
 import assert from "node:assert";
 
-vi.mock("../../../../commons/utils/getEnvironment/index.js", () => ({
+vi.mock(import("../../../../commons/utils/getEnvironment/index.js"), () => ({
   getEnvironment: vi.fn(),
 }));
 
@@ -33,6 +33,10 @@ describe("render", () => {
       i18next: {
         t: vi.fn(),
       } as unknown as typeof i18next,
+      cspNonce: {
+        script: "scriptNonce",
+        style: "styleNonce",
+      },
     };
   });
 

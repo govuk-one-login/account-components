@@ -8,6 +8,8 @@ import { render } from "../../commons/utils/fastify/render/index.js";
 import fastifyFormbody from "@fastify/formbody";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
+import fastifyHelmet from "@fastify/helmet";
+import { oneYearInSeconds } from "../../commons/utils/contstants.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
@@ -23,6 +25,32 @@ export const initStubs = async function () {
 
   fastify.register(fastifyCookie);
   fastify.register(fastifyFormbody);
+  fastify.register(fastifyHelmet, {
+    enableCSPNonces: true,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", "data:"],
+        objectSrc: ["'none'"],
+        connectSrc: ["'self'"],
+        formAction: ["'self'"],
+      },
+    },
+    dnsPrefetchControl: {
+      allow: false,
+    },
+    frameguard: {
+      action: "deny",
+    },
+    hsts: {
+      maxAge: oneYearInSeconds,
+      preload: true,
+      includeSubDomains: true,
+    },
+    referrerPolicy: false,
+    permittedCrossDomainPolicies: false,
+  });
   fastify.decorateReply("render", render);
 
   fastify.setNotFoundHandler(async function (request, reply) {

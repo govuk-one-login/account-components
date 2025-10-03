@@ -28,7 +28,7 @@
   {% if dynatraceRumUrl %}
   <script src='{{ dynatraceRumUrl }}' crossorigin="anonymous" nonce='{{ scriptNonce }}'></script>
   {% endif %}
- <link href="/static/application.css" rel="stylesheet">
+ <link href="/static/application.css" rel="stylesheet" nonce='{{ styleNonce }}'>
 {% endblock %}
 
 {% block skipLink %}
@@ -92,15 +92,14 @@
 {% block bodyEnd %}
     {% block scripts %}{% endblock %}
 
-    {# TODO: Implement CSP config and add nonces #}
-    <script type="module" src="/public/scripts/govuk-frontend.min.js"></script>
+    <script type="module" src="/public/scripts/govuk-frontend.min.js" nonce='{{ scriptNonce }}'></script>
 
-    <script type="module">
+    <script type="module"  nonce='{{ scriptNonce }}'>
       import { initAll } from '/public/scripts/govuk-frontend.min.js'
       initAll()
     </script>
-    <script type="text/javascript" src="/public/scripts/analytics.js"></script>
-    <script type="text/javascript">
+    <script type="text/javascript" src="/public/scripts/analytics.js" nonce='{{ scriptNonce }}'></script>
+    <script type="text/javascript" nonce='{{ scriptNonce }}'>
       {% if backLinkJS %}
         var backLink = document.querySelector('.js-back-link');
         if (backLink) {
@@ -115,7 +114,7 @@
         }
       {% endif %}
     </script>
-    <script type="text/javascript">
+    <script type="text/javascript" nonce='{{ scriptNonce }}'>
     if (window.DI) {
       window.DI.appInit({
         ga4ContainerId: "{{ga4ContainerId}}"
