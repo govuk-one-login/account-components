@@ -9,7 +9,10 @@ import fastifyFormbody from "@fastify/formbody";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import fastifyHelmet from "@fastify/helmet";
-import { oneYearInSeconds } from "../../commons/utils/contstants.js";
+import {
+  oneDayInSeconds,
+  oneYearInSeconds,
+} from "../../commons/utils/contstants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
 
 export const initStubs = async function () {
@@ -81,7 +84,7 @@ export const initStubs = async function () {
     setHeaders: (res) => {
       res.setHeader(
         "cache-control",
-        `public, max-age=${oneYearInSeconds.toString()}, immutable`,
+        `public, max-age=${oneDayInSeconds.toString()}, immutable`,
       );
     },
   });

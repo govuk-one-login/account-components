@@ -19,7 +19,10 @@ import cy from "./translations/cy.json" with { type: "json" };
 import { getSessionOptions } from "./utils/getSessionOptions/index.js";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
-import { oneYearInSeconds } from "../../commons/utils/contstants.js";
+import {
+  oneDayInSeconds,
+  oneYearInSeconds,
+} from "../../commons/utils/contstants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
 
 export const initFrontend = async function () {
@@ -71,7 +74,7 @@ export const initFrontend = async function () {
     setHeaders: (res) => {
       res.setHeader(
         "cache-control",
-        `public, max-age=${oneYearInSeconds.toString()}, immutable`,
+        `public, max-age=${oneDayInSeconds.toString()}, immutable`,
       );
     },
   });
@@ -87,7 +90,7 @@ export const initFrontend = async function () {
     setHeaders: (res) => {
       res.setHeader(
         "cache-control",
-        `public, max-age=${oneYearInSeconds.toString()}, immutable`,
+        `public, max-age=${oneDayInSeconds.toString()}, immutable`,
       );
     },
   });
@@ -106,7 +109,7 @@ export const initFrontend = async function () {
     setHeaders: (res) => {
       res.setHeader(
         "cache-control",
-        `public, max-age=${oneYearInSeconds.toString()}, immutable`,
+        `public, max-age=${oneDayInSeconds.toString()}, immutable`,
       );
     },
   });
