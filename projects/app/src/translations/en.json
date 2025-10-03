@@ -1,1 +1,35 @@
-{}
+{
+  "general": {
+    "heading": "test heading en",
+    "errorSummaryTitle": "There is a problem",
+    "back": "Back",
+    "phaseBanner": {
+      "testText": "This is a test environment."
+    },
+    "header": {
+      "productName": "One Login",
+      "accountNavHomeLink": "Your services",
+      "accountNavSecurityLink": "Security",
+      "signOutLink": "Sign out"
+    }
+  },
+  "error": {
+    "error404": {
+      "title": "Page not found",
+      "header": "Page not found",
+      "content": {
+        "paragraph1": "If you typed the web address, check it is correct.",
+        "paragraph2": "If you pasted the web address, check you copied the entire address.",
+        "signInUserButtonText": "Go to your GOV.UK One Login",
+        "signOutUserButtonText": "Sign in to GOV.UK One Login"
+      }
+    },
+    "error500": {
+      "title": "Sorry, there is a problem with the service",
+      "header": "Sorry, there is a problem with the service",
+      "content": {
+        "paragraph1": "Try again later."
+      }
+    }
+  }
+}

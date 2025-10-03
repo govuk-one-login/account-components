@@ -9,6 +9,11 @@ import type {
   RawServerDefault,
 } from "fastify";
 
+import {
+  frontendUiTranslationCy,
+  frontendUiTranslationEn,
+} from "@govuk-one-login/frontend-ui";
+
 type SetUpI18n = onRequestAsyncHookHandler<
   RawServerDefault,
   RawRequestDefaultExpression,
@@ -37,6 +42,14 @@ export const setUpI18n: SetUpI18n = async function (request, reply) {
         translation: cy,
       },
     },
+  });
+
+  i18next.addResourceBundle(Lang.Welsh, "translation", {
+    FECTranslations: frontendUiTranslationCy,
+  });
+
+  i18next.addResourceBundle(Lang.English, "translation", {
+    FECTranslations: frontendUiTranslationEn,
   });
 
   reply.i18next = i18next;

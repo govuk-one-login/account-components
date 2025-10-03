@@ -1,1 +1,35 @@
-{}
+{
+  "general": {
+    "heading": "test heading cy",
+    "errorSummaryTitle": "Mae problem",
+    "back": "Yn ôl",
+    "phaseBanner": {
+      "testText": "Mae hwn yn amgylchedd profi."
+    },
+    "header": {
+      "productName": "One Login",
+      "accountNavHomeLink": "Eich gwasanaethau",
+      "accountNavSecurityLink": "Diogelwch",
+      "signOutLink": "Allgofnodi"
+    }
+  },
+  "error": {
+    "error404": {
+      "title": "Tudalen heb ei darganfod",
+      "header": "Tudalen heb ei darganfod",
+      "content": {
+        "paragraph1": "Os ydych wedi teipio’r cyfeiriad gwe, edrychwch i weld ei fod yn gywir.",
+        "paragraph2": "Os ydych wedi gludo’r cyfeiriad gwe, edrychwch i weld eich bod wedi copïo’r cyfeiriad cyfan.",
+        "signInUserButtonText": "Ewch i'ch GOV.UK One Login",
+        "signOutUserButtonText": "Mewngofnodi i GOV.UK One Login"
+      }
+    },
+    "error500": {
+      "title": "Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth",
+      "header": "Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth",
+      "content": {
+        "paragraph1": "Rhowch gynnig arall yn nes ymlaen."
+      }
+    }
+  }
+}

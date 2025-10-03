@@ -1,0 +1,9 @@
+{% extends "public/frontend/layout/base.njk" %}
+{% block content %}
+<div class="govuk-grid-row" {% if rowContainerId %} id="{{ rowContainerId }}"{% endif %}>
+  <div class="govuk-grid-column-two-thirds">
+    {% include "public/frontend/errors/errorSummary.njk" %}
+    {% block pageContent %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

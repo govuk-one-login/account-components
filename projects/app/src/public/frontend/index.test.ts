@@ -14,6 +14,7 @@ describe("frontend plugin", () => {
 
     mockApp = {
       register: mockRegister,
+      get: vi.fn(),
     } as unknown as FastifyTypeboxInstance;
   });
 

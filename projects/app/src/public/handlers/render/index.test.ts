@@ -11,6 +11,7 @@ vi.mock("../../../utils/getEnvironment/index.js", () => ({
 
 const mockEnv = {
   addFilter: vi.fn(),
+  addGlobal: vi.fn(),
 };
 
 const nunjucks = {
@@ -46,10 +47,17 @@ describe("render", () => {
       prop: "value",
     });
 
-    expect(nunjucks.configure).toHaveBeenCalledExactlyOnceWith("dist", {
-      autoescape: true,
-      noCache: true,
-    });
+    expect(nunjucks.configure).toHaveBeenCalledExactlyOnceWith(
+      [
+        "dist",
+        "dist/node_modules/govuk-frontend/dist",
+        "dist/node_modules/@govuk-one-login",
+      ],
+      {
+        autoescape: true,
+        noCache: true,
+      },
+    );
   });
 
   it("configures nunjucks with empty path when environment is not local", async () => {
@@ -59,10 +67,13 @@ describe("render", () => {
       prop: "value",
     });
 
-    expect(nunjucks.configure).toHaveBeenCalledExactlyOnceWith("", {
-      autoescape: true,
-      noCache: true,
-    });
+    expect(nunjucks.configure).toHaveBeenCalledExactlyOnceWith(
+      ["", "node_modules/govuk-frontend/dist", "node_modules/@govuk-one-login"],
+      {
+        autoescape: true,
+        noCache: true,
+      },
+    );
   });
 
   it("renders template and sends HTML response", async () => {

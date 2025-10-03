@@ -9,6 +9,7 @@ import cy from "../../../translations/cy.json" with { type: "json" };
 vi.mock("i18next", () => ({
   default: {
     init: vi.fn(),
+    addResourceBundle: vi.fn(),
   },
 }));
 
