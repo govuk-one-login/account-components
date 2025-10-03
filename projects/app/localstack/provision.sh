@@ -2,33 +2,30 @@
 
 set -e
 
-EC_PRIVATE_KEY_FILE="./private_ecdsa.pem"
-EC_PUBLIC_KEY_FILE="./public_ecdsa.pem"
-RSA_PRIVATE_KEY_FILE="./rsa-private.key"
-RSA_PUBLIC_KEY_FILE="./rsa-public.crt"
+# 1. Generate ECDSA Private Key (NIST P-256) to string
+echo "Generating ECDSA private key (in-memory)..."
+EC_PRIVATE_KEY=$(openssl ecparam -name prime256v1 -genkey | openssl pkcs8 -topk8 -nocrypt -outform PEM)
 
-# 1. Generate ECDSA Private Key using curve prime256v1 (NIST P-256)
-echo "Generating ECDSA (NIST P-256) private key..."
-openssl ecparam -name prime256v1 -genkey -noout -out "$EC_PRIVATE_KEY_FILE"
-openssl genpkey -algorithm RSA -out "$RSA_PRIVATE_KEY_FILE" -pkeyopt rsa_keygen_bits:2048
+# 2. Extract ECDSA Public Key from private key string
+EC_PUBLIC_KEY=$(echo "$EC_PRIVATE_KEY" | openssl ec -pubout)
 
-# 2. Extract Public Key from the Private Key
-echo "Extracting public key..."
-openssl ec -in "$EC_PRIVATE_KEY_FILE" -pubout -out "$EC_PUBLIC_KEY_FILE"
-openssl rsa -in "$RSA_PRIVATE_KEY_FILE" -pubout -out "$RSA_PUBLIC_KEY_FILE"
+# 3. Generate RSA private key to string
+echo "Generating RSA private key (in-memory)..."
+RSA_PRIVATE_KEY=$(openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 | openssl pkcs8 -topk8 -nocrypt -outform PEM)
 
-# 3. Read keys into environment-safe string (newline escaped)
-EC_PRIVATE_KEY=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' "$EC_PRIVATE_KEY_FILE")
-EC_PUBLIC_KEY=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' "$EC_PUBLIC_KEY_FILE")
-RSA_PRIVATE_KEY=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' "$RSA_PRIVATE_KEY_FILE")
-RSA_PUBLIC_KEY=$(awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' "$RSA_PUBLIC_KEY_FILE")
+# 4. Extract RSA Public Key from private key string
+RSA_PUBLIC_KEY=$(echo "$RSA_PRIVATE_KEY" | openssl rsa -pubout)
+
+# Optional: escape newlines for SSM if needed (AWS CLI handles newlines well for string params, so usually no need)
+# But if you're sending to JSON or a place where newlines break things, you could use:
+# EC_PRIVATE_KEY_ESCAPED=$(echo "$EC_PRIVATE_KEY" | awk '{printf "%s\\n", $0}')
 
 echo "Installing dependencies..."
 
 install_localstack() {
-  echo " Install LocalStack and AWS CLI if not present!"
+  echo "Install LocalStack and AWS CLI if not present..."
   pip3 install --quiet localstack awscli || true
-  echo "Finished install localstack!"
+  echo "Finished installing LocalStack!"
 }
 
 configure_cli_for_localstack() {
@@ -52,40 +49,38 @@ start_localstack() {
 }
 
 create_ssm_parameters() {
+  echo "Creating SSM parameters in LocalStack..."
+
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
     --name "/components-main/EcPrivateKey" \
     --value "$EC_PRIVATE_KEY" \
-    --type "String" \
-      2>/dev/null || true
+    --type "String" || true
 
-    aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-        --name "/components-main/EcPublicKey" \
-        --value "$EC_PUBLIC_KEY" \
-        --type "String" \
-          2>/dev/null || true
+  aws --endpoint-url=http://localhost:4566 ssm put-parameter \
+    --name "/components-main/EcPublicKey" \
+    --value "$EC_PUBLIC_KEY" \
+    --type "String" || true
 
-    aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-            --name "/components-main/RsaPrivateKey" \
-            --value "$RSA_PRIVATE_KEY" \
-            --type "String" \
-              2>/dev/null || true
+  aws --endpoint-url=http://localhost:4566 ssm put-parameter \
+    --name "/components-main/RsaPrivateKey" \
+    --value "$RSA_PRIVATE_KEY" \
+    --type "String" || true
 
-    aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-            --name "/components-main/RsaPublicKey" \
-            --value "$RSA_PUBLIC_KEY" \
-            --type "String" \
-             2>/dev/null || true
+  aws --endpoint-url=http://localhost:4566 ssm put-parameter \
+    --name "/components-main/RsaPublicKey" \
+    --value "$RSA_PUBLIC_KEY" \
+    --type "String" || true
 }
 
 list_resources() {
   aws --endpoint-url=http://localhost:4566 ssm describe-parameters
 }
 
-
+# Run steps
 install_localstack
 configure_cli_for_localstack
 start_localstack
 create_ssm_parameters
 list_resources
 
-echo "LocalStack provisioned successfully!"
+echo "✅ LocalStack provisioned successfully!"

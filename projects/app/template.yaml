@@ -306,6 +306,9 @@ Resources:
         Type: REGIONAL
       BinaryMediaTypes:
         - "*/*"
+      Tags:
+        FMSRegionalPolicy: false
+        CustomPolicy: true
 
   AppPrivateApiGateway:
     Type: AWS::Serverless::Api
@@ -334,6 +337,9 @@ Resources:
                   # API Gateway from this VPC. Once there is another VPCE here then remove this
                   # example entry
                   - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
+      Tags:
+        FMSRegionalPolicy: false
+        CustomPolicy: true
 
   PrivateRoutesLambda:
     Type: AWS::Serverless::Function
@@ -369,6 +375,10 @@ Resources:
       Environment:
         Variables:
           REGISTER_PUBLIC_ROUTES: "1"
+          EC_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/EcPrivateKey"
+          RSA_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/RsaPrivateKey"
+          EC_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/EcPublicKey"
+          RSA_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/RsaPublicKey"
           REGISTER_PUBLIC_STUB_ROUTES:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, enableStubs]
       Events:
@@ -426,3 +436,48 @@ Resources:
     Properties:
       LogGroupName: !Sub "/lambda/${AWS::StackName}/PublicRoutesLambda"
       RetentionInDays: 30
+
+  ########
+  # STUB KEYS #
+  ########
+
+  # params to store issuer keys
+  StubECPrivateKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The EC private key
+      Name: !Sub /${AWS::StackName}/EcPrivateKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment
+
+  StubECPublicKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The EC public key
+      Name: !Sub /${AWS::StackName}/EcPublicKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment
+
+  StubRSAPrivateKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The RSA private key
+      Name: !Sub /${AWS::StackName}/RsaPrivateKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment
+
+  StubRSAPublicKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The RSA public key
+      Name: !Sub /${AWS::StackName}/RsaPublicKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment

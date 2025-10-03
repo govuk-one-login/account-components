@@ -30,6 +30,13 @@ export const publicRoutes = async function (app: FastifyTypeboxInstance) {
         prefix: "/stubs/external-endpoints",
       },
     );
+
+    app.register(
+      (await import("./internalEndpointStubs/index.js")).internalEndpointStubs,
+      {
+        prefix: "/stubs/internal-endpoints",
+      },
+    );
   }
 
   if (resolveEnvVarToBool("REGISTER_PUBLIC_STATIC_ROUTES")) {
