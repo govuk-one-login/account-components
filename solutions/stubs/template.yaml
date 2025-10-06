@@ -126,33 +126,6 @@ Globals:
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
 
 Resources:
-  StubsLambdaEnvironmentVariablesEncryptionKey:
-    Type: AWS::KMS::Key
-    Properties:
-      Description: KMS key used to encrypt lambda environment variables
-      EnableKeyRotation: true
-      KeyPolicy:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action:
-              - kms:*
-            Resource: "*"
-          - Effect: "Allow"
-            Principal:
-              Service: lambda.amazonaws.com
-            Action:
-              - "kms:Decrypt"
-            Resource: "*"
-            Condition:
-              ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-StubsLambdaEnvironmentVariablesEncryptionKey"
-
   StubECPrivateKeySSM:
     Type: AWS::SSM::Parameter
     Properties:
@@ -193,6 +166,71 @@ Resources:
       Tags:
         Environment: !Ref Environment
 
+  StubsLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        - !Ref GetSSMParameterPolicy
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+
+  GetSSMParameterPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - ssm:GetParameter
+              - ssm:GetParameters
+              - ssm:GetParametersByPath
+            Resource:
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/RsaPublicKey
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/RsaPrivateKey
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/EcPublicKey
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/EcPrivateKey
+
+  StubsLambdaEnvironmentVariablesEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key used to encrypt lambda environment variables
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: "Allow"
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - "kms:Decrypt"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-StubsLambdaEnvironmentVariablesEncryptionKey"
+
   StubsApiGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -232,6 +270,7 @@ Resources:
           RSA_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/RsaPrivateKey"
           EC_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/EcPublicKey"
           RSA_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/RsaPublicKey"
+      Role: !GetAtt StubsLambdaExecutionRole.Arn
 
   StubsLambdaLogGroup:
     Type: AWS::Logs::LogGroup
