@@ -153,6 +153,46 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-StubsLambdaEnvironmentVariablesEncryptionKey"
 
+  StubECPrivateKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The EC private key
+      Name: !Sub /${AWS::StackName}/EcPrivateKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment
+
+  StubECPublicKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The EC public key
+      Name: !Sub /${AWS::StackName}/EcPublicKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment
+
+  StubRSAPrivateKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The RSA private key
+      Name: !Sub /${AWS::StackName}/RsaPrivateKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment
+
+  StubRSAPublicKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: The RSA public key
+      Name: !Sub /${AWS::StackName}/RsaPublicKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment
+
   StubsApiGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -186,6 +226,12 @@ Resources:
             RestApiId: !Ref StubsApiGateway
       LoggingConfig:
         LogGroup: !Ref StubsLambdaLogGroup
+      Environment:
+        Variables:
+          EC_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/EcPrivateKey"
+          RSA_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/RsaPrivateKey"
+          EC_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/EcPublicKey"
+          RSA_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/RsaPublicKey"
 
   StubsLambdaLogGroup:
     Type: AWS::Logs::LogGroup

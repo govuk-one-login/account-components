@@ -14,6 +14,7 @@ import {
   oneYearInSeconds,
 } from "../../commons/utils/contstants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
+import { generateRequestObject } from "./generateRequestObject/index.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
@@ -99,6 +100,8 @@ export const initStubs = async function () {
       reply,
     );
   });
+
+  fastify.register(generateRequestObject);
 
   return fastify;
 };

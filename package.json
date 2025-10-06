@@ -9,6 +9,9 @@
     "@aws-sdk/client-dynamodb": "^3.899.0",
     "@aws-sdk/client-sqs": "^3.899.0",
     "@aws-sdk/lib-dynamodb": "^3.899.0",
+    "@aws-lambda-powertools/logger": "^2.17.0",
+    "@aws-lambda-powertools/parameters": "^2.17.0",
+    "@aws-sdk/client-ssm": "^3.777.0",
     "@fastify/aws-lambda": "^6.0.0",
     "@fastify/cookie": "^11.0.2",
     "@fastify/csrf-protection": "^7.1.0",
@@ -22,6 +25,7 @@
     "fastify": "^5.6.1",
     "govuk-frontend": "^5.12.0",
     "i18next": "^25.5.2",
+    "jose": "^6.0.10",
     "nunjucks": "^3.2.4"
   },
   "devDependencies": {
@@ -75,11 +79,11 @@
     "build:frontend": "cd solutions/frontend && sh ../commons/utils/fastify/build/production.sh",
     "build-local:frontend": "cd solutions/frontend && sh ../commons/utils/fastify/build/local.sh",
     "watch:frontend": "chokidar \"./solutions/frontend/src/**/*\" -c \"npm run build-local:frontend\"",
-    "run:frontend": "sh solutions/localstack/provision.sh && npm run build-local:frontend && concurrently 'npm run watch:frontend' 'cd solutions/frontend && node --enable-source-maps --watch ./dist/local.js' --kill-others",
+    "run:frontend": "[ -z \"$RUN_ALL\" ] && sh solutions/localstack/provision.sh; npm run build-local:frontend && concurrently 'npm run watch:frontend' 'cd solutions/frontend && node --enable-source-maps --watch ./dist/local.js' --kill-others",
     "build:stubs": "cd solutions/stubs && sh ../commons/utils/fastify/build/production.sh",
     "build-local:stubs": "cd solutions/stubs && sh ../commons/utils/fastify/build/local.sh",
     "watch:stubs": "chokidar \"./solutions/stubs/src/**/*\" -c \"npm run build-local:stubs\"",
-    "run:stubs": "npm run build-local:stubs && concurrently 'npm run watch:stubs' 'cd solutions/stubs && node --enable-source-maps --watch ./dist/local.js' --kill-others",
-    "run:all": "concurrently 'npm run run:frontend' 'npm run run:stubs' --kill-others"
+    "run:stubs": "[ -z \"$RUN_ALL\" ] && sh solutions/localstack/provision.sh; npm run build-local:stubs && concurrently 'npm run watch:stubs' 'cd solutions/stubs && node --enable-source-maps --watch ./dist/local.js' --kill-others",
+    "run:all": "sh solutions/localstack/provision.sh && RUN_ALL=1 concurrently 'npm run run:frontend' 'npm run run:stubs' --kill-others"
   }
 }

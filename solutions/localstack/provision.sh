@@ -7,27 +7,21 @@ export AWS_PAGER=""
 generate_keys() {
   echo "Starting to generate keys"
 
-  mkdir -p ./solutions/localstack/keys
-  
-  EC_PRIVATE_KEY_FILE="./solutions/localstack/keys/private_ecdsa.pem"
-  EC_PUBLIC_KEY_FILE="./solutions/localstack/keys/public_ecdsa.pem"
-  RSA_PRIVATE_KEY_FILE="./solutions/localstack/keys/rsa-private.key"
-  RSA_PUBLIC_KEY_FILE="./solutions/localstack/keys/rsa-public.crt"
+  # 1. Generate ECDSA Private Key (NIST P-256) to string
+  EC_PRIVATE_KEY=$(openssl ecparam -name prime256v1 -genkey | openssl pkcs8 -topk8 -nocrypt -outform PEM)
 
-  echo "Generating private keys"
-  openssl ecparam -name prime256v1 -genkey -noout -out "${EC_PRIVATE_KEY_FILE}"
-  openssl genpkey -algorithm RSA -out "${RSA_PRIVATE_KEY_FILE}" -pkeyopt rsa_keygen_bits:2048
+  # 2. Extract ECDSA Public Key from private key string
+  EC_PUBLIC_KEY=$(echo "$EC_PRIVATE_KEY" | openssl ec -pubout)
 
-  echo "Extracting public keys"
-  openssl ec -in "${EC_PRIVATE_KEY_FILE}" -pubout -out "${EC_PUBLIC_KEY_FILE}"
-  openssl rsa -in "${RSA_PRIVATE_KEY_FILE}" -pubout -out "${RSA_PUBLIC_KEY_FILE}"
+  # 3. Generate RSA private key to string
+  RSA_PRIVATE_KEY=$(openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 | openssl pkcs8 -topk8 -nocrypt -outform PEM)
 
-  echo "Reading keys into environment variables"
-  AWK_FORMAT_PATTERN='NF {sub(/\r/, ""); printf "%s\\n",$0;}'
-  EC_PRIVATE_KEY=$(awk "${AWK_FORMAT_PATTERN}" "${EC_PRIVATE_KEY_FILE}")
-  EC_PUBLIC_KEY=$(awk "${AWK_FORMAT_PATTERN}" "${EC_PUBLIC_KEY_FILE}")
-  RSA_PRIVATE_KEY=$(awk "${AWK_FORMAT_PATTERN}" "${RSA_PRIVATE_KEY_FILE}")
-  RSA_PUBLIC_KEY=$(awk "${AWK_FORMAT_PATTERN}" "${RSA_PUBLIC_KEY_FILE}")
+  # 4. Extract RSA Public Key from private key string
+  RSA_PUBLIC_KEY=$(echo "$RSA_PRIVATE_KEY" | openssl rsa -pubout)
+
+  # Optional: escape newlines for SSM if needed (AWS CLI handles newlines well for string params, so usually no need)
+  # But if you're sending to JSON or a place where newlines break things, you could use:
+  # EC_PRIVATE_KEY_ESCAPED=$(echo "$EC_PRIVATE_KEY" | awk '{printf "%s\\n", $0}')
 
   echo "Finished generating keys"
   return 0
@@ -91,25 +85,25 @@ create_ssm_parameters() {
   STRING="String"
 
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-    --name "/components-main/EcPrivateKey" \
+    --name "/components-mocks/EcPrivateKey" \
     --value "${EC_PRIVATE_KEY}" \
     --type "${STRING}" \
     --overwrite
 
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-    --name "/components-main/EcPublicKey" \
+    --name "/components-mocks/EcPublicKey" \
     --value "${EC_PUBLIC_KEY}" \
     --type "${STRING}" \
     --overwrite
 
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-    --name "/components-main/RsaPrivateKey" \
+    --name "/components-mocks/RsaPrivateKey" \
     --value "${RSA_PRIVATE_KEY}" \
     --type "${STRING}" \
     --overwrite
 
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-    --name "/components-main/RsaPublicKey" \
+    --name "/components-mocks/RsaPublicKey" \
     --value "${RSA_PUBLIC_KEY}" \
     --type "${STRING}" \
     --overwrite
