@@ -1,4 +1,4 @@
-import { initStubs } from "./stubs.js";
+import { initStubs } from "./index.js";
 import dotenv from "dotenv";
 import { resolveEnvVarToBool } from "../../commons/utils/resolveEnvVarToBool/index.js";
 

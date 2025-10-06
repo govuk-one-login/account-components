@@ -1,4 +1,4 @@
-import { initStubs } from "./stubs.js";
+import { initStubs } from "./index.js";
 import awsLambdaFastify from "@fastify/aws-lambda";
 
 const fastify = await initStubs();

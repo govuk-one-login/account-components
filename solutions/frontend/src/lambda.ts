@@ -1,4 +1,4 @@
-import { initFrontend } from "./frontend.js";
+import { initFrontend } from "./index.js";
 import awsLambdaFastify from "@fastify/aws-lambda";
 
 const fastify = await initFrontend();

@@ -1,4 +1,4 @@
-import { initFrontend } from "./frontend.js";
+import { initFrontend } from "./index.js";
 import dotenv from "dotenv";
 import { resolveEnvVarToBool } from "../../commons/utils/resolveEnvVarToBool/index.js";
 
