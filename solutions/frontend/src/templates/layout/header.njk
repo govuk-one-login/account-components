@@ -30,5 +30,15 @@
               <span class="govuk-header__product-name">{{ 'general.header.productName' | translate }}</span>
             </a>
         </div>
+        {% if isUserLoggedIn %}
+          <div class="govuk-header__content">
+            <nav class="account-header-navigation" aria-label="{{ 'general.header.signOutLink' | translate }}">
+              <form class="account-header-navigation__form" action="{{ accountSignOut }}" method="post">
+                <input type="hidden" name="_csrf" value="{{ csrfToken }}" />
+                <button class="account-header-navigation__button" type="submit"><span class="govuk-!-font-weight-bold account-header-navigation__button-content">{{ 'general.header.signOutLink' | translate }}</span></button>
+              </form>
+            </nav>
+          </div>
+        {% endif %}
     </div>
 </header>

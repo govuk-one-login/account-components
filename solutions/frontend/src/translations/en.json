@@ -6,7 +6,8 @@
       "testText": "This is a test environment."
     },
     "header": {
-      "productName": "One Login"
+      "productName": "One Login",
+      "signOutLink": "Sign out"
     }
   },
   "error": {

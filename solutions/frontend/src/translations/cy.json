@@ -6,7 +6,8 @@
       "testText": "Mae hwn yn amgylchedd profi."
     },
     "header": {
-      "productName": "One Login"
+      "productName": "One Login",
+      "signOutLink": "Allgofnodi"
     }
   },
   "error": {
