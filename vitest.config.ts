@@ -3,12 +3,12 @@ import { defineConfig } from "vitest/config";
 // eslint-disable-next-line no-restricted-exports
 export default defineConfig({
   test: {
-    include: ["projects/app/src/**/*.test.ts"],
+    include: ["solutions/**/*.test.ts"],
     expect: {
       requireAssertions: true,
     },
     coverage: {
-      include: ["projects/app/src/**/*"],
+      include: ["solutions/**/*"],
       reporter: ["lcov", "text"],
     },
   },
