@@ -12,11 +12,10 @@ import {
 import fastifyFormbody from "@fastify/formbody";
 import fastifyHelmet from "@fastify/helmet";
 import fastifySession from "@fastify/session";
-import fastifyCsrfProtection from "@fastify/csrf-protection";
 import { journeys } from "./journeys/index.js";
 import en from "./translations/en.json" with { type: "json" };
 import cy from "./translations/cy.json" with { type: "json" };
-import { getSessionOptions } from "./utils/getSessionOptions/index.js";
+import { getSessionOptions } from "../../commons/utils/fastify/getSessionOptions/index.js";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import {
@@ -24,6 +23,7 @@ import {
   oneYearInSeconds,
 } from "../../commons/utils/contstants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
+import { csrfProtection } from "../../commons/utils/fastify/csrfProtection/index.js";
 
 export const initFrontend = async function () {
   const fastify = Fastify.default({
@@ -42,6 +42,7 @@ export const initFrontend = async function () {
     getter() {
       return {
         staticHash: staticHash.hash,
+        csrfToken: "",
       };
     },
   });
@@ -174,9 +175,7 @@ export const initFrontend = async function () {
     permittedCrossDomainPolicies: false,
   });
   fastify.register(fastifySession, getSessionOptions());
-  fastify.register(fastifyCsrfProtection, {
-    sessionPlugin: "@fastify/session",
-  });
+  fastify.register(csrfProtection);
 
   fastify.register(journeys);
 
