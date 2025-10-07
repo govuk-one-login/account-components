@@ -42,7 +42,6 @@ export const initFrontend = async function () {
     getter() {
       return {
         staticHash: staticHash.hash,
-        csrfToken: "",
       };
     },
   });

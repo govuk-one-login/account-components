@@ -15,9 +15,6 @@ import {
 } from "../../commons/utils/contstants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
 import { generateRequestObject } from "./generateRequestObject/index.js";
-import fastifySession from "@fastify/session";
-import { getSessionOptions } from "../../commons/utils/fastify/getSessionOptions/index.js";
-import { csrfProtection } from "../../commons/utils/fastify/csrfProtection/index.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
@@ -59,14 +56,11 @@ export const initStubs = async function () {
     referrerPolicy: false,
     permittedCrossDomainPolicies: false,
   });
-  fastify.register(fastifySession, getSessionOptions());
-  fastify.register(csrfProtection);
 
   fastify.decorateReply("globals", {
     getter() {
       return {
         staticHash: staticHash.hash,
-        csrfToken: "",
       };
     },
   });
