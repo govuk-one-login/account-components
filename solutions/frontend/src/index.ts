@@ -19,11 +19,9 @@ import cy from "./translations/cy.json" with { type: "json" };
 import { getSessionOptions } from "./utils/getSessionOptions/index.js";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
-import {
-  oneDayInSeconds,
-  oneYearInSeconds,
-} from "../../commons/utils/contstants.js";
+import { oneYearInSeconds } from "../../commons/utils/contstants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
+import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 
 export const initFrontend = async function () {
   const fastify = Fastify.default({
@@ -71,12 +69,7 @@ export const initFrontend = async function () {
     prefix: "/static",
     decorateReply: false,
     cacheControl: false,
-    setHeaders: (res) => {
-      res.setHeader(
-        "cache-control",
-        `public, max-age=${oneDayInSeconds.toString()}, immutable`,
-      );
-    },
+    setHeaders: addStaticAssetsCachingHeaders,
   });
 
   fastify.register(fastifyStatic, {
@@ -87,12 +80,7 @@ export const initFrontend = async function () {
     prefix: "/assets",
     decorateReply: false,
     cacheControl: false,
-    setHeaders: (res) => {
-      res.setHeader(
-        "cache-control",
-        `public, max-age=${oneDayInSeconds.toString()}, immutable`,
-      );
-    },
+    setHeaders: addStaticAssetsCachingHeaders,
   });
 
   fastify.register(fastifyStatic, {
@@ -106,12 +94,7 @@ export const initFrontend = async function () {
     prefix: "/public/scripts",
     decorateReply: false,
     cacheControl: false,
-    setHeaders: (res) => {
-      res.setHeader(
-        "cache-control",
-        `public, max-age=${oneDayInSeconds.toString()}, immutable`,
-      );
-    },
+    setHeaders: addStaticAssetsCachingHeaders,
   });
 
   fastify.get("/healthcheck", async function (_request, reply) {
