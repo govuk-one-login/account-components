@@ -15,7 +15,7 @@ import fastifySession from "@fastify/session";
 import { journeys } from "./journeys/index.js";
 import en from "./translations/en.json" with { type: "json" };
 import cy from "./translations/cy.json" with { type: "json" };
-import { getSessionOptions } from "../../commons/utils/fastify/getSessionOptions/index.js";
+import { getSessionOptions } from "./utils/getSessionOptions/index.js";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import { oneYearInSeconds } from "../../commons/utils/contstants.js";
