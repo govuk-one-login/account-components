@@ -9,6 +9,8 @@ import {
   frontendUiTranslationCy,
   frontendUiTranslationEn,
 } from "@govuk-one-login/frontend-ui";
+import { LanguageDetector } from "i18next-http-middleware";
+import { getEnvironment } from "../../getEnvironment/index.js";
 
 export enum Lang {
   English = "en",
@@ -31,30 +33,46 @@ export const setUpI18n = (translations: {
   [Lang.Welsh]: object;
 }) => {
   const setUpI18n: SetUpI18n = async function (request, reply) {
+    // this should be handled by i18next-http-middleware out-of-the-box, but it doesn't appear to be working currently so we are doing it manually here
+    // priority: query string, cookie, default to English
     request.lang =
-      Object.values(Lang).find(
-        (lng) => lng === request.query.lng || lng === request.cookies["lng"],
-      ) ?? Lang.English;
+      Object.values(Lang).find((lng) => {
+        if (request.query.lng) return lng === (request.query.lng as Lang);
+        // only check cookie if lng query string does not exist
+        return lng === request.cookies["lng"];
+      }) ?? Lang.English;
 
-    await i18next.init({
+    await i18next.use(LanguageDetector).init({
+      debug: false,
+      fallbackLng: [Lang.English],
       lng: request.lang,
-      fallbackLng: Lang.English,
+      preload: [Lang.English],
+      supportedLngs: [Lang.English, Lang.Welsh],
       resources: {
         [Lang.English]: {
-          translation: translations[Lang.English],
+          translation: {
+            ...translations[Lang.English],
+            FECTranslations: frontendUiTranslationEn,
+          },
         },
         [Lang.Welsh]: {
-          translation: translations[Lang.Welsh],
+          translation: {
+            ...translations[Lang.Welsh],
+            FECTranslations: frontendUiTranslationCy,
+          },
         },
       },
-    });
-
-    i18next.addResourceBundle(Lang.Welsh, "translation", {
-      FECTranslations: frontendUiTranslationCy,
-    });
-
-    i18next.addResourceBundle(Lang.English, "translation", {
-      FECTranslations: frontendUiTranslationEn,
+      detection: {
+        lookupCookie: "lng",
+        lookupQuerystring: "lng",
+        order: ["querystring", "cookie"],
+        caches: ["cookie"],
+        ignoreCase: true,
+        cookieSecure: true,
+        cookieDomain:
+          getEnvironment() === "local" ? "localhost" : "account.gov.uk",
+        cookieSameSite: "",
+      },
     });
 
     reply.i18next = i18next;
