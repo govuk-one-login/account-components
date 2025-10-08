@@ -84,6 +84,6 @@ jobs:
       - name: Deploy stubs
         uses: govuk-one-login/devplatform-upload-action@fda75612a1b0e5a8c84ae7c44a23340e50e5bbde
         with:
-          artifact-bucket-name: ${{ secrets.DEV_ARTIFACT_BUCKET_NAME }}
+          artifact-bucket-name: ${{ secrets.DEV_ARTIFACT_BUCKET_NAME_MOCKS }}
           signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
           working-directory: ./solutions/stubs
