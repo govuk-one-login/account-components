@@ -169,8 +169,27 @@ create_dynamodb_tables() {
 
 list_resources() {
   echo "List resources"
+  ENDPOINT_URL="http://localhost:4566"
 
-  aws --endpoint-url=http://localhost:4566 ssm describe-parameters
+  # List all parameter names
+  PARAM_NAMES=$(aws ssm describe-parameters \
+    --endpoint-url "$ENDPOINT_URL" \
+    --query "Parameters[*].Name" \
+    --output text)
+
+  echo "Listing SSM parameters from LocalStack..."
+
+  for NAME in $PARAM_NAMES; do
+    VALUE=$(aws ssm get-parameter \
+      --endpoint-url "$ENDPOINT_URL" \
+      --name "$NAME" \
+      --with-decryption \
+      --query "Parameter.Value" \
+      --output text)
+
+    echo "$NAME = $VALUE"
+  done
+
   aws --endpoint-url=http://localhost:4566 dynamodb list-tables
   return 0
 }
