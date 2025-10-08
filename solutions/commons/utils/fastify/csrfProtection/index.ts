@@ -16,7 +16,7 @@ export const csrfProtection = fp(async function (fastify) {
   fastify.addHook("preHandler", (request, reply, done) => {
     reply.globals.csrfToken = reply.generateCsrf();
 
-    if (!["get", "head", "options"].includes(request.method)) {
+    if (!["GET", "HEAD", "OPTIONS"].includes(request.method)) {
       fastify.csrfProtection(request, reply, done);
     } else {
       done();

@@ -16,7 +16,7 @@ describe("csrfProtection", () => {
       csrfProtection: vi.fn(),
     };
     request = {
-      method: "get",
+      method: "GET",
       body: {},
     };
     reply = {
@@ -26,7 +26,7 @@ describe("csrfProtection", () => {
     };
   });
 
-  it("should register fastify-csrf-protection with correct options", async () => {
+  it("should register fastify-csrf-protection with correct OPTIONS", async () => {
     await csrfProtection(fastify as FastifyInstance);
 
     expect(fastify.register).toHaveBeenCalledExactlyOnceWith(
@@ -42,12 +42,12 @@ describe("csrfProtection", () => {
     await csrfProtection(fastify as FastifyInstance);
 
     const registerCall = vi.mocked(fastify.register!).mock.calls[0];
-    const options = registerCall![1] as {
+    const OPTIONS = registerCall![1] as {
       getToken: (req: FastifyRequest) => string | undefined;
     };
 
     request.body = { _csrf: "token-from-body" };
-    const token = options.getToken(request as FastifyRequest);
+    const token = OPTIONS.getToken(request as FastifyRequest);
 
     expect(token).toBe("token-from-body");
   });
@@ -56,12 +56,12 @@ describe("csrfProtection", () => {
     await csrfProtection(fastify as FastifyInstance);
 
     const registerCall = vi.mocked(fastify.register!).mock.calls[0];
-    const options = registerCall![1] as {
+    const OPTIONS = registerCall![1] as {
       getToken: (req: FastifyRequest) => string | undefined;
     };
 
     request.body = {};
-    const token = options.getToken(request as FastifyRequest);
+    const token = OPTIONS.getToken(request as FastifyRequest);
 
     expect(token).toBeUndefined();
   });
@@ -70,12 +70,12 @@ describe("csrfProtection", () => {
     await csrfProtection(fastify as FastifyInstance);
 
     const registerCall = vi.mocked(fastify.register!).mock.calls[0];
-    const options = registerCall![1] as {
+    const OPTIONS = registerCall![1] as {
       getToken: (req: FastifyRequest) => string | undefined;
     };
 
     request.body = "invalid-body";
-    const token = options.getToken(request as FastifyRequest);
+    const token = OPTIONS.getToken(request as FastifyRequest);
 
     expect(token).toBeUndefined();
   });
@@ -89,7 +89,7 @@ describe("csrfProtection", () => {
     );
   });
 
-  it("should generate CSRF token and skip protection for get requests", async () => {
+  it("should generate CSRF token and skip protection for GET requests", async () => {
     await csrfProtection(fastify as FastifyInstance);
 
     const hookCall = vi.mocked(fastify.addHook!).mock.calls[0];
@@ -100,7 +100,7 @@ describe("csrfProtection", () => {
     ) => void;
 
     // @ts-expect-error
-    request.method = "get";
+    request.method = "GET";
     preHandler(request as FastifyRequest, reply as FastifyReply, done);
 
     expect(reply.globals!.csrfToken).toBe("csrf-token-123");
@@ -108,7 +108,7 @@ describe("csrfProtection", () => {
     expect(done).toHaveBeenCalledExactlyOnceWith();
   });
 
-  it("should generate CSRF token and skip protection for head requests", async () => {
+  it("should generate CSRF token and skip protection for HEAD requests", async () => {
     await csrfProtection(fastify as FastifyInstance);
 
     const hookCall = vi.mocked(fastify.addHook!).mock.calls[0];
@@ -119,7 +119,7 @@ describe("csrfProtection", () => {
     ) => void;
 
     // @ts-expect-error
-    request.method = "head";
+    request.method = "HEAD";
     preHandler(request as FastifyRequest, reply as FastifyReply, done);
 
     expect(reply.globals!.csrfToken).toBe("csrf-token-123");
@@ -127,7 +127,7 @@ describe("csrfProtection", () => {
     expect(done).toHaveBeenCalledExactlyOnceWith();
   });
 
-  it("should generate CSRF token and skip protection for options requests", async () => {
+  it("should generate CSRF token and skip protection for OPTIONS requests", async () => {
     await csrfProtection(fastify as FastifyInstance);
 
     const hookCall = vi.mocked(fastify.addHook!).mock.calls[0];
@@ -138,7 +138,7 @@ describe("csrfProtection", () => {
     ) => void;
 
     // @ts-expect-error
-    request.method = "options";
+    request.method = "OPTIONS";
     preHandler(request as FastifyRequest, reply as FastifyReply, done);
 
     expect(reply.globals!.csrfToken).toBe("csrf-token-123");
@@ -146,7 +146,7 @@ describe("csrfProtection", () => {
     expect(done).toHaveBeenCalledExactlyOnceWith();
   });
 
-  it("should generate CSRF token and apply protection for post requests", async () => {
+  it("should generate CSRF token and apply protection for POST requests", async () => {
     await csrfProtection(fastify as FastifyInstance);
 
     const hookCall = vi.mocked(fastify.addHook!).mock.calls[0];
@@ -157,7 +157,7 @@ describe("csrfProtection", () => {
     ) => void;
 
     // @ts-expect-error
-    request.method = "post";
+    request.method = "POST";
     preHandler(request as FastifyRequest, reply as FastifyReply, done);
 
     expect(reply.globals!.csrfToken).toBe("csrf-token-123");
@@ -168,7 +168,7 @@ describe("csrfProtection", () => {
     );
   });
 
-  it("should generate CSRF token and apply protection for put requests", async () => {
+  it("should generate CSRF token and apply protection for PUT requests", async () => {
     await csrfProtection(fastify as FastifyInstance);
 
     const hookCall = vi.mocked(fastify.addHook!).mock.calls[0];
@@ -179,7 +179,7 @@ describe("csrfProtection", () => {
     ) => void;
 
     // @ts-expect-error
-    request.method = "put";
+    request.method = "PUT";
     preHandler(request as FastifyRequest, reply as FastifyReply, done);
 
     expect(reply.globals!.csrfToken).toBe("csrf-token-123");
@@ -190,7 +190,7 @@ describe("csrfProtection", () => {
     );
   });
 
-  it("should generate CSRF token and apply protection for delete requests", async () => {
+  it("should generate CSRF token and apply protection for DELETE requests", async () => {
     await csrfProtection(fastify as FastifyInstance);
 
     const hookCall = vi.mocked(fastify.addHook!).mock.calls[0];
@@ -201,7 +201,7 @@ describe("csrfProtection", () => {
     ) => void;
 
     // @ts-expect-error
-    request.method = "delete";
+    request.method = "DELETE";
     preHandler(request as FastifyRequest, reply as FastifyReply, done);
 
     expect(reply.globals!.csrfToken).toBe("csrf-token-123");
