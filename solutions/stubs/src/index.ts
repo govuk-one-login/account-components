@@ -9,12 +9,10 @@ import fastifyFormbody from "@fastify/formbody";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import fastifyHelmet from "@fastify/helmet";
-import {
-  oneDayInSeconds,
-  oneYearInSeconds,
-} from "../../commons/utils/contstants.js";
+import { oneYearInSeconds } from "../../commons/utils/contstants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
 import { generateRequestObject } from "./generateRequestObject/index.js";
+import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
@@ -83,12 +81,7 @@ export const initStubs = async function () {
     prefix: "/static",
     decorateReply: false,
     cacheControl: false,
-    setHeaders: (res) => {
-      res.setHeader(
-        "cache-control",
-        `public, max-age=${oneDayInSeconds.toString()}, immutable`,
-      );
-    },
+    setHeaders: addStaticAssetsCachingHeaders,
   });
 
   fastify.get("/healthcheck", async function (_request, reply) {
