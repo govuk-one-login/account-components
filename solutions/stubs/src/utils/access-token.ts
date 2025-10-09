@@ -51,7 +51,7 @@ export const generateAccessToken = async (
       // eslint-disable-next-line n/no-unsupported-features/node-builtins
       crypto.randomUUID(),
       requestBody.jti,
-      requestBody.exp ? parseInt(requestBody.exp, 10) : undefined,
+      requestBody.exp ? Number.parseInt(requestBody.exp, 10) : undefined,
     ),
   )
     .setProtectedHeader(jwtHeader)
