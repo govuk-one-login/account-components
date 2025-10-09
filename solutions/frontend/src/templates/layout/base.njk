@@ -63,9 +63,10 @@
           text: 'general.phaseBanner.testText' | translate
       })}}
     {% endif %}
+
     {{ frontendUiLanguageSelect({
-        url: currentUrl,
-        activeLanguage: htmlLang,
+        url: globals.currentUrl,
+        activeLanguage: globals.htmlLang,
         translations: 'FECTranslations.languageSelect' | translate
       }) 
     }}

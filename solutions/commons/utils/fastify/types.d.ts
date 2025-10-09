@@ -19,6 +19,8 @@ declare module "fastify" {
     i18next?: typeof i18next;
     globals: {
       staticHash: string;
+      currentUrl?: URL;
+      htmlLang?: string | undefined;
     };
   }
 }

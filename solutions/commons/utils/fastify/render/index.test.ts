@@ -5,8 +5,12 @@ import type { FastifyReply } from "fastify";
 import type i18next from "i18next";
 import assert from "node:assert";
 
-vi.mock(import("../../../../commons/utils/getEnvironment/index.js"), () => ({
+vi.mock(import("../../getEnvironment/index.js"), () => ({
   getEnvironment: vi.fn(),
+}));
+
+vi.mock(import("../getCurrentUrl/index.js"), () => ({
+  getCurrentUrl: vi.fn().mockReturnValue(new URL("http://example.com/current")),
 }));
 
 const mockEnv = {
@@ -82,10 +86,13 @@ describe("render", () => {
 
   it("renders template and sends HTML response", async () => {
     vi.mocked(getEnvironment).mockReturnValue("local");
+
     nunjucks.render.mockReturnValue("<html>rendered content</html>");
 
     await render.call(reply as FastifyReply, "template.html", {
       title: "Test",
+      currentUrl: new URL("http://example.com/current"),
+      htmlLang: "en",
     });
 
     assert.ok(reply.i18next?.t);
@@ -95,6 +102,8 @@ describe("render", () => {
       reply.i18next.t,
     );
     expect(nunjucks.render).toHaveBeenCalledExactlyOnceWith("template.html", {
+      currentUrl: new URL("http://example.com/current"),
+      htmlLang: "en",
       title: "Test",
     });
     expect(reply.type).toHaveBeenCalledExactlyOnceWith("text/html");
