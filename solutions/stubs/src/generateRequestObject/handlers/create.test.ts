@@ -4,18 +4,18 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const expectedResponse = {
   availableClients: [
     {
-      client_id: "client-123",
-      client_name: "Example Client",
-      jwks_uri: "https://example.com/jwks.json",
-      redirect_uris: ["https://example.com/callback"],
-      scope: "read",
+      client_id: "123456789",
+      client_name: "Dummy Auth",
+      jwks_uri: "https://signin.account.gov.uk/.well-known/jwks.json",
+      redirect_uris: ["https://signin.account.gov.uk/acm-callback"],
+      scope: "am-account-delete",
     },
     {
-      client_id: "client-456",
-      client_name: "Another Client",
-      jwks_uri: "https://another.com/jwks.json",
-      redirect_uris: ["https://another.com/callback"],
-      scope: "read write",
+      client_id: "234567890",
+      client_name: "Dummy Home",
+      jwks_uri: "https://home.account.gov.uk/.well-known/jwks.json",
+      redirect_uris: ["https://home.account.gov.uk/acm-callback"],
+      scope: "am-account-delete",
     },
   ],
   availableScenarios: [
@@ -74,7 +74,7 @@ describe("createRequestObjectPost", () => {
 
     mockRequest = {
       body: {
-        client_id: "client-123",
+        client_id: "123456789",
       },
     };
 
@@ -101,7 +101,7 @@ describe("createRequestObjectPost", () => {
       {
         ...expectedResponse,
         redirect_uri:
-          "https://example.com/callback?request=mock-request-object&response_type=code&scope=am-account-delete&client_id=client-123",
+          "https://signin.account.gov.uk/acm-callback?request=mock-request-object&response_type=code&scope=am-account-delete&client_id=123456789",
       },
     );
   });

@@ -8,19 +8,17 @@ interface ClientRegistry {
 
 export const CLIENT_REGISTRY: ClientRegistry[] = [
   {
-    //example
-    client_id: "client-123",
-    scope: "read",
-    redirect_uris: ["https://example.com/callback"],
-    client_name: "Example Client",
-    jwks_uri: "https://example.com/jwks.json",
+    client_id: "123456789",
+    scope: "am-account-delete",
+    redirect_uris: ["https://signin.account.gov.uk/acm-callback"],
+    client_name: "Dummy Auth",
+    jwks_uri: "https://signin.account.gov.uk/.well-known/jwks.json",
   },
   {
-    //another examples
-    client_id: "client-456",
-    scope: "read write",
-    redirect_uris: ["https://another.com/callback"],
-    client_name: "Another Client",
-    jwks_uri: "https://another.com/jwks.json",
+    client_id: "234567890",
+    scope: "am-account-delete",
+    redirect_uris: ["https://home.account.gov.uk/acm-callback"],
+    client_name: "Dummy Home",
+    jwks_uri: "https://home.account.gov.uk/.well-known/jwks.json",
   },
 ];

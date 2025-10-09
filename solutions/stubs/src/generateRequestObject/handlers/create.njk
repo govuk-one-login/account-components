@@ -58,7 +58,7 @@
                 <legend>Client</legend>
                 <select name="client_id">
                     {% for client in availableClients %}
-                        <option value="{{ client.client_id }}">{{ client.name }} ({{ client.client_id }})</option>
+                        <option value="{{ client.client_id }}">{{ client.client_name }} ({{ client.client_id }})</option>
                     {% endfor %}
                 </select>
             </fieldset>
