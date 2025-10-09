@@ -134,9 +134,9 @@ describe("setUpI18n", () => {
         order: ["querystring", "cookie"],
         caches: ["cookie"],
         ignoreCase: true,
-        cookieSecure: true,
+        cookieSecure: false,
         cookieDomain: "localhost",
-        cookieSameSite: "",
+        cookieSameSite: "lax",
       },
       resources: {
         [Lang.English]: {

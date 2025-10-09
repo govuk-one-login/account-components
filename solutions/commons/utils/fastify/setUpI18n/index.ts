@@ -68,10 +68,10 @@ export const setUpI18n = (translations: {
         order: ["querystring", "cookie"],
         caches: ["cookie"],
         ignoreCase: true,
-        cookieSecure: true,
+        cookieSecure: getEnvironment() !== "local" && "secure",
         cookieDomain:
           getEnvironment() === "local" ? "localhost" : "account.gov.uk",
-        cookieSameSite: "",
+        cookieSameSite: "lax",
       },
     });
 
