@@ -27,11 +27,12 @@ const newClaims = (
   iss: string,
   randomString: string,
   nonce: string,
+  expiry = 3600,
 ): JWTPayload => ({
   sub: `urn:fdc:gov.uk:2022:${randomString}`,
   iss: iss,
   aud: rpClientId,
-  exp: epochDateNow() + 3600,
+  exp: epochDateNow() + expiry,
   iat: epochDateNow(),
   // eslint-disable-next-line n/no-unsupported-features/node-builtins
   sid: crypto.randomUUID(),
@@ -50,6 +51,7 @@ export const generateAccessToken = async (
       // eslint-disable-next-line n/no-unsupported-features/node-builtins
       crypto.randomUUID(),
       requestBody.jti,
+      requestBody.exp ? parseInt(requestBody.exp, 10) : undefined,
     ),
   )
     .setProtectedHeader(jwtHeader)

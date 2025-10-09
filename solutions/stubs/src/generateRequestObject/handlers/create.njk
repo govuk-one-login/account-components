@@ -1,0 +1,81 @@
+<html>
+    <head>
+        <title>Start Auth Journey</title>
+        <style type='text/css' nonce='{{ styleNonce }}'>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 40px;
+            }
+            fieldset {
+                margin-bottom: 20px;
+                padding: 10px;
+            }
+            legend {
+                font-weight: bold;
+            }
+            input[type="text"] {
+                width: 300px;
+                padding: 5px;
+                margin-top: 5px;
+            }
+            input[type="submit"] {
+                padding: 10px 20px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                cursor: pointer;
+            }
+            pre {
+                white-space: pre-wrap;
+            }
+        </style>
+    </head>
+    <body>
+        {% if redirect_uri %}
+            Redirected to: <a href="{{ redirect_uri }}"><pre>{{ redirect_uri }}</pre></a>
+        {% endif %}
+        <h1>Start Auth Journey</h1>
+        <form method="post" action="/create-request-object">
+            <fieldset>
+                <legend>Scopes</legend>
+                {% for scope in availableScopes %}
+                    <label for="{{ scope }}_scope">
+                    <input id="{{ scope }}_scope" type="checkbox" name="scope" value="{{ scope }}" /> {{ scope }}
+                    </label>
+                {% endfor %}
+            </fieldset>
+            <fieldset>
+                <legend>Scenario</legend>
+                {% for scenario in availableScenarios %}
+                <div>
+                    <label for="{{ scenario }}_scenario">
+                    <input id="{{ scenario }}_scenario" type="radio" name="scenario" value="{{ scenario }}" /> {{ scenario }}
+                    </label>
+                </div>
+                {% endfor %}
+            </fieldset>
+            <fieldset>
+                <legend>Client</legend>
+                <select name="client_id">
+                    {% for client in availableClients %}
+                        <option value="{{ client.client_id }}">{{ client.name }} ({{ client.client_id }})</option>
+                    {% endfor %}
+                </select>
+            </fieldset>
+            <fieldset>
+                <legend>Nonce (optional)</legend>
+                <input type="text" name="jti" />
+                <i>Leave blank to auto-generate</i>
+            </fieldset>
+            <fieldset>
+                <legend>Expiry (in seconds, optional)</legend>
+                <input type="text" name="exp" />
+            </fieldset>
+            <fieldset>
+                <legend>Issuer</legend>
+                <input type="text" name="iss" name="stub-issuer" />
+            </fieldset>
+            <input type="submit" value="Generate Request Object">
+        </form>
+    </body>
+</html>
