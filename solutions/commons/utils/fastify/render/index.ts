@@ -22,8 +22,9 @@ export const render = async function (
     },
   );
 
-  if (this.i18next) {
-    env.addFilter("translate", this.i18next.t);
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  if (this.request.i18n) {
+    env.addFilter("translate", this.request.i18n.t);
   }
   env.addGlobal("govukRebrand", true);
   env.addGlobal("addLanguageParam", addLanguageParam);
