@@ -135,71 +135,71 @@ Resources:
               - kms:*
             Resource: "*"
 
-    S3SSEKeyAlias:
-      Type: AWS::KMS::Alias
-      Properties:
-        AliasName: !Sub "alias/${AWS::StackName}-S3SSEKey"
-        TargetKeyId: !Ref S3SSEKey
+  S3SSEKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-S3SSEKey"
+      TargetKeyId: !Ref S3SSEKey
 
-    JWKSStoreBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: !Sub "${AWS::StackName}-JWKSStore"
-        AccessControl: Private
-        PublicAccessBlockConfiguration:
-          BlockPublicAcls: true
-          BlockPublicPolicy: true
-          IgnorePublicAcls: true
-          RestrictPublicBuckets: true
-        VersioningConfiguration:
-          Status: Enabled
-        LoggingConfiguration:
-          DestinationBucketName: !Sub "${AWS::StackName}-AccessLogs"
-        BucketEncryption:
-          ServerSideEncryptionConfiguration:
-            - ServerSideEncryptionByDefault:
-                SSEAlgorithm: aws:kms
-                KMSMasterKeyID: !Ref S3SSEKey
+  JWKSStoreBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-JWKSStore"
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Sub "${AWS::StackName}-AccessLogs"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref S3SSEKey
 
-    AccessLogsBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: !Sub "${AWS::StackName}-AccessLogs"
-        AccessControl: Private
-        PublicAccessBlockConfiguration:
-          BlockPublicAcls: true
-          BlockPublicPolicy: true
-          IgnorePublicAcls: true
-          RestrictPublicBuckets: true
-        VersioningConfiguration:
-          Status: Enabled
-        BucketEncryption:
-          ServerSideEncryptionConfiguration:
-            - ServerSideEncryptionByDefault:
-                SSEAlgorithm: aws:kms
-                KMSMasterKeyID: !Ref S3SSEKey
+  AccessLogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-AccessLogs"
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref S3SSEKey
 
-    JWKSStoreBucketPolicy:
-      Type: AWS::S3::BucketPolicy
-      Properties:
-        Bucket: !Ref JWKSStoreBucket
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-            - Sid: AllowLambdaToPutObjects
-              Effect: Allow
-              Principal:
-                AWS: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:public-api*"
-              Action:
-                - s3:PutObject
-              Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
-            - Sid: AllowApiGatewayToGetObjects
-              Effect: Allow
-              Principal:
-                Service: apigateway.amazonaws.com
-              Action:
-                - s3:GetObject
-              Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
+  JWKSStoreBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref JWKSStoreBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowLambdaToPutObjects
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:public-api*"
+            Action:
+              - s3:PutObject
+            Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
+          - Sid: AllowApiGatewayToGetObjects
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action:
+              - s3:GetObject
+            Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
 
 Outputs:
   DynamoDbSSEKeyArn:
