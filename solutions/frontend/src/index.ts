@@ -5,10 +5,6 @@ import { addDefaultCaching } from "../../commons/utils/fastify/addDefaultCaching
 import Fastify from "fastify";
 import fastifyCookie from "@fastify/cookie";
 import { render } from "../../commons/utils/fastify/render/index.js";
-import {
-  Lang,
-  setUpI18n,
-} from "../../commons/utils/fastify/setUpI18n/index.js";
 import fastifyFormbody from "@fastify/formbody";
 import fastifyHelmet from "@fastify/helmet";
 import fastifySession from "@fastify/session";
@@ -25,6 +21,12 @@ import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addSt
 import i18next from "i18next";
 import { plugin as i18nextMiddlewarePlugin } from "i18next-http-middleware";
 import { getCurrentUrl } from "../../commons/utils/fastify/getCurrentUrl/index.js";
+import { configureI18n, Lang } from "../../commons/utils/configureI18n.js";
+
+await configureI18n({
+  [Lang.English]: en,
+  [Lang.Welsh]: cy,
+});
 
 export const initFrontend = async function () {
   const fastify = Fastify.default({
@@ -33,30 +35,23 @@ export const initFrontend = async function () {
     disableRequestLogging: true,
   });
 
-  fastify.register(i18nextMiddlewarePlugin, { i18next });
   fastify.addHook("onRequest", logRequest);
   fastify.addHook("onRequest", removeTrailingSlash);
   fastify.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
   fastify.addHook("onResponse", logResponse);
 
   fastify.register(fastifyCookie);
+  fastify.register(i18nextMiddlewarePlugin, { i18next });
   fastify.decorateReply("globals", {
     getter() {
       return {
         staticHash: staticHash.hash,
         currentUrl: getCurrentUrl(this.request),
-        htmlLang: this.i18next?.language,
+        htmlLang: this.request.i18n.language,
       };
     },
   });
   fastify.decorateReply("render", render);
-  fastify.addHook(
-    "onRequest",
-    setUpI18n({
-      [Lang.English]: en,
-      [Lang.Welsh]: cy,
-    }),
-  );
 
   fastify.setNotFoundHandler(async function (request, reply) {
     const onNotFound = (await import("./handlers/onNotFound/index.js"))

@@ -1,9 +1,8 @@
 import { expect, it, describe, vi, beforeEach, afterEach } from "vitest";
 import { render } from "./index.js";
 import { getEnvironment } from "../../getEnvironment/index.js";
-import type { FastifyReply } from "fastify";
+import type { FastifyReply, FastifyRequest } from "fastify";
 import type i18next from "i18next";
-import assert from "node:assert";
 
 vi.mock(import("../../getEnvironment/index.js"), () => ({
   getEnvironment: vi.fn(),
@@ -34,9 +33,11 @@ describe("render", () => {
     reply = {
       type: vi.fn().mockReturnThis(),
       send: vi.fn(),
-      i18next: {
-        t: vi.fn(),
-      } as unknown as typeof i18next,
+      request: {
+        i18n: {
+          t: vi.fn(),
+        } as unknown as typeof i18next,
+      } as FastifyRequest,
       cspNonce: {
         script: "cspNonce",
         style: "styleNonce",
@@ -95,11 +96,9 @@ describe("render", () => {
       htmlLang: "en",
     });
 
-    assert.ok(reply.i18next?.t);
-
     expect(mockEnv.addFilter).toHaveBeenCalledExactlyOnceWith(
       "translate",
-      reply.i18next.t,
+      reply.request?.i18n.t,
     );
     expect(nunjucks.render).toHaveBeenCalledExactlyOnceWith("template.html", {
       currentUrl: new URL("http://example.com/current"),
