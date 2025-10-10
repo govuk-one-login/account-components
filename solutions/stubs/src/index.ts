@@ -54,6 +54,7 @@ export const initStubs = async function () {
     referrerPolicy: false,
     permittedCrossDomainPolicies: false,
   });
+
   fastify.decorateReply("globals", {
     getter() {
       return {
