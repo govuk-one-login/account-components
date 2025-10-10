@@ -1,0 +1,32 @@
+name: deploy-config-int
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "solutions/config/integration-config.json"
+      - ".github/workflows/deploy-config.yaml"
+      - ".github/workflows/deploy-config-int.yaml"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Config (Integration)
+    uses: ./.github/workflows/deploy-config.yaml
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      gh-environment: build
+      target-environment: integration
+      config-file: integration-config.json
+    secrets:
+      config-source-bucket-name: ${{ secrets.APP_CONFIG_SOURCE_BUCKET_NAME }}
+      aws-role-arn: ${{ secrets.GHA_APP_CONFIG_ROLE_ARN }}
+      slack-channel-id: ${{ secrets.ERROR_SLACK_WEBHOOK_CHANNEL_ID }}
+      slack-webhook-url: ${{ secrets.ERROR_SLACK_WEBHOOK }}
+      aws-artefact-signing-key-arn: ${{ secrets.CONFIG_SIGNING_KEY_ARN }}

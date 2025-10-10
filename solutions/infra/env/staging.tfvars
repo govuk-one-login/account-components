@@ -11,3 +11,6 @@ main_artifact_source_bucket_arn                      = "arn:aws:s3:::pipeline-ma
 main_artifact_source_bucket_event_trigger_role_arn   = "arn:aws:iam::629382882013:role/PL-pipeline-main-PromoTrigRole-06b72641d005"
 alarms_artifact_source_bucket_arn                    = "arn:aws:s3:::pipeline-alarms-artifactpromotionbucket-ouvrrmucl4jg"
 alarms_artifact_source_bucket_event_trigger_role_arn = "arn:aws:iam::629382882013:role/PL-pipeline-alarms-PromoTrigRole-0aacc187d65d"
+config_artefact_path                                 = "staging-config.json"
+config_artifact_source_bucket_arn                    = "arn:aws:s3:::pipeline-app-config-githubartifactsourcebucket-leuvstbm9jae"
+config_artifact_source_bucket_event_trigger_role_arn = "arn:aws:iam::629382882013:role/PL-pipeline-app-config-DepTrigRole-0636b3c8efc9"

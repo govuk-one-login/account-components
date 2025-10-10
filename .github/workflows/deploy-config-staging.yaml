@@ -1,0 +1,30 @@
+name: deploy-config-staging
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "solutions/config/staging-config.json"
+      - ".github/workflows/deploy-config.yaml"
+      - ".github/workflows/deploy-config-staging.yaml"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Config (Staging)
+    uses: ./.github/workflows/deploy-config.yaml
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      gh-environment: build
+      target-environment: staging
+      config-file: staging-config.json
+    secrets:
+      config-source-bucket-name: ${{ secrets.APP_CONFIG_SOURCE_BUCKET_NAME }}
+      aws-role-arn: ${{ secrets.GHA_APP_CONFIG_ROLE_ARN }}
+      aws-artefact-signing-key-arn: ${{ secrets.CONFIG_SIGNING_KEY_ARN }}
