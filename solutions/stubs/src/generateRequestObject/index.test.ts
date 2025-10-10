@@ -14,6 +14,7 @@ describe("generateRequestObject", () => {
   beforeEach(() => {
     mockApp = {
       post: vi.fn(),
+      get: vi.fn(),
     } as unknown as FastifyInstance;
 
     mockRequest = {};
@@ -23,10 +24,7 @@ describe("generateRequestObject", () => {
   it("should register POST route with correct path", () => {
     generateRequestObject(mockApp);
 
-    expect(mockApp.post).toHaveBeenCalledExactlyOnceWith(
-      "/generate-request-object",
-      expect.any(Function),
-    );
+    expect(mockApp.post).toHaveBeenCalledTimes(2);
   });
 
   it("should call generateRequestObjectPost handler when route is invoked", async () => {

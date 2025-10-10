@@ -8,4 +8,16 @@ export const generateRequestObject = function (app: FastifyInstance) {
       reply,
     );
   });
+  app.get(paths.requestObjectCreator, async function (request, reply) {
+    return (await import("./handlers/create.js")).createRequestObjectGet(
+      request,
+      reply,
+    );
+  });
+  app.post(paths.requestObjectCreator, async function (request, reply) {
+    const handler = (
+      await import("./handlers/create.js")
+    ).createRequestObjectPost(app);
+    return handler(request, reply);
+  });
 };
