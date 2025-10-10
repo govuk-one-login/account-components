@@ -4,7 +4,7 @@ import {
 } from "@govuk-one-login/frontend-ui";
 import i18next from "i18next";
 import { LanguageDetector } from "i18next-http-middleware";
-import { getEnvironment } from "./getEnvironment/index.js";
+import { getEnvironment } from "../getEnvironment/index.js";
 
 export enum Lang {
   English = "en",

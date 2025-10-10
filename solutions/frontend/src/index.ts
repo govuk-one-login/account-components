@@ -21,7 +21,10 @@ import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addSt
 import i18next from "i18next";
 import { plugin as i18nextMiddlewarePlugin } from "i18next-http-middleware";
 import { getCurrentUrl } from "../../commons/utils/fastify/getCurrentUrl/index.js";
-import { configureI18n, Lang } from "../../commons/utils/configureI18n.js";
+import {
+  configureI18n,
+  Lang,
+} from "../../commons/utils/configureI18n/index.js";
 
 await configureI18n({
   [Lang.English]: en,
