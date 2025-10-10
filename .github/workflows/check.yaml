@@ -27,7 +27,7 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Set up tflint
-        uses: terraform-linters/setup-tflint@ae78205cfffec9e8d93fd2b3115c7e9d3166d4b6
+        uses: terraform-linters/setup-tflint@acd1575d3c037258ce5b2dd01379dc49ce24c6b7
 
       - name: Set up SAM CLI
         uses: aws-actions/setup-sam@f664fad9e12492edfc187a31f575537dfbb0ff63
