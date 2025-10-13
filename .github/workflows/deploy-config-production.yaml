@@ -7,7 +7,7 @@ on:
     paths:
       - "solutions/config/production-config.json"
       - ".github/workflows/deploy-config.yaml"
-      - ".github/workflows/deploy-config-prod.yaml"
+      - "deploy-config-production.yaml"
 
 permissions:
   id-token: write
