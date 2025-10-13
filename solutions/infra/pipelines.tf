@@ -16,7 +16,7 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
     ArtifactSourceBucketEventTriggerRoleArn = var.main_artifact_source_bucket_event_trigger_role_arn
     GitHubRepositoryName                    = var.create_build_stacks ? var.repository_name : "none"
     TestImageRepositoryNames                = var.repository_name
-    TestImageRepositoryUri                  = contains(["dev", "build"], var.environment) ? aws_cloudformation_stack.test_image_repository.outputs["TestRunnerImageEcrRepositoryUri"] : ""
+    TestImageRepositoryUri                  = contains(["dev", "build"], var.environment) ? aws_cloudformation_stack.test_image_repository[0].outputs["TestRunnerImageEcrRepositoryUri"] : ""
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
@@ -139,7 +139,7 @@ resource "aws_cloudformation_stack" "deploy" {
     Environment                             = var.environment
     FinalBakeTimeInMinutes                  = var.config_final_bake_time_in_minutes
     GrowthFactor                            = 0
-    OneLoginRepositoryName                  = "account-components"
+    OneLoginRepositoryName                  = var.config_artifact_source_bucket_arn == "none" ? "account-components" : "none"
     ProfileName                             = "operational"
     SigningKeyArn                           = var.config_signing_key_arn
     LambdaValidatorArn                      = "none"
