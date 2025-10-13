@@ -12,7 +12,6 @@ import {
 import fastifyFormbody from "@fastify/formbody";
 import fastifyHelmet from "@fastify/helmet";
 import fastifySession from "@fastify/session";
-import fastifyCsrfProtection from "@fastify/csrf-protection";
 import { journeys } from "./journeys/index.js";
 import en from "./translations/en.json" with { type: "json" };
 import cy from "./translations/cy.json" with { type: "json" };
@@ -21,6 +20,7 @@ import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import { oneYearInSeconds } from "../../commons/utils/contstants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
+import { csrfProtection } from "../../commons/utils/fastify/csrfProtection/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 
 export const initFrontend = async function () {
@@ -157,9 +157,7 @@ export const initFrontend = async function () {
     permittedCrossDomainPolicies: false,
   });
   fastify.register(fastifySession, getSessionOptions());
-  fastify.register(fastifyCsrfProtection, {
-    sessionPlugin: "@fastify/session",
-  });
+  fastify.register(csrfProtection);
 
   fastify.register(journeys);
 

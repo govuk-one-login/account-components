@@ -25,10 +25,12 @@
     "connect-dynamodb": "^3.0.5",
     "express-session": "^1.18.2",
     "fastify": "^5.6.1",
+    "fastify-plugin": "^5.1.0",
     "govuk-frontend": "^5.12.0",
     "i18next": "^25.5.2",
     "jose": "^6.0.10",
-    "nunjucks": "^3.2.4"
+    "nunjucks": "^3.2.4",
+    "valibot": "^1.1.0"
   },
   "devDependencies": {
     "@eslint/compat": "^1.4.0",
@@ -81,11 +83,11 @@
     "sam-validate:stubs": "cd solutions/stubs && sam validate --region eu-west-2 --lint",
     "build:frontend": "cd solutions/frontend && sh ../commons/utils/fastify/build/production.sh",
     "build-local:frontend": "cd solutions/frontend && sh ../commons/utils/fastify/build/local.sh",
-    "watch:frontend": "chokidar \"./solutions/frontend/src/**/*\" -c \"npm run build-local:frontend\"",
+    "watch:frontend": "chokidar \"./solutions/frontend/src/**/*\" \"./solutions/commons/**/*\" -c \"npm run build-local:frontend\"",
     "run:frontend": "([ -n \"$RUN_ALL\" ] || sh solutions/localstack/provision.sh) && npm run build-local:frontend && concurrently 'npm run watch:frontend' 'cd solutions/frontend && node --enable-source-maps --watch ./dist/local.js' --kill-others",
     "build:stubs": "cd solutions/stubs && sh ../commons/utils/fastify/build/production.sh",
     "build-local:stubs": "cd solutions/stubs && sh ../commons/utils/fastify/build/local.sh",
-    "watch:stubs": "chokidar \"./solutions/stubs/src/**/*\" -c \"npm run build-local:stubs\"",
+    "watch:stubs": "chokidar \"./solutions/stubs/src/**/*\" \"./solutions/commons/**/*\" -c \"npm run build-local:stubs\"",
     "run:stubs": "([ -n \"$RUN_ALL\" ] || sh solutions/localstack/provision.sh) && npm run build-local:stubs && concurrently 'npm run watch:stubs' 'cd solutions/stubs && node --enable-source-maps --watch ./dist/local.js' --kill-others",
     "run:all": "sh solutions/localstack/provision.sh && RUN_ALL=1 concurrently 'npm run run:frontend' 'npm run run:stubs' --kill-others"
   }

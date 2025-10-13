@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { getSessionOptions } from "./index.js";
 import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.js";
 
-vi.mock("../../../../commons/utils/getEnvironment/index.js", () => ({
+vi.mock(import("../../../../commons/utils/getEnvironment/index.js"), () => ({
   getEnvironment: vi.fn(),
 }));
 
