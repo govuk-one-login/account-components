@@ -98,7 +98,11 @@ export const initFrontend = async function () {
   });
 
   fastify.get("/healthcheck", async function (_request, reply) {
-    return reply.send("ok");
+    // TODO remove this
+    if (!_request.session.user_id) {
+      _request.session.user_id = "TESTUSERID12345";
+    }
+    return reply.send(_request.session.user_id);
   });
 
   fastify.get("/robots.txt", async function (request, reply) {
