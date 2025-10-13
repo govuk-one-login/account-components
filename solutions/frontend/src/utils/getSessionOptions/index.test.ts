@@ -64,7 +64,7 @@ describe("getSessionOptions", () => {
 
     const options = getSessionOptions();
 
-    expect(options.secret).toBe("test-secret");
+    expect(options.secret).toBe("test-signer");
     expect(options.cookie?.secure).toBe(true);
     expect(options.cookie?.sameSite).toBe("lax");
     expect(options.cookie?.maxAge).toBe(3600000);
