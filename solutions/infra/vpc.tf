@@ -8,6 +8,7 @@ resource "aws_cloudformation_stack" "vpc_stack" {
     DynatraceApiEnabled      = "Yes"
     KMSApiEnabled            = "Yes"
     SSMApiEnabled            = "Yes"
+    DynamoDBApiEnabled       = "Yes"
     AllowRules               = "pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:\"account.gov.uk\"; endswith; msg:\"Pass TLS to *.account.gov.uk\"; flow:established; sid:2001; rev:1;)"
     AllowedDomains           = "*.account.gov.uk"
     ExecuteApiGatewayEnabled = "Yes"

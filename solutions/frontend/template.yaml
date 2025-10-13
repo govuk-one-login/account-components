@@ -354,6 +354,12 @@ Resources:
                 - dynamodb:Scan
                 - dynamodb:UpdateItem
               Resource: !GetAtt SessionsTable.Arn
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Resource:
+                Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"
 
   FrontendLambdaLogGroup:
     Type: AWS::Logs::LogGroup
