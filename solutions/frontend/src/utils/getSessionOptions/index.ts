@@ -9,7 +9,7 @@ import { ScalarAttributeType } from "@aws-sdk/client-dynamodb";
 let dynamodbStore: ConnectDynamoDB.DynamoDBStore | undefined = undefined;
 
 export const getSessionOptions = (): FastifySessionOptions => {
-  assert.ok(process.env["SESSIONS_SECRET"]);
+  assert.ok(process.env["SESSIONS_SIGNER"]);
   assert.ok(process.env["SESSIONS_TABLE_NAME"]);
 
   dynamodbStore ??= new (ConnectDynamoDB(session))({
@@ -20,7 +20,7 @@ export const getSessionOptions = (): FastifySessionOptions => {
   });
 
   return {
-    secret: process.env["SESSIONS_SECRET"],
+    secret: process.env["SESSIONS_SIGNER"],
     cookie: {
       secure: getEnvironment() !== "local",
       sameSite: "lax",

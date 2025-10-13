@@ -341,7 +341,7 @@ Resources:
         LogGroup: !Ref FrontendLambdaLogGroup
       Environment:
         Variables:
-          SESSIONS_SECRET: !Sub "{{resolve:secretsmanager:${SessionSecret}:SecretString}}"
+          SESSIONS_SIGNER: !Sub "{{resolve:secretsmanager:${SessionSecret}:SecretString}}"
           SESSIONS_TABLE_NAME: !Sub ${AWS::StackName}-SessionStore
       Policies:
         - Statement:

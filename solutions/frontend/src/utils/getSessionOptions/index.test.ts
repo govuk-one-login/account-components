@@ -43,22 +43,22 @@ describe("getSessionOptions", () => {
     vi.resetModules();
   });
 
-  it("throws when SESSIONS_SECRET is missing", () => {
-    delete process.env["SESSIONS_SECRET"];
+  it("throws when SESSIONS_SIGNER is missing", () => {
+    delete process.env["SESSIONS_SIGNER"];
     process.env["SESSIONS_TABLE_NAME"] = "test-table";
 
     expect(() => getSessionOptions()).toThrow();
   });
 
   it("throws when SESSIONS_TABLE_NAME is missing", () => {
-    process.env["SESSIONS_SECRET"] = "test-secret"; // pragma: allowlist-secret
+    process.env["SESSIONS_SIGNER"] = "test-signer";
     delete process.env["SESSIONS_TABLE_NAME"];
 
     expect(() => getSessionOptions()).toThrow();
   });
 
   it("returns session options with secure cookie for non-local environment", () => {
-    process.env["SESSIONS_SECRET"] = "test-secret"; // pragma: allowlist-secret
+    process.env["SESSIONS_SIGNER"] = "test-signer";
     process.env["SESSIONS_TABLE_NAME"] = "test-table";
     mockGetEnvironment.mockReturnValue("production");
 
@@ -73,7 +73,7 @@ describe("getSessionOptions", () => {
   });
 
   it("returns session options with non-secure cookie for local environment", () => {
-    process.env["SESSIONS_SECRET"] = "test-secret"; // pragma: allowlist-secret
+    process.env["SESSIONS_SIGNER"] = "test-signer";
     process.env["SESSIONS_TABLE_NAME"] = "test-table";
     mockGetEnvironment.mockReturnValue("local");
 
@@ -83,7 +83,7 @@ describe("getSessionOptions", () => {
   });
 
   it("creates DynamoDB store with correct configuration", async () => {
-    process.env["SESSIONS_SECRET"] = "test-secret"; // pragma: allowlist-secret
+    process.env["SESSIONS_SIGNER"] = "test-signer";
     process.env["SESSIONS_TABLE_NAME"] = "test-table";
     mockGetEnvironment.mockReturnValue("production");
 
