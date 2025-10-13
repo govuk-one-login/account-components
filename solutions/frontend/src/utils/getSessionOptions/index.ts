@@ -5,7 +5,6 @@ import ConnectDynamoDB from "connect-dynamodb";
 import session from "express-session";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/index.js";
 import { ScalarAttributeType } from "@aws-sdk/client-dynamodb";
-import { oneDayInSeconds } from "../../../../commons/utils/contstants.js";
 
 export const getSessionOptions = (): FastifySessionOptions => {
   assert.ok(process.env["SESSIONS_SECRET"]);
@@ -16,7 +15,7 @@ export const getSessionOptions = (): FastifySessionOptions => {
     cookie: {
       secure: getEnvironment() !== "local",
       sameSite: "lax",
-      maxAge: oneDayInSeconds * 1000, // TODO
+      maxAge: 3600000, // 1 hour in milliseconds
       httpOnly: true,
     },
     rolling: false,

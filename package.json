@@ -82,11 +82,11 @@
     "build:frontend": "cd solutions/frontend && sh ../commons/utils/fastify/build/production.sh",
     "build-local:frontend": "cd solutions/frontend && sh ../commons/utils/fastify/build/local.sh",
     "watch:frontend": "chokidar \"./solutions/frontend/src/**/*\" -c \"npm run build-local:frontend\"",
-    "run:frontend": "[ -z \"$RUN_ALL\" ] && sh solutions/localstack/provision.sh; npm run build-local:frontend && concurrently 'npm run watch:frontend' 'cd solutions/frontend && node --enable-source-maps --watch ./dist/local.js' --kill-others",
+    "run:frontend": "([ -n \"$RUN_ALL\" ] || sh solutions/localstack/provision.sh) && npm run build-local:frontend && concurrently 'npm run watch:frontend' 'cd solutions/frontend && node --enable-source-maps --watch ./dist/local.js' --kill-others",
     "build:stubs": "cd solutions/stubs && sh ../commons/utils/fastify/build/production.sh",
     "build-local:stubs": "cd solutions/stubs && sh ../commons/utils/fastify/build/local.sh",
     "watch:stubs": "chokidar \"./solutions/stubs/src/**/*\" -c \"npm run build-local:stubs\"",
-    "run:stubs": "[ -z \"$RUN_ALL\" ] && sh solutions/localstack/provision.sh; npm run build-local:stubs && concurrently 'npm run watch:stubs' 'cd solutions/stubs && node --enable-source-maps --watch ./dist/local.js' --kill-others",
+    "run:stubs": "([ -n \"$RUN_ALL\" ] || sh solutions/localstack/provision.sh) && npm run build-local:stubs && concurrently 'npm run watch:stubs' 'cd solutions/stubs && node --enable-source-maps --watch ./dist/local.js' --kill-others",
     "run:all": "sh solutions/localstack/provision.sh && RUN_ALL=1 concurrently 'npm run run:frontend' 'npm run run:stubs' --kill-others"
   }
 }
