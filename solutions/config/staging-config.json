@@ -1,0 +1,11 @@
+{
+  "client_registry": [
+    {
+      "client_id": "12345678901234567890123456789012",
+      "scope": "am-account-delete",
+      "redirect_uris": ["https://signin.staging.account.gov.uk/acm-callback"],
+      "client_name": "Dummy Auth",
+      "jwks_uri": "https://signin.staging.account.gov.uk/.well-known/jwks.json"
+    }
+  ]
+}

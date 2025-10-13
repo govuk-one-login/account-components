@@ -10,3 +10,7 @@ main_artifact_source_bucket_arn                      = "arn:aws:s3:::pipeline-ma
 main_artifact_source_bucket_event_trigger_role_arn   = "arn:aws:iam::837553126879:role/PL-pipeline-main-PromoTrigRole-0a14a914e5b1"
 alarms_artifact_source_bucket_arn                    = "arn:aws:s3:::pipeline-alarms-artifactpromotionbucket-j19jtwjxmec9"
 alarms_artifact_source_bucket_event_trigger_role_arn = "arn:aws:iam::837553126879:role/PL-pipeline-alarms-PromoTrigRole-062e841de563"
+config_artefact_path                                 = "production-config.json"
+config_signing_key_arn                               = "arn:aws:kms:eu-west-2:629382882013:key/30105adc-4891-4b71-bec1-b19a6256e2f1"
+config_artifact_source_bucket_arn                    = "arn:aws:s3:::pipeline-app-config-githubartifactsourcebucket-leuvstbm9jae"
+config_artifact_source_bucket_event_trigger_role_arn = "arn:aws:iam::629382882013:role/PL-pipeline-app-config-DepTrigRole-0636b3c8efc9"

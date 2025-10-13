@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.manage.account.gov.uk/app-config/v1.0.0.json",
+  "title": "App Config Schema",
+  "description": "A schema to validate app config",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "client_registry": {
+      "description": "Authorised AMC clients (Relying Parties) properties",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/clientEntry"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    }
+  },
+  "required": ["client_registry"],
+  "$defs": {
+    "clientEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "client_id": {
+          "description": "Unique client_id issued to an AMC client",
+          "type": "string",
+          "pattern": "^[A-Fa-f0-9]{32}$"
+        },
+        "scope": {
+          "description": "String containing a space-separated list of scope values that the client can use",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "pattern": "^[a-z]+(?:-?[a-z]+)*(?:\\s[a-z]+(?:-?[a-z]+)*)*$"
+        },
+        "redirect_uris": {
+          "type": "array",
+          "description": "Array of redirection URI strings for use in redirect-based flows",
+          "items": {
+            "type": "string",
+            "description": "A Redirect URI, also known as a Reply URL, specifies the URL where users are sent after the user has completed their AMC journey",
+            "format": "uri",
+            "pattern": "^(https|http)://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "uniqueItems": true
+        },
+        "client_name": {
+          "description": "Human-readable string name of the client that could be presented to the end-user",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "jwks_uri": {
+          "description": "URL string referencing the client's JSON Web Key (JWK) Set ",
+          "type": "string",
+          "format": "uri",
+          "pattern": "^(https|http)://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      },
+      "required": [
+        "client_id",
+        "scope",
+        "redirect_uris",
+        "client_name",
+        "jwks_uri"
+      ]
+    }
+  }
+}
