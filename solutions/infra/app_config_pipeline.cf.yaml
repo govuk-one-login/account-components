@@ -351,10 +351,21 @@ Resources:
             Condition:
               StringLike:
                 "token.actions.githubusercontent.com:sub":
+                  - !Sub "repo:govuk-one-login/${OneLoginRepositoryName}:environment:*"
                   - !If
                     - IsDev
                     - !Sub "repo:govuk-one-login/${OneLoginRepositoryName}*ref:refs/heads/*"
                     - !Sub "repo:govuk-one-login/${OneLoginRepositoryName}*ref:refs/heads/main"
+                  - !If
+                    - IsDev
+                    - !Sub "repo:govuk-one-login/${OneLoginRepositoryName}:pull_request"
+                    - Ref: "AWS::NoValue"
+                  - !If
+                    - IsDev
+                    - !Sub "repo:govuk-one-login/${OneLoginRepositoryName}:pull_request*"
+                    - Ref: "AWS::NoValue"
+              StringEqualsIgnoreCase:
+                "token.actions.githubusercontent.com:aud": "sts.amazonaws.com"
       ManagedPolicyArns:
         - !Ref GitHubActionsPolicy
       Tags:

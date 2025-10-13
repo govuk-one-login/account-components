@@ -8,4 +8,3 @@ signing_profile_version_arn    = "arn:aws:signer:eu-west-2:629382882013:/signing
 allowed_promotion_accounts     = ["837553126879"]
 allowed_config_access_accounts = ["837553126879", "549834518434", "494066295151"]
 config_artefact_path           = "build-config.json"
-github_oidc_provider_arn       = "arn:aws:iam::629382882013:oidc-provider/token.actions.githubusercontent.com"

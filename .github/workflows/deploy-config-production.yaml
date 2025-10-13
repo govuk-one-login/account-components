@@ -1,4 +1,4 @@
-name: deploy-config-prod
+name: Production - Deploy Configuration
 
 on:
   push:
@@ -23,7 +23,7 @@ jobs:
     with:
       gh-environment: build
       target-environment: production
-      config-file: prod-config.json
+      config-file: production-config.json
     secrets:
       config-source-bucket-name: ${{ secrets.APP_CONFIG_SOURCE_BUCKET_NAME }}
       aws-role-arn: ${{ secrets.GHA_APP_CONFIG_ROLE_ARN }}

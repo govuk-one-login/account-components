@@ -1,4 +1,4 @@
-name: deploy-config
+name: Deploy Configuration
 
 on:
   workflow_call:
