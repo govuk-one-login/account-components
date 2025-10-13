@@ -104,22 +104,6 @@ resource "aws_cloudformation_stack" "mocks_pipeline_stack" {
   depends_on   = [aws_cloudformation_stack.vpc_stack, aws_cloudformation_stack.build_notifications_stack]
 }
 
-resource "aws_cloudformation_stack" "config_gha_role" {
-  count        = contains(["build", "dev"], var.environment) ? 1 : 0
-  name         = "gha-role-app-config"
-
-  parameters = {
-    GitHubOrg = "govuk-one-login"
-    RepositoryName = "account-components"
-    OIDCProviderArn = var.github_oidc_provider_arn
-  }
-
-  template_body = file("${path.module}/gha_oidc_role.cf.yaml")
-  capabilities  = var.capabilities
-  on_failure    = var.on_failure
-  tags = var.tags
-}
-
 resource "aws_cloudformation_stack" "deploy" {
   name          = "pipeline-app-config"
   parameters    = {

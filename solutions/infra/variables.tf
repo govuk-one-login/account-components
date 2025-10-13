@@ -200,8 +200,3 @@ variable "config_final_bake_time_in_minutes" {
   description = "After the deployment this represents a period of time that AppConfig should continue to monitor the specified alarms for errors to trigger an rollback."
   default     = 0
 }
-
-variable "github_oidc_provider_arn" {
-  type        = string
-  description = "The ARN of the Github OIDC Provider"
-}

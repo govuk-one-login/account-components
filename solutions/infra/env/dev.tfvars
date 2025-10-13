@@ -7,4 +7,3 @@ signing_profile_arn            = "arn:aws:signer:eu-west-2:621833521570:/signing
 signing_profile_version_arn    = "arn:aws:signer:eu-west-2:621833521570:/signing-profiles/SigningProfile_XQk3kGQ3RvMJ/stYeKc9mAG"
 allowed_config_access_accounts = []
 config_artefact_path           = "dev-config.json"
-github_oidc_provider_arn       = "arn:aws:iam::621833521570:oidc-provider/token.actions.githubusercontent.com"
