@@ -6,9 +6,18 @@ import session from "express-session";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/index.js";
 import { ScalarAttributeType } from "@aws-sdk/client-dynamodb";
 
+let dynamodbStore: ConnectDynamoDB.DynamoDBStore | undefined = undefined;
+
 export const getSessionOptions = (): FastifySessionOptions => {
   assert.ok(process.env["SESSIONS_SECRET"]);
   assert.ok(process.env["SESSIONS_TABLE_NAME"]);
+
+  dynamodbStore ??= new (ConnectDynamoDB(session))({
+    table: process.env["SESSIONS_TABLE_NAME"],
+    client: getDynamoDbClient().docClient,
+    specialKeys: [{ name: "user_id", type: ScalarAttributeType.S }],
+    skipThrowMissingSpecialKeys: true,
+  });
 
   return {
     secret: process.env["SESSIONS_SECRET"],
@@ -20,11 +29,6 @@ export const getSessionOptions = (): FastifySessionOptions => {
     },
     rolling: false,
     // @ts-expect-error
-    store: new (ConnectDynamoDB(session))({
-      table: process.env["SESSIONS_TABLE_NAME"],
-      client: getDynamoDbClient().docClient,
-      specialKeys: [{ name: "user_id", type: ScalarAttributeType.S }],
-      skipThrowMissingSpecialKeys: true,
-    }),
+    store: dynamodbStore,
   };
 };
