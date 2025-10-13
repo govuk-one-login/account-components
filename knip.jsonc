@@ -1,4 +1,5 @@
 {
+  "$schema": "https://unpkg.com/knip@5/schema-jsonc.json",
   "workspaces": {
     ".": {
       "entry": [
@@ -19,8 +20,19 @@
         "cfn-lint",
         "read",
         "sam",
+        "nodemon",
+        "run-p",
       ],
-      "ignoreDependencies": ["csso-cli", "sass"],
+      "ignoreDependencies": [
+        "csso-cli",
+        "sass",
+        "valibot",
+        "@axe-core/playwright",
+        "ajv-cli",
+        "playwright-bdd",
+        "nodemon",
+        "npm-run-all",
+      ],
     },
     "solutions/integration-tests": {
       "entry": ["tests/**/*.ts"],
