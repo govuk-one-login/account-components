@@ -127,9 +127,9 @@ repos:
 
   - repo: local
     hooks:
-      - id: validate
+      - id: validate-config
         name: Validate config
-        entry: npm run validate
+        entry: npm run config:validate
         language: system
         exclude: .*
         always_run: true

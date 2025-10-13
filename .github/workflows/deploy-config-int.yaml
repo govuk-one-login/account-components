@@ -27,6 +27,4 @@ jobs:
     secrets:
       config-source-bucket-name: ${{ secrets.APP_CONFIG_SOURCE_BUCKET_NAME }}
       aws-role-arn: ${{ secrets.GHA_APP_CONFIG_ROLE_ARN }}
-      slack-channel-id: ${{ secrets.ERROR_SLACK_WEBHOOK_CHANNEL_ID }}
-      slack-webhook-url: ${{ secrets.ERROR_SLACK_WEBHOOK }}
       aws-artefact-signing-key-arn: ${{ secrets.CONFIG_SIGNING_KEY_ARN }}
