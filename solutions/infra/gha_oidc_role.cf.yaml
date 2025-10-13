@@ -12,11 +12,6 @@ Parameters:
     Default: ""
     Type: String
 
-Conditions:
-  CreateOIDCProvider: !Equals
-    - !Ref OIDCProviderArn
-    - ""
-
 Resources:
   Role:
     Type: AWS::IAM::Role
@@ -28,10 +23,7 @@ Resources:
           - Effect: Allow
             Action: sts:AssumeRoleWithWebIdentity
             Principal:
-              Federated: !If
-                - CreateOIDCProvider
-                - !Ref GithubOidc
-                - !Ref OIDCProviderArn
+              Federated: !Ref OIDCProviderArn
             Condition:
               StringLike:
                 token.actions.githubusercontent.com:sub: !Sub repo:${GitHubOrg}/${RepositoryName}:*
@@ -68,100 +60,8 @@ Resources:
               - Effect: Allow
                 Resource: "*"
                 Action:
-                  - ssm:PutParameter
-                  - ssm:AddTagsToResource
-
-              - Effect: Allow
-                Resource:
-                  - arn:aws:s3:::*
-                Action:
-                  - s3:CreateBucket
-                  - s3:DeleteBucket
-                  - s3:GetEncryptionConfiguration
-                  - s3:PutEncryptionConfiguration
-                  - s3:PutBucketVersioning
-                  - s3:PutPublicAccessBlock
-                  - s3:PutBucketPublicAccessBlock
-                  - s3:PutBucketPolicy
-                  - s3:GetBucketPolicy
-                  - s3:GetBucketPolicyStatus
-                  - s3:PutBucketTagging
-                  - s3:DeleteBucketPolicy
-
-              - Effect: Allow
-                Resource: "*"
-                Action:
-                  - cloudformation:DeleteStack
-                  - cloudformation:GetTemplate
-                  - cloudformation:CreateChangeSet
-                  - cloudformation:ExecuteChangeSet
-                  - cloudformation:DescribeChangeSet
-                  - cloudformation:GetTemplateSummary
-                  - cloudformation:DescribeStackEvents
-
-              - Effect: Allow
-                Resource: "*"
-                Action:
                   - kms:DescribeKey
-                  - kms:DeleteAlias
-                  - kms:TagResource
-                  - kms:UntagResource
-                  - kms:ListResourceTags
-                  - kms:EnableKeyRotation
-                  - kms:ScheduleKeyDeletion
-                  - kms:PutKeyPolicy
-
-              - Effect: Allow
-                Resource: "*"
-                Action:
-                  - secretsmanager:CreateSecret #pragma: allowlist secret
-                  - secretsmanager:TagResource #pragma: allowlist secret
-                  - secretsmanager:DeleteSecret #pragma: allowlist secret
-                  - secretsmanager:ResourcePolicy #pragma: allowlist secret
-                  - secretsmanager:DeleteResourcePolicy #pragma: allowlist secret
-                  - secretsmanager:PutResourcePolicy #pragma: allowlist secret
-
-              - Effect: Allow
-                Resource: "*"
-                Action:
-                  - kms:CreateKey
-                  - kms:CreateAlias
-
-              - Effect: Allow
-                Resource: "*"
-                Action:
-                  - lambda:ListFunctions
-                  - lambda:GetFunctionConfiguration
-                  - lambda:UpdateFunctionConfiguration
-                  - lambda:PublishVersion
-                  - lambda:UpdateAlias
-
-              - Effect: Allow
-                Resource: "*"
-                Action:
-                  - ssm:DeleteParameter
-                  - ssm:GetParameters
-                  - ssm:RemoveTagsFromResource
-
-              - Effect: Allow
-                Resource: "*"
-                Action:
-                  - apigateway:*
-
-              - Effect: Allow
-                Resource: "*"
-                Action:
-                  - appconfig:*
-
-  GithubOidc:
-    Type: AWS::IAM::OIDCProvider
-    Condition: CreateOIDCProvider
-    Properties:
-      Url: https://token.actions.githubusercontent.com
-      ClientIdList:
-        - sts.amazonaws.com
-      ThumbprintList:
-        - 6938fd4d98bab03faadb97b34396831e3780aea1
+                  - kms:Sign
 
 Outputs:
   Role:
