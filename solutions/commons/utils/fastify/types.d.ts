@@ -25,6 +25,6 @@ declare module "fastify" {
 
 declare module "fastify" {
   interface Session {
-    example?: string; // TODO remove this once there is at least one real property
+    user_id?: string;
   }
 }
