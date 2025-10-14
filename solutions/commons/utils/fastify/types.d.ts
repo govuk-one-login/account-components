@@ -20,6 +20,8 @@ declare module "fastify" {
     globals: {
       staticHash: string;
       csrfToken?: string;
+      currentUrl?: URL;
+      htmlLang?: string | undefined;
     };
   }
 }
