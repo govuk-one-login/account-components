@@ -1,0 +1,30 @@
+name: Integration - Deploy Configuration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "solutions/config/integration-config.json"
+      - ".github/workflows/deploy-config.yaml"
+      - "deploy-config-integration.yaml"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Config (Integration)
+    uses: ./.github/workflows/deploy-config.yaml
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      gh-environment: build
+      target-environment: integration
+      config-file: integration-config.json
+    secrets:
+      config-source-bucket-name: ${{ secrets.APP_CONFIG_SOURCE_BUCKET_NAME }}
+      aws-role-arn: ${{ secrets.GHA_APP_CONFIG_ROLE_ARN }}
+      aws-artefact-signing-key-arn: ${{ secrets.CONFIG_SIGNING_KEY_ARN }}

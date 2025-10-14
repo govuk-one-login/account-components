@@ -1,0 +1,70 @@
+name: Deploy Configuration
+
+on:
+  workflow_call:
+    inputs:
+      gh-environment: { required: true, type: string }
+      target-environment: { required: false, type: string }
+      config-file: { required: false, type: string }
+    secrets:
+      config-source-bucket-name: { required: false }
+      aws-role-arn: { required: true }
+      aws-artefact-signing-key-arn: { required: true }
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy-config:
+    name: Deploy Config
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: ${{ inputs.gh-environment }}
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Pull repository
+        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        with:
+          fetch-depth: 0 # Disable shallow cloning
+          persist-credentials: false
+
+      - name: Get distribution artifact
+        uses: actions/download-artifact@4a24838f3d5601fd639834081e118c2995d51e1c
+        with:
+          name: ${{ inputs.artifact-name }}
+
+      - name: Assume AWS Role
+        uses: aws-actions/configure-aws-credentials@06083b756457410befa79ac62f8e6daf35a41869
+        with:
+          role-to-assume: ${{ secrets.aws-role-arn }}
+          aws-region: eu-west-2
+
+      - name: Sign and Zip config file
+        env:
+          CONFIG_FILE: ${{ inputs.config-file }}
+          ARTEFACT_SIGNING_KEY_ARN: ${{ secrets.aws-artefact-signing-key-arn }}
+        run: |
+          aws kms sign \
+            --key-id "${ARTEFACT_SIGNING_KEY_ARN}" \
+            --message "$(openssl dgst -sha256 -binary "solutions/config/${CONFIG_FILE}" | base64)" \
+            --message-type DIGEST \
+            --signing-algorithm ECDSA_SHA_256 \
+            --region eu-west-2 > "solutions/config/${CONFIG_FILE}.sig"
+          zip -j solutions/config/config.zip "solutions/config/${CONFIG_FILE}" "solutions/config/${CONFIG_FILE}.sig"
+
+      - name: Push config file to AWS S3 Bucket
+        if: env.CONFIG_SOURCE_BUCKET_NAME
+        env:
+          CONFIG_SOURCE_BUCKET_NAME: ${{ secrets.config-source-bucket-name }}
+          CONFIG_FILE: ${{ inputs.config-file }}
+          ENVIRONMENT: ${{ inputs.target-environment }}
+        run: |
+          aws s3api put-object \
+          --bucket "$CONFIG_SOURCE_BUCKET_NAME" \
+          --key "${ENVIRONMENT}"/config.zip \
+          --body solutions/config/config.zip

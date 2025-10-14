@@ -8,7 +8,6 @@ import { render } from "../../commons/utils/fastify/render/index.js";
 import fastifyFormbody from "@fastify/formbody";
 import fastifyHelmet from "@fastify/helmet";
 import fastifySession from "@fastify/session";
-import fastifyCsrfProtection from "@fastify/csrf-protection";
 import { journeys } from "./journeys/index.js";
 import en from "./translations/en.json" with { type: "json" };
 import cy from "./translations/cy.json" with { type: "json" };
@@ -17,6 +16,7 @@ import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import { oneYearInSeconds } from "../../commons/utils/contstants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
+import { csrfProtection } from "../../commons/utils/fastify/csrfProtection/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 import i18next from "i18next";
 import { plugin as i18nextMiddlewarePlugin } from "i18next-http-middleware";
@@ -161,9 +161,7 @@ export const initFrontend = async function () {
     permittedCrossDomainPolicies: false,
   });
   fastify.register(fastifySession, getSessionOptions());
-  fastify.register(fastifyCsrfProtection, {
-    sessionPlugin: "@fastify/session",
-  });
+  fastify.register(csrfProtection);
 
   fastify.register(journeys);
 

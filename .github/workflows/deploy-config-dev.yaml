@@ -1,0 +1,30 @@
+name: Dev - Deploy Configuration
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "solutions/config/dev-config.json"
+      - ".github/workflows/deploy-config-dev.yaml"
+      - ".github/workflows/deploy-config.yaml"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy Config (Dev)
+    uses: ./.github/workflows/deploy-config.yaml
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      gh-environment: development
+      target-environment: dev
+      config-file: dev-config.json
+    secrets:
+      config-source-bucket-name: ${{ secrets.DEV_APP_CONFIG_SOURCE_BUCKET_NAME }}
+      aws-role-arn: ${{ secrets.DEV_GHA_APP_CONFIG_ROLE_ARN }}
+      aws-artefact-signing-key-arn: ${{ secrets.DEV_CONFIG_SIGNING_KEY_ARN }}

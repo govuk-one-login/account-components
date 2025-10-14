@@ -1,0 +1,4 @@
+ignore_checks:
+  - W1001 # GetAtt to resource that may not be available depending on a condition
+  - W1028 # is not reachable
+  - W8001 # Condition is not used
