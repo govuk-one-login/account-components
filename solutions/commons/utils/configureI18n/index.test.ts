@@ -4,12 +4,7 @@ import i18next from "i18next";
 import { LanguageDetector } from "i18next-http-middleware";
 import { getEnvironment } from "../getEnvironment/index.js";
 
-vi.mock("@govuk-one-login/frontend-ui", () => ({
-  frontendUiTranslationEn: { common: { continue: "Continue" } },
-  frontendUiTranslationCy: { common: { continue: "Parhau" } },
-}));
-
-vi.mock("../getEnvironment/index.js", () => ({
+vi.mock(import("../getEnvironment/index.js"), () => ({
   getEnvironment: vi.fn(),
 }));
 
@@ -22,7 +17,7 @@ vi.mock("i18next", () => {
   return { default: mockI18next };
 });
 
-vi.mock("i18next-http-middleware", () => ({
+vi.mock(import("i18next-http-middleware"), () => ({
   LanguageDetector: vi.fn(),
 }));
 
@@ -57,13 +52,11 @@ describe("configureI18n", () => {
         [Lang.English]: {
           translation: {
             hello: "Hello",
-            FECTranslations: { common: { continue: "Continue" } },
           },
         },
         [Lang.Welsh]: {
           translation: {
             hello: "Helo",
-            FECTranslations: { common: { continue: "Parhau" } },
           },
         },
       },
@@ -92,34 +85,6 @@ describe("configureI18n", () => {
           cookieSecure: true,
           cookieDomain: "account.gov.uk",
         }),
-      }),
-    );
-  });
-
-  it("handles empty translations", async () => {
-    vi.mocked(getEnvironment).mockReturnValue("local");
-    const emptyTranslations = {
-      [Lang.English]: {},
-      [Lang.Welsh]: {},
-    };
-
-    await configureI18n(emptyTranslations);
-
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(i18next.init).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({
-        resources: {
-          [Lang.English]: {
-            translation: {
-              FECTranslations: { common: { continue: "Continue" } },
-            },
-          },
-          [Lang.Welsh]: {
-            translation: {
-              FECTranslations: { common: { continue: "Parhau" } },
-            },
-          },
-        },
       }),
     );
   });

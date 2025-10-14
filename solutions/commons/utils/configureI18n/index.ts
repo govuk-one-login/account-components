@@ -1,7 +1,3 @@
-import {
-  frontendUiTranslationCy,
-  frontendUiTranslationEn,
-} from "@govuk-one-login/frontend-ui";
 import i18next from "i18next";
 import { LanguageDetector } from "i18next-http-middleware";
 import { getEnvironment } from "../getEnvironment/index.js";
@@ -17,16 +13,10 @@ export const configureI18n = async (translations: Record<Lang, object>) => {
     supportedLngs: Object.values(Lang),
     resources: {
       [Lang.English]: {
-        translation: {
-          ...translations[Lang.English],
-          FECTranslations: frontendUiTranslationEn,
-        },
+        translation: translations[Lang.English],
       },
       [Lang.Welsh]: {
-        translation: {
-          ...translations[Lang.Welsh],
-          FECTranslations: frontendUiTranslationCy,
-        },
+        translation: translations[Lang.Welsh],
       },
     },
     detection: {

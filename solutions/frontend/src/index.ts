@@ -25,10 +25,20 @@ import {
   configureI18n,
   Lang,
 } from "../../commons/utils/configureI18n/index.js";
+import {
+  frontendUiTranslationCy,
+  frontendUiTranslationEn,
+} from "@govuk-one-login/frontend-ui";
 
 await configureI18n({
-  [Lang.English]: en,
-  [Lang.Welsh]: cy,
+  [Lang.English]: {
+    ...en,
+    FECTranslations: frontendUiTranslationEn,
+  },
+  [Lang.Welsh]: {
+    ...cy,
+    FECTranslations: frontendUiTranslationCy,
+  },
 });
 
 export const initFrontend = async function () {
