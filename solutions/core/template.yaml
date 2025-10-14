@@ -93,9 +93,7 @@ Resources:
             Principal:
               Service: lambda.amazonaws.com
             Action:
-              - "kms:Encrypt"
               - "kms:Decrypt"
-              - "kms:ReEncrypt*"
             Resource: "*"
             Condition:
               ArnLike:
