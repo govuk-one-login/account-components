@@ -28,8 +28,7 @@
     "i18next": "^25.5.2",
     "i18next-http-middleware": "^3.8.1",
     "jose": "^6.0.10",
-    "nunjucks": "^3.2.4",
-    "valibot": "^1.1.0"
+    "nunjucks": "^3.2.4"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
@@ -42,7 +41,6 @@
     "@types/nunjucks": "^3.2.6",
     "@vitest/coverage-v8": "^3.2.4",
     "@vitest/eslint-plugin": "^1.3.17",
-    "ajv-cli": "^5.0.0",
     "chokidar-cli": "^3.0.0",
     "concurrently": "^9.2.1",
     "csso-cli": "^4.0.2",
@@ -92,6 +90,6 @@
     "watch:stubs": "chokidar \"./solutions/stubs/src/**/*\" \"./solutions/commons/**/*\" -c \"npm run build-local:stubs\"",
     "run:stubs": "[ -z \"$RUN_ALL\" ] && sh solutions/localstack/provision.sh; npm run build-local:stubs && concurrently 'npm run watch:stubs' 'cd solutions/stubs && node --enable-source-maps --watch ./dist/local.js' --kill-others",
     "run:all": "sh solutions/localstack/provision.sh && RUN_ALL=1 concurrently 'npm run run:frontend' 'npm run run:stubs' --kill-others",
-    "config:validate": "for f in solutions/config/*.json; do (ajv --spec draft2020 --validate-formats=false -s solutions/config/schema/config.json -d $f) || exit 1; done"
+    "config:validate": "for f in solutions/config/*.json; do (jsonschema validate solutions/config/schema/config.json $f) || exit 1; done"
   }
 }
