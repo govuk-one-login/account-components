@@ -1,4 +1,4 @@
-name: deploy-config-staging
+name: Staging - Deploy Configuration
 
 on:
   push:

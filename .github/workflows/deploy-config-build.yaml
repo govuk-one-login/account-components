@@ -1,4 +1,4 @@
-name: deploy-config-build
+name: Build - Deploy Configuration
 
 on:
   push:

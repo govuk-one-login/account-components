@@ -1,4 +1,4 @@
-name: deploy-config-int
+name: Integration - Deploy Configuration
 
 on:
   push:
