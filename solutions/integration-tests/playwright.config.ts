@@ -26,22 +26,15 @@ if (env.PRE_OR_POST_DEPLOY === "pre") {
 if (env.TEST_TARGET === "local") {
   webServers.push(
     {
-      command: "npm run run:all",
+      command: "npm run run:frontend",
       url: "http://localhost:6002/healthcheck",
       reuseExistingServer: true,
       timeout: 300000,
-      name: "all-servers",
+      name: "frontend-server",
       gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
     },
-    /*
-    This is needed to check the stubs server is running. The stubs
-    server is started by `npm run run:all` run above but Playwright
-    only supports checking one healthcheck URL per server object
-    and we need to check the healthcheck URLs for both the frontend
-    and stubs servers.
-    */
     {
-      command: "sleep 310",
+      command: "npm run run:stubs",
       url: "http://localhost:6003/healthcheck",
       reuseExistingServer: true,
       timeout: 300000,

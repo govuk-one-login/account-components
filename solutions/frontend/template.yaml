@@ -36,19 +36,14 @@ Mappings:
   EnvironmentConfiguration:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      rootCookieDomain: dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      rootCookieDomain: build.account.gov.uk
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      rootCookieDomain: staging.account.gov.uk
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      rootCookieDomain: integration.account.gov.uk
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
-      rootCookieDomain: account.gov.uk
 
 Conditions:
   UseCodeSigning:
@@ -136,25 +131,6 @@ Globals:
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
 
 Resources:
-  SecretsEncryptionKey:
-    Type: AWS::KMS::Key
-    Properties:
-      EnableKeyRotation: true
-      KeyPolicy:
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action: "kms:*"
-            Resource: "*"
-
-  SessionSecret:
-    Type: AWS::SecretsManager::Secret
-    Properties:
-      GenerateSecretString:
-        PasswordLength: 64
-      KmsKeyId: !Ref SecretsEncryptionKey
-
   FrontendLambdaEnvironmentVariablesEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -344,33 +320,6 @@ Resources:
             RestApiId: !Ref FrontendApiGateway
       LoggingConfig:
         LogGroup: !Ref FrontendLambdaLogGroup
-      Environment:
-        Variables:
-          SESSIONS_SIGNER: !Sub "{{resolve:secretsmanager:${SessionSecret}:SecretString}}"
-          SESSIONS_TABLE_NAME: !Sub ${AWS::StackName}-SessionStore
-          ROOT_COOKIE_DOMAIN:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              rootCookieDomain,
-            ]
-      Policies:
-        - Statement:
-            - Effect: Allow
-              Action:
-                - dynamodb:DescribeTable
-                - dynamodb:PutItem
-                - dynamodb:DeleteItem
-                - dynamodb:GetItem
-                - dynamodb:Scan
-                - dynamodb:UpdateItem
-              Resource: !GetAtt SessionsTable.Arn
-            - Effect: Allow
-              Action:
-                - kms:Decrypt
-                - kms:GenerateDataKey
-              Resource:
-                Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"
 
   FrontendLambdaLogGroup:
     Type: AWS::Logs::LogGroup

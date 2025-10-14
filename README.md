@@ -4,15 +4,14 @@ This repo contains the code for Account Components
 
 ## Set up and installation
 
-- Copy `solutions/frontend/.env.sample` to `solutions/frontend/.env` and replace any placeholder values as appropriate
-- Copy `solutions/stubs/.env.sample` to `solutions/stubs/.env` and replace any placeholder values as appropriate
-- Install [NVM](https://github.com/nvm-sh/nvm) or [FNM](https://github.com/Schniz/fnm) and select the correct Node version by running `nvm use` or `fnm use`
+- Copy `solutions/frontend/.env.sample` to `solutions/frontend/.env` and replace any placeholder values as appropriate.
+- Copy `solutions/stubs/.env.sample` to `solutions/stubs/.env` and replace any placeholder values as appropriate.
+- Install [NVM](https://github.com/nvm-sh/nvm) or [FNM](https://github.com/Schniz/fnm) and select the correct Node version by running `nvm use` or `fnm use`.
 - Install Docker
-- Install [Homebrew](https://brew.sh/)
+- Install [Homebrew](https://brew.sh/).
 - Install Brewfile dependencies with `npm run install-brewfile`
-- Install NPM dependencies with `npm ci`
+- Install NPM dependencies with `npm ci`.
 - Install Git Hooks with `npm run install-git-hooks`
-- Run `cd solutions/integration-tests && npm ci` to install integration testing dependencies
 
 ## Updating Node version
 
@@ -48,7 +47,6 @@ There are various commands which can be run manually and which may also be run b
 - `npm run sam-validate:core` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the core CloudFormation template
 - `npm run check-gh-actions` to check GitHub Actions with [Zizmor](https://docs.zizmor.sh/)
 - `npm run detect-secrets` to detect secrets which should not be in the repo. False positives can be [ignored with comments](https://github.com/Yelp/detect-secrets?tab=readme-ov-file#inline-allowlisting)
-- `npm run config:validate` to validate the application's config
 
 If these commands detect issues it may be possible to fix them by running:
 

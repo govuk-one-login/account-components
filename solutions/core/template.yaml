@@ -26,10 +26,6 @@ Parameters:
     Type: String
     Description: >
       The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
-  MainStackName:
-    Type: String
-    Description: The name of the main stack
-    Default: "components-main"
 
 Resources:
   DynamoDbSSEKey:
@@ -62,16 +58,6 @@ Resources:
             Condition:
               ArnEquals:
                 aws:SourceArn: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*"
-          - Effect: Allow
-            Principal:
-              Service: "lambda.amazonaws.com"
-            Action:
-              - "kms:Decrypt"
-              - "kms:GenerateDataKey"
-            Resource: "*"
-            Condition:
-              ArnEquals:
-                aws:SourceArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${MainStackName}-FrontendLambda-*"
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-DynamoDbSSEKey"
@@ -89,48 +75,6 @@ Resources:
       Name: !Sub "/${AWS::StackName}/KMS/DynamoDbSSEKey/ARN"
       Type: String
       Value: !GetAtt DynamoDbSSEKey.Arn
-
-  JAREncryptionKey:
-    Type: AWS::KMS::Key
-    Properties:
-      Description: "KMS key used to decrypt JARs"
-      KeyPolicy:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action:
-              - kms:*
-            Resource: "*"
-          - Effect: "Allow"
-            Principal:
-              Service: lambda.amazonaws.com
-            Action:
-              - "kms:Decrypt"
-            Resource: "*"
-            Condition:
-              ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:public-api"
-          - Effect: "Allow"
-            Principal:
-              Service: lambda.amazonaws.com
-            Action:
-              - "kms:ListAliases"
-              - "kms:GetPublicKey"
-            Resource: "*"
-            Condition:
-              ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:jwks-creator"
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-JAREncryptionKey"
-
-  JAREncryptionKeyAlias:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-JAREncryptionKey"
-      TargetKeyId: !GetAtt JAREncryptionKey.Arn
 
 Outputs:
   DynamoDbSSEKeyArn:

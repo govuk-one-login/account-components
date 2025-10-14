@@ -1,34 +1,12 @@
 import type { FastifySessionOptions } from "@fastify/session";
 import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.js";
-import assert from "node:assert";
-import ConnectDynamoDB from "connect-dynamodb";
-import session from "express-session";
-import { getDynamoDbClient } from "../../../../commons/utils/awsClient/index.js";
-import { ScalarAttributeType } from "@aws-sdk/client-dynamodb";
 
-let dynamodbStore: ConnectDynamoDB.DynamoDBStore | undefined = undefined;
-
-export const getSessionOptions = (): FastifySessionOptions => {
-  assert.ok(process.env["SESSIONS_SIGNER"]);
-  assert.ok(process.env["SESSIONS_TABLE_NAME"]);
-
-  dynamodbStore ??= new (ConnectDynamoDB(session))({
-    table: process.env["SESSIONS_TABLE_NAME"],
-    client: getDynamoDbClient().docClient,
-    specialKeys: [{ name: "user_id", type: ScalarAttributeType.S }],
-    skipThrowMissingSpecialKeys: true,
-  });
-
-  return {
-    secret: process.env["SESSIONS_SIGNER"],
-    cookie: {
-      secure: getEnvironment() !== "local",
-      sameSite: "lax",
-      maxAge: 3600000, // 1 hour in milliseconds
-      httpOnly: true,
-    },
-    rolling: false,
-    // @ts-expect-error
-    store: dynamodbStore,
-  };
-};
+export const getSessionOptions = (): FastifySessionOptions => ({
+  secret: [
+    "TODO a secret with minimum length of 32 characters fron an env variable which is populated from a secret in secrets manager!!!!!",
+  ],
+  cookie: {
+    secure: getEnvironment() !== "local",
+    sameSite: "lax",
+  },
+});
