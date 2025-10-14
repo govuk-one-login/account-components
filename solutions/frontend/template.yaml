@@ -37,18 +37,23 @@ Mappings:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: dev.account.gov.uk
+      frontendDomain: manage.dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
+      frontendDomain: manage.build.account.gov.uk
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
+      frontendDomain: manage.staging.account.gov.uk
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
+      frontendDomain: manage.integration.account.gov.uk
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
+      frontendDomain: manage.account.gov.uk
 
 Conditions:
   UseCodeSigning:
@@ -291,6 +296,39 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-replay_attack"
+
+  CustomDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName:
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendDomain]
+      RegionalCertificateArn:
+        Fn::ImportValue: certificate-CertificateARN
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: TLS_1_2
+
+  FrontendApiRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Ref CustomDomain
+      Type: A
+      HostedZoneId:
+        Fn::ImportValue: hosted-zone-HostedZoneID
+      AliasTarget:
+        DNSName: !GetAtt CustomDomain.RegionalDomainName
+        HostedZoneId: !GetAtt CustomDomain.RegionalHostedZoneId
+        EvaluateTargetHealth: false
+
+  FrontendApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref CustomDomain
+      RestApiId: !Ref FrontendApiGateway
+      Stage: !Ref Environment
+    DependsOn:
+      - FrontendApiGatewayStage # This resource is created as part of the RestApi resource
 
   FrontendApiGateway:
     Type: AWS::Serverless::Api
