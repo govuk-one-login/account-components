@@ -6,7 +6,8 @@ updates:
       interval: daily
       time: "03:00"
       timezone: "Europe/London"
-    cooldown: "default: none"
+    cooldown:
+      default-days: 7
     labels:
       - dependabot
       - dependencies
@@ -34,7 +35,8 @@ updates:
       interval: daily
       time: "03:00"
       timezone: "Europe/London"
-    cooldown: "default: none"
+    cooldown:
+      default-days: 7
     labels:
       - dependabot
       - dependencies
@@ -51,7 +53,8 @@ updates:
       interval: daily
       time: "03:00"
       timezone: "Europe/London"
-    cooldown: "default: none"
+    cooldown:
+      default-days: 7
     labels:
       - dependabot
       - dependencies
@@ -64,7 +67,8 @@ updates:
       interval: daily
       time: "03:00"
       timezone: "Europe/London"
-    cooldown: "default: none"
+    cooldown:
+      default-days: 7
     labels:
       - dependabot
       - dependencies
@@ -77,7 +81,8 @@ updates:
       interval: daily
       time: "03:00"
       timezone: "Europe/London"
-    cooldown: "default: none"
+    cooldown:
+      default-days: 7
     labels:
       - dependabot
       - dependencies
@@ -101,7 +106,8 @@ updates:
       interval: daily
       time: "03:00"
       timezone: "Europe/London"
-    cooldown: "default: none"
+    cooldown:
+      default-days: 7
     labels:
       - dependabot
       - dependencies
