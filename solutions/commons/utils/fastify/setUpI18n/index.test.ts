@@ -2,11 +2,23 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import i18next from "i18next";
 import { setUpI18n, Lang } from "./index.js";
 import type { FastifyRequest, FastifyReply, FastifyInstance } from "fastify";
+import {
+  frontendUiTranslationCy,
+  frontendUiTranslationEn,
+} from "@govuk-one-login/frontend-ui";
 
 vi.mock("i18next", () => ({
   default: {
-    init: vi.fn(),
+    init: vi.fn().mockResolvedValue(undefined),
     addResourceBundle: vi.fn(),
+    use: vi.fn().mockReturnThis(),
+    changeLanguage: vi.fn(),
+  },
+}));
+
+vi.mock("LanguageDetector", () => ({
+  default: {
+    init: vi.fn(),
   },
 }));
 
@@ -63,7 +75,7 @@ describe("setUpI18n", () => {
     expect(request.lang).toBe(Lang.Welsh);
   });
 
-  it("should prioritize query parameter over cookie", async () => {
+  it("should prioritize query parameter over cookie when switching from cy to en", async () => {
     request.query = { lng: Lang.English };
     request.cookies = { lng: Lang.Welsh };
     const handler = setUpI18n(translations);
@@ -74,6 +86,19 @@ describe("setUpI18n", () => {
     );
 
     expect(request.lang).toBe(Lang.English);
+  });
+
+  it("should prioritize query parameter over cookie when switching from en to cy", async () => {
+    request.query = { lng: Lang.Welsh };
+    request.cookies = { lng: Lang.English };
+    const handler = setUpI18n(translations);
+    await handler.call(
+      {} as FastifyInstance,
+      request as Parameters<typeof handler>[0],
+      reply as Parameters<typeof handler>[1],
+    );
+
+    expect(request.lang).toBe(Lang.Welsh);
   });
 
   it("should fallback to English for invalid language", async () => {
@@ -99,16 +124,35 @@ describe("setUpI18n", () => {
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(i18next.init).toHaveBeenCalledWith({
+      fallbackLng: [Lang.English],
       lng: Lang.Welsh,
-      fallbackLng: Lang.English,
+      preload: [Lang.English],
+      debug: false,
+      detection: {
+        lookupCookie: "lng",
+        lookupQuerystring: "lng",
+        order: ["querystring", "cookie"],
+        caches: ["cookie"],
+        ignoreCase: true,
+        cookieSecure: false,
+        cookieDomain: "localhost",
+        cookieSameSite: "lax",
+      },
       resources: {
         [Lang.English]: {
-          translation: translations[Lang.English],
+          translation: {
+            ...translations[Lang.English],
+            FECTranslations: frontendUiTranslationEn,
+          },
         },
         [Lang.Welsh]: {
-          translation: translations[Lang.Welsh],
+          translation: {
+            ...translations[Lang.Welsh],
+            FECTranslations: frontendUiTranslationCy,
+          },
         },
       },
+      supportedLngs: [Lang.English, Lang.Welsh],
     });
   });
 
