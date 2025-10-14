@@ -22,6 +22,9 @@ import { oneYearInSeconds } from "../../commons/utils/contstants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
 import { csrfProtection } from "../../commons/utils/fastify/csrfProtection/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
+import i18next from "i18next";
+import { plugin as i18nextMiddlewarePlugin } from "i18next-http-middleware";
+import { getCurrentUrl } from "../../commons/utils/fastify/getCurrentUrl/index.js";
 
 export const initFrontend = async function () {
   const fastify = Fastify.default({
@@ -30,6 +33,7 @@ export const initFrontend = async function () {
     disableRequestLogging: true,
   });
 
+  fastify.register(i18nextMiddlewarePlugin, { i18next });
   fastify.addHook("onRequest", logRequest);
   fastify.addHook("onRequest", removeTrailingSlash);
   fastify.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
@@ -40,6 +44,8 @@ export const initFrontend = async function () {
     getter() {
       return {
         staticHash: staticHash.hash,
+        currentUrl: getCurrentUrl(this.request),
+        htmlLang: this.i18next?.language,
       };
     },
   });
