@@ -35,6 +35,7 @@ jobs:
           echo "ENVIRONMENT=local" >> .env.integration-tests
           echo "NODE_ENV=production" >> .env.integration-tests
           echo "USE_LOCALSTACK=1" >> .env.integration-tests
+          echo "ROOT_COOKIE_DOMAIN=localhost" >> .env.integration-tests
 
       - name: Configure stubs environment
         run: |
