@@ -47,6 +47,16 @@ repos:
 
   - repo: local
     hooks:
+      - id: validate-config
+        name: Validate config
+        entry: npm run config:validate
+        language: system
+        exclude: .*
+        always_run: true
+        stages: [pre-commit]
+
+  - repo: local
+    hooks:
       - id: check-gh-actions
         name: Check GitHub Actions
         entry: npm run check-gh-actions
@@ -120,16 +130,6 @@ repos:
       - id: knip
         name: Knip
         entry: npm run knip
-        language: system
-        exclude: .*
-        always_run: true
-        stages: [pre-commit]
-
-  - repo: local
-    hooks:
-      - id: validate-config
-        name: Validate config
-        entry: npm run config:validate
         language: system
         exclude: .*
         always_run: true
