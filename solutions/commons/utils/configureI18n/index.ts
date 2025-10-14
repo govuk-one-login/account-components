@@ -1,6 +1,7 @@
 import i18next from "i18next";
 import { LanguageDetector } from "i18next-http-middleware";
 import { getEnvironment } from "../getEnvironment/index.js";
+import { rootCookieDomain } from "../contstants.js";
 
 export enum Lang {
   English = "en",
@@ -26,7 +27,7 @@ export const configureI18n = async (translations: Record<Lang, object>) => {
       ignoreCase: true,
       caches: ["cookie"],
       cookieSecure: getEnvironment() !== "local",
-      cookieDomain: getEnvironment() !== "local" && "account.gov.uk",
+      cookieDomain: rootCookieDomain,
       cookieSameSite: "lax",
     },
   });

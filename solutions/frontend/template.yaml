@@ -36,14 +36,19 @@ Mappings:
   EnvironmentConfiguration:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      rootCookieDomain: dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      rootCookieDomain: build.account.gov.uk
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      rootCookieDomain: staging.account.gov.uk
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      rootCookieDomain: integration.account.gov.uk
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
+      rootCookieDomain: account.gov.uk
 
 Conditions:
   UseCodeSigning:
@@ -320,6 +325,14 @@ Resources:
             RestApiId: !Ref FrontendApiGateway
       LoggingConfig:
         LogGroup: !Ref FrontendLambdaLogGroup
+      Environment:
+        Variables:
+          ROOT_COOKIE_DOMAIN:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              rootCookieDomain,
+            ]
 
   FrontendLambdaLogGroup:
     Type: AWS::Logs::LogGroup

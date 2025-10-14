@@ -8,6 +8,10 @@ vi.mock(import("../getEnvironment/index.js"), () => ({
   getEnvironment: vi.fn(),
 }));
 
+vi.mock(import("../contstants.js"), () => ({
+  rootCookieDomain: "account.gov.uk",
+}));
+
 vi.mock("i18next", () => {
   const mockI18next = {
     use: vi.fn().mockReturnThis(),
@@ -67,7 +71,7 @@ describe("configureI18n", () => {
         ignoreCase: true,
         caches: ["cookie"],
         cookieSecure: false,
-        cookieDomain: false,
+        cookieDomain: "account.gov.uk",
         cookieSameSite: "lax",
       },
     });
