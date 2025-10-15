@@ -9,9 +9,6 @@ Parameters:
     AllowedValues:
       - "dev"
       - "build"
-      - "staging"
-      - "integration"
-      - "production"
   CodeSigningConfigArn:
     Type: String
     Description: >
@@ -177,6 +174,7 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - !Ref GetSSMParameterPolicy
+        - !Ref GetAppConfigPolicy
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -203,6 +201,18 @@ Resources:
               - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/RsaPrivateKey
               - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/EcPublicKey
               - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/EcPrivateKey
+
+  GetAppConfigPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - appconfig:GetLatestConfiguration
+              - appconfig:StartConfigurationSession
+            Resource: arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
 
   StubsLambdaEnvironmentVariablesEncryptionKey:
     Type: AWS::KMS::Key
