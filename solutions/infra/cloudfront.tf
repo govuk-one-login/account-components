@@ -7,9 +7,9 @@ resource "aws_cloudformation_stack" "cloudfront_stack" {
     DistributionAlias                                             = var.hosted_zone_domain
     FraudHeaderEnabled                                            = "true"
     FraudHeadersFunctionName                                      = "TICFFraudHeadersCloudFrontFunction"
-    OriginCloakingHeaderManagedSecretRotationMonthWeekDaySchedule = "THU#3"
+    OriginCloakingHeaderManagedSecretRotationMonthWeekDaySchedule = "THU#3" # pragma: allowlist-secret
     StandardLoggingEnabled                                        = "true"
-    CloudFrontCertArn                                             = aws_cloudformation_stack.certificate_stack.outputs["CertificateARN"]
+    CloudFrontCertArn                                             = aws_cloudformation_stack.certificate_stack_virginia.outputs["CertificateARN"]
     OriginCloakingHeader                                          = "none"
     PreviousOriginCloakingHeader                                  = "none"
     LogDestination                                                = "none"
