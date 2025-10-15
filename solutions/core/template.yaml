@@ -27,6 +27,32 @@ Parameters:
     Description: >
       The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
 
+Conditions:
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
+  UsePermissionsBoundary:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref PermissionsBoundary
+          - "none"
+Globals:
+  Function:
+    Architectures: ["arm64"]
+    MemorySize: 128
+    Runtime: nodejs22.x
+    Timeout: 5
+    CodeSigningConfigArn: !If
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+
 Resources:
   DynamoDbSSEKey:
     Type: AWS::KMS::Key
@@ -111,7 +137,7 @@ Resources:
             Resource: "*"
             Condition:
               ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-core*"
+                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}*"
           - Effect: "Allow"
             Principal:
               Service: lambda.amazonaws.com
@@ -123,7 +149,7 @@ Resources:
               ArnLike:
                 "aws:SourceArn":
                   - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-mocks-StubsLambda*"
-                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-core*"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}*"
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-JARRSAEncryptionKey"
@@ -239,6 +265,98 @@ Resources:
               Bool:
                 "aws:SecureTransport": true
 
+  JwksGeneratorLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../
+      PackageType: Zip
+      MemorySize: 245
+      Handler: jwks-creator.handler
+      Role: !GetAtt JwksGeneratorLambdaExecutionRole.Arn
+      Timeout: 60
+      LoggingConfig:
+        LogGroup: !Ref CoreLambdaLogGroup
+      Environment:
+        Variables:
+          KMS_KEY_ID: !Ref JARRSAEncryptionKey
+          BUCKET_NAME: !Ref JWKSStoreBucket
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2022"
+        EntryPoints:
+          - solutions/core/src/lambda/jwks-creator.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+
+  JwksGeneratorLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        - !Ref KmsGetPublicKeyPolicy
+        - !Ref WriteToJWKSStoreBucketPolicy
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        - PolicyName: WriteKeyToS3Policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: "kms:GenerateDataKey"
+                Resource: !GetAtt S3SSEKey.Arn
+
+  KmsGetPublicKeyPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - kms:GetPublicKey
+            Resource: !GetAtt JARRSAEncryptionKey.Arn
+
+  WriteToJWKSStoreBucketPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - s3:PutObject
+            Resource: !Sub "${JWKSStoreBucket.Arn}/*"
+          - Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: !Sub "${JWKSStoreBucket.Arn}/*"
+
+  CoreLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/lambda/${AWS::StackName}/CoreLambda"
+      RetentionInDays: 30
+
 Outputs:
   DynamoDbSSEKeyArn:
     Description: ARN of the KMS key used to encrypt DynamoDB tables
@@ -251,8 +369,8 @@ Outputs:
     Export:
       Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyAliasName"
   JWKSStoreBucketName:
-    Description: Name of the S3 bucket
+    Description: Name of the S3 bucket used to store the JWKS
     Value: !Ref JWKSStoreBucket
   S3SSEKeyArn:
-    Description: ARN of the KMS key used for encryption
+    Description: ARN of the KMS key used for encryption of S3 buckets
     Value: !GetAtt S3SSEKey.Arn
