@@ -1,5 +1,6 @@
 resource "aws_cloudformation_stack" "certificate_stack" {
   # See https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/4028006740/certificate+readme
+  #provider     = aws.virginia
   name         = "certificate"
   template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/certificate/template.yaml"
 
