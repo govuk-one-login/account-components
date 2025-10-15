@@ -26,10 +26,6 @@ Parameters:
     Type: String
     Description: >
       The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
-  MainStackName:
-    Type: String
-    Description: The name of the main stack
-    Default: "components-main"
 
 Resources:
   DynamoDbSSEKey:
@@ -71,7 +67,7 @@ Resources:
             Resource: "*"
             Condition:
               ArnEquals:
-                aws:SourceArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${MainStackName}-FrontendLambda-*"
+                aws:SourceArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-DynamoDbSSEKey"
