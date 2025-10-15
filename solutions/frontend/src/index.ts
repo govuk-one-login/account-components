@@ -14,7 +14,10 @@ import cy from "./translations/cy.json" with { type: "json" };
 import { getSessionOptions } from "./utils/getSessionOptions/index.js";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
-import { oneYearInSeconds } from "../../commons/utils/contstants.js";
+import {
+  oneYearInSeconds,
+  rootCookieDomain,
+} from "../../commons/utils/constants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
 import { csrfProtection } from "../../commons/utils/fastify/csrfProtection/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
@@ -61,6 +64,7 @@ export const initFrontend = async function () {
         staticHash: staticHash.hash,
         currentUrl: getCurrentUrl(this.request),
         htmlLang: this.request.i18n.language,
+        analyticsCookieDomain: rootCookieDomain,
       };
     },
   });
