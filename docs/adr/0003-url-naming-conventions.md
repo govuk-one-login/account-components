@@ -1,0 +1,54 @@
+# 0003 Naming conventions for URLs
+
+## Decision
+For Journey URLs (HTTP) we will use subdirectories rather than subdomains to distinguish between the journeys. The extra complexities of using subdomains are not warranted given the scope of what we're doing, don't offer significant benefits or security over subdirectories, and subdirectories more closely align with industry standard naming conventions for user-facing URLs and easier for users to understand. 
+
+For APIs, we will use a single subdomain to host the API services.
+
+## Context
+
+The Account Management Components (AMC) will provide common user journeys that can be accessed from multiple One Login components ie. Auth and One Login Home. AMC will be hosted under the manage.account.gov.uk domain and will host the APIs and management journeys. This ADR discusses the naming conventions to be used for REST APIs and HTTP journey URLs in relation to the main subdomain. 
+
+## Options
+
+### HTTP (User-facing journey URLs) 
+
+Journey URLs (HTTP URLs) are user-facing and as such must follow [Gov.UK URL Standards](https://www.gov.uk/guidance/content-design/url-standards-for-gov-uk). Excerpt from the URL Standards as at 9th Oct 2025: 
+
+URLs on GOV.UK must follow these rules:
+
+* URLs always need to be clear, unambiguous, easy to read, easy to type and easy to share
+* URLs should be in lower case
+* URLs should align with the title of the page
+* URLs must use words and should not contain acronyms, unless the acronym is very well known or it’s an acronym of an organisation with a long name
+* dashes should be used to separate words within URLs so they are easy to read - for example, www.gov.uk/set-up-business (another version without hyphens can be created if the URL is designed to be read aloud, like on a TV or radio advert)
+* articles (a, an, the) and other superfluous words should not be used. For example, use /benefits or /benefits-guides rather than /a-guide-to-benefits
+* URLs should use the verb stem, where possible. For example, /apply instead of /applying
+* URLs should be based on user need rather than the (current) name of a policy, scheme or service, which might change. For example, the URL www.gov.uk/advertise-job is intended for people who want to advertise a job on the Department for Work and Pensions’ (DWP) Find a job service
+
+#### Option 1: 
+Use subdomains to separate AMC journeys e.g. journeyname.manage.account.gov.uk
+
+#### Option 2: 
+Use subdirectories to separate AMC journeys e.g. manage.account.gov.uk/journeyname
+
+#### Comparison 
+
+| Feature | Decision factor | Option #1 Subdomains | Option #2 Subdirectories | Indication |
+| --- | --- | --- | --- | --- |
+| Example URL | How will the user interpret the URL | Tells the user where you are: journeyname.manage.account.gov.uk | Tells the user what they are doing: manage.account.gov.uk/journeyname | User likely to be less confused by manage.account.gov.uk/delete/enter-email than by delete.manage.account.gov.uk/enter-email |
+| Content segmentation | How the service would be divided | Typically used to separate distinct services and distinguish between different types of content. | Typically used to separate sections of the same service, categorising pages relevant to the domain. | Subdirectories preferred - Industry standard is to separate distinct areas of a site by subdomain, and journey sections of a cohesive site by subdirectories. | 
+| Cookies | Does the approach allow for separate cookies for each journey | Yes, cookies can be limited in scope to subdomain easily. <br />Can be shared across sub domains if the Domain attribute is set to manage.account.gov.uk. If the Domain attribute is omitted, the cookie defaults to a host-only cookie. It is only sent back to the exact host that set it, not to any subdomains. <br />If a cookie with sensitive data (like a session ID) is scoped too broadly to a parent domain, a less secure or compromised subdomain could access that information.<br />If cookies are set on a subdomain the visibility of the cookie may be too restrictive. | Yes - cookies can be limited in scope by Path. A cookie set for a subdirectory is available only to that directory and any subsequent subdirectories within it e.g. Path=/delete. If the Path attribute is omitted, the cookie defaults to the directory of the page that set it. <br />Since subdirectories are part of the same parent domain, the security boundary is typically less critical. However, a loosely set path like Path=/ could expose cookies to multiple applications on the same server, if they are hosted under different subdirectories. | Preference is for subdirectories: Subdomains are more likely to cause problems by setting a cookie at the wrong host level (but is testable), than it is to set the wrong path for an app that has more sensitive paths.| 
+| Javascript | Does the approach allow for separate JS for each journey | Yes - can provide granular control over script sources and may limit the blast radius of a security incident, potentially at the cost of increased complexity in CSP management | Simpler to manage JS sources with a single CSP, although these can be also set by Path | No clear preference |
+| Content Delivery | How does this model fit with content delivery | The CDN content is served from a separate hostname. A DNS CNAME record is used to point the subdomain to your CDN. | The CDN content is served from a folder path on your main domain. which is hosted on the same domain and server as the main website. This can be simpler to manage. | Prefer subdirectories to avoid duplication or managing shared assets |
+| Operational Model | Would this approach affect future agility | It will be easier to migrate journeys to another team. | Would require explicit separation and rehosting in a separate domain | Subdirectories preferred - the journeys provided will form a cohesive set, not overly complex and are not expected to require splitting. | 
+| Technical complexity | How maintainable and buildable is the approach | Requires more management of DNS records, SSL certificates. Can’t use relative URLs. | Content is managed in a single website, reducing technical complexity and streamlining updates. Can use relative URLs. | Preferred approach from many developers is to use subdomains | 
+| SEO | How do search engines consider this approach | Can be treated as a separate website, potentially benefiting SEO if each builds its own authority, but it does not always share the authority of the main domain. | Generally viewed by search engines as part of the same website, potentially allowing content to benefit from the main domain's authority. | Irrelevant as we don't wish the pages to appear in search engines | 
+
+### API (Not user-facing)
+
+Clear precedents on API URL naming have been set across government: [Get an API domain on Gov.UK](https://www.gov.uk/guidance/get-an-api-domain-on-govuk), clearly seen on the [Gov.UK API Catalogue](https://www.api.gov.uk/)  
+
+APIs must be created using a subdomain, so in the case of account management API this will be api.manage.account.gov.uk.
+
+
