@@ -35,6 +35,8 @@ jobs:
           echo "ENVIRONMENT=local" >> .env.integration-tests
           echo "NODE_ENV=production" >> .env.integration-tests
           echo "USE_LOCALSTACK=1" >> .env.integration-tests
+          echo "SESSIONS_SIGNER=localsessionsignerwhichmustbeatleast32chars  # pragma: allowlist secret" >> .env.integration-tests
+          echo "SESSIONS_TABLE_NAME=components-main-SessionStore" >> .env.integration-tests
           echo "ROOT_COOKIE_DOMAIN=localhost" >> .env.integration-tests
 
       - name: Configure stubs environment
