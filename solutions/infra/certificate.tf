@@ -9,3 +9,9 @@ resource "aws_cloudformation_stack" "certificate_stack" {
     HostedZoneID = aws_cloudformation_stack.hosted_zone.outputs["HostedZoneID"]
   }
 }
+
+resource "aws_ssm_parameter" "certificate_arn" {
+  name  = "/certificate/arn"
+  type  = "String"
+  value = aws_cloudformation_stack.certificate_stack.outputs["CertificateARN"]
+}

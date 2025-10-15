@@ -302,8 +302,7 @@ Resources:
     Properties:
       DomainName:
         !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendDomain]
-      RegionalCertificateArn:
-        Fn::ImportValue: certificate-CertificateARN
+      RegionalCertificateArn: !Sub "{{resolve:ssm:/certificate/arn}}"
       EndpointConfiguration:
         Types:
           - REGIONAL
