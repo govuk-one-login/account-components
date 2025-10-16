@@ -12,5 +12,5 @@ export const onError = async (
   reply.statusCode = 500;
   assert.ok(reply.render);
   await reply.render("handlers/onError/index.njk");
-  return;
+  return reply;
 };
