@@ -12,7 +12,7 @@ interface RequestBody {
   client_id: string;
 }
 
-export function createRequestObjectGet(
+export async function createRequestObjectGet(
   _: FastifyRequest,
   reply: FastifyReply,
   redirect_uri?: string,
@@ -22,12 +22,13 @@ export function createRequestObjectGet(
   const availableClients = CLIENT_REGISTRY;
 
   assert.ok(reply.render);
-  return reply.render("generateRequestObject/handlers/create.njk", {
+  await reply.render("generateRequestObject/handlers/create.njk", {
     availableScopes,
     availableScenarios,
     availableClients,
     redirect_uri,
   });
+  return reply;
 }
 
 export function createRequestObjectPost(fastify: FastifyInstance) {

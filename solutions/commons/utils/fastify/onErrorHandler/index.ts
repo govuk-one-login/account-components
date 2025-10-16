@@ -3,13 +3,15 @@ import type { FastifyInstance } from "fastify";
 
 type ErrorHandler = Parameters<FastifyInstance["setErrorHandler"]>[0];
 
-export const onError = (
+export const onError = async (
   error: Parameters<ErrorHandler>[0],
   request: Parameters<ErrorHandler>[1],
   reply: Parameters<ErrorHandler>[2],
-): ReturnType<ErrorHandler> => {
+  pathToTemplate = "handlers/onError/index.njk",
+): Promise<ReturnType<ErrorHandler>> => {
   request.log.error(error, "An error occurred");
   reply.statusCode = 500;
   assert.ok(reply.render);
-  return reply.render("handlers/onError/index.njk");
+  await reply.render(pathToTemplate);
+  return reply;
 };
