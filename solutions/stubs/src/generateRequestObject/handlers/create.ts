@@ -58,6 +58,6 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
     url.searchParams.append("scope", "am-account-delete");
     url.searchParams.append("client_id", requestBody.client_id);
 
-    return await createRequestObjectGet(request, reply, url.toString());
+    await createRequestObjectGet(request, reply, url.toString());
   };
 }

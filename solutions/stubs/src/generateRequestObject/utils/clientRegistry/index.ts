@@ -1,9 +1,7 @@
 import { createRequire } from "node:module";
-// import { createAppConfigClient } from "../../../../../commons/utils/awsClient/appconfigClient/index.js";
+import { createAppConfigClient } from "../../../../../commons/utils/awsClient/appconfigClient/index.js";
 import { getAppConfig } from "@aws-lambda-powertools/parameters/appconfig";
 import { getEnvironment } from "../../../../../commons/utils/getEnvironment/index.js";
-
-const require = createRequire(import.meta.url);
 
 interface ClientRegistry {
   client_id: string;
@@ -13,29 +11,35 @@ interface ClientRegistry {
   jwks_uri: string;
 }
 
+const require = createRequire(import.meta.url);
+const invalidClient: ClientRegistry = {
+  client_id: "A1B2C3D4E5F6G7H8A1B2C3D4E5F6G7H8",
+  scope: "am-account-delete",
+  redirect_uris: ["https://nowhere"],
+  client_name: "Invalid",
+  jwks_uri: "https://nowhere/.well-known/jwks.json",
+};
+
 function addNonExistentClient(clientRegistry: ClientRegistry[]) {
-  clientRegistry.push({
-    client_id: "A1B2C3D4E5F6G7H8I9J0A1B2C3D4E5F6G7H8I9J0",
-    scope: "am-account-delete",
-    redirect_uris: ["https://nowhere"],
-    client_name: "An Invalid Client",
-    jwks_uri: "https://nowhere/.well-known/jwks.json",
-  });
+  if (!clientRegistry.includes(invalidClient)) {
+    clientRegistry.push(invalidClient);
+  }
   return clientRegistry;
 }
 
 export async function getClientRegistry(): Promise<ClientRegistry[]> {
-  let client_registry: ClientRegistry[] = [];
+  let clientRegistry: ClientRegistry[] = [];
   let config: unknown;
 
+  // localstack does not support appconfig in free edition hence reading in config directly
   if (getEnvironment() === "local") {
     config = require("../../config/local-config.json");
   } else {
     config = await getAppConfig("operational", {
       application: "account-components",
-      environment: process.env["ENVIRONMENT"] ?? "dev",
+      environment: getEnvironment(),
       transform: "json",
-      // awsSdkV3Client: createAppConfigClient()
+      awsSdkV3Client: createAppConfigClient(),
     });
   }
   if (
@@ -43,7 +47,7 @@ export async function getClientRegistry(): Promise<ClientRegistry[]> {
     typeof config === "object" &&
     "client_registry" in config
   ) {
-    client_registry = config.client_registry as ClientRegistry[];
+    clientRegistry = config.client_registry as ClientRegistry[];
   }
-  return addNonExistentClient(client_registry);
+  return addNonExistentClient(clientRegistry);
 }

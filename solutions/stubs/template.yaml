@@ -212,7 +212,7 @@ Resources:
             Action:
               - appconfig:GetLatestConfiguration
               - appconfig:StartConfigurationSession
-            Resource: arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
+            Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
 
   StubsLambdaEnvironmentVariablesEncryptionKey:
     Type: AWS::KMS::Key
