@@ -22,12 +22,13 @@ export async function createRequestObjectGet(
   const availableClients = await getClientRegistry();
 
   assert.ok(reply.render);
-  return reply.render("generateRequestObject/handlers/create.njk", {
+  await reply.render("generateRequestObject/handlers/create.njk", {
     availableScopes,
     availableScenarios,
     availableClients,
     redirect_uri,
   });
+  return reply;
 }
 
 export function createRequestObjectPost(fastify: FastifyInstance) {

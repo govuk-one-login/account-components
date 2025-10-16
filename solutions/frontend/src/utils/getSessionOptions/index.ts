@@ -28,6 +28,7 @@ export const getSessionOptions = (): FastifySessionOptions => {
       httpOnly: true,
     },
     rolling: false,
+    saveUninitialized: false,
     // @ts-expect-error
     store: dynamodbStore,
   };

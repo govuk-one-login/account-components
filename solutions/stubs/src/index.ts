@@ -65,13 +65,16 @@ export const initStubs = async function () {
   fastify.decorateReply("render", render);
 
   fastify.setNotFoundHandler(async function (request, reply) {
-    const onNotFound = (await import("./handlers/onNotFound/index.js"))
-      .onNotFound;
+    const onNotFound = (
+      await import("../../commons/utils/fastify/onNotFoundHandler/index.js")
+    ).onNotFound;
     return onNotFound.bind(this)(request, reply);
   });
 
   fastify.setErrorHandler(async function (error, request, reply) {
-    const onError = (await import("./handlers/onError/index.js")).onError;
+    const onError = (
+      await import("../../commons/utils/fastify/onErrorHandler/index.js")
+    ).onError;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return onError.bind(this)(error, request, reply);
   });
@@ -85,7 +88,8 @@ export const initStubs = async function () {
   });
 
   fastify.get("/healthcheck", async function (_request, reply) {
-    return reply.send("ok");
+    await reply.send("ok");
+    return reply;
   });
 
   fastify.get("/robots.txt", async function (request, reply) {
