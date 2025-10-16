@@ -65,8 +65,9 @@ export const initStubs = async function () {
   fastify.decorateReply("render", render);
 
   fastify.setNotFoundHandler(async function (request, reply) {
-    const onNotFound = (await import("./handlers/onNotFound/index.js"))
-      .onNotFound;
+    const onNotFound = (
+      await import("../../commons/utils/fastify/onNotFoundHandler/index.js")
+    ).onNotFound;
     return onNotFound.bind(this)(request, reply);
   });
 

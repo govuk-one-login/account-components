@@ -25,11 +25,19 @@ describe("onNotFound handler", () => {
     expect(mockReply.statusCode).toBe(404);
   });
 
-  it("renders the not found template", async () => {
+  it("renders the default not found template", async () => {
     await onNotFound(mockRequest, mockReply);
 
     expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(
       "handlers/onNotFound/index.njk",
     );
+  });
+
+  it("renders custom template when pathToTemplate is provided", async () => {
+    const customPath = "custom/error/404.njk";
+
+    await onNotFound(mockRequest, mockReply, customPath);
+
+    expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(customPath);
   });
 });
