@@ -40,7 +40,7 @@
                 <legend>Scopes</legend>
                 {% for scope in availableScopes %}
                     <label for="{{ scope }}_scope">
-                    <input id="{{ scope }}_scope" type="checkbox" name="scope" value="{{ scope }}" /> {{ scope }}
+                    <input id="{{ scope }}_scope" type="radio" name="scope" value="{{ scope }}" /> {{ scope }}
                     </label>
                 {% endfor %}
             </fieldset>
