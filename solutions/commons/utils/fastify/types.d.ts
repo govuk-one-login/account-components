@@ -18,7 +18,6 @@ declare module "fastify" {
       csrfToken?: string;
       currentUrl?: URL;
       htmlLang?: string | undefined;
-      analyticsCookieDomain?: string | undefined;
     };
   }
 }

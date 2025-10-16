@@ -8,7 +8,7 @@ vi.mock(import("../getEnvironment/index.js"), () => ({
   getEnvironment: vi.fn(),
 }));
 
-vi.mock(import("../constants.js"), () => ({
+vi.mock(import("../contstants.js"), () => ({
   rootCookieDomain: "account.gov.uk",
 }));
 

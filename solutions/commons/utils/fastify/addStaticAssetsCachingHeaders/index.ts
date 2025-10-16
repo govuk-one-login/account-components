@@ -1,5 +1,5 @@
 import { getEnvironment } from "../../getEnvironment/index.js";
-import { oneDayInSeconds } from "../../constants.js";
+import { oneDayInSeconds } from "../../contstants.js";
 import type fastifyStatic from "@fastify/static";
 
 export const addStaticAssetsCachingHeaders = (

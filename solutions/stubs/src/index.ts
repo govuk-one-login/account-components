@@ -9,7 +9,7 @@ import fastifyFormbody from "@fastify/formbody";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import fastifyHelmet from "@fastify/helmet";
-import { oneYearInSeconds } from "../../commons/utils/constants.js";
+import { oneYearInSeconds } from "../../commons/utils/contstants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
 import { generateRequestObject } from "./generateRequestObject/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
