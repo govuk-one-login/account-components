@@ -85,7 +85,8 @@ export const initStubs = async function () {
   });
 
   fastify.get("/healthcheck", async function (_request, reply) {
-    return reply.send("ok");
+    await reply.send("ok");
+    return reply;
   });
 
   fastify.get("/robots.txt", async function (request, reply) {

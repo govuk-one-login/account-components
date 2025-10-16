@@ -3,11 +3,12 @@ import assert from "node:assert";
 
 type NotFoundHandler = Parameters<FastifyInstance["setNotFoundHandler"]>[1];
 
-export const onNotFound = (
+export const onNotFound = async (
   _request: Parameters<NotFoundHandler>[0],
   reply: Parameters<NotFoundHandler>[1],
-): ReturnType<NotFoundHandler> => {
+): Promise<ReturnType<NotFoundHandler>> => {
   reply.statusCode = 404;
   assert.ok(reply.render);
-  return reply.render("handlers/onNotFound/index.njk");
+  await reply.render("handlers/onNotFound/index.njk");
+  return reply;
 };
