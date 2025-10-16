@@ -22,5 +22,6 @@ export async function generateRequestObjectPost(
 
   const encryptedJar = await buildJar(token);
 
-  return reply.send(encryptedJar);
+  await reply.send(encryptedJar);
+  return reply;
 }
