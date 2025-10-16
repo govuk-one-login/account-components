@@ -77,7 +77,9 @@ export const initFrontend = async function () {
   });
 
   fastify.setErrorHandler(async function (error, request, reply) {
-    const onError = (await import("./handlers/onError/index.js")).onError;
+    const onError = (
+      await import("../../commons/utils/fastify/onErrorHandler/index.js")
+    ).onError;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return onError.bind(this)(error, request, reply);
   });

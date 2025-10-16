@@ -47,7 +47,7 @@ describe("onError handler", () => {
     expect(mockReply.statusCode).toBe(500);
   });
 
-  it("renders the error template", async () => {
+  it("renders the default error template", async () => {
     const testError = new Error("Test error");
 
     await onError(testError, mockRequest, mockReply);
@@ -55,5 +55,14 @@ describe("onError handler", () => {
     expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(
       "handlers/onError/index.njk",
     );
+  });
+
+  it("renders custom template when pathToTemplate is provided", async () => {
+    const testError = new Error("Test error");
+    const customTemplate = "custom/error/template.njk";
+
+    await onError(testError, mockRequest, mockReply, customTemplate);
+
+    expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(customTemplate);
   });
 });
