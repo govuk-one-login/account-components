@@ -28,10 +28,10 @@ describe("onError handler", () => {
     vi.clearAllMocks();
   });
 
-  it("logs the error with correct message", () => {
+  it("logs the error with correct message", async () => {
     const testError = new Error("Test error");
 
-    onError(testError, mockRequest, mockReply);
+    await onError(testError, mockRequest, mockReply);
 
     expect(mockLog.error).toHaveBeenCalledExactlyOnceWith(
       testError,
@@ -39,18 +39,18 @@ describe("onError handler", () => {
     );
   });
 
-  it("sets status code to 500", () => {
+  it("sets status code to 500", async () => {
     const testError = new Error("Test error");
 
-    onError(testError, mockRequest, mockReply);
+    await onError(testError, mockRequest, mockReply);
 
     expect(mockReply.statusCode).toBe(500);
   });
 
-  it("renders the error template", () => {
+  it("renders the error template", async () => {
     const testError = new Error("Test error");
 
-    onError(testError, mockRequest, mockReply);
+    await onError(testError, mockRequest, mockReply);
 
     expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(
       "handlers/onError/index.njk",

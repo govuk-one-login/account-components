@@ -19,14 +19,14 @@ describe("onNotFound handler", () => {
     vi.clearAllMocks();
   });
 
-  it("sets status code to 404", () => {
-    onNotFound(mockRequest, mockReply);
+  it("sets status code to 404", async () => {
+    await onNotFound(mockRequest, mockReply);
 
     expect(mockReply.statusCode).toBe(404);
   });
 
-  it("renders the not found template", () => {
-    onNotFound(mockRequest, mockReply);
+  it("renders the not found template", async () => {
+    await onNotFound(mockRequest, mockReply);
 
     expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(
       "handlers/onNotFound/index.njk",
