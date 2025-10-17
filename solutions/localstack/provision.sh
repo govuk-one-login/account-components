@@ -110,7 +110,7 @@ create_kms_keys() {
     --query "Aliases[?AliasName=='alias/components-core-JARRSAEncryptionKey'].TargetKeyId" \
     --output text 2>/dev/null || true)
   
-  if [ -n "$EXISTING_KEY_ID" ] && [ "$EXISTING_KEY_ID" != "None" ]; then
+  if [[ -n "$EXISTING_KEY_ID" ]] && [[ "$EXISTING_KEY_ID" != "None" ]]; then
     aws --endpoint-url=http://localhost:4566 kms schedule-key-deletion \
       --key-id "$EXISTING_KEY_ID" \
       --pending-window-in-days 7 2>/dev/null || true

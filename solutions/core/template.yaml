@@ -122,7 +122,6 @@ Resources:
             Condition:
               ArnLike:
                 "aws:SourceArn":
-                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:jwks-creator"
                   - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*StubsLambda*"
                   - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:component-core*"
       Tags:
