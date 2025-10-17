@@ -73,3 +73,6 @@ jobs:
 
       - name: Validate config
         run: npm run config:validate
+
+      - name: Validate API Specs
+        run: npm run api-specs:validate

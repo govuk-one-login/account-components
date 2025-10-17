@@ -21,7 +21,7 @@
         "read",
         "sam",
       ],
-      "ignoreDependencies": ["csso-cli", "sass"],
+      "ignoreDependencies": ["csso-cli", "sass", "@stoplight/spectral-cli"],
     },
     "solutions/integration-tests": {
       "entry": ["tests/**/*.ts"],
