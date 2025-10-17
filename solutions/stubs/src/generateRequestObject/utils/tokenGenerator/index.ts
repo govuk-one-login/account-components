@@ -112,7 +112,7 @@ export function getJwtPayload(
       : getDateEpoch(initiatedAt);
   const iss = AUTHENTICATION_ISSUER;
   const aud = bodyAud ?? process.env["DEFAULT_AUDIENCE"];
-  const scope = bodyScope ?? Scope.REVERIFICATION;
+  const scope = bodyScope ?? Scope.ACCOUNT_DELETION;
 
   return {
     ...payload,
