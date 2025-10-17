@@ -86,10 +86,14 @@ Resources:
       Type: String
       Value: !GetAtt DynamoDbSSEKey.Arn
 
-  JAREncryptionKey:
+  JARRSAEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: "KMS key used to decrypt JARs"
+      Description: "RSA KMS key pair used to encrypt and decrypt JARs"
+      KeySpec: RSA_2048
+      KeyUsage: ENCRYPT_DECRYPT
+      Origin: AWS_KMS
+      Enabled: true
       KeyPolicy:
         Version: "2012-10-17"
         Statement:
@@ -107,7 +111,7 @@ Resources:
             Resource: "*"
             Condition:
               ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:public-api"
+                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-core*"
           - Effect: "Allow"
             Principal:
               Service: lambda.amazonaws.com
@@ -117,16 +121,123 @@ Resources:
             Resource: "*"
             Condition:
               ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:jwks-creator"
+                "aws:SourceArn":
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-mocks-StubsLambda*"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-core*"
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-JAREncryptionKey"
+          Value: !Sub "${AWS::StackName}-JARRSAEncryptionKey"
 
-  JAREncryptionKeyAlias:
+  JARRSAEncryptionKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-JAREncryptionKey"
-      TargetKeyId: !GetAtt JAREncryptionKey.Arn
+      AliasName: !Sub "alias/${AWS::StackName}-JARRSAEncryptionKey"
+      TargetKeyId: !GetAtt JARRSAEncryptionKey.Arn
+
+  S3SSEKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for encrypting JWKSStore bucket
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+
+  JWKSStoreBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-jwks-store"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Sub "${AWS::StackName}-access-logs"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref S3SSEKey
+
+  JWKSStoreBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref JWKSStoreBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: AllowLambdaToPutObjects
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - s3:PutObject
+            Condition:
+              Bool:
+                aws:SecureTransport: true
+            Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
+          - Sid: AllowApiGatewayToGetObjects
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action:
+              - s3:GetObject
+            Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
+
+  AccessLogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-access-logs"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref S3SSEKey
+
+  AccessLogBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AccessLogsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EnforceHTTPSOnly
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !Sub "${AccessLogsBucket.Arn}"
+              - !Sub "${AccessLogsBucket.Arn}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+          - Sid: AllowS3LoggingService
+            Effect: Allow
+            Principal:
+              Service: "logging.s3.amazonaws.com"
+            Action: "s3:PutObject"
+            Resource: !Sub "${AccessLogsBucket.Arn}/AWSLogs/${AWS::AccountId}/*"
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+              Bool:
+                "aws:SecureTransport": true
 
 Outputs:
   DynamoDbSSEKeyArn:
@@ -134,3 +245,14 @@ Outputs:
     Value: !GetAtt DynamoDbSSEKey.Arn
     Export:
       Name: !Sub "${AWS::StackName}:DynamoDbSSEKeyArn"
+  JARRSAEncryptionKeyAliasName:
+    Description: Alias name of the JAR RSA encryption KMS key
+    Value: !Ref JARRSAEncryptionKeyAlias
+    Export:
+      Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyAliasName"
+  JWKSStoreBucketName:
+    Description: Name of the S3 bucket
+    Value: !Ref JWKSStoreBucket
+  S3SSEKeyArn:
+    Description: ARN of the KMS key used for encryption
+    Value: !GetAtt S3SSEKey.Arn
