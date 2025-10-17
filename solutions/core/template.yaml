@@ -86,10 +86,10 @@ Resources:
       Type: String
       Value: !GetAtt DynamoDbSSEKey.Arn
 
-  JAREncryptionKey:
+  JARRSAEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: "KMS key used to decrypt JARs"
+      Description: "RSA KMS key pair used to encrypt and decrypt JARs"
       KeyPolicy:
         Version: "2012-10-17"
         Statement:
@@ -117,16 +117,18 @@ Resources:
             Resource: "*"
             Condition:
               ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:jwks-creator"
+                "aws:SourceArn":
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:jwks-creator"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*StubsLambda*"
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-JAREncryptionKey"
+          Value: !Sub "${AWS::StackName}-JARRSAEncryptionKey"
 
-  JAREncryptionKeyAlias:
+  JARRSAEncryptionKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-JAREncryptionKey"
-      TargetKeyId: !GetAtt JAREncryptionKey.Arn
+      AliasName: !Sub "alias/${AWS::StackName}-JARRSAEncryptionKey"
+      TargetKeyId: !GetAtt JARRSAEncryptionKey.Arn
 
 Outputs:
   DynamoDbSSEKeyArn:
@@ -134,3 +136,9 @@ Outputs:
     Value: !GetAtt DynamoDbSSEKey.Arn
     Export:
       Name: !Sub "${AWS::StackName}:DynamoDbSSEKeyArn"
+
+  JARRSAEncryptionKeyAliasName:
+    Description: Alias name of the JAR RSA encryption KMS key
+    Value: !Ref JARRSAEncryptionKeyAlias
+    Export:
+      Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyAliasName"

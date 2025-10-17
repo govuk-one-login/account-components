@@ -9,8 +9,8 @@ import { getParametersProvider } from "../../../commons/utils/awsClient/index.js
 const getPrivateKeyName = (keyType: SignatureTypes): string => {
   const keyEnvironment =
     keyType == SignatureTypes.EC
-      ? "EC_PRIVATE_KEY_SSM_NAME"
-      : "RSA_PRIVATE_KEY_SSM_NAME";
+      ? "MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"
+      : "MOCK_CLIENT_RSA_PRIVATE_KEY_SSM_NAME";
 
   const privateKey = process.env[keyEnvironment];
   if (!privateKey) {

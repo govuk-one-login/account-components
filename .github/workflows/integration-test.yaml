@@ -46,10 +46,8 @@ jobs:
           echo "ENVIRONMENT=local" >> .env.integration-tests
           echo "NODE_ENV=production" >> .env.integration-tests
           echo "USE_LOCALSTACK=1" >> .env.integration-tests
-          echo "EC_PRIVATE_KEY_SSM_NAME=/components-mocks/EcPrivateKey  # pragma: allowlist secret" >> .env.integration-tests
-          echo "RSA_PRIVATE_KEY_SSM_NAME=/components-mocks/RsaPrivateKey  # pragma: allowlist secret" >> .env.integration-tests
-          echo "EC_PUBLIC_KEY_SSM_NAME=/components-mocks/EcPublicKey  # pragma: allowlist secret" >> .env.integration-tests
-          echo "RSA_PUBLIC_KEY_SSM_NAME=/components-mocks/RsaPublicKey  # pragma: allowlist secret" >> .env.integration-tests
+          echo "MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME=/components-mocks/MockClientEcPrivateKey  # pragma: allowlist secret" >> .env.integration-tests
+          echo "MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME=/components-mocks/MockClientEcPublicKey  # pragma: allowlist secret" >> .env.integration-tests
 
       - name: Install integration tests dependencies
         run: cd solutions/integration-tests && npm ci
