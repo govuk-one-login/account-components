@@ -111,6 +111,8 @@ create_kms_keys() {
     --output text 2>/dev/null || true)
   
   if [[ -n "$EXISTING_KEY_ID" ]] && [[ "$EXISTING_KEY_ID" != "None" ]]; then
+    aws --endpoint-url=http://localhost:4566 kms disable-key \
+      --key-id "$EXISTING_KEY_ID" 2>/dev/null || true
     aws --endpoint-url=http://localhost:4566 kms schedule-key-deletion \
       --key-id "$EXISTING_KEY_ID" \
       --pending-window-in-days 7 2>/dev/null || true
