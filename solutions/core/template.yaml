@@ -90,6 +90,10 @@ Resources:
     Type: AWS::KMS::Key
     Properties:
       Description: "KMS key used to decrypt JARs"
+      KeySpec: RSA_2048
+      KeyUsage: ENCRYPT_DECRYPT
+      Origin: AWS_KMS
+      Enabled: true
       KeyPolicy:
         Version: "2012-10-17"
         Statement:
@@ -107,7 +111,7 @@ Resources:
             Resource: "*"
             Condition:
               ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:public-api"
+                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:component-core*"
           - Effect: "Allow"
             Principal:
               Service: lambda.amazonaws.com
@@ -117,7 +121,7 @@ Resources:
             Resource: "*"
             Condition:
               ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:jwks-creator"
+                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:component-core*"
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-JAREncryptionKey"
@@ -131,7 +135,7 @@ Resources:
   S3SSEKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: KMS key for encrypting JWKSStore bucket
+      Description: KMS key for encrypting S3 buckets
       EnableKeyRotation: true
       KeyPolicy:
         Version: "2012-10-17"
@@ -142,12 +146,6 @@ Resources:
             Action:
               - kms:*
             Resource: "*"
-
-  S3SSEKeyAlias:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-S3SSEKey"
-      TargetKeyId: !Ref S3SSEKey
 
   JWKSStoreBucket:
     Type: AWS::S3::Bucket
@@ -178,7 +176,7 @@ Resources:
           - Sid: AllowLambdaToPutObjects
             Effect: Allow
             Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+              Service: lambda.amazonaws.com
             Action:
               - s3:PutObject
             Condition:
@@ -193,10 +191,6 @@ Resources:
               - s3:GetObject
             Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
 
-  # Noncompliant: S3 bucket without LoggingConfiguration
-  # Sonar justification: This bucket is used as an access log destination;
-  # enabling LoggingConfiguration would cause recursion.
-  # NOSONAR
   AccessLogsBucket:
     Type: AWS::S3::Bucket
     Properties:
