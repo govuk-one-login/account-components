@@ -342,7 +342,7 @@ Resources:
               - logs:CreateLogGroup
               - logs:CreateLogStream
               - logs:PutLogEvents
-            Resource: "*"
+            Resource: !Sub "${JWKSStoreBucket.Arn}/*"
 
 Outputs:
   DynamoDbSSEKeyArn:
