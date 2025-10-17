@@ -15,6 +15,12 @@ info:
   license:
     name: MIT
     url: https://github.com/govuk-one-login/account-components/blob/main/LICENSE.md
+tags:
+  - name: OAuth
+    description: |-
+      Methods to gain access to Account Management Component Journeys.
+
+      **Note:** This functionality is intended to be used by systems solely belonging internally to the GDS DI.
 
 servers:
   - url: https://api.manage.dev.account.gov.uk
@@ -32,6 +38,9 @@ paths:
   /authorize:
     get:
       summary: Authorization endpoint
+      operationId: authorize
+      tags:
+        - OAuth
       description: |
         Initiates an OAuth 2.0 Authorization Code flow using a JWT Secured Authorization Request (JAR) per RFC 9101.
         The authorization server will redirect the user-agent back to the client with an authorization code.
@@ -52,7 +61,7 @@ paths:
         - $ref: "#/components/parameters/RedirectUri"
         - $ref: "#/components/parameters/RequestObjectJAR"
       responses:
-        302:
+        "302":
           description: Redirect the user agent to the redirect uri
           headers:
             Location:
@@ -118,8 +127,11 @@ paths:
     get:
       summary: JSON Web Key Set (JWKS)
       description: Publishes public keys for signature and encryption.
+      operationId: jwks
+      tags:
+        - OAuth
       responses:
-        200:
+        "200":
           description: JWK Set
           content:
             application/json:
@@ -139,8 +151,12 @@ paths:
   /.well-known/oauth-authorization-server:
     get:
       summary: OAuth Provider Configuration (Discovery)
+      description: Discover OAuth method URLs
+      operationId: discovery
+      tags:
+        - OAuth
       responses:
-        200:
+        "200":
           description: OAuth discovery metadata document (rfc8414)
           content:
             application/json:

@@ -14,6 +14,12 @@ info:
   license:
     name: MIT
     url: https://github.com/govuk-one-login/account-components/blob/main/LICENSE.md
+tags:
+  - name: OAuth
+    description: |-
+      Methods to gain access to Account Management Component Journeys.
+
+      **Note:** This functionality is intended to be used by systems solely belonging internally to the GDS DI.
 
 servers:
   - url: https://abcd1234.execute-api.eu-west-2.amazonaws.com
@@ -33,6 +39,9 @@ paths:
       summary: Token endpoint
       description: |
         Issues tokens for supported grants. This endpoint supports `private_key_jwt` client authentication via `client_assertion_type` and `client_assertion` per RFC 7523.
+      operationId: token
+      tags:
+        - OAuth
       requestBody:
         required: true
         content:
@@ -70,19 +79,19 @@ paths:
                 - client_assertion_type
                 - client_assertion
       responses:
-        200:
+        "200":
           description: Token response
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/TokenResponse"
-        400:
+        "400":
           description: Invalid request or unsupported grant type.
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/OAuthError"
-        401:
+        "401":
           description: Invalid client assertion or unauthorized client.
           content:
             application/json:
@@ -92,16 +101,20 @@ paths:
   /v1/userinfo:
     get:
       summary: UserInfo endpoint
+      description: Get Journey Outcome information
       security:
         - bearerAuth: []
+      operationId: userinfo
+      tags:
+        - OAuth
       responses:
-        200:
+        "200":
           description: Claims about the outcome of the user's journey
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserInfo"
-        401:
+        "401":
           description: Missing or invalid access token
           content:
             application/json:
