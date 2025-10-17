@@ -4,5 +4,8 @@
     "@tsconfig/strictest/tsconfig.json"
   ],
   "exclude": ["coverage", "solutions/frontend/dist", "solutions/stubs/dist"],
-  "compilerOptions": { "resolveJsonModule": true }
+  "compilerOptions": {
+    "resolveJsonModule": true,
+    "lib": ["ESNext", "DOM"]
+  }
 }
