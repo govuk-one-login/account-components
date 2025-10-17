@@ -86,7 +86,7 @@ Resources:
       Type: String
       Value: !GetAtt DynamoDbSSEKey.Arn
 
-  JAREncryptionKey:
+  JAREncryptionKeyV2:
     Type: AWS::KMS::Key
     Properties:
       Description: "KMS key used to decrypt JARs"
@@ -124,18 +124,18 @@ Resources:
                 "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:component-core*"
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-JAREncryptionKey"
+          Value: !Sub "${AWS::StackName}-JAREncryptionKeyV2"
 
   JAREncryptionKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-JAREncryptionKey"
-      TargetKeyId: !GetAtt JAREncryptionKey.Arn
+      AliasName: !Sub "alias/${AWS::StackName}-JAREncryptionKeyV2"
+      TargetKeyId: !GetAtt JAREncryptionKeyV2.Arn
 
   S3SSEKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: KMS key for encrypting S3 buckets
+      Description: KMS key for encrypting JWKSStore bucket
       EnableKeyRotation: true
       KeyPolicy:
         Version: "2012-10-17"
