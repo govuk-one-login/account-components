@@ -3,5 +3,6 @@
     "@tsconfig/node22/tsconfig.json",
     "@tsconfig/strictest/tsconfig.json"
   ],
-  "exclude": ["coverage", "solutions/frontend/dist", "solutions/stubs/dist"]
+  "exclude": ["coverage", "solutions/frontend/dist", "solutions/stubs/dist"],
+  "compilerOptions": { "resolveJsonModule": true }
 }

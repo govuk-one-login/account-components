@@ -25,7 +25,8 @@ export enum MockRequestObjectScenarios {
 }
 
 export enum Scope {
-  REVERIFICATION = "reverification",
+  ACCOUNT_DELETION = "am-account-delete",
+  UNKNOWN = "am-unknown",
 }
 
 export enum SignatureTypes {

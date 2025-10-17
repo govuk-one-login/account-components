@@ -4,18 +4,25 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const expectedResponse = {
   availableClients: [
     {
-      client_id: "123456789",
-      client_name: "Dummy Auth",
-      jwks_uri: "https://signin.account.gov.uk/.well-known/jwks.json",
-      redirect_uris: ["https://signin.account.gov.uk/acm-callback"],
+      client_id: "ABCDEF12345678901234567890123456",
       scope: "am-account-delete",
+      redirect_uris: ["https://signin.build.account.gov.uk/acm-callback"],
+      client_name: "Auth",
+      jwks_uri: "https://signin.build.account.gov.uk/.well-known/jwks.json",
     },
     {
-      client_id: "234567890",
-      client_name: "Dummy Home",
-      jwks_uri: "https://home.account.gov.uk/.well-known/jwks.json",
-      redirect_uris: ["https://home.account.gov.uk/acm-callback"],
+      client_id: "23456789012345678901234567890123",
       scope: "am-account-delete",
+      redirect_uris: ["https://home.build.account.gov.uk/acm-callback"],
+      client_name: "Home",
+      jwks_uri: "https://home.build.account.gov.uk/.well-known/jwks.json",
+    },
+    {
+      client_id: "A1B2C3D4E5F6G7H8A1B2C3D4E5F6G7H8",
+      scope: "am-account-delete",
+      redirect_uris: ["https://nowhere"],
+      client_name: "Invalid",
+      jwks_uri: "https://nowhere/.well-known/jwks.json",
     },
   ],
   availableScenarios: [
@@ -27,7 +34,7 @@ const expectedResponse = {
     "expired",
     "iatInFuture",
   ],
-  availableScopes: ["reverification"],
+  availableScopes: ["am-account-delete", "am-unknown"],
   redirect_uri: undefined,
 };
 
@@ -74,7 +81,7 @@ describe("createRequestObjectPost", () => {
 
     mockRequest = {
       body: {
-        client_id: "123456789",
+        client_id: "23456789012345678901234567890123",
       },
     };
 
@@ -101,7 +108,7 @@ describe("createRequestObjectPost", () => {
       {
         ...expectedResponse,
         redirect_uri:
-          "https://signin.account.gov.uk/acm-callback?request=mock-request-object&response_type=code&scope=am-account-delete&client_id=123456789",
+          "https://home.build.account.gov.uk/acm-callback?request=mock-request-object&response_type=code&scope=am-account-delete&client_id=23456789012345678901234567890123",
       },
     );
   });

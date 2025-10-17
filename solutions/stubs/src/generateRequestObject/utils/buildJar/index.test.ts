@@ -9,12 +9,11 @@ import {
   SignatureTypes,
 } from "../../../types/common.js";
 import { CompactEncrypt } from "jose";
-import * as ssmProviderModule from "../../../../../commons/utils/awsClient/index.js";
-import type { SSMProvider } from "@aws-lambda-powertools/parameters/ssm";
+import * as awsClientModule from "../../../../../commons/utils/awsClient/index.js";
 import type { Logger } from "@aws-lambda-powertools/logger";
 
-vi.mock(import("@aws-lambda-powertools/parameters/ssm"), () => ({
-  getParameter: vi.fn(),
+vi.mock(import("node:crypto"), () => ({
+  createPublicKey: vi.fn(),
 }));
 
 vi.mock(import("../../../utils/convert-pem-to-jwk.js"), () => ({
@@ -34,6 +33,7 @@ describe("buildJar", async () => {
     "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----";
   const dummyJwk = { kty: "RSA", kid: "key1", alg: "RSA-OAEP" };
   const dummyEncryptedJwt = "encrypted.jwt.token";
+  const dummyPublicKeyBuffer = Buffer.from("dummy-public-key-data");
 
   const { convertPemToJwk } = await import(
     "../../../utils/convert-pem-to-jwk.js"
@@ -42,12 +42,20 @@ describe("buildJar", async () => {
 
   let compactEncryptMock: { encrypt: Mock; setProtectedHeader: Mock };
 
-  const mockGet = vi.fn();
+  const mockGetPublicKey = vi.fn();
+  const mockKmsClient = {
+    kmsClient: {} as any,
+    config: {} as any,
+    getPublicKey: mockGetPublicKey,
+  };
 
-  beforeEach(() => {
-    process.env["RSA_PUBLIC_KEY_SSM_NAME"] = "param-name";
+  beforeEach(async () => {
+    process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"] = "alias/rsa-key";
 
     convertPemToJwkMock.mockResolvedValue(dummyJwk);
+    mockGetPublicKey.mockResolvedValue({
+      PublicKey: dummyPublicKeyBuffer,
+    });
 
     JWKS_KEY_TYPES.length = 0;
     JWKS_KEY_TYPES.push({
@@ -74,9 +82,13 @@ describe("buildJar", async () => {
       compactEncryptMock.encrypt,
     );
 
-    vi.spyOn(ssmProviderModule, "getParametersProvider").mockReturnValue({
-      get: mockGet,
-    } as unknown as SSMProvider);
+    vi.spyOn(awsClientModule, "getKmsClient").mockReturnValue(mockKmsClient);
+
+    const { createPublicKey } = await import("node:crypto");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    vi.mocked(createPublicKey).mockReturnValue({
+      export: vi.fn().mockReturnValue(dummyPublicKeyPem),
+    } as any);
   });
 
   afterEach(() => {
@@ -84,11 +96,12 @@ describe("buildJar", async () => {
     JWKS_KEY_TYPES.length = 0;
   });
 
-  it("fetches the public key from SSM and encrypts the JWT", async () => {
-    mockGet.mockResolvedValue(dummyPublicKeyPem);
+  it("fetches the public key from KMS and encrypts the JWT", async () => {
     const result = await buildJar(dummySignedJwt);
 
-    expect(mockGet).toHaveBeenCalledExactlyOnceWith("param-name");
+    expect(mockGetPublicKey).toHaveBeenCalledExactlyOnceWith({
+      KeyId: "alias/rsa-key",
+    });
     expect(convertPem.convertPemToJwk).toHaveBeenCalledExactlyOnceWith(
       dummyPublicKeyPem,
       JWKS_KEY_TYPES[0],
@@ -108,17 +121,22 @@ describe("buildJar", async () => {
     expect(result).toBe(dummyEncryptedJwt);
   });
 
-  it("fetches the public key from local parameter when running on localhost", async () => {
-    mockGet.mockResolvedValue(dummyPublicKeyPem);
+  it("throws error if environment variable is not set", async () => {
+    const originalEnv = process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"];
+    delete process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"];
 
-    const result = await buildJar(dummySignedJwt);
+    await expect(buildJar(dummySignedJwt)).rejects.toThrow(
+      "Failed to retrieve key from SSM for param ",
+    );
 
-    expect(mockGet).toHaveBeenCalledExactlyOnceWith("param-name");
-    expect(result).toBe(dummyEncryptedJwt);
+    // Restore for other tests
+    if (originalEnv) {
+      process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"] = originalEnv;
+    }
   });
 
-  it("throws error if retrieving key from SSM fails", async () => {
-    mockGet.mockRejectedValue(new Error("SSM error"));
+  it("throws error if retrieving key from KMS fails", async () => {
+    mockGetPublicKey.mockRejectedValue(new Error("KMS error"));
 
     await expect(buildJar(dummySignedJwt)).rejects.toThrow(
       "Failed to retrieve key from SSM for param ",
@@ -126,7 +144,11 @@ describe("buildJar", async () => {
   });
 
   it("throws error if public key PEM is empty", async () => {
-    mockGet.mockResolvedValue("");
+    const { createPublicKey } = await import("node:crypto");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    vi.mocked(createPublicKey).mockReturnValue({
+      export: vi.fn().mockReturnValue(""),
+    } as any);
 
     await expect(buildJar(dummySignedJwt)).rejects.toThrow(
       "Public key PEM is empty",
@@ -134,7 +156,6 @@ describe("buildJar", async () => {
   });
 
   it("throws error if key type not found", async () => {
-    mockGet.mockResolvedValue(dummyPublicKeyPem);
     JWKS_KEY_TYPES.length = 0; // empty array to simulate missing key type
 
     await expect(buildJar(dummySignedJwt)).rejects.toThrow(

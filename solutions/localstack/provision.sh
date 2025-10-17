@@ -8,20 +8,14 @@ generate_keys() {
   echo "Starting to generate keys"
 
   # 1. Generate ECDSA Private Key (NIST P-256) to string
-  EC_PRIVATE_KEY=$(openssl ecparam -name prime256v1 -genkey | openssl pkcs8 -topk8 -nocrypt -outform PEM)
+  MOCK_CLIENT_EC_PRIVATE_KEY=$(openssl ecparam -name prime256v1 -genkey | openssl pkcs8 -topk8 -nocrypt -outform PEM)
 
   # 2. Extract ECDSA Public Key from private key string
-  EC_PUBLIC_KEY=$(echo "$EC_PRIVATE_KEY" | openssl ec -pubout)
-
-  # 3. Generate RSA private key to string
-  RSA_PRIVATE_KEY=$(openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 | openssl pkcs8 -topk8 -nocrypt -outform PEM)
-
-  # 4. Extract RSA Public Key from private key string
-  RSA_PUBLIC_KEY=$(echo "$RSA_PRIVATE_KEY" | openssl rsa -pubout)
+  MOCK_CLIENT_EC_PUBLIC_KEY=$(echo "$MOCK_CLIENT_EC_PRIVATE_KEY" | openssl ec -pubout)
 
   # Optional: escape newlines for SSM if needed (AWS CLI handles newlines well for string params, so usually no need)
   # But if you're sending to JSON or a place where newlines break things, you could use:
-  # EC_PRIVATE_KEY_ESCAPED=$(echo "$EC_PRIVATE_KEY" | awk '{printf "%s\\n", $0}')
+  # MOCK_CLIENT_EC_PRIVATE_KEY_ESCAPED=$(echo "$MOCK_CLIENT_EC_PRIVATE_KEY" | awk '{printf "%s\\n", $0}')
 
   echo "Finished generating keys"
   return 0
@@ -82,33 +76,60 @@ start_localstack() {
 create_ssm_parameters() {
   echo "Creating SSM parameters"
 
+  # Delete existing parameters
+  aws --endpoint-url=http://localhost:4566 ssm delete-parameter \
+    --name "/components-mocks/MockClientEcPrivateKey" 2>/dev/null || true
+  aws --endpoint-url=http://localhost:4566 ssm delete-parameter \
+    --name "/components-mocks/MockClientEcPublicKey" 2>/dev/null || true
+
   STRING="String"
 
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-    --name "/components-mocks/EcPrivateKey" \
-    --value "${EC_PRIVATE_KEY}" \
-    --type "${STRING}" \
-    --overwrite
+    --name "/components-mocks/MockClientEcPrivateKey" \
+    --value "${MOCK_CLIENT_EC_PRIVATE_KEY}" \
+    --type "${STRING}"
 
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-    --name "/components-mocks/EcPublicKey" \
-    --value "${EC_PUBLIC_KEY}" \
-    --type "${STRING}" \
-    --overwrite
-
-  aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-    --name "/components-mocks/RsaPrivateKey" \
-    --value "${RSA_PRIVATE_KEY}" \
-    --type "${STRING}" \
-    --overwrite
-
-  aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-    --name "/components-mocks/RsaPublicKey" \
-    --value "${RSA_PUBLIC_KEY}" \
-    --type "${STRING}" \
-    --overwrite
+    --name "/components-mocks/MockClientEcPublicKey" \
+    --value "${MOCK_CLIENT_EC_PUBLIC_KEY}" \
+    --type "${STRING}"
   
   echo "Finished creating SSM parameters"
+  return 0
+}
+
+create_kms_keys() {
+  echo "Creating KMS keys"
+
+  # Delete existing alias
+  aws --endpoint-url=http://localhost:4566 kms delete-alias \
+    --alias-name alias/components-core-JARRSAEncryptionKey 2>/dev/null || true
+
+  # Delete existing key
+  EXISTING_KEY_ID=$(aws --endpoint-url=http://localhost:4566 kms list-aliases \
+    --query "Aliases[?AliasName=='alias/components-core-JARRSAEncryptionKey'].TargetKeyId" \
+    --output text 2>/dev/null || true)
+  
+  if [[ -n "$EXISTING_KEY_ID" ]] && [[ "$EXISTING_KEY_ID" != "None" ]]; then
+    aws --endpoint-url=http://localhost:4566 kms disable-key \
+      --key-id "$EXISTING_KEY_ID" 2>/dev/null || true
+    aws --endpoint-url=http://localhost:4566 kms schedule-key-deletion \
+      --key-id "$EXISTING_KEY_ID" \
+      --pending-window-in-days 7 2>/dev/null || true
+  fi
+
+  KEY_ID=$(aws --endpoint-url=http://localhost:4566 kms create-key \
+    --key-spec RSA_2048 \
+    --key-usage ENCRYPT_DECRYPT \
+    --origin AWS_KMS \
+    --query 'KeyMetadata.KeyId' \
+    --output text)
+
+  aws --endpoint-url=http://localhost:4566 kms create-alias \
+    --alias-name alias/components-core-JARRSAEncryptionKey \
+    --target-key-id "$KEY_ID"
+
+  echo "Finished creating KMS keys"
   return 0
 }
 
@@ -191,6 +212,8 @@ list_resources() {
   done
 
   aws --endpoint-url=http://localhost:4566 dynamodb list-tables
+  aws --endpoint-url=http://localhost:4566 kms list-keys
+  aws --endpoint-url=http://localhost:4566 kms list-aliases
   return 0
 }
 
@@ -199,6 +222,7 @@ install_dependencies
 configure_cli_for_localstack
 start_localstack
 create_ssm_parameters
+create_kms_keys
 create_dynamodb_tables
 list_resources
 
