@@ -276,6 +276,8 @@ Resources:
       Handler: jwks-creator.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Timeout: 60
+      LoggingConfig:
+        LogGroup: !Ref CoreLambdaLogGroup
       Environment:
         Variables:
           KEY_ID: !Ref JAREncryptionKeyV2
@@ -343,6 +345,12 @@ Resources:
               - logs:CreateLogStream
               - logs:PutLogEvents
             Resource: !Sub "${JWKSStoreBucket.Arn}/*"
+
+  CoreLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/lambda/${AWS::StackName}/CoreLambda"
+      RetentionInDays: 30
 
 Outputs:
   DynamoDbSSEKeyArn:
