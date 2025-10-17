@@ -111,7 +111,7 @@ Resources:
             Resource: "*"
             Condition:
               ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:component-core*"
+                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-core*"
           - Effect: "Allow"
             Principal:
               Service: lambda.amazonaws.com
@@ -122,8 +122,8 @@ Resources:
             Condition:
               ArnLike:
                 "aws:SourceArn":
-                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*StubsLambda*"
-                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:component-core*"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-mocks-StubsLambda*"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-core*"
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-JARRSAEncryptionKeyV2"
