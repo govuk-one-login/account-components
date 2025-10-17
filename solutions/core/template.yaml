@@ -86,7 +86,7 @@ Resources:
       Type: String
       Value: !GetAtt DynamoDbSSEKey.Arn
 
-  JARRSAEncryptionKeyV2:
+  JARRSAEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
       Description: "RSA KMS key pair used to encrypt and decrypt JARs"
@@ -126,13 +126,13 @@ Resources:
                   - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-core*"
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-JARRSAEncryptionKeyV2"
+          Value: !Sub "${AWS::StackName}-JARRSAEncryptionKey"
 
   JARRSAEncryptionKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
       AliasName: !Sub "alias/${AWS::StackName}-JARRSAEncryptionKey"
-      TargetKeyId: !GetAtt JARRSAEncryptionKeyV2.Arn
+      TargetKeyId: !GetAtt JARRSAEncryptionKey.Arn
 
   S3SSEKey:
     Type: AWS::KMS::Key
