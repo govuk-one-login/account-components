@@ -4,7 +4,7 @@ import {
   type FastifyRequest,
 } from "fastify";
 import { MockRequestObjectScenarios, Scope } from "../../types/common.js";
-import { getClientRegistry } from "../utils/clientRegistry/index.js";
+import { getClientRegistryWithInvalidClient } from "../utils/getClientRegistryWithInvalidClient/index.js";
 import { paths } from "../../utils/paths.js";
 import assert from "node:assert";
 
@@ -19,7 +19,7 @@ export async function createRequestObjectGet(
 ) {
   const availableScopes = Object.values(Scope);
   const availableScenarios = Object.values(MockRequestObjectScenarios);
-  const availableClients = await getClientRegistry();
+  const availableClients = await getClientRegistryWithInvalidClient();
 
   assert.ok(reply.render);
   await reply.render("generateRequestObject/handlers/create.njk", {
@@ -47,7 +47,7 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
 
     const { body: object } = response;
 
-    const redirectUrl = (await getClientRegistry()).find(
+    const redirectUrl = (await getClientRegistryWithInvalidClient()).find(
       (client) => client.client_id === requestBody.client_id,
     )?.redirect_uris[0];
 
