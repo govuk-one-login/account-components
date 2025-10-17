@@ -1,6 +1,6 @@
-import { createAppConfigClient } from "../../../../../commons/utils/awsClient/appconfigClient/index.js";
 import { getAppConfig } from "@aws-lambda-powertools/parameters/appconfig";
 import { getEnvironment } from "../../../../../commons/utils/getEnvironment/index.js";
+import { getAppConfigClient } from "../../../../../commons/utils/awsClient/index.js";
 
 interface Client {
   client_id: string;
@@ -37,7 +37,7 @@ export async function getClientRegistry(): Promise<Client[]> {
       application: "account-components",
       environment: getEnvironment(),
       transform: "json",
-      awsSdkV3Client: createAppConfigClient(),
+      awsSdkV3Client: getAppConfigClient(),
     });
   }
   if (

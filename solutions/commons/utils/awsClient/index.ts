@@ -2,6 +2,7 @@ import { createDynamoDbClient } from "./dynamodbClient/index.js";
 import { createSqsClient } from "./sqsClient/index.js";
 import { SSMProvider } from "@aws-lambda-powertools/parameters/ssm";
 import { getAwsClientConfig } from "./getAwsClientConfig/index.js";
+import { createAppConfigClient } from "./appConfigClient/index.js";
 
 let cachedDynamoDbClient: ReturnType<typeof createDynamoDbClient> | undefined;
 const getDynamoDbClient = (): ReturnType<typeof createDynamoDbClient> => {
@@ -23,4 +24,15 @@ const getParametersProvider = (): SSMProvider => {
   return cachedParametersProvider;
 };
 
-export { getDynamoDbClient, getSqsClient, getParametersProvider };
+let cachedAppConfigClient: ReturnType<typeof createAppConfigClient> | undefined;
+const getAppConfigClient = (): ReturnType<typeof createAppConfigClient> => {
+  cachedAppConfigClient ??= createAppConfigClient();
+  return cachedAppConfigClient;
+};
+
+export {
+  getDynamoDbClient,
+  getSqsClient,
+  getParametersProvider,
+  getAppConfigClient,
+};
