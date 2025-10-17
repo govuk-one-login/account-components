@@ -48,6 +48,8 @@ jobs:
           echo "USE_LOCALSTACK=1" >> .env.integration-tests
           echo "MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME=/components-mocks/MockClientEcPrivateKey  # pragma: allowlist secret" >> .env.integration-tests
           echo "MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME=/components-mocks/MockClientEcPublicKey  # pragma: allowlist secret" >> .env.integration-tests
+          echo "JAR_RSA_ENCRYPTION_KEY_ALIAS=/components-mocks/MockClientEcPublicKey  # pragma: allowlist secret" >> .env.integration-tests
+          echo "JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/components-core-JARRSAEncryptionKey  # pragma: allowlist secret" >> .env.integration-tests
 
       - name: Install integration tests dependencies
         run: cd solutions/integration-tests && npm ci
