@@ -26,6 +26,9 @@ Parameters:
     Type: String
     Description: >
       The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
+  CoreStackName:
+    Type: String
+    Default: "components-core"
 
 Mappings:
   EnvironmentConfiguration:
@@ -126,41 +129,21 @@ Globals:
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
 
 Resources:
-  StubECPrivateKeySSM:
+  MockClientECPrivateKeySSM:
     Type: AWS::SSM::Parameter
     Properties:
-      Description: The EC private key
-      Name: !Sub /${AWS::StackName}/EcPrivateKey
+      Description: A mock client EC private key
+      Name: !Sub /${AWS::StackName}/MockClientEcPrivateKey
       Type: String
       Value: "set-me"
       Tags:
         Environment: !Ref Environment
 
-  StubECPublicKeySSM:
+  MockClientECPublicKeySSM:
     Type: AWS::SSM::Parameter
     Properties:
-      Description: The EC public key
-      Name: !Sub /${AWS::StackName}/EcPublicKey
-      Type: String
-      Value: "set-me"
-      Tags:
-        Environment: !Ref Environment
-
-  StubRSAPrivateKeySSM:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Description: The RSA private key
-      Name: !Sub /${AWS::StackName}/RsaPrivateKey
-      Type: String
-      Value: "set-me"
-      Tags:
-        Environment: !Ref Environment
-
-  StubRSAPublicKeySSM:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Description: The RSA public key
-      Name: !Sub /${AWS::StackName}/RsaPublicKey
+      Description: A mock client EC public key
+      Name: !Sub /${AWS::StackName}/MockClientEcPublicKey
       Type: String
       Value: "set-me"
       Tags:
@@ -177,6 +160,7 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - !Ref GetSSMParameterPolicy
+        - !Ref KMSGetPublicKeyPolicy
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -199,10 +183,19 @@ Resources:
               - ssm:GetParameters
               - ssm:GetParametersByPath
             Resource:
-              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/RsaPublicKey
-              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/RsaPrivateKey
-              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/EcPublicKey
-              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/EcPrivateKey
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPublicKey
+              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPrivateKey
+
+  KMSGetPublicKeyPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Action:
+              - kms:GetPublicKey
+            Resource: "*"
 
   StubsLambdaEnvironmentVariablesEncryptionKey:
     Type: AWS::KMS::Key
@@ -266,10 +259,10 @@ Resources:
         LogGroup: !Ref StubsLambdaLogGroup
       Environment:
         Variables:
-          EC_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/EcPrivateKey"
-          RSA_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/RsaPrivateKey"
-          EC_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/EcPublicKey"
-          RSA_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/RsaPublicKey"
+          MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPrivateKey"
+          MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPublicKey"
+          JAR_RSA_ENCRYPTION_KEY_ALIAS:
+            Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyAliasName"
       Role: !GetAtt StubsLambdaExecutionRole.Arn
 
   StubsLambdaLogGroup:

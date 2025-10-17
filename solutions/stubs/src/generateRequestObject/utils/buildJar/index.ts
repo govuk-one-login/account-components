@@ -2,13 +2,14 @@ import { CompactEncrypt } from "jose";
 import { logger } from "../../../utils/logger.js";
 import { JWKS_KEY_TYPES, SignatureTypes } from "../../../types/common.js";
 import { convertPemToJwk } from "../../../utils/convert-pem-to-jwk.js";
-import { getParametersProvider } from "../../../../../commons/utils/awsClient/index.js";
+import { getKmsClient } from "../../../../../commons/utils/awsClient/index.js";
+import { createPublicKey } from "node:crypto";
 
-const getPublicKeyName = (keyType: SignatureTypes): string => {
+const getPublicKeyKmsAliasName = (keyType: SignatureTypes): string => {
   const keyEnvironment =
     keyType == SignatureTypes.EC
-      ? "EC_PUBLIC_KEY_SSM_NAME"
-      : "RSA_PUBLIC_KEY_SSM_NAME";
+      ? "JAR_EC_ENCRYPTION_KEY_ALIAS"
+      : "JAR_RSA_ENCRYPTION_KEY_ALIAS";
 
   const publicKey = process.env[keyEnvironment];
   if (!publicKey) {
@@ -18,11 +19,26 @@ const getPublicKeyName = (keyType: SignatureTypes): string => {
 };
 
 export async function buildJar(signedJwt: string): Promise<string> {
-  let publicKeyPem;
+  let publicKeyPem: string;
   try {
-    publicKeyPem = await getParametersProvider().get(
-      getPublicKeyName(SignatureTypes.RSA),
-    );
+    const publicKey = await getKmsClient().getPublicKey({
+      KeyId: getPublicKeyKmsAliasName(SignatureTypes.RSA),
+    });
+
+    if (!publicKey.PublicKey) {
+      throw new Error("Public key data is missing from KMS response");
+    }
+
+    publicKeyPem = createPublicKey({
+      key: Buffer.from(publicKey.PublicKey),
+      format: "der",
+      type: "spki",
+    })
+      .export({
+        format: "pem",
+        type: "spki",
+      })
+      .toString();
   } catch (error) {
     logger.error(
       `Failed to retrieve ${SignatureTypes.RSA} public key from SSM`,

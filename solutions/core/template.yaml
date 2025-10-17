@@ -86,10 +86,10 @@ Resources:
       Type: String
       Value: !GetAtt DynamoDbSSEKey.Arn
 
-  JAREncryptionKeyV2:
+  JARRSAEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
-      Description: "KMS key used to decrypt JARs"
+      Description: "RSA KMS key pair used to encrypt and decrypt JARs"
       KeySpec: RSA_2048
       KeyUsage: ENCRYPT_DECRYPT
       Origin: AWS_KMS
@@ -111,7 +111,7 @@ Resources:
             Resource: "*"
             Condition:
               ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:component-core*"
+                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-core*"
           - Effect: "Allow"
             Principal:
               Service: lambda.amazonaws.com
@@ -121,16 +121,18 @@ Resources:
             Resource: "*"
             Condition:
               ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:component-core*"
+                "aws:SourceArn":
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-mocks-StubsLambda*"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-core*"
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-JAREncryptionKeyV2"
+          Value: !Sub "${AWS::StackName}-JARRSAEncryptionKey"
 
-  JAREncryptionKeyAlias:
+  JARRSAEncryptionKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-JAREncryptionKeyV2"
-      TargetKeyId: !GetAtt JAREncryptionKeyV2.Arn
+      AliasName: !Sub "alias/${AWS::StackName}-JARRSAEncryptionKey"
+      TargetKeyId: !GetAtt JARRSAEncryptionKey.Arn
 
   S3SSEKey:
     Type: AWS::KMS::Key
@@ -243,6 +245,11 @@ Outputs:
     Value: !GetAtt DynamoDbSSEKey.Arn
     Export:
       Name: !Sub "${AWS::StackName}:DynamoDbSSEKeyArn"
+  JARRSAEncryptionKeyAliasName:
+    Description: Alias name of the JAR RSA encryption KMS key
+    Value: !Ref JARRSAEncryptionKeyAlias
+    Export:
+      Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyAliasName"
   JWKSStoreBucketName:
     Description: Name of the S3 bucket
     Value: !Ref JWKSStoreBucket
