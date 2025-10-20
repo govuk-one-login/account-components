@@ -1,0 +1,316 @@
+---
+openapi: 3.0.3
+
+info:
+  title: Account Management Components OAuth Provider Public API
+  version: 0.0.1
+  description: |
+    OAuth 2.0 provider endpoints, including:
+    - GET /authorize
+    - GET /.well-known/jwks.json (publishes signing and encryption keys)
+    - GET /.well-known/oauth-authorization-server (OAuth Discovery)
+  contact:
+    name: GDS - DI Accounts Pod - Home Team
+    email: one-login-home-team@digital.cabinet-office.gov.uk
+  license:
+    name: MIT
+    url: https://github.com/govuk-one-login/account-components/blob/main/LICENSE.md
+tags:
+  - name: OAuth
+    description: |-
+      Methods to gain access to Account Management Component Journeys.
+
+      **Note:** This functionality is intended to be used by systems solely belonging internally to the GDS DI.
+
+servers:
+  - url: https://api.manage.dev.account.gov.uk
+    description: public development server
+  - url: https://api.manage.build.account.gov.uk
+    description: public build server
+  - url: https://api.manage.staging.account.gov.uk
+    description: public staging server
+  - url: https://api.manage.integration.account.gov.uk
+    description: public integration server
+  - url: https://api.manage.account.gov.uk
+    description: public production server
+
+paths:
+  /authorize:
+    get:
+      summary: Authorization endpoint
+      operationId: authorize
+      tags:
+        - OAuth
+      description: |
+        Initiates an OAuth 2.0 Authorization Code flow using a JWT Secured Authorization Request (JAR) per RFC 9101.
+        The authorization server will redirect the user-agent back to the client with an authorization code.
+        This endpoint ONLY accepts JAR Request Objects. 
+        All authorization request parameters MUST be conveyed inside a signed Request Object JWT that is been encrypted (`request`).
+
+        The authorization server MUST:
+          - Decrypt the JAR using it's private key.
+          - Verify claims and query string parameters
+          - Validate the Request Object signature with the client's registered key and supported algorithms.
+          - Validate standard claims (`iss`, `aud`, `exp`, `iat`, and optionally `jti`).
+          - Use the parameters contained INSIDE the Request Object; any duplicated top-level query parameters MUST be ignored.
+          - Enforce any server policies (e.g., allowed `redirect_uri`, required `response_type` == `code`, required `scope`, etc.).
+      parameters:
+        - $ref: "#/components/parameters/ResponseType"
+        - $ref: "#/components/parameters/ClientId"
+        - $ref: "#/components/parameters/Scope"
+        - $ref: "#/components/parameters/RedirectUri"
+        - $ref: "#/components/parameters/RequestObjectJAR"
+      responses:
+        "302":
+          description: Redirect the user agent to the redirect uri
+          headers:
+            Location:
+              description: Redirect URI with `code` and `state` on successful journey completion, or `error` and `error_description` parameters if authorization fails.
+              schema:
+                format: uri
+                type: string
+              examples:
+                success:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?code=anAuthCode&state=aRandomString
+                user_aborted:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1001
+                password_incorrect:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1002
+                permanently_suspended:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1003
+                otp_too_many_sent:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1004
+                otp_blocked:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1005
+                otp_too_many_entered:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1006
+                invalid_request:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2001
+                already_seen_jti:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2002
+                unable_to_decrypt:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2003
+                invalid_alg:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2004
+                kid_missing:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2005
+                invalid_signature:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2006
+                account_not_found:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_scope&error_description=E3001
+                no_session_found:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_scope&error_description=E3002
+                jwks_unreachable:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=unauthorized_client&error_description=E4001
+                jwks_missing_key:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=unauthorized_client&error_description=E4002
+                jwks_invalid:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=unauthorized_client&error_description=E4003
+                failed_to_save_jti:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5001
+                failed_to_create_session:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5002
+                failed_to_decrypt:
+                  value: https://signin-account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5003
+                failed_to_save_outcome:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5004
+                failed_to_delete:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5005
+                failed_to_challenge_password:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5006
+                failed_to_challenge_otp:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5007
+                failed_to_get_session:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5008
+
+  /.well-known/jwks.json:
+    get:
+      summary: JSON Web Key Set (JWKS)
+      description: Publishes public keys for signature and encryption.
+      operationId: jwks
+      tags:
+        - OAuth
+      responses:
+        "200":
+          description: JWK Set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWKSet"
+              examples:
+                example:
+                  value:
+                    keys:
+                      - kty: RSA
+                        use: enc
+                        kid: enc-2025-01
+                        alg: RSA-OAEP-256
+                        n: "t7Z...base64url-modulus" # pragma: allowlist secret
+                        e: "AQAB" # pragma: allowlist secret
+
+  /.well-known/oauth-authorization-server:
+    get:
+      summary: OAuth Provider Configuration (Discovery)
+      description: Discover OAuth method URLs
+      operationId: discovery
+      tags:
+        - OAuth
+      responses:
+        "200":
+          description: OAuth discovery metadata document (rfc8414)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProviderConfiguration"
+              examples:
+                example:
+                  value:
+                    issuer: https://api.manage.account.gov.uk
+                    authorization_endpoint: https://api.manage.account.gov.uk/authorize
+                    token_endpoint: https://abcd1234.execute-api.eu-west-2.amazonaws.com/v1/token
+                    userinfo_endpoint: https://abcd1234.execute-api.eu-west-2.amazonaws.com/v1/userinfo
+                    jwks_uri: https://api.manage.account.gov.uk/.well-known/jwks.json
+                    response_types_supported: [code]
+                    token_endpoint_auth_methods_supported: [private_key_jwt]
+                    token_endpoint_auth_signing_alg_values_supported: [RS256]
+                    scopes_supported: [am-account-delete]
+                    grant_types_supported: [authorization_code]
+
+components:
+  schemas:
+    JWK:
+      type: object
+      description: JSON Web Key (public parameters only)
+      properties:
+        kty:
+          type: string
+          example: RSA
+        use:
+          type: string
+          enum: [sig, enc]
+        kid:
+          type: string
+        alg:
+          type: string
+          example: RS256
+        n:
+          type: string
+          description: Base64url-encoded modulus for RSA
+        e:
+          type: string
+          description: Base64url-encoded exponent for RSA
+        crv:
+          type: string
+          description: Curve name for EC keys
+        x:
+          type: string
+          description: EC/OKP x coordinate
+        y:
+          type: string
+          description: EC y coordinate
+      required: [kty, kid]
+
+    JWKSet:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            $ref: "#/components/schemas/JWK"
+      required: [keys]
+
+    ProviderConfiguration:
+      type: object
+      description: Subset of OIDC Discovery 1.0 metadata
+      properties:
+        issuer:
+          type: string
+          format: uri
+        authorization_endpoint:
+          type: string
+          format: uri
+        token_endpoint:
+          type: string
+          format: uri
+        userinfo_endpoint:
+          type: string
+          format: uri
+        jwks_uri:
+          type: string
+          format: uri
+        response_types_supported:
+          type: array
+          items:
+            type: string
+        token_endpoint_auth_methods_supported:
+          type: array
+          items:
+            type: string
+        token_endpoint_auth_signing_alg_values_supported:
+          type: array
+          items:
+            type: string
+        scopes_supported:
+          type: array
+          items:
+            type: string
+        grant_types_supported:
+          type: array
+          items:
+            type: string
+      required:
+        - issuer
+        - authorization_endpoint
+        - token_endpoint
+        - jwks_uri
+
+  parameters:
+    ResponseType:
+      in: query
+      name: response_type
+      required: true
+      schema:
+        type: string
+        enum:
+          - code
+      example: code
+
+    ClientId:
+      in: query
+      description: Supplied during Client Registration
+      name: client_id
+      required: true
+      schema:
+        type: string
+        pattern: ^[A-Fa-f0-9]{32}$
+      example: ABCDEF12345678901234567890123456 # pragma: allowlist secret
+
+    RedirectUri:
+      in: query
+      description: After a user successfully authorizes an application, the authorization server will redirect the user back to the application using this URI.
+      name: redirect_uri
+      required: true
+      schema:
+        type: string
+        format: uri
+        pattern: ^(https|http)://(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$
+      example: https://signin.account.gov.uk/callbacks/account-deletion
+
+    Scope:
+      in: query
+      name: scope
+      description: One or more Scope values separated by single spaces
+      required: true
+      schema:
+        type: string
+        pattern: ^[a-z]+(?:-?[a-z]+)*(?:\s[a-z]+(?:-?[a-z]+)*)*$
+        example: am-account-delete
+
+    RequestObjectJAR:
+      in: query
+      name: request
+      description: The Request Object that holds authorization request parameters stated [in the table in step 4 of the High Level Process Description](https://govukverify.atlassian.net/wiki/spaces/DID/pages/5654708312/High+Level#Process-Description).
+      required: true
+      schema:
+        type: string
+        example: eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIiwia2lkIjoicnNhS2lkMTIzIn0.HAQ6BEDGiAAdtzgJnJnT6u5aiWS-AAUBP2gAbhVzIXLBNmmvaqEd9KCLOIqO_zZndcPowcu1brkVkEIKdQiitQX4njubg9Qdf0dOMG7U4-uKeprlEyObMacCOxDva8st2XM0NmnlZ2Q_8a8YnTLFnaM6lZjsYXnqaBCZtUeUPYhXuP42-C3Q9DG8D289YbVf7f-5DIwClMXLkzX1o9ctqzCvN3H3UpgJI1XumWlB9o6c5Maa78LQu4GYsGW5X86Q8bxRZWy7nttDzYBJ85SzIj24WVJkNEHRfgtzNI0Bi-tLi3AtAQ6IhrNUKGC04eBEqRUL0Te2QSEw-3Hln6pM-A.cj0I_dk2e-vgfm2R.zTp_hDO87AqQveOKtj_RRhvyvrpHJnF_TUH2kLR_CCSBL1v7xeyleKSMr1TEht4abf2Yx1iFzMCgc7VLk8ZCnorqU3sG_AqRVjwD6qU5K1oN4C-nqDzw3t2QaLdz42TKHW0g1MykU5tWYmDVtsh-V-M31DirVVEztAQngp5S6839_MQ-IoC5yZyA097bPdTYoJRY1jp4kZZjJLg6tvRyuU2bgpdFwTcDpmZjHBH4EEFDW53cTKSovt3RLXomSqvS6-B9c975b_-wh6Lse993w1M2puYIzARpPrIdFNdqUNoodZCfFuuhvVW_eNtHgTsl4Ep-aNfAHYjNUr1a6kY-jAEYYyfBO82y9BgnairTS7MgmXYXK9b1r5uvbN7Bz_Hzcz_J0ReUOlA8VFvxRCcwbWtpbHOmcRLR8Jm6NYkMQOOIIabhWdxe0ruieYG6AgRYxws45uKqV-oHhXQ77AaCbXZmaHg6a3lBAJyerTPxaljgH7h4cWtiaEFyodtN0go-jC_3Vba7nCL70sh-rinqDjMdATFxYgkeiTt8HS6BeasKYJQAkXlCu5In2fwOxFoUCVoQrjPAdKt643cgRoR6ht4JChNolBixWb1sfN0rpoyDNDOGGrDXhmvsm7O_kue_f6GYAFztgqmboX9v3PJZcW5zivg07ZwyvDNflOsfNYk_CjD2F5eFsUHWo7nWnzQgszU0MXAt-3XU9_2DgoVblrWi1M-dXuKf6H1KXX1uwKIJ8RushuJysU-bTHMQ94MLFuYHlSJJ7Bw6j7kINtWiNnn7SI_Z244uN7B6MQS9-3lvioZapUecasaIsPFbDq2IebuEN2BqtiCuTl45tdBV7SpRyzlnbsWYRIiGRuRsnWeShsx89wnTjCnyVElQInruIdXyMniHMJ-VCm31CPkMnM4IDEGcK1xLRYb36ETSo9fkwSSR4FddybXVbMlnTWNQB2pkGch7u71gous6bCpdcSZBHUoGCdz1kMfE5GSfOQsuWImX-oIBnRCqV7SZbFLdDOLDgb0XruL_D2zTcxfbYhVRa5TY8rptmESxRDxapBFUw4Eja2rjwPgZHJ_2_dv2v_J0LqucqyK5MjpKS9dlsOZ4B-4Ej1UzMxwmVeIU6SnSdSjOXEpWpNo_zIpGWkvWEwMP1X3GtE22RWodK8qB4AtiOqD9Enjl_94KSoe55Z5HMtRsBhGi9kmhbvcSuEkAoqFU02-Yge5fOhV4BNHxbQvmX_KX0fg_IJt8XlixDd8-ksTaxg.88paWsuMsh3NbtegtAb9Ag # pragma: allowlist secret
