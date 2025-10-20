@@ -31,14 +31,10 @@ Mappings:
   EnvironmentConfiguration:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      stubsDomain: stubs.manage.dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-    staging:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-    integration:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-    production:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
+      stubsDomain: stubs.manage.build.account.gov.uk
 
 Conditions:
   UseCodeSigning:
@@ -233,6 +229,39 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-StubsLambdaEnvironmentVariablesEncryptionKey"
+
+  StubsApiDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName:
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, stubsDomain]
+      RegionalCertificateArn:
+        Fn::ImportValue: certificate-CertificateARN
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: TLS_1_2
+
+  StubsRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Ref StubsApiDomain
+      Type: A
+      HostedZoneId:
+        Fn::ImportValue: hosted-zone-HostedZoneID
+      AliasTarget:
+        DNSName: !GetAtt StubsApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt StubsApiDomain.RegionalHostedZoneId
+        EvaluateTargetHealth: false
+
+  StubsApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref StubsApiDomain
+      RestApiId: !Ref StubsApiGateway
+      Stage: !Ref Environment
+    DependsOn:
+      - StubsApiGatewayStage # This resource is created as part of the RestApi resource
 
   StubsApiGateway:
     Type: AWS::Serverless::Api
