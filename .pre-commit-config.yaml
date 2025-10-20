@@ -57,6 +57,16 @@ repos:
 
   - repo: local
     hooks:
+      - id: validate-api-specs
+        name: Validate API Specs
+        entry: npm run api-specs:validate
+        language: system
+        exclude: .*
+        always_run: true
+        stages: [pre-commit]
+
+  - repo: local
+    hooks:
       - id: check-gh-actions
         name: Check GitHub Actions
         entry: npm run check-gh-actions
