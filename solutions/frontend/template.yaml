@@ -353,6 +353,8 @@ Resources:
       WebACLArn:
         Fn::ImportValue: "cloudfront-CloakingOriginWebACLArn"
       ResourceArn: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${FrontendApiGateway}/stages/${Environment}"
+    DependsOn:
+      - FrontendApiGatewayStage # This resource is created as part of the RestApi resource
 
   FrontendDomainRecord:
     Type: AWS::Route53::RecordSet
