@@ -16,7 +16,8 @@ resource "aws_cloudformation_stack" "certificate_stack_london" {
   template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/certificate/template.yaml"
 
   parameters = {
-    DomainName   = var.hosted_zone_domain
-    HostedZoneID = aws_cloudformation_stack.hosted_zone.outputs["HostedZoneID"]
+    DomainName         = var.hosted_zone_domain
+    HostedZoneID       = aws_cloudformation_stack.hosted_zone.outputs["HostedZoneID"]
+    AlternativeNameOne = var.stubs_domain
   }
 }
