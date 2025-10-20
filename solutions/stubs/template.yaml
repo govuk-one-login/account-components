@@ -31,10 +31,10 @@ Mappings:
   EnvironmentConfiguration:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      stubsDomain: stubs.manage.dev.acccount.gov.uk
+      stubsDomain: stubs.manage.dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      stubsDomain: stubs.manage.build.acccount.gov.uk
+      stubsDomain: stubs.manage.build.account.gov.uk
 
 Conditions:
   UseCodeSigning:
