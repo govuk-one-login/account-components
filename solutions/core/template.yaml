@@ -152,7 +152,7 @@ Resources:
   JWKSStoreBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${AWS::StackName}-jwks-store"
+      BucketName: !Sub "${AWS::StackName}-${Environment}-jwks-store"
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -161,7 +161,7 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
       LoggingConfiguration:
-        DestinationBucketName: !Sub "${AWS::StackName}-access-logs"
+        DestinationBucketName: !Sub "${AWS::StackName}-${Environment}-access-logs"
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -196,7 +196,7 @@ Resources:
   AccessLogsBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub "${AWS::StackName}-access-logs"
+      BucketName: !Sub "${AWS::StackName}-${Environment}-access-logs"
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
