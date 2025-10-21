@@ -21,7 +21,8 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
     SlackNotificationType                   = var.environment == "production" ? "All" : "Failures"
-
+    ProgrammaticPermissionsBoundary         = "True"
+    AllowedServiceOne                       = "AppConfig"
   }
 
   capabilities = var.capabilities
@@ -98,6 +99,9 @@ resource "aws_cloudformation_stack" "mocks_pipeline_stack" {
     IncludePromotion                 = "No"
     BuildNotificationStackName       = "build-notifications"
     SlackNotificationType            = "Failures"
+    ProgrammaticPermissionsBoundary  = "True"
+    AllowedServiceOne                = "AppConfig"
+    AllowedServiceTwo                = "SSM"
   }
 
   capabilities = var.capabilities

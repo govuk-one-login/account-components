@@ -126,7 +126,7 @@ describe("buildJar", async () => {
     delete process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"];
 
     await expect(buildJar(dummySignedJwt)).rejects.toThrow(
-      "Failed to retrieve key from SSM for param ",
+      "Failed to retrieve key from KMS",
     );
 
     // Restore for other tests
@@ -139,7 +139,7 @@ describe("buildJar", async () => {
     mockGetPublicKey.mockRejectedValue(new Error("KMS error"));
 
     await expect(buildJar(dummySignedJwt)).rejects.toThrow(
-      "Failed to retrieve key from SSM for param ",
+      "Failed to retrieve key from KMS",
     );
   });
 

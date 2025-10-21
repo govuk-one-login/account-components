@@ -5,14 +5,14 @@
       "scope": "am-account-delete",
       "redirect_uris": ["https://signin.dev.account.gov.uk/acm-callback"],
       "client_name": "Dummy Auth",
-      "jwks_uri": "https://signin.dev.account.gov.uk/.well-known/jwks.json"
+      "jwks_uri": "https://stubs.manage.dev.account.gov.uk/auth/.well-known/jwks.json"
     },
     {
       "client_id": "12345678901234567890123456789013",
       "scope": "am-account-delete",
       "redirect_uris": ["https://home.dev.account.gov.uk/acm-callback"],
       "client_name": "Dummy Home",
-      "jwks_uri": "https://home.dev.account.gov.uk/.well-known/jwks.json"
+      "jwks_uri": "https://stubs.manage.dev.account.gov.uk/home/.well-known/jwks.json"
     }
   ]
 }
