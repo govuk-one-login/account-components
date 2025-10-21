@@ -383,6 +383,7 @@ Resources:
     Type: AWS::Serverless::Api
     Properties:
       StageName: !Ref Environment
+      AlwaysDeploy: true
       EndpointConfiguration:
         Type: REGIONAL
       BinaryMediaTypes:
