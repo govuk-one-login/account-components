@@ -23,6 +23,8 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
     SlackNotificationType                   = var.environment == "production" ? "All" : "Failures"
     ProgrammaticPermissionsBoundary         = "True"
     AllowedServiceOne                       = "AppConfig"
+    AllowedServiceTwo                       = "EC2"
+    AllowedServiceThree                     = "DynamoDB"
   }
 
   capabilities = var.capabilities
@@ -49,7 +51,10 @@ resource "aws_cloudformation_stack" "api_pipeline_stack" {
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
     SlackNotificationType                   = var.environment == "production" ? "All" : "Failures"
-
+    ProgrammaticPermissionsBoundary         = "True"
+    AllowedServiceOne                       = "AppConfig"
+    AllowedServiceTwo                       = "EC2"
+    AllowedServiceThree                     = "DynamoDB"
   }
 
   capabilities = var.capabilities

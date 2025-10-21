@@ -6,7 +6,7 @@
       "redirect_uris": [
         "https://signin.integration.account.gov.uk/acm-callback"
       ],
-      "client_name": "Dummy Auth",
+      "client_name": "dummy_auth",
       "jwks_uri": "https://signin.integration.account.gov.uk/.well-known/jwks.json"
     }
   ]
