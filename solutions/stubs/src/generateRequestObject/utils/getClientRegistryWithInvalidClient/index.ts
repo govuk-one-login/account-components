@@ -9,13 +9,6 @@ const invalidClient: Client = {
   jwks_uri: "https://nowhere/.well-known/jwks.json",
 };
 
-function addNonExistentClient(clientRegistry: Client[]) {
-  if (!clientRegistry.includes(invalidClient)) {
-    clientRegistry.push(invalidClient);
-  }
-  return clientRegistry;
-}
-
 export async function getClientRegistryWithInvalidClient(): Promise<Client[]> {
-  return addNonExistentClient(await getClientRegistry());
+  return [...(await getClientRegistry()), invalidClient];
 }

@@ -41,7 +41,7 @@
             "type": "string",
             "description": "A Redirect URI, also known as a Reply URL, specifies the URL where users are sent after the user has completed their AMC journey",
             "format": "uri",
-            "pattern": "^(https|http)://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$",
+            "pattern": "^(https|http)://(www\\.)?((localhost(:[0-9]+)?)|[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b)([-a-zA-Z0-9()@:%_+.~#?&/=]*)$",
             "minLength": 1,
             "maxLength": 255
           },
@@ -57,7 +57,7 @@
           "description": "URL string referencing the client's JSON Web Key (JWK) Set ",
           "type": "string",
           "format": "uri",
-          "pattern": "^(https|http)://(www\\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$",
+          "pattern": "^(https|http)://(www\\.)?((localhost(:[0-9]+)?)|[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b)([-a-zA-Z0-9()@:%_+.~#?&/=]*)$",
           "minLength": 1,
           "maxLength": 255
         }

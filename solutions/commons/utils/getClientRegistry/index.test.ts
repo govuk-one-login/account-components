@@ -2,13 +2,13 @@ import { expect, it, describe, vi, beforeEach, afterEach } from "vitest";
 import { getClientRegistry } from "./index.js";
 
 vi.mock("@aws-lambda-powertools/parameters/appconfig", () => ({
-  getAppConfig: vi.fn()
+  getAppConfig: vi.fn(),
 }));
 vi.mock("../getEnvironment/index.js", () => ({
-  getEnvironment: vi.fn()
+  getEnvironment: vi.fn(),
 }));
 vi.mock("../awsClient/index.js", () => ({
-  getAppConfigClient: vi.fn()
+  getAppConfigClient: vi.fn(),
 }));
 vi.mock("../../../config/local-config.json", () => ({
   default: {
@@ -18,17 +18,17 @@ vi.mock("../../../config/local-config.json", () => ({
         scope: "am-account-delete",
         redirect_uris: ["https://signin.build.account.gov.uk/acm-callback"],
         client_name: "Auth",
-        jwks_uri: "https://signin.build.account.gov.uk/.well-known/jwks.json"
+        jwks_uri: "https://signin.build.account.gov.uk/.well-known/jwks.json",
       },
       {
         client_id: "23456789012345678901234567890123",
         scope: "am-account-delete",
         redirect_uris: ["https://home.build.account.gov.uk/acm-callback"],
         client_name: "Home",
-        jwks_uri: "https://home.build.account.gov.uk/.well-known/jwks.json"
-      }
-    ]
-  }
+        jwks_uri: "https://home.build.account.gov.uk/.well-known/jwks.json",
+      },
+    ],
+  },
 }));
 
 const mockGetAppConfig = vi.fn();

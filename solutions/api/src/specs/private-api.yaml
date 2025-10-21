@@ -62,7 +62,7 @@ paths:
                   type: string
                   format: uri
                   description: Must be the same as in the authorize request.
-                  pattern: ^(https|http)://(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_+.~#?&/=]*)$
+                  pattern: ^(https|http)://(www\.)?((localhost(:[0-9]+)?)|[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b)([-a-zA-Z0-9()@:%_+.~#?&/=]*)$
                   example: https://signin.account.gov.uk/callbacks/account-deletion
                 client_assertion_type:
                   type: string

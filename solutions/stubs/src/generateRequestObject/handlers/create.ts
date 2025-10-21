@@ -7,10 +7,11 @@ import { MockRequestObjectScenarios, Scope } from "../../types/common.js";
 import { getClientRegistryWithInvalidClient } from "../utils/getClientRegistryWithInvalidClient/index.js";
 import { paths } from "../../utils/paths.js";
 import assert from "node:assert";
+import * as v from "valibot";
 
-interface RequestBody {
-  client_id: string;
-}
+const requestBodySchema = v.object({
+  client_id: v.string(),
+});
 
 export async function createRequestObjectGet(
   _: FastifyRequest,
@@ -33,13 +34,11 @@ export async function createRequestObjectGet(
 
 export function createRequestObjectPost(fastify: FastifyInstance) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
-    const requestBody = request.body as RequestBody;
+    const requestBody = v.parse(requestBodySchema, request.body);
     const response = await fastify.inject({
       method: "POST",
       url: paths.requestObjectGenerator,
-      payload: {
-        ...requestBody,
-      },
+      payload: new URLSearchParams(requestBody).toString(),
       headers: {
         "content-type": "application/x-www-form-urlencoded",
       },
