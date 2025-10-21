@@ -35,7 +35,7 @@
             Redirected to: <a href="{{ redirect_uri }}"><pre>{{ redirect_uri }}</pre></a>
         {% endif %}
         <h1>Start Auth Journey</h1>
-        <form method="post" action="/create-request-object">
+        <form method="post" action="/">
             <fieldset>
                 <legend>Scopes</legend>
                 {% for scope in availableScopes %}

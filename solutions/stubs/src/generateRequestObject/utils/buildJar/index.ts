@@ -41,10 +41,10 @@ export async function buildJar(signedJwt: string): Promise<string> {
       .toString();
   } catch (error) {
     logger.error(
-      `Failed to retrieve ${SignatureTypes.RSA} public key from SSM`,
+      `Failed to retrieve ${SignatureTypes.RSA} public key from KMS`,
       { error },
     );
-    throw new Error("Failed to retrieve key from SSM for param ");
+    throw new Error("Failed to retrieve key from KMS");
   }
 
   if (!publicKeyPem) {
