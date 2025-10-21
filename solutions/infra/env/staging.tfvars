@@ -1,5 +1,6 @@
 environment                                          = "staging"
 hosted_zone_domain                                   = "manage.staging.account.gov.uk"
+api_domain                                           = "api.manage.staging.account.gov.uk"
 signer_allowed_accounts                              = []
 container_signer_key_arn                             = "arn:aws:kms:eu-west-2:629382882013:key/6d5cec29-dda4-42cb-a6bb-ea317123cd4c"
 signing_profile_arn                                  = "arn:aws:signer:eu-west-2:629382882013:/signing-profiles/SigningProfile_VLTxKzC7V3x8"
@@ -15,3 +16,5 @@ config_artefact_path                                 = "staging-config.json"
 config_signing_key_arn                               = "arn:aws:kms:eu-west-2:629382882013:key/30105adc-4891-4b71-bec1-b19a6256e2f1"
 config_artifact_source_bucket_arn                    = "arn:aws:s3:::pipeline-app-config-githubartifactsourcebucket-leuvstbm9jae"
 config_artifact_source_bucket_event_trigger_role_arn = "arn:aws:iam::629382882013:role/PL-pipeline-app-config-DepTrigRole-0636b3c8efc9"
+api_artifact_source_bucket_arn                       = "TODO"
+api_artifact_source_bucket_event_trigger_role_arn    = "TODO"

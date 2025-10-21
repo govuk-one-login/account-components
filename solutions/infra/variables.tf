@@ -18,6 +18,11 @@ variable "stubs_domain" {
   default     = null
 }
 
+variable "api_domain" {
+  type        = string
+  description = "The domain to use for the public API"
+}
+
 variable "create_build_stacks" {
   type        = bool
   description = "Whether or not to deploy the stacks for building and signing application code. Only needed in dev and build. Defaults to false"
@@ -87,9 +92,21 @@ variable "main_artifact_source_bucket_arn" {
   default     = "none"
 }
 
+variable "api_artifact_source_bucket_arn" {
+  type        = string
+  description = "The ARN of the promotion bucket from the previous environment's API pipeline"
+  default     = "none"
+}
+
 variable "main_artifact_source_bucket_event_trigger_role_arn" {
   type        = string
   description = "The ARN of the role to assume for promotion events from the previous environment's main pipeline"
+  default     = "none"
+}
+
+variable "api_artifact_source_bucket_event_trigger_role_arn" {
+  type        = string
+  description = "The ARN of the role to assume for promotion events from the previous environment's API pipeline"
   default     = "none"
 }
 
