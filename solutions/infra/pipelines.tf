@@ -130,6 +130,7 @@ resource "aws_cloudformation_stack" "mocks_pipeline_stack" {
     ProgrammaticPermissionsBoundary  = "True"
     AllowedServiceOne                = "AppConfig"
     AllowedServiceTwo                = "SSM"
+    AllowedServiceThree              = "EC2"
   }
 
   capabilities = var.capabilities
