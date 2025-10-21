@@ -3,11 +3,13 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components OAuth Provider Private API
-  version: 0.0.1
+  version: 0.0.2
   description: |
     OAuth 2.0 provider endpoints, including:
-    - POST /stage/token (supports client assertions via private_key_jwt)
-    - GET /stage/userinfo
+    - POST /v1/token (supports client assertions via private_key_jwt)
+    - GET /v1/userinfo
+    - GET /v1/.well-known/jwks.json (publishes signing and encryption keys)
+    - GET /v1/.well-known/oauth-authorization-server (OAuth Discovery)
   contact:
     name: GDS - DI Accounts Pod - Home Team
     email: one-login-home-team@digital.cabinet-office.gov.uk
@@ -17,9 +19,9 @@ info:
 tags:
   - name: OAuth
     description: |-
-      Methods to gain access to Account Management Component Journeys.
+      Supporting methods for Account Management Component Journeys.
 
-      **Note:** This functionality is intended to be used by systems solely belonging internally to the GDS DI.
+      **Note:** This functionality is intended to be used by systems solely belonging internally to GDS DI.
 
 servers:
   - url: https://abcd1234.execute-api.eu-west-2.amazonaws.com
@@ -121,6 +123,59 @@ paths:
               schema:
                 $ref: "#/components/schemas/OAuthError"
 
+  /v1/.well-known/jwks.json:
+    get:
+      summary: JSON Web Key Set (JWKS)
+      description: Publishes public keys for signature and encryption.
+      operationId: jwks
+      tags:
+        - OAuth
+      responses:
+        "200":
+          description: JWK Set
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWKSet"
+              examples:
+                example:
+                  value:
+                    keys:
+                      - kty: RSA
+                        use: enc
+                        kid: enc-2025-01
+                        alg: RSA-OAEP-256
+                        n: "t7Z...base64url-modulus" # pragma: allowlist secret
+                        e: "AQAB" # pragma: allowlist secret
+
+  /v1/.well-known/oauth-authorization-server:
+    get:
+      summary: OAuth Provider Configuration (Discovery)
+      description: Discover OAuth method URLs
+      operationId: discovery
+      tags:
+        - OAuth
+      responses:
+        "200":
+          description: OAuth discovery metadata document (rfc8414)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProviderConfiguration"
+              examples:
+                example:
+                  value:
+                    issuer: https://api.manage.account.gov.uk
+                    authorization_endpoint: https://api.manage.account.gov.uk/authorize
+                    token_endpoint: https://abcd1234.execute-api.eu-west-2.amazonaws.com/v1/token
+                    userinfo_endpoint: https://abcd1234.execute-api.eu-west-2.amazonaws.com/v1/userinfo
+                    jwks_uri: https://api.manage.account.gov.uk/.well-known/jwks.json
+                    response_types_supported: [code]
+                    token_endpoint_auth_methods_supported: [private_key_jwt]
+                    token_endpoint_auth_signing_alg_values_supported: [RS256]
+                    scopes_supported: [am-account-delete]
+                    grant_types_supported: [authorization_code]
+
 components:
   securitySchemes:
     bearerAuth:
@@ -179,3 +234,89 @@ components:
           format: email
           example: someone@something.com
       required: [sub, email, outcome]
+
+    JWK:
+      type: object
+      description: JSON Web Key (public parameters only)
+      properties:
+        kty:
+          type: string
+          example: RSA
+        use:
+          type: string
+          enum: [sig, enc]
+        kid:
+          type: string
+        alg:
+          type: string
+          example: RS256
+        n:
+          type: string
+          description: Base64url-encoded modulus for RSA
+        e:
+          type: string
+          description: Base64url-encoded exponent for RSA
+        crv:
+          type: string
+          description: Curve name for EC keys
+        x:
+          type: string
+          description: EC/OKP x coordinate
+        y:
+          type: string
+          description: EC y coordinate
+      required: [kty, kid]
+
+    JWKSet:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            $ref: "#/components/schemas/JWK"
+      required: [keys]
+
+    ProviderConfiguration:
+      type: object
+      description: Subset of OIDC Discovery 1.0 metadata
+      properties:
+        issuer:
+          type: string
+          format: uri
+        authorization_endpoint:
+          type: string
+          format: uri
+        token_endpoint:
+          type: string
+          format: uri
+        userinfo_endpoint:
+          type: string
+          format: uri
+        jwks_uri:
+          type: string
+          format: uri
+        response_types_supported:
+          type: array
+          items:
+            type: string
+        token_endpoint_auth_methods_supported:
+          type: array
+          items:
+            type: string
+        token_endpoint_auth_signing_alg_values_supported:
+          type: array
+          items:
+            type: string
+        scopes_supported:
+          type: array
+          items:
+            type: string
+        grant_types_supported:
+          type: array
+          items:
+            type: string
+      required:
+        - issuer
+        - authorization_endpoint
+        - token_endpoint
+        - jwks_uri
