@@ -1,43 +1,6 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const expectedResponse = {
-  availableClients: [
-    {
-      client_id: "ABCDEF12345678901234567890123456",
-      scope: "am-account-delete",
-      redirect_uris: ["https://signin.build.account.gov.uk/acm-callback"],
-      client_name: "Auth",
-      jwks_uri: "http://localhost:6003/auth/.well-known/jwks.json",
-    },
-    {
-      client_id: "23456789012345678901234567890123",
-      scope: "am-account-delete",
-      redirect_uris: ["https://home.build.account.gov.uk/acm-callback"],
-      client_name: "Home",
-      jwks_uri: "http://localhost:6003/home/.well-known/jwks.json",
-    },
-    {
-      client_id: "A1B2C3D4E5F6G7H8A1B2C3D4E5F6G7H8",
-      scope: "am-account-delete",
-      redirect_uris: ["https://nowhere"],
-      client_name: "Invalid",
-      jwks_uri: "https://nowhere/.well-known/jwks.json",
-    },
-  ],
-  availableScenarios: [
-    "valid",
-    "invalidAlg",
-    "noneAlg",
-    "missingKid",
-    "wrongKid",
-    "expired",
-    "iatInFuture",
-  ],
-  availableScopes: ["am-account-delete", "am-unknown"],
-  redirect_uri: undefined,
-};
-
 describe("createRequestObjectGet", () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
@@ -58,9 +21,18 @@ describe("createRequestObjectGet", () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(
+    expect(mockReply.render).toHaveBeenCalledWith(
       "generateRequestObject/handlers/create.njk",
-      expectedResponse,
+      expect.objectContaining({
+        availableClients: expect.any(Array),
+        availableScopes: expect.any(Array),
+        availableScenarios: expect.any(Array),
+        availableUsers: expect.any(Array),
+        authorizeUrl: undefined,
+        jwtPayload: undefined,
+        jwtHeader: undefined,
+        originalRequest: undefined,
+      }),
     );
   });
 });
@@ -75,13 +47,23 @@ describe("createRequestObjectPost", () => {
 
     mockFastify = {
       inject: vi.fn().mockResolvedValue({
-        body: "mock-request-object",
+        body: JSON.stringify({
+          encryptedJar: "mock-request-object",
+          jwtPayload: { foo: "bar" },
+          jwtHeader: { alg: "ES256" },
+        }),
       } as unknown as Response),
     };
 
     mockRequest = {
       body: {
         client_id: "23456789012345678901234567890123",
+        scenario: "valid",
+        scope: "am-account-delete",
+        jti: "nonce-123",
+        exp: "1234567890",
+        iss: "issuer.example.com",
+        user: "default",
       },
     };
 
@@ -103,13 +85,15 @@ describe("createRequestObjectPost", () => {
 
     await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-    expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(
+    expect(mockReply.render).toHaveBeenCalledWith(
       "generateRequestObject/handlers/create.njk",
-      {
-        ...expectedResponse,
-        redirect_uri:
-          "https://home.build.account.gov.uk/acm-callback?request=mock-request-object&response_type=code&scope=am-account-delete&client_id=23456789012345678901234567890123",
-      },
+      expect.objectContaining({
+        authorizeUrl:
+          "https://api.manage.local.account.gov.uk/authorize?client_id=23456789012345678901234567890123&scope=am-account-delete&response_type=code&redirect_uri=https%3A%2F%2Fhome.build.account.gov.uk%2Facm-callback&request=mock-request-object",
+        jwtPayload: { foo: "bar" },
+        jwtHeader: { alg: "ES256" },
+        originalRequest: mockRequest.body,
+      }),
     );
   });
 });

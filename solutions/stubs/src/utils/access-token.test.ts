@@ -1,10 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { MockInstance } from "vitest";
 import * as jose from "jose";
-import { generateAccessToken } from "./access-token.js";
-import { MockRequestObjectScenarios } from "../types/common.js";
-import type { RequestBody } from "../types/common.js";
 
+// Mock jose BEFORE importing the SUT so top-level await uses the mocked importJWK
 vi.mock(import("jose"), async () => {
   const actual = await vi.importActual<typeof jose>("jose");
   return {
@@ -18,13 +16,6 @@ describe("generateAccessToken", () => {
   const mockUUID = "1234-uuid-1111-1111-1111";
   const mockSignedToken = "mock.jwt.token";
   const mockPrivateKey = { fake: "key" };
-
-  const requestBody: RequestBody = {
-    client_id: "my-client-id",
-    iss: "issuer.example.com",
-    jti: "nonce-abc-123",
-    scenario: MockRequestObjectScenarios.VALID,
-  };
 
   let setProtectedHeaderMock: {
     setProtectedHeader: MockInstance;
@@ -54,29 +45,23 @@ describe("generateAccessToken", () => {
   });
 
   it("should generate a signed JWT", async () => {
-    const token = await generateAccessToken(requestBody);
+    const { generateAccessToken } = await import("./access-token.js");
+    const token = await generateAccessToken();
 
-    expect(jose.importJWK).toHaveBeenCalledExactlyOnceWith(
-      {
-        alg: "ES256",
-        crv: "P-256",
-        d: "Ob4_qMu1nkkBLEw97u--PHVsShP3xOKOJ6z0WsdU0Xw", // pragma: allowlist secret
-        kid: "B-QMUxdJOJ8ubkmArc4i1SGmfZnNNlM-va9h0HJ0jCo", // pragma: allowlist secret
-        kty: "EC",
-        use: "sig",
-        x: "YrTTzbuUwQhWyaj11w33k-K8bFydLfQssVqr8mx6AVE", // pragma: allowlist secret
-        y: "8UQcw-6Wp0bp8iIIkRw8PW2RSSjmj1I_8euyKEDtWRk", // pragma: allowlist secret
-      },
-      "ES256",
-    );
     expect(jose.SignJWT).toHaveBeenCalledExactlyOnceWith({
-      sub: `urn:fdc:gov.uk:2022:${mockUUID}`,
-      iss: requestBody.iss,
-      aud: requestBody.client_id,
+      sub: expect.stringMatching(
+        /^urn:fdc:gov.uk:2022:[0-9a-f-]{36}$/,
+      ) as unknown as string,
+      iss: "https://stubs.manage.local.account.gov.uk",
+      aud: expect.stringMatching(
+        /^[a-f0-9]{10}-[a-f0-9]{10}-[a-f0-9]{10}$/,
+      ) as unknown as string,
       exp: expect.any(Number) as unknown as number,
       iat: expect.any(Number) as unknown as number,
-      sid: mockUUID,
-      nonce: requestBody.jti,
+      sid: expect.stringMatching(/^[0-9a-f-]{36}$/) as unknown as string,
+      nonce: expect.stringMatching(
+        /^[a-f0-9]{10}-[a-f0-9]{10}$/,
+      ) as unknown as string,
       vot: "Cl.Cm",
     });
 

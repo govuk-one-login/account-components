@@ -130,6 +130,7 @@ describe("buildJar", async () => {
     );
 
     // Restore for other tests
+    // eslint-disable-next-line vitest/no-conditional-in-test
     if (originalEnv) {
       process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"] = originalEnv;
     }
