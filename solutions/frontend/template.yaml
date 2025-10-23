@@ -28,8 +28,6 @@ Parameters:
       The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
   CoreStackName:
     Type: String
-    Description: >
-      The name of the core stack that provides shared resources such as the DynamoDB KMS key
     Default: "components-core"
 
 Mappings:

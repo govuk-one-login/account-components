@@ -50,6 +50,17 @@ jobs:
           echo "MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME=/components-mocks/MockClientEcPublicKey  # pragma: allowlist secret" >> .env.integration-tests
           echo "JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/components-core-JARRSAEncryptionKey  # pragma: allowlist secret" >> .env.integration-tests
 
+      - name: Configure API environment
+        run: |
+          cd solutions/api
+          touch env.integration-tests.json
+          echo "{
+            "NODE_OPTIONS": "--enable-source-maps",
+            "ENVIRONMENT": "local",          
+            "NODE_ENV": "production",
+            "USE_LOCALSTACK": "1"
+          }" >> env.integration-tests.json
+
       - name: Install integration tests dependencies
         run: cd solutions/integration-tests && npm ci
 

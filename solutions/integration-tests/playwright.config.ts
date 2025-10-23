@@ -34,11 +34,11 @@ if (env.TEST_TARGET === "local") {
       gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
     },
     /*
-    This is needed to check the stubs server is running. The stubs
-    server is started by `npm run run:all` run above but Playwright
+    These are needed to check the stubs and API servers are running.
+    These servers are started by `npm run run:all` run above but Playwright
     only supports checking one healthcheck URL per server object
-    and we need to check the healthcheck URLs for both the frontend
-    and stubs servers.
+    and we need to check the healthcheck URLs for the frontend, stubs
+    and API servers.
     */
     {
       command: "sleep 310",
@@ -46,6 +46,14 @@ if (env.TEST_TARGET === "local") {
       reuseExistingServer: true,
       timeout: 300000,
       name: "stubs-server",
+      gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
+    },
+    {
+      command: "sleep 310",
+      url: "http://localhost:6004/healthcheck",
+      reuseExistingServer: true,
+      timeout: 300000,
+      name: "api-server",
       gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
     },
   );

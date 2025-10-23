@@ -28,6 +28,8 @@ Copy the file `/solutions/frontend/.env.integration-tests.sample` to `/solutions
 
 Copy the file `/solutions/stubs/.env.integration-tests.sample` to `/solutions/stubs/.env.integration-tests` and replace any placeholder values as appropriate.
 
+Copy the file `/solutions/api/env.integration-tests.json.sample` to `/solutions/api/env.integration-tests.json` and replace any placeholder values as appropriate.
+
 Copy the file `/solutions/integration-tests/.env.sample` to `/solutions/integration-tests/.env` and replace any placeholder values as appropriate.
 
 To run the tests:
@@ -85,9 +87,9 @@ npm run test:ui:watch
 
 ## Pre-deploy
 
-By default the integration tests are run in GitHub Actions (see `.github/workflows/integration-tests.yml`). This allows us to have confidence that things are working as expected before we merge and deploy changes.
+By default the integration tests are run in GitHub Actions (see `.github/workflows/integration-tests.yaml`). This allows us to have confidence that things are working as expected before we merge and deploy changes.
 
-When running in GitHub Actions the tests are run against local servers much like when running the tests locally. The environment variables for these local servers are configured in `.github/workflows/integration-tests.yml`.
+When running in GitHub Actions the tests are run against local servers much like when running the tests locally. The environment variables for these local servers are configured in `.github/workflows/integration-tests.yaml`.
 
 To skip a test in the pre-deployment environment tag the test with `@skipPreDeploy`.
 

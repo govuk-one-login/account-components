@@ -107,6 +107,16 @@ repos:
 
   - repo: local
     hooks:
+      - id: sam-validate-api
+        name: SAM validate API
+        entry: npm run sam-validate:api
+        language: system
+        exclude: .*
+        always_run: true
+        stages: [pre-commit]
+
+  - repo: local
+    hooks:
       - id: sam-validate-stubs
         name: SAM validate stubs
         entry: npm run sam-validate:stubs

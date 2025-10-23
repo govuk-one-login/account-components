@@ -21,3 +21,6 @@ cp ../../package-lock.json ./dist/package-lock.json
 cp ../../.npmrc ./dist/.npmrc
 cd dist
 npm ci --omit=dev
+
+cd ../
+sam build

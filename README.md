@@ -6,6 +6,7 @@ This repo contains the code for Account Components
 
 - Copy `solutions/frontend/.env.sample` to `solutions/frontend/.env` and replace any placeholder values as appropriate
 - Copy `solutions/stubs/.env.sample` to `solutions/stubs/.env` and replace any placeholder values as appropriate
+- Copy `solutions/api/env.json.sample` to `solutions/api/env.json` and replace any placeholder values as appropriate
 - Install [NVM](https://github.com/nvm-sh/nvm) or [FNM](https://github.com/Schniz/fnm) and select the correct Node version by running `nvm use` or `fnm use`
 - Install Docker
 - Install [Homebrew](https://brew.sh/)
@@ -24,6 +25,7 @@ When updating the Node version you will need to update the following:
 - Node version used in Docker images
 - ensure the base TSConfig installed as a development dependency in `package.json` and used in `tsconfig.json` corresponds with the Node version being used e.g. for Node 22 use the base TSConfig `@tsconfig/node22`
 - ensure the major version of `@types/node` installed as a development dependency in `package.json` corresponds with the Node version being used
+- where ESBuild is used (e.g. in Lambda `Metadata` in CloudFormation templates) ensure that the configured target matches the target in the base TSConfig e.g. the base TSConfig `@tsconfig/node22` sets a target of `es2022` and therefore the ESBuild target should be `es2022` too.
 
 ## Useful commands
 
@@ -34,6 +36,8 @@ There are various commands which can be run manually and which may also be run b
 - `npm run build:frontend` to build the frontend
 - `npm run run:stubs` to run the stubs locally and watch for changes
 - `npm run build:stubs` to build the stubs
+- `npm run run:api` to run the API locally and watch for changes
+- `npm run build:api` to build the API
 - `npm run test` to run [Vitest](https://vitest.dev/) tests
 - `npm run test:watch` to run [Vitest](https://vitest.dev/) tests in watch mode
 - `npm run test:coverage` to run [Vitest](https://vitest.dev/) tests and report coverage
@@ -46,6 +50,7 @@ There are various commands which can be run manually and which may also be run b
 - `npm run sam-validate:frontend` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the frontend CloudFormation template
 - `npm run sam-validate:stubs` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the stubs CloudFormation template
 - `npm run sam-validate:core` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the core CloudFormation template
+- `npm run sam-validate:api` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the API CloudFormation template
 - `npm run check-gh-actions` to check GitHub Actions with [Zizmor](https://docs.zizmor.sh/)
 - `npm run detect-secrets` to detect secrets which should not be in the repo. False positives can be [ignored with comments](https://github.com/Yelp/detect-secrets?tab=readme-ov-file#inline-allowlisting)
 - `npm run config:validate` to validate the application's config
