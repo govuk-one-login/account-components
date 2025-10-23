@@ -8,7 +8,7 @@ on:
 
 jobs:
   integration-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-arm64
     timeout-minutes: 30
     concurrency:
       group: ${{ github.workflow }}-${{ github.ref }}
@@ -30,11 +30,6 @@ jobs:
         uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
         with:
           node-version-file: .nvmrc
-
-      - name: Configure Docker platform
-        run: |
-          echo "DOCKER_DEFAULT_PLATFORM=linux/amd64" >> $GITHUB_ENV
-          docker version
 
       - name: Install dependencies
         run: npm ci
