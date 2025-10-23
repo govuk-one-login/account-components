@@ -84,7 +84,7 @@ Globals:
     Timeout: 10
     MemorySize: 256
     Architectures:
-      - arm64
+      - x86_64
     Runtime: nodejs22.x
     Layers:
       - !If [
