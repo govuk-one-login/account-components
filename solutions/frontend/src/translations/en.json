@@ -1,6 +1,8 @@
 {
   "general": {
     "errorSummaryTitle": "There is a problem",
+    "errorTitlePrefix": "Error",
+    "serviceNameTitle": "GOV.UK One Login",
     "back": "Back",
     "phaseBanner": {
       "testText": "This is a test environment."
