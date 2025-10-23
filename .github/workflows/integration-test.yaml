@@ -63,10 +63,12 @@ jobs:
           cd solutions/api
           cat > env.integration-tests.json << 'EOF'
           {
-            "NODE_OPTIONS": "--enable-source-maps",
-            "ENVIRONMENT": "local",
-            "NODE_ENV": "production",
-            "USE_LOCALSTACK": "1"
+            "Parameters": {
+              "NODE_OPTIONS": "--enable-source-maps",
+              "ENVIRONMENT": "local",
+              "NODE_ENV": "production",
+              "USE_LOCALSTACK": "1"
+            }
           }
           EOF
 
