@@ -29,6 +29,14 @@ Parameters:
   CoreStackName:
     Type: String
     Default: "components-core"
+  LambdaArchitecture:
+    Type: String
+    Description: >
+      The Lambda function architecture
+    AllowedValues:
+      - "x86_64"
+      - "arm64"
+    Default: "arm64"
 
 Mappings:
   EnvironmentConfiguration:
@@ -84,7 +92,7 @@ Globals:
     Timeout: 10
     MemorySize: 256
     Architectures:
-      - x86_64
+      - !Ref LambdaArchitecture
     Runtime: nodejs22.x
     Layers:
       - !If [
