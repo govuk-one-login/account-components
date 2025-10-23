@@ -20,6 +20,7 @@ if (env.PRE_OR_POST_DEPLOY === "pre") {
     timeout: 300000,
     name: "test-server",
     gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
+    stdout: "pipe",
     stderr: "pipe",
   });
 }
@@ -33,6 +34,7 @@ if (env.TEST_TARGET === "local") {
       timeout: 300000,
       name: "all-servers",
       gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
+      stdout: "pipe",
       stderr: "pipe",
     },
     /*
@@ -49,6 +51,7 @@ if (env.TEST_TARGET === "local") {
       timeout: 300000,
       name: "stubs-server",
       gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
+      stdout: "pipe",
       stderr: "pipe",
     },
     {
@@ -58,6 +61,7 @@ if (env.TEST_TARGET === "local") {
       timeout: 300000,
       name: "api-server",
       gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
+      stdout: "pipe",
       stderr: "pipe",
     },
   );
