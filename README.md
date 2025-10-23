@@ -20,7 +20,7 @@ This repo contains the code for Account Components
 When updating the Node version you will need to update the following:
 
 - `engines.node` field in all `package.json` files
-- all `.nvmrc` files
+- all `.nvmrc` files (the version should correspond to the lowest version which matches the `engines.node` field in the associated `package.json` file)
 - Node version used by Lambda functions
 - Node version used in Docker images
 - ensure the base TSConfig installed as a development dependency in `package.json` and used in `tsconfig.json` corresponds with the Node version being used e.g. for Node 22 use the base TSConfig `@tsconfig/node22`
