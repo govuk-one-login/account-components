@@ -48,14 +48,14 @@ if (env.TEST_TARGET === "local") {
       name: "stubs-server",
       gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
     },
-    {
+    /*{
       command: "sleep 310",
       url: "http://localhost:6004/healthcheck",
       reuseExistingServer: true,
       timeout: 300000,
       name: "api-server",
       gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
-    },
+    },*/
   );
 }
 
