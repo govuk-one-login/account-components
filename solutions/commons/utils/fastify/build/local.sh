@@ -2,7 +2,7 @@
 
 set -e
 
-sh ../commons/utils/fastify/build/shared.sh
+bash ../commons/utils/fastify/build/shared.sh
 
 # Bundle JavaScript
 rolldown -c rolldown.local.config.ts

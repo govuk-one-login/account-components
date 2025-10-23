@@ -2,7 +2,7 @@
 
 set -e
 
-sh ../commons/utils/fastify/build/shared.sh
+bash ../commons/utils/fastify/build/shared.sh
 
 # Create a hash of the src/static folder and write it
 # into a JSON object in src/utils/static-hash.json
