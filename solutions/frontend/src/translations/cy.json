@@ -1,6 +1,8 @@
 {
   "general": {
     "errorSummaryTitle": "Mae problem",
+    "errorTitlePrefix": "Gwall",
+    "serviceNameTitle": "GOV.UK One Login",
     "back": "Yn ôl",
     "phaseBanner": {
       "testText": "Mae hwn yn amgylchedd profi."
