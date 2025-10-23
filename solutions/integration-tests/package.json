@@ -6,8 +6,7 @@
     "node": ">=22.16.0 <23"
   },
   "scripts": {
-    "run:frontend": "cd ../../ && export IS_INTEGRATION_TEST=1; npm run run:frontend",
-    "run:stubs": "cd ../../ && export IS_INTEGRATION_TEST=1; npm run run:stubs",
+    "run:all": "cd ../../ && export IS_INTEGRATION_TEST=1; npm run run:all",
     "build": "docker build -t account-components-integration-test .",
     "install-browsers": "playwright install --with-deps chromium",
     "start-test-server": "npm run build && docker run --network=host --rm --init account-components-integration-test run-server",

@@ -7,11 +7,13 @@
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.17.0",
-    "@aws-lambda-powertools/parameters": "^2.17.0",
-    "@aws-sdk/client-dynamodb": "^3.899.0",
-    "@aws-sdk/client-sqs": "^3.899.0",
-    "@aws-sdk/client-ssm": "^3.777.0",
-    "@aws-sdk/lib-dynamodb": "^3.899.0",
+    "@aws-lambda-powertools/parameters": "^2.27.0",
+    "@aws-sdk/client-appconfigdata": "^3.901.0",
+    "@aws-sdk/client-dynamodb": "^3.901.0",
+    "@aws-sdk/client-kms": "^3.901.0",
+    "@aws-sdk/client-sqs": "^3.901.0",
+    "@aws-sdk/client-ssm": "^3.901.0",
+    "@aws-sdk/lib-dynamodb": "^3.901.0",
     "@fastify/aws-lambda": "^6.0.0",
     "@fastify/cookie": "^11.0.2",
     "@fastify/csrf-protection": "^7.1.0",
@@ -22,6 +24,8 @@
     "@govuk-one-login/frontend-ui": "^3.0.0",
     "@smithy/node-http-handler": "^4.2.1",
     "aws-xray-sdk": "^3.10.3",
+    "connect-dynamodb": "^3.0.5",
+    "express-session": "^1.18.2",
     "fastify": "^5.6.1",
     "fastify-plugin": "^5.1.0",
     "govuk-frontend": "^5.12.0",
@@ -32,12 +36,13 @@
     "valibot": "^1.1.0"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.10.2",
     "@eslint/compat": "^1.4.0",
     "@eslint/js": "^9.36.0",
+    "@stoplight/spectral-cli": "^6.15.0",
     "@tsconfig/node22": "^22.0.1",
     "@tsconfig/strictest": "^2.0.6",
     "@types/aws-lambda": "^8.10.152",
+    "@types/express-session": "^1.18.2",
     "@types/node": "^22.18.10",
     "@types/nunjucks": "^3.2.6",
     "@vitest/coverage-v8": "^3.2.4",
@@ -50,7 +55,6 @@
     "eslint-plugin-n": "^17.23.1",
     "eslint-plugin-playwright": "^2.2.2",
     "knip": "^5.65.0",
-    "playwright-bdd": "^8.4.1",
     "prettier": "^3.6.2",
     "rolldown": "^1.0.0-beta.43",
     "sass": "^1.93.2",
@@ -89,6 +93,7 @@
     "watch:stubs": "chokidar \"./solutions/stubs/src/**/*\" \"./solutions/commons/**/*\" -c \"npm run build-local:stubs\"",
     "run:stubs": "([ -n \"$RUN_ALL\" ] || sh solutions/localstack/provision.sh) && npm run build-local:stubs && concurrently 'npm run watch:stubs' 'cd solutions/stubs && node --enable-source-maps --watch --env-file=$([ \"$IS_INTEGRATION_TEST\" = \"1\" ] && echo \".env.integration-tests\" || echo \".env\") ./dist/local.js' --kill-others",
     "run:all": "sh solutions/localstack/provision.sh && RUN_ALL=1 concurrently 'npm run run:frontend' 'npm run run:stubs' --kill-others",
-    "config:validate": "for f in solutions/config/*.json; do (jsonschema validate solutions/config/schema/config.json $f) || exit 1; done"
+    "config:validate": "for f in solutions/config/*.json; do (jsonschema validate solutions/config/schema/config.json $f) || exit 1; done",
+    "api-specs:validate": "for f in solutions/api/src/specs/*.yaml; do (spectral lint $f) || exit 1; done"
   }
 }
