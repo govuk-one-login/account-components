@@ -121,6 +121,7 @@ export function getJwtPayload(
     ...payload,
     aud:
       bodyAud ??
+      process.env["DEFAULT_AUDIENCE"] ??
       `https://api.manage.${getEnvironment()}.account.gov.uk/authorize`,
     response_type: "code",
     scope: bodyScope ?? Scope.ACCOUNT_DELETION,

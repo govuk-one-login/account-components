@@ -303,6 +303,9 @@ Resources:
           MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPublicKey"
           JAR_RSA_ENCRYPTION_KEY_ALIAS:
             Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyAliasName"
+          DEFAULT_AUDIENCE: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
+          ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
+          AUTHORIZE_URL: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
       Role: !GetAtt StubsLambdaExecutionRole.Arn
 
   StubsLambdaLogGroup:

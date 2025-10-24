@@ -24,7 +24,9 @@ const epochDateNow = (): number => Math.round(Date.now() / 1000);
 
 const tokenBody = (expiresIn = 600) => ({
   sub: `urn:fdc:gov.uk:2022:${randomUUID()}`,
-  iss: `https://stubs.manage.${getEnvironment()}.account.gov.uk`,
+  iss:
+    process.env["ACCESS_TOKEN_ISSUER"] ??
+    `https://stubs.manage.${getEnvironment()}.account.gov.uk`,
   aud: `${Buffer.from(randomBytes(5)).toString("hex")}-${Buffer.from(randomBytes(5)).toString("hex")}-${Buffer.from(randomBytes(5)).toString("hex")}`,
   iat: epochDateNow(),
   exp: epochDateNow() + expiresIn,

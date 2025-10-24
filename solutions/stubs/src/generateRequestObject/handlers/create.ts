@@ -81,7 +81,8 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
     const result = JSON.parse(body) as GenerateJARResponse;
 
     const url = new URL(
-      `https://api.manage.${getEnvironment()}.account.gov.uk/authorize`,
+      process.env["AUTHORIZE_URL"] ??
+        `https://api.manage.${getEnvironment()}.account.gov.uk/authorize`,
     );
     url.searchParams.append("client_id", requestBody.client_id);
     url.searchParams.append("scope", "am-account-delete");
