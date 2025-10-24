@@ -4,6 +4,8 @@ coverage
 .eslintcache
 .env*
 !.env*.sample
+env*.json
+!.env*.json.sample
 .aws-sam
 .idea
 

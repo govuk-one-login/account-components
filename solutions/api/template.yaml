@@ -1,0 +1,289 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: >
+      The environment type
+    AllowedValues:
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
+  PermissionsBoundary:
+    Type: String
+    Description: >
+      The ARN of the permissions boundary to apply to any role created by the template, provided by the deployment pipeline
+    Default: "none"
+  VpcStackName:
+    Type: String
+    Description: >
+      The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
+  CoreStackName:
+    Type: String
+    Default: "components-core"
+  LambdaArchitecture:
+    Type: String
+    Description: >
+      The Lambda function architecture
+    AllowedValues:
+      - "x86_64"
+      - "arm64"
+    Default: "arm64"
+
+Mappings:
+  EnvironmentConfiguration:
+    dev:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      apiDomain: api.manage.dev.account.gov.uk
+    build:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      apiDomain: api.manage.build.account.gov.uk
+    staging:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      apiDomain: api.manage.staging.account.gov.uk
+    integration:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      apiDomain: api.manage.integration.account.gov.uk
+    production:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
+      apiDomain: api.manage.account.gov.uk
+
+Conditions:
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
+  UsePermissionsBoundary:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref PermissionsBoundary
+          - "none"
+  IsLocal:
+    Fn::Equals:
+      - !Ref "AWS::Region"
+      - "local"
+
+Globals:
+  Function:
+    CodeSigningConfigArn: !If
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+    VpcConfig:
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
+        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdC
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+    Timeout: 10
+    MemorySize: 256
+    Architectures:
+      - !Ref LambdaArchitecture
+    Runtime: nodejs22.x
+    Layers:
+      - !If [
+          IsLocal,
+          !Ref AWS::NoValue,
+          "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1",
+        ]
+    Environment:
+      Variables:
+        NODE_OPTIONS: !Ref AWS::NoValue
+        USE_LOCALSTACK: !Ref AWS::NoValue
+        ENVIRONMENT: !Ref Environment
+        NODE_ENV: "production"
+        AWS_LAMBDA_EXEC_WRAPPER:
+          !If [IsLocal, !Ref AWS::NoValue, "/opt/dynatrace"]
+        DT_CONNECTION_AUTH_TOKEN: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_CONNECTION_BASE_URL: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_CLUSTER_ID: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_LOG_COLLECTION_AUTH_TOKEN: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_TENANT: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
+
+Resources:
+  ApiDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName:
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
+      RegionalCertificateArn:
+        Fn::ImportValue: certificate-CertificateARN
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: TLS_1_2
+
+  ApiOriginRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub
+        - "origin.${BaseAlias}"
+        - BaseAlias:
+            !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
+      Type: A
+      HostedZoneId:
+        Fn::ImportValue: hosted-zone-HostedZoneID
+      AliasTarget:
+        DNSName: !GetAtt ApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt ApiDomain.RegionalHostedZoneId
+        EvaluateTargetHealth: false
+
+  ApiWafAssociation:
+    Type: "AWS::WAFv2::WebACLAssociation"
+    Properties:
+      WebACLArn:
+        Fn::ImportValue: "cloudfront-api-CloakingOriginWebACLArn"
+      ResourceArn: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGateway}/stages/${Environment}"
+    DependsOn:
+      - ApiGatewayStage # This resource is created as part of the RestApi resource
+
+  DomainRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
+      Type: A
+      HostedZoneId:
+        Fn::ImportValue: hosted-zone-HostedZoneID
+      AliasTarget:
+        DNSName:
+          Fn::ImportValue: "cloudfront-api-DistributionDomain"
+        HostedZoneId: "Z2FDTNDATAQYW2"
+        EvaluateTargetHealth: false
+
+  ApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref ApiDomain
+      RestApiId: !Ref ApiGateway
+      Stage: !Ref Environment
+    DependsOn:
+      - ApiGatewayStage # This resource is created as part of the RestApi resource
+
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      AlwaysDeploy: true
+      EndpointConfiguration:
+        Type: REGIONAL
+      Tags:
+        FMSRegionalPolicy: false
+        CustomPolicy: true
+
+  ApiLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/lambda/${AWS::StackName}/ApiLambdaLogGroup"
+      RetentionInDays: 30
+
+  HealthcheckLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ApiHealthcheck
+      PackageType: Zip
+      Handler: healthcheck.handler
+      LoggingConfig:
+        LogGroup: !Ref ApiLambdaLogGroup
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /healthcheck
+            RestApiId: !Ref ApiGateway
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2022"
+        Sourcemap: !If [IsLocal, true, false]
+        EntryPoints:
+          - solutions/api/src/lambda/healthcheck.ts
+
+  AuthorizeLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: ApiAuthorize
+      PackageType: Zip
+      Handler: authorize.handler
+      LoggingConfig:
+        LogGroup: !Ref ApiLambdaLogGroup
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Method: GET
+            Path: /authorize
+            RestApiId: !Ref ApiGateway
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2022"
+        Sourcemap: !If [IsLocal, true, false]
+        EntryPoints:
+          - solutions/api/src/lambda/authorize.ts
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Resource:
+                Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"

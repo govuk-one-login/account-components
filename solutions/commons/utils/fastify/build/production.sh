@@ -2,7 +2,7 @@
 
 set -e
 
-sh ../commons/utils/fastify/build/shared.sh
+bash ../commons/utils/fastify/build/shared.sh
 
 # Create a hash of the src/static folder and write it
 # into a JSON object in src/utils/static-hash.json
@@ -21,3 +21,6 @@ cp ../../package-lock.json ./dist/package-lock.json
 cp ../../.npmrc ./dist/.npmrc
 cd dist
 npm ci --omit=dev
+
+cd ../
+sam build

@@ -56,6 +56,9 @@ jobs:
       - name: SAM validate frontend
         run: npm run sam-validate:frontend
 
+      - name: SAM validate API
+        run: npm run sam-validate:api
+
       - name: SAM validate stubs
         run: npm run sam-validate:stubs
 

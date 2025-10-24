@@ -12,7 +12,7 @@
     "start-test-server": "npm run build && docker run --network=host --rm --init account-components-integration-test run-server",
     "watch": "nodemon -w ./tests -w ./utils -w ./.env.ts -w ./.env -e \"*\" --exec \"bddgen\"",
     "test": "npm ci && bddgen && playwright test",
-    "test:update-snapshots": "sh update-snapshots.sh",
+    "test:update-snapshots": "bash update-snapshots.sh",
     "test:ui": "npm ci && run-p test:ui:*",
     "test:ui:watch": "npm run watch",
     "test:ui:run": "playwright test --ui"
