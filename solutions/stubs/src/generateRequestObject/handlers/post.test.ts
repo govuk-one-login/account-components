@@ -1,6 +1,14 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { FastifyRequest, FastifyReply } from "fastify";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { FastifyReply, FastifyRequest } from "fastify";
 import { generateRequestObjectPost } from "./post.js";
+import { generateAccessToken } from "../../utils/access-token.js";
+import { buildJar } from "../utils/buildJar/index.js";
+import {
+  generateJwtToken,
+  getScenario,
+} from "../utils/tokenGenerator/index.js";
+import type { MockRequestObjectScenarios } from "../../types/common.js";
+import { Algorithms } from "../../types/common.js";
 
 // Mock the dependencies
 vi.mock(import("../../utils/access-token.js"), () => ({
@@ -15,14 +23,6 @@ vi.mock(import("../utils/tokenGenerator/index.js"), () => ({
   generateJwtToken: vi.fn(),
   getScenario: vi.fn(),
 }));
-
-import { generateAccessToken } from "../../utils/access-token.js";
-import { buildJar } from "../utils/buildJar/index.js";
-import {
-  generateJwtToken,
-  getScenario,
-} from "../utils/tokenGenerator/index.js";
-import type { MockRequestObjectScenarios } from "../../types/common.js";
 
 describe("generateRequestObjectPost", () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -50,7 +50,11 @@ describe("generateRequestObjectPost", () => {
     vi.mocked(getScenario).mockReturnValue(
       mockScenario as MockRequestObjectScenarios,
     );
-    vi.mocked(generateJwtToken).mockResolvedValue(mockJwtToken);
+    vi.mocked(generateJwtToken).mockResolvedValue({
+      token: mockJwtToken,
+      jwtPayload: {},
+      jwtHeader: { alg: Algorithms.EC },
+    });
     vi.mocked(buildJar).mockResolvedValue(mockEncryptedJar);
 
     await generateRequestObjectPost(
@@ -58,9 +62,7 @@ describe("generateRequestObjectPost", () => {
       mockReply as FastifyReply,
     );
 
-    expect(generateAccessToken).toHaveBeenCalledExactlyOnceWith(
-      mockRequest.body,
-    );
+    expect(generateAccessToken).toHaveBeenCalledTimes(2);
     expect(getScenario).toHaveBeenCalledExactlyOnceWith({
       ...(mockRequest.body as object),
       access_token: mockAccessToken,
@@ -70,6 +72,10 @@ describe("generateRequestObjectPost", () => {
       mockScenario,
     );
     expect(buildJar).toHaveBeenCalledExactlyOnceWith(mockJwtToken);
-    expect(mockReply.send).toHaveBeenCalledExactlyOnceWith(mockEncryptedJar);
+    expect(mockReply.send).toHaveBeenCalledExactlyOnceWith({
+      encryptedJar: mockEncryptedJar,
+      jwtPayload: {},
+      jwtHeader: { alg: Algorithms.EC },
+    });
   });
 });

@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>Start Auth Journey</title>
+        <title>AMC Journey Initiator Stub</title>
         <style type='text/css' nonce='{{ styleNonce }}'>
             body {
                 font-family: Arial, sans-serif;
@@ -31,16 +31,18 @@
         </style>
     </head>
     <body>
-        {% if redirect_uri %}
-            Redirected to: <a href="{{ redirect_uri }}"><pre>{{ redirect_uri }}</pre></a>
-        {% endif %}
-        <h1>Start Auth Journey</h1>
+        <h1>AMC Journey Initiator Stub</h1>
+        {% if not authorizeUrl %}
         <form method="post" action="/">
             <fieldset>
                 <legend>Scopes</legend>
                 {% for scope in availableScopes %}
                     <label for="{{ scope }}_scope">
-                    <input id="{{ scope }}_scope" type="radio" name="scope" value="{{ scope }}" /> {{ scope }}
+                        {% if loop.first %}
+                          <input id="{{ scope }}_scope" type="radio" name="scope" value="{{ scope }}" checked=true/> {{ scope }}
+                        {% else %}
+                          <input id="{{ scope }}_scope" type="radio" name="scope" value="{{ scope }}" /> {{ scope }}
+                        {% endif %}
                     </label>
                 {% endfor %}
             </fieldset>
@@ -49,8 +51,11 @@
                 {% for scenario in availableScenarios %}
                 <div>
                     <label for="{{ scenario }}_scenario">
-                    <input id="{{ scenario }}_scenario" type="radio" name="scenario" value="{{ scenario }}" /> {{ scenario }}
-                    </label>
+                    {% if loop.first %}
+                      <input id="{{ scenario }}_scenario" type="radio" name="scenario" value="{{ scenario }}" checked=true/> {{ scenario }}
+                    {% else %}
+                      <input id="{{ scenario }}_scenario" type="radio" name="scenario" value="{{ scenario }}" /> {{ scenario }}
+                    {% endif %}
                 </div>
                 {% endfor %}
             </fieldset>
@@ -63,19 +68,48 @@
                 </select>
             </fieldset>
             <fieldset>
+                <legend>User</legend>
+                {% for user in availableUsers %}
+                <div>
+                    <label for="{{ user }}_user">
+                    {% if loop.first %}
+                      <input id="{{ user }}_user" type="radio" name="user" value="{{ user }}" checked=true/> {{ user }}
+                    {% else %}
+                      <input id="{{ user }}_user" type="radio" name="user" value="{{ user }}" /> {{ user }}
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </fieldset>
+            <fieldset>
                 <legend>Nonce (optional)</legend>
                 <input type="text" name="jti" />
                 <i>Leave blank to auto-generate</i>
             </fieldset>
             <fieldset>
                 <legend>Expiry (in seconds, optional)</legend>
-                <input type="text" name="exp" />
+                <input type="number" name="exp" min="0"/>
+                <i>Ignored if <b>iatInFuture</b> or <b>expired</b> scenario is chosen</i>
             </fieldset>
             <fieldset>
-                <legend>Issuer</legend>
+                <legend>Issuer (optional)</legend>
                 <input type="text" name="iss" name="stub-issuer" />
+                <i>Leave blank to be set to client_id</i>
             </fieldset>
             <input type="submit" value="Generate Request Object">
         </form>
+        {% endif %}
+        {% if authorizeUrl %}
+            <a href="{{ authorizeUrl }}"><input type="submit" value="Start AMC Journey"></a>
+            <a href="/"><input type="submit" value="Reset"></a>
+            <h2>Options Chosen</h2>
+            <pre>{{ originalRequest | dump(2) | safe }}</pre>
+            <h2>JWT Request Object</h2>
+            <h3>Header</h3>
+            <pre>{{ jwtHeader | dump(2) | safe }}</pre>
+            <h3><a href="https://govukverify.atlassian.net/wiki/spaces/DID/pages/5654708312/High+Level#Process-Description">Payload</a></h3>
+            <pre>{{ jwtPayload | dump(2) | safe }}</pre>
+            <h2>Emulated Redirect URL</h2>
+            <pre>{{ authorizeUrl }}</pre>
+        {% endif %}
     </body>
 </html>
