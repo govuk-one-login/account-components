@@ -5,7 +5,8 @@ const mockGet = vi.fn();
 const mockGetClientRegistry = vi.fn();
 const mockCreatePublicKey = vi.fn();
 
-vi.mock("../../../../commons/utils/awsClient/index.js", () => ({
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/awsClient/index.js"), () => ({
   getParametersProvider: vi.fn(() => ({ get: mockGet })),
 }));
 
@@ -74,18 +75,16 @@ describe("getJwks", () => {
 
     await getJwks(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-    expect(mockReply.send).toHaveBeenCalledWith(
-      JSON.stringify({
-        keys: [
-          {
-            ...mockJwk,
-            use: "sig",
-            kid: "ecKid123",
-            alg: "ES256",
-          },
-        ],
-      }),
-    );
+    expect(mockReply.send).toHaveBeenCalledWith({
+      keys: [
+        {
+          ...mockJwk,
+          use: "sig",
+          kid: "ecKid123",
+          alg: "ES256",
+        },
+      ],
+    });
   });
 
   it("should return 400 for invalid request params", async () => {
