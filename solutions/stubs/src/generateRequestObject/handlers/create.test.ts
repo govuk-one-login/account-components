@@ -89,7 +89,7 @@ describe("createRequestObjectPost", () => {
       "generateRequestObject/handlers/create.njk",
       expect.objectContaining({
         authorizeUrl:
-          "https://api.manage.local.account.gov.uk/authorize?client_id=23456789012345678901234567890123&scope=am-account-delete&response_type=code&redirect_uri=https%3A%2F%2Fhome.build.account.gov.uk%2Facm-callback&request=mock-request-object",
+          "https://api.manage.local.account.gov.uk/authorize?client_id=23456789012345678901234567890123&scope=am-account-delete&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A6003%2Facm-callback&request=mock-request-object",
         jwtPayload: { foo: "bar" },
         jwtHeader: { alg: "ES256" },
         originalRequest: mockRequest.body,
