@@ -8,6 +8,7 @@ on:
       - main
     paths:
       - solutions/frontend/**
+      - solutions/commons/**
       - .github/workflows/deploy-frontend.yaml
       - package.json
       - package-lock.json
