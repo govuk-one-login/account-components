@@ -15,7 +15,7 @@ import {
   Scope,
   SignatureTypes,
 } from "../../../types/common.js";
-import { logger } from "../../../utils/logger.js";
+import { logger } from "../../../../../commons/utils/logger/index.js";
 import type { JWTPayload } from "jose";
 import { randomBytes } from "node:crypto";
 import { getEnvironment } from "../../../../../commons/utils/getEnvironment/index.js";

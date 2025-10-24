@@ -8,6 +8,7 @@ const { Then, Given } = bdd;
 const pageTitleToPath: Record<string, string> = {
   "Non-existent page": "/non-existent-page",
   Healthcheck: "/healthcheck",
+  "Authorize error": "/authorize-error",
 };
 
 Then("the page meets our accessibility standards", async ({ page }) => {

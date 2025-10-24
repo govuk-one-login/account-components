@@ -29,6 +29,7 @@ import {
   frontendUiTranslationCy,
   frontendUiTranslationEn,
 } from "@govuk-one-login/frontend-ui";
+import { paths } from "./utils/paths.js";
 
 await configureI18n({
   [Lang.English]: {
@@ -176,6 +177,13 @@ export const initFrontend = async function () {
   });
   fastify.register(fastifySession, getSessionOptions());
   fastify.register(csrfProtection);
+
+  fastify.get(paths.authorizeError, async function (request, reply) {
+    return (await import("./handlers/authorizeError/index.js")).handler(
+      request,
+      reply,
+    );
+  });
 
   fastify.register(journeys);
 

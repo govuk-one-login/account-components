@@ -18,20 +18,12 @@ import type { JWTPayload } from "jose";
 import type { Logger } from "@aws-lambda-powertools/logger";
 
 vi.mock(import("../../../utils/jwt-adapter.js"));
-vi.mock(import("../../../utils/logger.js"), () => ({
+vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
   logger: {
     debug: vi.fn(),
     error: vi.fn(),
   } as unknown as Logger,
 }));
-
-vi.mock(import("../../../utils/logger.js"), async (importOriginal) => {
-  const actual = await importOriginal();
-  return {
-    ...actual,
-    // your mocked methods
-  };
-});
 
 describe("generateJwtToken", () => {
   beforeEach(() => {

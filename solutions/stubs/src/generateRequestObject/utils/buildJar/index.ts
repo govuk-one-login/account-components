@@ -1,5 +1,5 @@
 import { CompactEncrypt } from "jose";
-import { logger } from "../../../utils/logger.js";
+import { logger } from "../../../../../commons/utils/logger/index.js";
 import { JWKS_KEY_TYPES, SignatureTypes } from "../../../types/common.js";
 import { convertPemToJwk } from "../../../utils/convert-pem-to-jwk.js";
 import { getKmsClient } from "../../../../../commons/utils/awsClient/index.js";

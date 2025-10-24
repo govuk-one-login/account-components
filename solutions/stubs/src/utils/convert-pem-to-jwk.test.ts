@@ -11,7 +11,7 @@ vi.mock(import("jose"), () => ({
   exportJWK: vi.fn(),
 }));
 
-vi.mock(import("./logger.js"), () => ({
+vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
   logger: {
     error: vi.fn(),
   } as unknown as Logger,

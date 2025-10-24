@@ -1,7 +1,7 @@
 import type { JWK } from "jose";
 import { exportJWK, importSPKI } from "jose";
 import type { JwksKeyType } from "../types/common.js";
-import { logger } from "./logger.js";
+import { logger } from "../../../commons/utils/logger/index.js";
 
 export async function convertPemToJwk(
   pem: string,
