@@ -8,6 +8,7 @@ on:
       - main
     paths:
       - solutions/core/**
+      - solutions/commons/**
       - .github/workflows/deploy-core.yaml
       - package.json
       - package-lock.json
