@@ -20,7 +20,7 @@ vi.mock(import("../../../utils/convert-pem-to-jwk.js"), () => ({
   convertPemToJwk: vi.fn(),
 }));
 
-vi.mock(import("../../../utils/logger.js"), () => ({
+vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
   logger: {
     info: vi.fn(),
     error: vi.fn(),

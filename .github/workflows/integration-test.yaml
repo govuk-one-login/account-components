@@ -64,8 +64,11 @@ jobs:
               "NODE_OPTIONS": "--enable-source-maps",
               "ENVIRONMENT": "local",
               "NODE_ENV": "production",
-              "USE_LOCALSTACK": "1"
-            }
+              "USE_LOCALSTACK": "1",
+            },
+            "AuthorizeLambda": {
+              "AUTHORIZE_ERROR_PAGE_URL": "http://localhost:6002/authorize-error"
+            }          
           }
           EOF
 

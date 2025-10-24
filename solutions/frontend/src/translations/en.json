@@ -28,6 +28,13 @@
       "content": {
         "paragraph1": "Try again later."
       }
+    },
+    "authorizeError": {
+      "title": "TODO",
+      "header": "TODO",
+      "content": {
+        "paragraph1": "TODO"
+      }
     }
   }
 }

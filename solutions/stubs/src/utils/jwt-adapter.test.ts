@@ -9,7 +9,7 @@ import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
 
 vi.mock(import("jose"));
 vi.mock(import("@aws-lambda-powertools/parameters/ssm"));
-vi.mock(import("./logger.js"));
+vi.mock(import("../../../commons/utils/logger/index.js"));
 
 const getParameterCommand = getParameter as unknown as MockInstance<
   (name: string, options?: any) => Promise<string | undefined>
