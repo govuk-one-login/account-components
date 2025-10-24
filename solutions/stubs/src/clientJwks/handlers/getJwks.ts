@@ -60,6 +60,6 @@ export async function getJwks(request: FastifyRequest, reply: FastifyReply) {
     ],
   };
 
-  reply.send(JSON.stringify(jwks));
+  reply.send(jwks);
   return reply;
 }
