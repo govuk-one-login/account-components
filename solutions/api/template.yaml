@@ -229,7 +229,6 @@ Resources:
   HealthcheckLambda:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: ApiHealthcheck
       PackageType: Zip
       Handler: healthcheck.handler
       LoggingConfig:
@@ -256,7 +255,6 @@ Resources:
   AuthorizeLambda:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: ApiAuthorize
       PackageType: Zip
       Handler: authorize.handler
       LoggingConfig:
