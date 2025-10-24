@@ -13,15 +13,17 @@ export async function generateRequestObjectPost(
 ) {
   const body = request.body as RequestBody;
 
-  const accessToken = await generateAccessToken(body);
-  body.access_token = accessToken;
+  body.access_token = await generateAccessToken();
+  body.refresh_token = await generateAccessToken();
 
   const scenario = getScenario(body);
 
-  const token = await generateJwtToken(body, scenario);
-
+  const { token, jwtPayload, jwtHeader } = await generateJwtToken(
+    body,
+    scenario,
+  );
   const encryptedJar = await buildJar(token);
 
-  await reply.send(encryptedJar);
+  await reply.send({ encryptedJar, jwtPayload, jwtHeader });
   return reply;
 }

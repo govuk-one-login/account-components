@@ -7,6 +7,7 @@ import {
   DEFAULT_SCENARIO,
   DEFAULT_TOKEN_EXPIRY,
   DEFAULT_TOKEN_INITIATED_AT,
+  getUsers,
   HttpCodesEnum,
   Kids,
   MILLISECONDS_IN_MINUTES,
@@ -16,13 +17,19 @@ import {
 } from "../../../types/common.js";
 import { logger } from "../../../utils/logger.js";
 import type { JWTPayload } from "jose";
+import { randomBytes } from "node:crypto";
+import { getEnvironment } from "../../../../../commons/utils/getEnvironment/index.js";
 
-const AUTHENTICATION_ISSUER = "authentication-issuer";
+interface GenerateJwtTokenResponse {
+  token: string;
+  jwtPayload: JWTPayload;
+  jwtHeader: JwtHeader;
+}
 
 export const generateJwtToken = async (
   requestBody: RequestBody,
   scenario: MockRequestObjectScenarios,
-): Promise<string> => {
+): Promise<GenerateJwtTokenResponse> => {
   const jwtHeader = getJwtHeader(scenario);
   const jwtPayload = getJwtPayload(scenario, requestBody);
 
@@ -32,7 +39,7 @@ export const generateJwtToken = async (
   if (!token) {
     throw new CustomError(HttpCodesEnum.BAD_REQUEST, "Token not generated");
   }
-  return token;
+  return { token, jwtPayload, jwtHeader };
 };
 
 export function getScenario(body: RequestBody): MockRequestObjectScenarios {
@@ -40,6 +47,7 @@ export function getScenario(body: RequestBody): MockRequestObjectScenarios {
     (scenario): scenario is MockRequestObjectScenarios =>
       scenario === (body.scenario as MockRequestObjectScenarios),
   );
+  delete body.scenario;
   return retrievedScenario ?? DEFAULT_SCENARIO;
 }
 
@@ -71,16 +79,14 @@ export function getJwtHeader(scenario: MockRequestObjectScenarios): JwtHeader {
   return header;
 }
 
-export function getJwtPayload(
-  scenario: MockRequestObjectScenarios,
-  body: string | RequestBody,
-): JWTPayload {
-  let bodyPayload: JWTPayload = {};
+const getRequestObjectBuilderOptions = (body: string | RequestBody) => {
   try {
-    bodyPayload =
+    const requestObjectOptions: JWTPayload =
       typeof body === "string"
         ? (JSON.parse(body) as Record<string, unknown>)
         : body;
+    logger.debug("Request Object Options", { requestObjectOptions });
+    return requestObjectOptions;
   } catch (error) {
     logger.error("Event body cannot be parsed", { error });
     throw new CustomError(
@@ -88,39 +94,55 @@ export function getJwtPayload(
       "Event body is not valid JSON so cannot be parsed",
     );
   }
+};
 
-  logger.debug("payload values from request body", { bodyPayload });
-
+export function getJwtPayload(
+  scenario: MockRequestObjectScenarios,
+  body: string | RequestBody,
+): JWTPayload {
+  const requestObjectOptions = getRequestObjectBuilderOptions(body);
   const {
     aud: bodyAud,
     iat: bodyIat,
     scope: bodyScope,
-    ttl,
+    exp: bodyExp,
+    iss: bodyIss,
     ...payload
-  } = bodyPayload;
+  } = requestObjectOptions;
 
-  const expiresIn = typeof ttl === "number" ? ttl : DEFAULT_TOKEN_EXPIRY;
-  const initiatedAt =
-    typeof bodyIat === "number" ? bodyIat * -1 : DEFAULT_TOKEN_INITIATED_AT;
-  const exp =
-    scenario === MockRequestObjectScenarios.EXPIRED
-      ? getDateEpoch(-5)
-      : getDateEpoch(expiresIn);
-  const iat =
-    scenario === MockRequestObjectScenarios.IAT_IN_FUTURE
-      ? getDateEpoch(5)
-      : getDateEpoch(initiatedAt);
-  const iss = AUTHENTICATION_ISSUER;
-  const aud = bodyAud ?? process.env["DEFAULT_AUDIENCE"];
-  const scope = bodyScope ?? Scope.ACCOUNT_DELETION;
-
+  // have to multiply by 1 otherwise get unable to sign
+  const expiresIn = bodyExp ? bodyExp * 1 : DEFAULT_TOKEN_EXPIRY * 60;
+  delete payload["exp"];
+  const initiatedAt = bodyIat ? bodyIat * -1 : DEFAULT_TOKEN_INITIATED_AT;
+  const user = getUsers(requestObjectOptions["user"] as string);
+  delete payload["user"];
+  const iss = bodyIss ?? (requestObjectOptions["client_id"] as string);
   return {
     ...payload,
-    exp,
-    iat,
+    aud:
+      bodyAud ??
+      process.env["DEFAULT_AUDIENCE"] ??
+      `https://api.manage.${getEnvironment()}.account.gov.uk/authorize`,
+    response_type: "code",
+    scope: bodyScope ?? Scope.ACCOUNT_DELETION,
+    state: Buffer.from(randomBytes(10)).toString("hex"),
+    jti:
+      requestObjectOptions.jti && requestObjectOptions.jti.length > 0
+        ? requestObjectOptions.jti
+        : Buffer.from(randomBytes(10)).toString("hex"),
+    iat:
+      scenario === MockRequestObjectScenarios.IAT_IN_FUTURE
+        ? getDateEpoch(5)
+        : getDateEpoch(initiatedAt),
+    exp:
+      scenario === MockRequestObjectScenarios.EXPIRED
+        ? getDateEpoch(-5)
+        : getDateEpoch(0) + expiresIn,
     iss,
-    scope,
-    ...(aud ? { aud } : {}),
+    sub: user.sub,
+    email: user.email,
+    govuk_signin_journey_id: Buffer.from(randomBytes(10)).toString("hex"),
+    lng: user.lng,
   } as JWTPayload;
 }
 

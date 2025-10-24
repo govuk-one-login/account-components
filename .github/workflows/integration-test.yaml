@@ -20,12 +20,6 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Set up SAM CLI
-        uses: aws-actions/setup-sam@c71dd89d980e49367c70391e8ada4353f52f2800
-        with:
-          use-installer: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Set up Node
         uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903
         with:
@@ -55,7 +49,10 @@ jobs:
           USE_LOCALSTACK=1
           MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME=/components-mocks/MockClientEcPrivateKey  
           MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME=/components-mocks/MockClientEcPublicKey  
-          JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/components-core-JARRSAEncryptionKey  
+          JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/components-core-JARRSAEncryptionKey 
+          DEFAULT_AUDIENCE=http://127.0.0.1:6004/authorize
+          ACCESS_TOKEN_ISSUER=http://127.0.0.1:6003
+          AUTHORIZE_URL=http://127.0.0.1:6004/authorize
           EOF
 
       - name: Configure API environment

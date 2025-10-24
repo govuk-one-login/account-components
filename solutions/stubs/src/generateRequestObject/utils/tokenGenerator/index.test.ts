@@ -56,7 +56,7 @@ describe("generateJwtToken", () => {
 
     const scenario = MockRequestObjectScenarios.VALID;
 
-    const token = await generateJwtToken(requestBody, scenario);
+    const { token } = await generateJwtToken(requestBody, scenario);
 
     expect(token).toBe(fakeToken);
   });
@@ -153,20 +153,29 @@ describe("getJwtHeader", () => {
 describe("getJwtPayload", () => {
   it("should parse string body and return correct payload", () => {
     const body = JSON.stringify({
+      client_id: "my-client-id",
       aud: "customAudience",
       iat: 10,
       scope: "customScope",
-      ttl: 30,
+      exp: 30,
       extra: "value",
     });
 
     const payload = getJwtPayload(MockRequestObjectScenarios.VALID, body);
 
     expect(payload.aud).toBe("customAudience");
+    expect(payload.iss).toBe("my-client-id");
+    expect(payload.jti).toBeTypeOf("string");
+    expect(payload.iat).toBeTypeOf("number");
+    expect(payload.exp).toBeTypeOf("number");
+    expect(payload.sub).toBe("urn:fdc:gov.uk:default");
     expect(payload["scope"]).toBe("customScope");
     expect(payload["extra"]).toBe("value");
-
-    expect(payload.iss).toBeDefined();
+    expect(payload["client_id"]).toBe("my-client-id");
+    expect(payload["email"]).toBe("someone@example.com");
+    expect(payload["lng"]).toBe("en");
+    expect(payload["govuk_signin_journey_id"]).toBeTypeOf("string");
+    expect(payload["state"]).toBeTypeOf("string");
   });
 
   it("should throw CustomError on invalid JSON string", () => {

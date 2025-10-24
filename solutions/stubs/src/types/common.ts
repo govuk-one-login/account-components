@@ -91,9 +91,40 @@ export interface RequestBody {
   govuk_signin_journey_id?: string;
   lng?: string;
   rp_client_id?: string;
-  scenario: string;
+  scenario?: string;
   [key: string]: unknown;
 }
+
+export enum Users {
+  DEFAULT = "default",
+  WELSH = "welsh",
+  NON_EXISTENT = "non_existent",
+}
+
+interface User {
+  sub: string;
+  email: string;
+  lng: string;
+}
+
+export const getUsers = (user: string): User => {
+  switch (user) {
+    case "non_existent":
+      return { sub: "", email: "", lng: "en" };
+    case "welsh":
+      return {
+        sub: "urn:fdc:gov.uk:welsh-user",
+        email: "jones@wales.com",
+        lng: "cy",
+      };
+    default:
+      return {
+        sub: "urn:fdc:gov.uk:default",
+        email: "someone@example.com",
+        lng: "en",
+      };
+  }
+};
 
 export const ALG: AlgType = { EC: Algorithms.EC, RSA: Algorithms.RSA };
 export const DEFAULT_SCENARIO = MockRequestObjectScenarios.VALID;
