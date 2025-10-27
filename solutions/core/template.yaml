@@ -1,17 +1,20 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
+Description: >-
+  Core Account Management stack.
+
 Parameters:
   Environment:
     Type: String
-    Description: >
-      The environment type
+    Description: The name of the environment to deploy to
     AllowedValues:
-      - "dev"
-      - "build"
-      - "staging"
-      - "integration"
-      - "production"
+      - dev
+      - build
+      - staging
+      - integration
+      - production
+    Default: "dev"
   CodeSigningConfigArn:
     Type: String
     Description: >
@@ -26,6 +29,17 @@ Parameters:
     Type: String
     Description: >
       The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
+    Default: "vpc"
+  LambdaDeploymentPreference:
+    Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
+    Type: String
+    Default: "Canary10Percent10Minutes"
+    AllowedValues:
+      - AllAtOnce
+      - Canary10Percent5Minutes
+      - Canary10Percent10Minutes
+      - Canary10Percent15Minutes
+      - Canary10Percent30Minutes
 
 Conditions:
   UseCodeSigning:
@@ -38,27 +52,88 @@ Conditions:
       - Fn::Equals:
           - !Ref PermissionsBoundary
           - "none"
+  CanariesEnabled: !Equals
+    - !FindInMap [EnvConfig, !Ref Environment, UseCanary]
+    - true
+
+Mappings:
+  EnvConfig:
+    dev:
+      LambdaLogLevel: DEBUG
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+      UseCanary: false
+    build:
+      LambdaLogLevel: INFO
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+      UseCanary: false
+    staging:
+      LambdaLogLevel: INFO
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+      UseCanary: true
+    integration:
+      LambdaLogLevel: INFO
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+      UseCanary: true
+    production:
+      LambdaLogLevel: INFO
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables #pragma: allowlist secret
+      UseCanary: true
+
 Globals:
   Function:
-    Architectures: ["arm64"]
-    MemorySize: 128
-    ReservedConcurrentExecutions: 10
     Runtime: nodejs22.x
-    Timeout: 5
+    Architectures:
+      - arm64
+    Tracing: Active
+    AutoPublishAlias: live
+    CodeUri: ./src/lambda
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
-    PermissionsBoundary: !If
-      - UsePermissionsBoundary
-      - !Ref PermissionsBoundary
-      - !Ref AWS::NoValue
+    Environment:
+      Variables:
+        POWERTOOLS_LOG_LEVEL:
+          !FindInMap [EnvConfig, !Ref Environment, LambdaLogLevel]
+        POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
+        AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
+        AWS_XRAY_CONTEXT_MISSING: IGNORE_ERROR
+        DT_CONNECTION_AUTH_TOKEN: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}" #pragma: allowlist secret
+          - SecretArn:
+              !FindInMap [EnvConfig, !Ref Environment, dynatraceSecretArn]
+        DT_CONNECTION_BASE_URL: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}" #pragma: allowlist secret
+          - SecretArn:
+              !FindInMap [EnvConfig, !Ref Environment, dynatraceSecretArn]
+        DT_CLUSTER_ID: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}" #pragma: allowlist secret
+          - SecretArn:
+              !FindInMap [EnvConfig, !Ref Environment, dynatraceSecretArn]
+        DT_LOG_COLLECTION_AUTH_TOKEN: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}" #pragma: allowlist secret
+          - SecretArn:
+              !FindInMap [EnvConfig, !Ref Environment, dynatraceSecretArn]
+        DT_TENANT: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}" #pragma: allowlist secret
+          - SecretArn:
+              !FindInMap [EnvConfig, !Ref Environment, dynatraceSecretArn]
+        DT_LOGGING_NODEJS_FLAGS: Exporter=true,LambdaSensor=false
+        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: true
+        DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
+    VpcConfig:
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+    Layers:
+      - "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_323_2_20250822-051314_with_collector_nodejs:1"
 
 Resources:
   DynamoDbSSEKey:
     Type: AWS::KMS::Key
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
     Properties:
       Description: AWS KMS key for encrypting the data stored within DynamoDB tables
       EnableKeyRotation: true
@@ -69,7 +144,7 @@ Resources:
             Principal:
               AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
             Action:
-              - kms:*
+              - "kms:*"
             Resource: "*"
           - Effect: Allow
             Principal:
@@ -113,7 +188,78 @@ Resources:
       Type: String
       Value: !GetAtt DynamoDbSSEKey.Arn
 
-  JAREncryptionKeyV2:
+  CloudWatchEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: AWS KMS key for encrypting CloudWatch logs
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-CloudWatchEncryptionKey"
+
+  CloudWatchEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-CloudWatchEncryptionKey"
+      TargetKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  LambdaEnvironmentVariableEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: "KMS key used to encrypt lambda environment variables"
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: "Allow"
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - "kms:Decrypt"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-LambdaEnvironmentVariableEncryptionKey"
+
+  LambdaEnvironmentVariableEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-LambdaEnvironmentVariableEncryptionKey"
+      TargetKeyId: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
+
+  JAREncryptionKey:
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Type: AWS::KMS::Key
     Properties:
       Description: "RSA KMS key pair used to encrypt and decrypt JARs"
@@ -138,7 +284,7 @@ Resources:
             Resource: "*"
             Condition:
               ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-core*"
+                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
           - Effect: "Allow"
             Principal:
               Service: lambda.amazonaws.com
@@ -150,22 +296,30 @@ Resources:
               ArnLike:
                 "aws:SourceArn":
                   - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-mocks-StubsLambda*"
-                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-core*"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}*"
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-JAREncryptionKeyV2"
+          Value: !Sub "${AWS::StackName}-JAREncryptionKey"
 
-  JARRSAEncryptionKeyAlias:
+  JAREncryptionKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-JAREncryptionKeyV2"
-      TargetKeyId: !GetAtt JAREncryptionKeyV2.Arn
+      AliasName: !Sub "alias/${AWS::StackName}-JAREncryptionKey"
+      TargetKeyId: !GetAtt JAREncryptionKey.Arn
+
+  JAREncryptionKeyArnSSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: "The ARN of the JAREncryptionKey KMS key"
+      Name: !Sub "/${AWS::StackName}/KMS/JAREncryptionKey/ARN"
+      Type: String
+      Value: !GetAtt JAREncryptionKey.Arn
 
   S3SSEKey:
     Type: AWS::KMS::Key
     Properties:
       Description: KMS key for encrypting JWKSStore bucket
-      EnableKeyRotation: true
+      KeyUsage: ENCRYPT_DECRYPT
       KeyPolicy:
         Version: "2012-10-17"
         Statement:
@@ -175,9 +329,39 @@ Resources:
             Action:
               - kms:*
             Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:DescribeKey
+            Resource: "*"
+            Condition:
+              StringEquals:
+                kms:ViaService: !Sub "s3.${AWS::Region}.amazonaws.com"
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - kms:GenerateDataKey
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "aws:SourceArn":
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}*"
+
+  S3SSEKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-S3SSEKey"
+      TargetKeyId: !GetAtt S3SSEKey.Arn
 
   JWKSStoreBucket:
     Type: AWS::S3::Bucket
+    DependsOn: AccessLogsBucket
     Properties:
       BucketName: !Sub "${AWS::StackName}-${Environment}-jwks-store"
       PublicAccessBlockConfiguration:
@@ -202,23 +386,31 @@ Resources:
       PolicyDocument:
         Version: "2012-10-17"
         Statement:
-          - Sid: AllowLambdaToPutObjects
-            Effect: Allow
+          - Effect: Deny
+            Principal: "*"
+            Action: s3:*
+            Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+          - Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
+            Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
             Action:
               - s3:PutObject
             Condition:
               Bool:
                 aws:SecureTransport: true
+          - Effect: Allow
             Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
-          - Sid: AllowApiGatewayToGetObjects
-            Effect: Allow
             Principal:
               Service: apigateway.amazonaws.com
             Action:
               - s3:GetObject
-            Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: true
 
   AccessLogsBucket:
     Type: AWS::S3::Bucket
@@ -266,37 +458,45 @@ Resources:
               Bool:
                 "aws:SecureTransport": true
 
-  JwksGeneratorLambda:
+  JWKSGeneratorLambda:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: GenerateJWKS
-      CodeUri: ../../
-      PackageType: Zip
-      MemorySize: 245
+      FunctionName: !Sub "${AWS::StackName}-JWKSGenerator"
+      Description: "Creates a JWKS doc and stores it into a S3 Bucket"
+      MemorySize: 128
       Handler: jwks-creator.handler
-      Role: !GetAtt LambdaExecutionRole.Arn
-      Timeout: 60
+      Role: !GetAtt JWKSGeneratorLambdaRole.Arn
+      ReservedConcurrentExecutions: 1
+      Timeout: 15
+      KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
       LoggingConfig:
-        LogGroup: !Ref CoreLambdaLogGroup
+        LogGroup: !Ref JWKSGeneratorLambdaLogGroup
       Environment:
         Variables:
-          KEY_ID: !Ref JAREncryptionKeyV2
           BUCKET_NAME: !Ref JWKSStoreBucket
+          STACK_NAME: !Ref AWS::StackName
+      DeploymentPreference:
+        Type: !If
+          - CanariesEnabled
+          - !Ref LambdaDeploymentPreference
+          - AllAtOnce
+        Alarms: []
+        Role: !GetAtt CodeDeployServiceRole.Arn
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
         Minify: true
-        Format: "esm"
+        Format: esm
         OutExtension:
           - .js=.mjs
-        Target: "es2020"
+        Target: es2022
         Sourcemap: true
         EntryPoints:
-          - solutions/core/src/lambda/jwks-creator.ts
+          - jwks-creator.ts
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 
-  LambdaExecutionRole:
+  JWKSGeneratorLambdaRole:
     Type: AWS::IAM::Role
     Properties:
       PermissionsBoundary: !If
@@ -304,10 +504,8 @@ Resources:
         - !Ref PermissionsBoundary
         - !Ref AWS::NoValue
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
-        - !Ref KmsGetPublicKeyPolicy
-        - !Ref WriteToJWKSStoreBucketPolicy
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -318,23 +516,22 @@ Resources:
             Action:
               - "sts:AssumeRole"
 
-  KmsGetPublicKeyPolicy:
-    Type: AWS::IAM::ManagedPolicy
+  JWKSGeneratorLambdaPolicy:
+    Type: AWS::IAM::Policy
     Properties:
+      PolicyName: !Sub "${AWS::StackName}-JWKSGeneratorLambdaPolicy"
       PolicyDocument:
-        Version: "2012-10-17"
+        Version: 2012-10-17
         Statement:
           - Effect: Allow
             Action:
               - kms:GetPublicKey
-            Resource: !GetAtt JAREncryptionKeyV2.Arn
-
-  WriteToJWKSStoreBucketPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
+              - kms:DescribeKey
+            Resource: !GetAtt JAREncryptionKey.Arn
+          - Effect: Allow
+            Action:
+              - kms:GenerateDataKey
+            Resource: !GetAtt S3SSEKey.Arn
           - Effect: Allow
             Action:
               - s3:PutObject
@@ -344,13 +541,37 @@ Resources:
               - logs:CreateLogGroup
               - logs:CreateLogStream
               - logs:PutLogEvents
-            Resource: !Sub "${JWKSStoreBucket.Arn}/*"
+            Resource: !GetAtt JWKSGeneratorLambdaLogGroup.Arn
+      Roles:
+        - !Ref JWKSGeneratorLambdaRole
 
-  CoreLambdaLogGroup:
+  JWKSGeneratorLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/lambda/${AWS::StackName}/CoreLambda"
+      LogGroupName: !Sub "/aws/lambda/JWKSGeneratorLambda"
       RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  CodeDeployServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
+      PermissionsBoundary:
+        !If [
+          UsePermissionsBoundary,
+          !Ref PermissionsBoundary,
+          !Ref AWS::NoValue,
+        ]
 
 Outputs:
   DynamoDbSSEKeyArn:
@@ -358,17 +579,12 @@ Outputs:
     Value: !GetAtt DynamoDbSSEKey.Arn
     Export:
       Name: !Sub "${AWS::StackName}:DynamoDbSSEKeyArn"
-  JARRSAEncryptionKeyAliasName:
-    Description: Alias name of the JAR RSA encryption KMS key
-    Value: !Ref JARRSAEncryptionKeyAlias
-    Export:
-      Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyAliasName"
   JWKSStoreBucketName:
-    Description: Name of the S3 bucket
+    Description: Name of the S3 bucket that stores the JWKS document
     Value: !Ref JWKSStoreBucket
   S3SSEKeyArn:
-    Description: ARN of the KMS key used for encryption
+    Description: ARN of the KMS key used for encryption of S3 buckets
     Value: !GetAtt S3SSEKey.Arn
-  KmsKeyId:
+  JAREncryptionKeyId:
     Description: Created RSA_2048 KMS key ID
-    Value: !Ref JAREncryptionKeyV2
+    Value: !Ref JAREncryptionKey

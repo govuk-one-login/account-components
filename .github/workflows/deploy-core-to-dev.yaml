@@ -71,12 +71,9 @@ jobs:
           aws-region: "eu-west-2"
 
       - name: Install Node.js
-        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # pin@v3
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # pin@v3
         with:
           node-version-file: ".nvmrc"
-
-      - name: Install ESbuild
-        run: npm install -g esbuild@0.23
 
       - name: Build SAM template
         run: cd ./solutions/core && sam build

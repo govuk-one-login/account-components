@@ -1,3 +1,5 @@
+tap "sourcemeta/apps"
+
 brew "aws-sam-cli"
 brew "cfn-lint"
 brew "tflint"
@@ -5,4 +7,4 @@ brew "pre-commit"
 brew "tfenv"
 brew "zizmor"
 brew "localstack"
-brew "check-jsonschema"
+cask "sourcemeta/apps/jsonschema"
