@@ -8,6 +8,7 @@ on:
       - main
     paths:
       - solutions/stubs/**
+      - solutions/commons/**
       - .github/workflows/deploy-stubs.yaml
       - package.json
       - package-lock.json
