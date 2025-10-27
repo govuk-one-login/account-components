@@ -89,6 +89,7 @@ describe("handler", () => {
     vi.resetAllMocks();
     process.env["AWS_REGION"] = "us-east-1";
     process.env["BUCKET_NAME"] = "test-bucket";
+    process.env["STACK_NAME"] = "components-core";
     process.env["ALGORITHM"] = "RSA-OAEP-256";
   });
 
