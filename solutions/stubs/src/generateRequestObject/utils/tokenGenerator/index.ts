@@ -118,7 +118,10 @@ export function getJwtPayload(
   const initiatedAt = bodyIat ? bodyIat * -1 : DEFAULT_TOKEN_INITIATED_AT;
   const user = getUsers(requestObjectOptions["user"] as string);
   delete payload["user"];
-  const iss = bodyIss ?? (requestObjectOptions["client_id"] as string);
+  const iss =
+    bodyIss && bodyIss.length > 0
+      ? bodyIss
+      : (requestObjectOptions["client_id"] as string);
   return {
     ...payload,
     aud: bodyAud ?? process.env["DEFAULT_AUDIENCE"],
