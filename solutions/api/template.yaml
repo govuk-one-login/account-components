@@ -261,7 +261,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       PackageType: Zip
-      Handler: authorize.handler
+      Handler: index.handler
       LoggingConfig:
         LogGroup: !Ref ApiLambdaLogGroup
       Events:
@@ -289,7 +289,7 @@ Resources:
         Target: "es2022"
         Sourcemap: !If [IsLocal, true, false]
         EntryPoints:
-          - solutions/api/src/lambda/authorize.ts
+          - solutions/api/src/lambda/authorize/index.ts
       Policies:
         - Statement:
             - Effect: Allow

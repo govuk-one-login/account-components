@@ -1,0 +1,32 @@
+import { logger } from "../../../../../commons/utils/logger/index.js";
+import { metrics } from "../../../../../commons/utils/metrics/index.js";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
+import { getClientRegistry } from "../../../../../commons/utils/getClientRegistry/index.js";
+import { badRequestResponse, ErrorResponse } from "./common.js";
+
+export const getClient = async (clientId: string, redirectUri: string) => {
+  metrics.addDimensions({ client_id: clientId });
+
+  const clientRegistry = await getClientRegistry();
+  const client = clientRegistry.find((client) => client.client_id === clientId);
+
+  if (!client) {
+    logger.warn("Client Not Found", {
+      clientId,
+    });
+    metrics.addMetric("ClientNotFound", MetricUnit.Count, 1);
+    return new ErrorResponse(badRequestResponse);
+  }
+
+  if (!client.redirect_uris.includes(redirectUri)) {
+    logger.warn("Invalid redirect_uri", {
+      clientId,
+      suppliedRedirectUri: redirectUri,
+      clientRedirectUris: client.redirect_uris,
+    });
+    metrics.addMetric("InvalidRedirectUri", MetricUnit.Count, 1);
+    return new ErrorResponse(badRequestResponse);
+  }
+
+  return client;
+};
