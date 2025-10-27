@@ -1,12 +1,15 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+const ORIGINAL_ENV = { ...process.env };
+
 describe("createRequestObjectGet", () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env = { ...ORIGINAL_ENV };
     mockRequest = {};
     mockReply = {
       render: vi.fn(),
@@ -81,6 +84,7 @@ describe("createRequestObjectPost", () => {
 
   it("should process request and render page with the correct data", async () => {
     const { createRequestObjectPost } = await import("./create.js");
+    process.env["AUTHORIZE_URL"] = "http://localhost:6004/authorize";
     const handler = createRequestObjectPost(mockFastify as FastifyInstance);
 
     await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
@@ -89,7 +93,7 @@ describe("createRequestObjectPost", () => {
       "generateRequestObject/handlers/create.njk",
       expect.objectContaining({
         authorizeUrl:
-          "https://api.manage.local.account.gov.uk/authorize?client_id=23456789012345678901234567890123&scope=am-account-delete&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A6003%2Facm-callback&request=mock-request-object",
+          "http://localhost:6004/authorize?client_id=23456789012345678901234567890123&scope=am-account-delete&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A6003%2Facm-callback&request=mock-request-object",
         jwtPayload: { foo: "bar" },
         jwtHeader: { alg: "ES256" },
         originalRequest: mockRequest.body,

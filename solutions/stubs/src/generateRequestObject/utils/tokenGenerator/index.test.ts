@@ -17,6 +17,8 @@ import type { RequestBody } from "../../../types/common.js";
 import type { JWTPayload } from "jose";
 import type { Logger } from "@aws-lambda-powertools/logger";
 
+const ORIGINAL_ENV = { ...process.env };
+
 vi.mock(import("../../../utils/jwt-adapter.js"));
 vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
   logger: {
@@ -28,6 +30,7 @@ vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
 describe("generateJwtToken", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env = { ...ORIGINAL_ENV };
   });
 
   const requestBody: RequestBody = {
@@ -38,6 +41,8 @@ describe("generateJwtToken", () => {
   };
 
   it("should generate a JWT token successfully", async () => {
+    process.env["DEFAULT_AUDIENCE"] = "default-audience";
+
     const fakeToken = "fake.jwt.token";
     vi.mocked(JwtAdapter).mockImplementation(
       () =>
@@ -54,6 +59,8 @@ describe("generateJwtToken", () => {
   });
 
   it("should throw CustomError if token is not generated", async () => {
+    process.env["DEFAULT_AUDIENCE"] = "default-audience";
+
     vi.mocked(JwtAdapter).mockImplementation(
       () =>
         ({
@@ -69,6 +76,8 @@ describe("generateJwtToken", () => {
   });
 
   it("should throw CustomError if JwtAdapter.sign throws", async () => {
+    process.env["DEFAULT_AUDIENCE"] = "default-audience";
+
     vi.mocked(JwtAdapter).mockImplementation(
       () =>
         ({

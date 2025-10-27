@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { MockInstance } from "vitest";
 import * as jose from "jose";
 
+const ORIGINAL_ENV = { ...process.env };
+
 // Mock jose BEFORE importing the SUT so top-level await uses the mocked importJWK
 vi.mock(import("jose"), async () => {
   const actual = await vi.importActual<typeof jose>("jose");
@@ -24,6 +26,7 @@ describe("generateAccessToken", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env = { ...ORIGINAL_ENV };
 
     // eslint-disable-next-line n/no-unsupported-features/node-builtins
     vi.spyOn(crypto, "randomUUID").mockReturnValue(mockUUID);
@@ -46,13 +49,14 @@ describe("generateAccessToken", () => {
 
   it("should generate a signed JWT", async () => {
     const { generateAccessToken } = await import("./access-token.js");
+    process.env["ACCESS_TOKEN_ISSUER"] = "http://localhost:6003";
     const token = await generateAccessToken();
 
     expect(jose.SignJWT).toHaveBeenCalledExactlyOnceWith({
       sub: expect.stringMatching(
         /^urn:fdc:gov.uk:2022:[0-9a-f-]{36}$/,
       ) as unknown as string,
-      iss: "https://stubs.manage.local.account.gov.uk",
+      iss: "http://localhost:6003",
       aud: expect.stringMatching(
         /^[a-f0-9]{10}-[a-f0-9]{10}-[a-f0-9]{10}$/,
       ) as unknown as string,
