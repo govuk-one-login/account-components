@@ -43,18 +43,23 @@ Mappings:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.dev.account.gov.uk
+      authorizeErrorPageUrl: http://manage.dev.account.gov.uk/authorize-error
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.build.account.gov.uk
+      authorizeErrorPageUrl: http://manage.build.account.gov.uk/authorize-error
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.staging.account.gov.uk
+      authorizeErrorPageUrl: http://manage.staging.account.gov.uk/authorize-error
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.integration.account.gov.uk
+      authorizeErrorPageUrl: http://manage.integration.account.gov.uk/authorize-error
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.account.gov.uk
+      authorizeErrorPageUrl: http://manage.account.gov.uk/authorize-error
 
 Conditions:
   UseCodeSigning:
@@ -266,6 +271,14 @@ Resources:
             Method: GET
             Path: /authorize
             RestApiId: !Ref ApiGateway
+      Environment:
+        Variables:
+          AUTHORIZE_ERROR_PAGE_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              authorizeErrorPageUrl,
+            ]
     Metadata:
       BuildMethod: esbuild
       BuildProperties:

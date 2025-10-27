@@ -1,7 +1,7 @@
 import { importJWK, SignJWT } from "jose";
 import type { JWTHeaderParameters } from "jose";
 import { randomBytes, randomUUID } from "node:crypto";
-import { getEnvironment } from "../../../commons/utils/getEnvironment/index.js";
+import assert from "node:assert";
 
 const JWK_KEY_SECRET = {
   kty: "EC",
@@ -22,18 +22,20 @@ const jwtHeader: JWTHeaderParameters = {
 };
 const epochDateNow = (): number => Math.round(Date.now() / 1000);
 
-const tokenBody = (expiresIn = 600) => ({
-  sub: `urn:fdc:gov.uk:2022:${randomUUID()}`,
-  iss:
-    process.env["ACCESS_TOKEN_ISSUER"] ??
-    `https://stubs.manage.${getEnvironment()}.account.gov.uk`,
-  aud: `${Buffer.from(randomBytes(5)).toString("hex")}-${Buffer.from(randomBytes(5)).toString("hex")}-${Buffer.from(randomBytes(5)).toString("hex")}`,
-  iat: epochDateNow(),
-  exp: epochDateNow() + expiresIn,
-  sid: randomUUID(),
-  nonce: `${Buffer.from(randomBytes(5)).toString("hex")}-${Buffer.from(randomBytes(5)).toString("hex")}`,
-  vot: "Cl.Cm",
-});
+const tokenBody = (expiresIn = 600) => {
+  assert(process.env["ACCESS_TOKEN_ISSUER"], "ACCESS_TOKEN_ISSUER is not set");
+
+  return {
+    sub: `urn:fdc:gov.uk:2022:${randomUUID()}`,
+    iss: process.env["ACCESS_TOKEN_ISSUER"],
+    aud: `${Buffer.from(randomBytes(5)).toString("hex")}-${Buffer.from(randomBytes(5)).toString("hex")}-${Buffer.from(randomBytes(5)).toString("hex")}`,
+    iat: epochDateNow(),
+    exp: epochDateNow() + expiresIn,
+    sid: randomUUID(),
+    nonce: `${Buffer.from(randomBytes(5)).toString("hex")}-${Buffer.from(randomBytes(5)).toString("hex")}`,
+    vot: "Cl.Cm",
+  };
+};
 
 export const generateAccessToken = async (): Promise<string> => {
   return await new SignJWT(tokenBody())
