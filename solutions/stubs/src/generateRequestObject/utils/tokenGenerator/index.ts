@@ -18,7 +18,7 @@ import {
 import { logger } from "../../../../../commons/utils/logger/index.js";
 import type { JWTPayload } from "jose";
 import { randomBytes } from "node:crypto";
-import { getEnvironment } from "../../../../../commons/utils/getEnvironment/index.js";
+import assert from "node:assert";
 
 interface GenerateJwtTokenResponse {
   token: string;
@@ -110,6 +110,8 @@ export function getJwtPayload(
     ...payload
   } = requestObjectOptions;
 
+  assert.ok(process.env["DEFAULT_AUDIENCE"], "DEFAULT_AUDIENCE is not set");
+
   // have to multiply by 1 otherwise get unable to sign
   const expiresIn = bodyExp ? bodyExp * 1 : DEFAULT_TOKEN_EXPIRY * 60;
   delete payload["exp"];
@@ -119,10 +121,7 @@ export function getJwtPayload(
   const iss = bodyIss ?? (requestObjectOptions["client_id"] as string);
   return {
     ...payload,
-    aud:
-      bodyAud ??
-      process.env["DEFAULT_AUDIENCE"] ??
-      `https://api.manage.${getEnvironment()}.account.gov.uk/authorize`,
+    aud: bodyAud ?? process.env["DEFAULT_AUDIENCE"],
     response_type: "code",
     scope: bodyScope ?? Scope.ACCOUNT_DELETION,
     state: Buffer.from(randomBytes(10)).toString("hex"),

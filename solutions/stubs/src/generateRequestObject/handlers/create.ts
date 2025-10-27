@@ -13,7 +13,6 @@ import { getClientRegistryWithInvalidClient } from "../utils/getClientRegistryWi
 import { paths } from "../../utils/paths.js";
 import assert from "node:assert";
 import * as v from "valibot";
-import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.js";
 import type { JWTPayload } from "jose";
 
 const requestBodySchema = v.object({
@@ -80,10 +79,9 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
     const { body } = response;
     const result = JSON.parse(body) as GenerateJARResponse;
 
-    const url = new URL(
-      process.env["AUTHORIZE_URL"] ??
-        `https://api.manage.${getEnvironment()}.account.gov.uk/authorize`,
-    );
+    assert.ok(process.env["AUTHORIZE_URL"], "AUTHORIZE_URL is not set");
+
+    const url = new URL(process.env["AUTHORIZE_URL"]);
     url.searchParams.append("client_id", requestBody.client_id);
     url.searchParams.append("scope", "am-account-delete");
     url.searchParams.append("response_type", "code");
