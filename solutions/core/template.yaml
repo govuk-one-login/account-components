@@ -585,6 +585,3 @@ Outputs:
   S3SSEKeyArn:
     Description: ARN of the KMS key used for encryption of S3 buckets
     Value: !GetAtt S3SSEKey.Arn
-  JAREncryptionKeyId:
-    Description: Created RSA_2048 KMS key ID
-    Value: !Ref JAREncryptionKey
