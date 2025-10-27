@@ -298,3 +298,8 @@ Resources:
                 - kms:GenerateDataKey
               Resource:
                 Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"
+            - Effect: Allow
+              Action:
+                - appconfig:GetLatestConfiguration
+                - appconfig:StartConfigurationSession
+              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
