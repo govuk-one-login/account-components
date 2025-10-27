@@ -288,6 +288,8 @@ Resources:
           - .js=.mjs
         Target: "es2022"
         Sourcemap: !If [IsLocal, true, false]
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:
           - solutions/api/src/lambda/authorize/index.ts
       Policies:
