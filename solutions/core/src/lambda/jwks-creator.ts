@@ -1,12 +1,11 @@
 import { Logger } from "@aws-lambda-powertools/logger";
 import { exportJWK, importSPKI } from "jose";
 import type { JWK } from "jose";
-import type { KMSClient } from "@aws-sdk/client-kms";
-import { GetPublicKeyCommand, DescribeKeyCommand } from "@aws-sdk/client-kms";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { createKmsClient } from "../../../commons/utils/awsClient/kmsClient/index.js";
 import type { Context } from "aws-lambda";
 import { createPublicKey } from "node:crypto";
+import assert from "node:assert";
 
 const logger = new Logger();
 
@@ -15,16 +14,17 @@ export const handler = async (
   context: Context,
 ): Promise<void> => {
   logger.addContext(context);
+  assert.ok(process.env["BUCKET_NAME"], "BUCKET_NAME not set");
+  assert.ok(process.env["STACK_NAME"], "STACK_NAME not set");
+
+  const bucketName = process.env["BUCKET_NAME"];
+  const stackName = process.env["STACK_NAME"];
   const region = process.env["AWS_REGION"] ?? "eu-west-2";
-  const bucketName = process.env["BUCKET_NAME"] ?? "components-core-jwks-store";
   const algorithm = process.env["ALGORITHM"] ?? "RSA-OAEP-256";
-  const stackName = process.env["STACK_NAME"] ?? "components-core";
   logger.info("Properties", { region, bucketName, algorithm, stackName });
   const s3 = new S3Client({ region: region });
-  const kms = createKmsClient();
   logger.info("Created AWS clients");
   const jwks = await generateJwksFromKmsPublicKey(
-    kms.kmsClient,
     `alias/${stackName}-JAREncryptionKey`,
     algorithm,
     "enc",
@@ -35,16 +35,15 @@ export const handler = async (
 };
 
 async function generateJwksFromKmsPublicKey(
-  client: KMSClient,
   keyAlias: string,
   algorithm = "RSA-OAEP-256",
   use = "enc",
 ): Promise<{ keys: JWK[] }> {
   try {
     logger.info("Getting Public Key using Alias: " + keyAlias);
-    const { PublicKey } = await client.send(
-      new GetPublicKeyCommand({ KeyId: keyAlias }),
-    );
+    const { PublicKey } = await createKmsClient().getPublicKey({
+      KeyId: keyAlias,
+    });
 
     if (!PublicKey) {
       throw new Error(`Public key not found for KMS Key Alias: ${keyAlias}`);
@@ -52,9 +51,9 @@ async function generateJwksFromKmsPublicKey(
 
     logger.info("Public key material", { PublicKey });
 
-    const { KeyMetadata } = await client.send(
-      new DescribeKeyCommand({ KeyId: keyAlias }),
-    );
+    const { KeyMetadata } = await createKmsClient().describeKey({
+      KeyId: keyAlias,
+    });
 
     if (!KeyMetadata) {
       throw new Error(`Key ID not found for KMS Key Alias: ${keyAlias}`);

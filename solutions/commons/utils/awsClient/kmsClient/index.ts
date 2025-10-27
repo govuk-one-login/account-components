@@ -19,6 +19,10 @@ const createKmsClient = () => {
       const { GetPublicKeyCommand } = await import("@aws-sdk/client-kms");
       return await wrappedClient.send(new GetPublicKeyCommand(params));
     },
+    describeKey: async (params: { KeyId: string }) => {
+      const { DescribeKeyCommand } = await import("@aws-sdk/client-kms");
+      return await wrappedClient.send(new DescribeKeyCommand(params));
+    },
   };
 };
 
