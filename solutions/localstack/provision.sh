@@ -103,11 +103,11 @@ create_kms_keys() {
 
   # Delete existing alias
   aws --endpoint-url=http://localhost:4566 kms delete-alias \
-    --alias-name alias/components-core-JARRSAEncryptionKey 2>/dev/null || true
+    --alias-name alias/components-core-JAREncryptionKey 2>/dev/null || true
 
   # Delete existing key
   EXISTING_KEY_ID=$(aws --endpoint-url=http://localhost:4566 kms list-aliases \
-    --query "Aliases[?AliasName=='alias/components-core-JARRSAEncryptionKey'].TargetKeyId" \
+    --query "Aliases[?AliasName=='alias/components-core-JAREncryptionKey'].TargetKeyId" \
     --output text 2>/dev/null || true)
   
   if [[ -n "$EXISTING_KEY_ID" ]] && [[ "$EXISTING_KEY_ID" != "None" ]]; then
@@ -126,7 +126,7 @@ create_kms_keys() {
     --output text)
 
   aws --endpoint-url=http://localhost:4566 kms create-alias \
-    --alias-name alias/components-core-JARRSAEncryptionKey \
+    --alias-name alias/components-core-JAREncryptionKey \
     --target-key-id "$KEY_ID"
 
   echo "Finished creating KMS keys"
