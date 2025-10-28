@@ -75,8 +75,7 @@ jobs:
               "USE_LOCALSTACK": "1",
               "LOCALSTACK_ENDPOINT": "http://host.docker.internal:4566",
               "LOCALSTACK_ACCESS_KEY_ID": "test",
-              "LOCALSTACK_ACCESS_KEY": "test",
-              "JAR_RSA_ENCRYPTION_KEY_ALIAS": "alias/components-core-JARRSAEncryptionKey"
+              "LOCALSTACK_ACCESS_KEY": "test"
             },
             "AuthorizeLambda": {
               "AUTHORIZE_ERROR_PAGE_URL": "http://localhost:6002/authorize-error"
