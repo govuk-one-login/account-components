@@ -75,6 +75,7 @@ describe("getClient", () => {
       "https://example.com/callback",
     );
 
+    // eslint-disable-next-line vitest/prefer-strict-equal
     expect(result).toEqual({
       errorResponse: {
         statusCode: 302,
@@ -92,6 +93,7 @@ describe("getClient", () => {
       "https://malicious.com/callback",
     );
 
+    // eslint-disable-next-line vitest/prefer-strict-equal
     expect(result).toEqual({
       errorResponse: {
         statusCode: 302,

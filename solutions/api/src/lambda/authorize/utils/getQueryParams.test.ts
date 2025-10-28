@@ -58,6 +58,7 @@ describe("getQueryParams", () => {
     const event = createMockEvent();
     const result = getQueryParams(event);
 
+    // eslint-disable-next-line vitest/prefer-strict-equal
     expect(result).toEqual({
       request: "test-request",
       response_type: "code",
@@ -78,6 +79,7 @@ describe("getQueryParams", () => {
     });
     const result = getQueryParams(event);
 
+    // eslint-disable-next-line vitest/prefer-strict-equal
     expect(result).toEqual({
       errorResponse: {
         statusCode: 302,
@@ -99,6 +101,7 @@ describe("getQueryParams", () => {
     });
     const result = getQueryParams(event);
 
+    // eslint-disable-next-line vitest/prefer-strict-equal
     expect(result).toEqual({
       errorResponse: {
         statusCode: 302,
@@ -120,6 +123,7 @@ describe("getQueryParams", () => {
     });
     const result = getQueryParams(event);
 
+    // eslint-disable-next-line vitest/prefer-strict-equal
     expect(result).toEqual({
       errorResponse: {
         statusCode: 302,
@@ -133,6 +137,7 @@ describe("getQueryParams", () => {
     const event = createMockEvent({ queryStringParameters: null });
     const result = getQueryParams(event);
 
+    // eslint-disable-next-line vitest/prefer-strict-equal
     expect(result).toEqual({
       errorResponse: {
         statusCode: 302,
