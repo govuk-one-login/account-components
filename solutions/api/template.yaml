@@ -107,7 +107,7 @@ Globals:
         ]
     Environment:
       Variables:
-        NODE_OPTIONS: !Ref AWS::NoValue
+        NODE_OPTIONS: !If [IsLocal, "--enable-source-maps", !Ref AWS::NoValue]
         USE_LOCALSTACK: !Ref AWS::NoValue
         ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"
@@ -257,7 +257,6 @@ Resources:
           - .js=.mjs
         Target: "es2022"
         Sourcemap: true
-        Splitting: true
         EntryPoints:
           - solutions/api/src/lambda/healthcheck.ts
 

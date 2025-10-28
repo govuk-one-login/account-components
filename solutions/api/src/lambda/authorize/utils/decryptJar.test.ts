@@ -109,7 +109,9 @@ describe("decryptJar", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
-    expect(result.errorResponse.headers?.["location"]).toContain("error=E5003");
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5003",
+    );
   });
 
   it("returns ErrorResponse when header is invalid", async () => {
@@ -129,7 +131,9 @@ describe("decryptJar", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
-    expect(result.errorResponse.headers?.["location"]).toContain("error=E5003");
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5003",
+    );
   });
 
   it("returns ErrorResponse when KMS decryption fails", async () => {
@@ -151,7 +155,9 @@ describe("decryptJar", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
-    expect(result.errorResponse.headers?.["location"]).toContain("error=E2003");
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2003",
+    );
   });
 
   it("returns ErrorResponse when KMS returns no plaintext", async () => {
@@ -173,7 +179,9 @@ describe("decryptJar", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
-    expect(result.errorResponse.headers?.["location"]).toContain("error=E2003");
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2003",
+    );
   });
 
   it("returns ErrorResponse when JAR_RSA_ENCRYPTION_KEY_ALIAS not set", async () => {
@@ -188,7 +196,9 @@ describe("decryptJar", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
-    expect(result.errorResponse.headers?.["location"]).toContain("error=E5003");
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5003",
+    );
   });
 
   it("includes state in error response when provided", async () => {

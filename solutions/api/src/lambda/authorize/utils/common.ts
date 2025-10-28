@@ -24,12 +24,12 @@ export const badRequestResponse: APIGatewayProxyResult = {
 
 export const authorizeErrors = {
   serverError: {
-    code: "E5003",
-    description: "server_error",
+    description: "E5003",
+    type: "server_error",
   },
   invalidRequest: {
-    code: "E2003",
-    description: "invalid_request",
+    description: "E2003",
+    type: "invalid_request",
   },
 } as const;
 
@@ -42,7 +42,7 @@ export const getRedirectToClientRedirectUriResponse = (
   headers: {
     location: (() => {
       const url = new URL(redirectUri);
-      url.searchParams.set("error", error.code);
+      url.searchParams.set("error", error.type);
       url.searchParams.set("error_description", error.description);
       if (state) {
         url.searchParams.set("state", state);
