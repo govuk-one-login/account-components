@@ -11,6 +11,7 @@ const queryParamsSchema = v.object({
   scope: v.pipe(v.string(), v.nonEmpty()),
   client_id: v.pipe(v.string(), v.nonEmpty()),
   redirect_uri: v.pipe(v.string(), v.url()),
+  state: v.optional(v.string()),
 });
 
 export const getQueryParams = (event: APIGatewayProxyEvent) => {

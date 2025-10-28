@@ -256,7 +256,7 @@ Resources:
         OutExtension:
           - .js=.mjs
         Target: "es2022"
-        Sourcemap: !If [IsLocal, true, false]
+        Sourcemap: true
         Splitting: true
         EntryPoints:
           - solutions/api/src/lambda/healthcheck.ts
@@ -283,14 +283,20 @@ Resources:
               !Ref Environment,
               authorizeErrorPageUrl,
             ]
+          JAR_RSA_ENCRYPTION_KEY_ALIAS:
+            Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyAliasName"
       Policies:
         - Statement:
             - Effect: Allow
               Action:
                 - kms:Decrypt
-                - kms:GenerateDataKey
               Resource:
                 Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"
+            - Effect: Allow
+              Action:
+                - appconfig:GetLatestConfiguration
+                - appconfig:StartConfigurationSession
+              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -299,8 +305,7 @@ Resources:
         OutExtension:
           - .js=.mjs
         Target: "es2022"
-        Sourcemap: !If [IsLocal, true, false]
-        Splitting: true
+        Sourcemap: true
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:

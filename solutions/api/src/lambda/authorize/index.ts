@@ -2,6 +2,7 @@ import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { getQueryParams } from "./utils/getQueryParams.js";
 import { ErrorResponse } from "./utils/common.js";
 import { getClient } from "./utils/getClient.js";
+import { decryptJar } from "./utils/decryptJar.js";
 
 export const handler = async (
   event: APIGatewayProxyEvent,
@@ -17,6 +18,16 @@ export const handler = async (
   );
   if (client instanceof ErrorResponse) {
     return client.errorResponse;
+  }
+
+  const signedJwtString = await decryptJar(
+    queryParams.request,
+    queryParams.client_id,
+    queryParams.redirect_uri,
+    queryParams.state,
+  );
+  if (signedJwtString instanceof ErrorResponse) {
+    return signedJwtString.errorResponse;
   }
 
   return {
