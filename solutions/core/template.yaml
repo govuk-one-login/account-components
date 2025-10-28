@@ -86,7 +86,7 @@ Globals:
       - arm64
     Tracing: Active
     AutoPublishAlias: live
-    CodeUri: ./src/lambda
+    CodeUri: ../../
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
@@ -492,7 +492,7 @@ Resources:
         Target: es2022
         Sourcemap: true
         EntryPoints:
-          - jwks-creator.ts
+          - solutions/core/src/lambda/jwks-creator.ts
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 
