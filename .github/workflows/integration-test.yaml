@@ -38,6 +38,10 @@ jobs:
           SESSIONS_SIGNER=localsessionsignerwhichmustbeatleast32chars  
           SESSIONS_TABLE_NAME=components-main-SessionStore
           ROOT_COOKIE_DOMAIN=localhost
+          AWS_REGION=eu-west-2
+          LOCALSTACK_ENDPOINT=http://localhost:4566
+          LOCALSTACK_ACCESS_KEY_ID=test
+          LOCALSTACK_ACCESS_KEY=test             
           EOF
 
       - name: Configure stubs environment
@@ -53,6 +57,10 @@ jobs:
           DEFAULT_AUDIENCE=http://127.0.0.1:6004/authorize
           ACCESS_TOKEN_ISSUER=http://127.0.0.1:6003
           AUTHORIZE_URL=http://127.0.0.1:6004/authorize
+          AWS_REGION=eu-west-2
+          LOCALSTACK_ENDPOINT=http://localhost:4566
+          LOCALSTACK_ACCESS_KEY_ID=test
+          LOCALSTACK_ACCESS_KEY=test          
           EOF
 
       - name: Configure API environment
@@ -64,7 +72,11 @@ jobs:
               "NODE_OPTIONS": "--enable-source-maps",
               "ENVIRONMENT": "local",
               "NODE_ENV": "production",
-              "USE_LOCALSTACK": "1"
+              "USE_LOCALSTACK": "1",
+              "LOCALSTACK_ENDPOINT": "http://host.docker.internal:4566",
+              "LOCALSTACK_ACCESS_KEY_ID": "test",
+              "LOCALSTACK_ACCESS_KEY": "test",
+              "JAR_RSA_ENCRYPTION_KEY_ALIAS": "alias/components-core-JARRSAEncryptionKey"
             },
             "AuthorizeLambda": {
               "AUTHORIZE_ERROR_PAGE_URL": "http://localhost:6002/authorize-error"

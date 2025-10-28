@@ -175,7 +175,7 @@ export const initFrontend = async function () {
     referrerPolicy: false,
     permittedCrossDomainPolicies: false,
   });
-  fastify.register(fastifySession, getSessionOptions());
+  fastify.register(fastifySession, await getSessionOptions());
   fastify.register(csrfProtection);
 
   fastify.get(paths.authorizeError, async function (request, reply) {

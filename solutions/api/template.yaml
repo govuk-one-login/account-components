@@ -111,6 +111,9 @@ Globals:
         USE_LOCALSTACK: !Ref AWS::NoValue
         ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"
+        LOCALSTACK_ENDPOINT: !Ref AWS::NoValue
+        LOCALSTACK_ACCESS_KEY_ID: !Ref AWS::NoValue
+        LOCALSTACK_ACCESS_KEY: !Ref AWS::NoValue
         AWS_LAMBDA_EXEC_WRAPPER:
           !If [IsLocal, !Ref AWS::NoValue, "/opt/dynatrace"]
         DT_CONNECTION_AUTH_TOKEN: !Sub
@@ -254,6 +257,7 @@ Resources:
           - .js=.mjs
         Target: "es2022"
         Sourcemap: !If [IsLocal, true, false]
+        Splitting: true
         EntryPoints:
           - solutions/api/src/lambda/healthcheck.ts
 
@@ -279,6 +283,8 @@ Resources:
               !Ref Environment,
               authorizeErrorPageUrl,
             ]
+          JAR_RSA_ENCRYPTION_KEY_ALIAS:
+            Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyAliasName"
       Policies:
         - Statement:
             - Effect: Allow
@@ -301,6 +307,7 @@ Resources:
           - .js=.mjs
         Target: "es2022"
         Sourcemap: !If [IsLocal, true, false]
+        Splitting: true
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:

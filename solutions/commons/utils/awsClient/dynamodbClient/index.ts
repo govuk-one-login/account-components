@@ -26,11 +26,8 @@ const createDynamoDbClient = () => {
   const docClient = DynamoDBDocumentClient.from(wrappedClient);
 
   const client = {
-    docClient,
+    client: docClient,
     config: docClient.config,
-    send: async (command: Parameters<typeof docClient.send>[0]) => {
-      return await docClient.send(command);
-    },
     put: async (params: PutCommandInput) => {
       const { PutCommand } = await import("@aws-sdk/lib-dynamodb");
       return await docClient.send(new PutCommand(params));

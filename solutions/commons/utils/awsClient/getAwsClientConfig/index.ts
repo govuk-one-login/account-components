@@ -3,22 +3,40 @@ import { getNumberFromEnvVar } from "../../getNumberFromEnvVar/index.js";
 import { resolveEnvVarToBool } from "../../resolveEnvVarToBool/index.js";
 import http from "node:http";
 import https from "node:https";
+import assert from "node:assert";
 
 export const getAwsClientConfig = () => {
+  assert.ok(process.env["AWS_REGION"], "AWS_REGION is not set");
+
   return {
-    region: process.env["AWS_REGION"] ?? "eu-west-2",
+    region: process.env["AWS_REGION"],
     maxAttempts: getNumberFromEnvVar("AWS_MAX_ATTEMPTS", 3),
-    ...(resolveEnvVarToBool("USE_LOCALSTACK")
-      ? {
-          endpoint:
-            process.env["LOCALSTACK_ENDPOINT"] ?? "http://localhost:4566",
-          credentials: {
-            accessKeyId: process.env["LOCALSTACK_ACCESS_KEY_ID"] ?? "test",
-            secretAccessKey:
-              process.env["LOCALSTACK_SECRET_ACCESS_KEY"] ?? "test",
-          },
-        }
-      : {}),
+    ...(() => {
+      if (!resolveEnvVarToBool("USE_LOCALSTACK")) {
+        return {};
+      }
+
+      assert.ok(
+        process.env["LOCALSTACK_ENDPOINT"],
+        "LOCALSTACK_ENDPOINT is not set",
+      );
+      assert.ok(
+        process.env["LOCALSTACK_ACCESS_KEY_ID"],
+        "LOCALSTACK_ACCESS_KEY_ID is not set",
+      );
+      assert.ok(
+        process.env["LOCALSTACK_ACCESS_KEY"],
+        "LOCALSTACK_ACCESS_KEY is not set",
+      );
+
+      return {
+        endpoint: process.env["LOCALSTACK_ENDPOINT"],
+        credentials: {
+          accessKeyId: process.env["LOCALSTACK_ACCESS_KEY_ID"],
+          secretAccessKey: process.env["LOCALSTACK_ACCESS_KEY"],
+        },
+      };
+    })(),
     requestHandler: new NodeHttpHandler({
       connectionTimeout: getNumberFromEnvVar(
         "AWS_CLIENT_CONNECT_TIMEOUT",

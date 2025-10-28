@@ -1,25 +1,28 @@
-import type { MockInstance } from "vitest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { getDefaultKeyValue, JwtAdapter } from "./jwt-adapter.js";
 import * as jose from "jose";
 import { SignJWT } from "jose";
 import type { JwtHeader } from "../types/common.js";
 import { Algorithms, SignatureTypes } from "../types/common.js";
-import { getParameter } from "@aws-lambda-powertools/parameters/ssm";
+
+import type { SSMProvider } from "@aws-lambda-powertools/parameters/ssm";
 
 vi.mock(import("jose"));
-vi.mock(import("@aws-lambda-powertools/parameters/ssm"));
+vi.mock(import("../../../commons/utils/awsClient/index.js"), () => ({
+  getParametersProvider: vi.fn(),
+}));
 vi.mock(import("../../../commons/utils/logger/index.js"));
 
-const getParameterCommand = getParameter as unknown as MockInstance<
-  (name: string, options?: any) => Promise<string | undefined>
->;
+const mockGet = vi.fn();
+const mockParametersProvider = {
+  get: mockGet,
+} as unknown as SSMProvider;
 
 describe("jwtAdapter", () => {
   let header: JwtHeader;
   let payload: jose.JWTPayload;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     header = { alg: Algorithms.EC };
     payload = {};
@@ -28,21 +31,27 @@ describe("jwtAdapter", () => {
       .mockReturnValueOnce("encodedHeader")
       .mockReturnValueOnce("encodedPayload");
     vi.spyOn(SignJWT.prototype, "setProtectedHeader").mockReturnThis();
-    vi.spyOn(SignJWT.prototype, "setIssuedAt").mockReturnThis();
     vi.spyOn(SignJWT.prototype, "setIssuer").mockReturnThis();
     vi.spyOn(SignJWT.prototype, "setAudience").mockReturnThis();
     vi.spyOn(SignJWT.prototype, "setExpirationTime").mockReturnThis();
     vi.spyOn(SignJWT.prototype, "sign").mockResolvedValue(
       "jwtHeader.jwtPayload.jwtSignature",
     );
+    vi.spyOn(jose, "importPKCS8").mockResolvedValue(
+      {} as unknown as Awaited<ReturnType<typeof jose.importPKCS8>>,
+    );
 
-    getParameterCommand.mockResolvedValue("privateKey");
+    const { getParametersProvider } = await import(
+      "../../../commons/utils/awsClient/index.js"
+    );
+    vi.mocked(getParametersProvider).mockResolvedValue(mockParametersProvider);
+    mockGet.mockResolvedValue("privateKey");
   });
 
   describe("sign", () => {
     describe("when private keys not cached", () => {
-      it("throws error if it fails to retrieve public key from SSM", async () => {
-        getParameterCommand.mockRejectedValue("error");
+      it("throws error if it fails to retrieve private key from SSM", async () => {
+        mockGet.mockRejectedValue("error");
         const signatureType = SignatureTypes.EC;
         process.env["MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"] =
           "/components-mocks/MockClientEcPrivateKey";
@@ -51,7 +60,9 @@ describe("jwtAdapter", () => {
 
         await expect(
           jwtAdapter.sign(header, payload, signatureType),
-        ).rejects.toThrow("Unable to retrieve private key");
+        ).rejects.toThrow(
+          "Failed to retrieve key from SSM for param /components-mocks/MockClientEcPrivateKey",
+        );
       });
     });
 
@@ -65,7 +76,7 @@ describe("jwtAdapter", () => {
         const token = await jwtAdapter.sign(header, payload, signatureType);
 
         expect(token).to.eq("jwtHeader.jwtPayload.jwtSignature");
-        expect(getParameterCommand).not.toHaveBeenCalled();
+        expect(mockGet).not.toHaveBeenCalled();
       });
 
       it("does not call ssm to retrieve private keys when rsa key is cached", async () => {
@@ -77,7 +88,7 @@ describe("jwtAdapter", () => {
         const token = await jwtAdapter.sign(header, payload, signatureType);
 
         expect(token).to.eq("jwtHeader.jwtPayload.jwtSignature");
-        expect(getParameterCommand).not.toHaveBeenCalled();
+        expect(mockGet).not.toHaveBeenCalled();
       });
     });
 

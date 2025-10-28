@@ -8,13 +8,13 @@ import { ScalarAttributeType } from "@aws-sdk/client-dynamodb";
 
 let dynamodbStore: ConnectDynamoDB.DynamoDBStore | undefined = undefined;
 
-export const getSessionOptions = (): FastifySessionOptions => {
+export const getSessionOptions = async (): Promise<FastifySessionOptions> => {
   assert.ok(process.env["SESSIONS_SIGNER"]);
   assert.ok(process.env["SESSIONS_TABLE_NAME"]);
 
   dynamodbStore ??= new (ConnectDynamoDB(session))({
     table: process.env["SESSIONS_TABLE_NAME"],
-    client: getDynamoDbClient().docClient,
+    client: (await getDynamoDbClient()).client,
     specialKeys: [{ name: "user_id", type: ScalarAttributeType.S }],
     skipThrowMissingSpecialKeys: true,
   });

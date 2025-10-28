@@ -44,7 +44,7 @@ describe("buildJar", async () => {
 
   const mockGetPublicKey = vi.fn();
   const mockKmsClient = {
-    kmsClient: {} as any,
+    client: {} as any,
     config: {} as any,
     getPublicKey: mockGetPublicKey,
   };
@@ -82,7 +82,7 @@ describe("buildJar", async () => {
       compactEncryptMock.encrypt,
     );
 
-    vi.spyOn(awsClientModule, "getKmsClient").mockReturnValue(mockKmsClient);
+    vi.spyOn(awsClientModule, "getKmsClient").mockResolvedValue(mockKmsClient);
 
     const { createPublicKey } = await import("node:crypto");
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

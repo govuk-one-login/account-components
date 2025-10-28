@@ -22,7 +22,7 @@ export async function getClientRegistry(): Promise<Client[]> {
       application: "account-components",
       environment: getEnvironment(),
       transform: "json",
-      awsSdkV3Client: getAppConfigClient(),
+      awsSdkV3Client: await getAppConfigClient(),
     });
   }
   if (

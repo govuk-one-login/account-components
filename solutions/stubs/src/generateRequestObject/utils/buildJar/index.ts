@@ -21,7 +21,9 @@ const getPublicKeyKmsAliasName = (keyType: SignatureTypes): string => {
 export async function buildJar(signedJwt: string): Promise<string> {
   let publicKeyPem: string;
   try {
-    const publicKey = await getKmsClient().getPublicKey({
+    const publicKey = await (
+      await getKmsClient()
+    ).getPublicKey({
       KeyId: getPublicKeyKmsAliasName(SignatureTypes.RSA),
     });
 

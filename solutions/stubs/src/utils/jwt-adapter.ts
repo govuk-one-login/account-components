@@ -46,7 +46,9 @@ export class JwtAdapter {
     if (!this.signingKeyMap.has(signatureType)) {
       const privateKeyName = getPrivateKeyName(signatureType);
       try {
-        privateKeyPem = await getParametersProvider().get(privateKeyName);
+        privateKeyPem = await (
+          await getParametersProvider()
+        ).get(privateKeyName);
       } catch (error) {
         logger.error(
           `Failed to retrieve ${signatureType} private key from SSM`,
