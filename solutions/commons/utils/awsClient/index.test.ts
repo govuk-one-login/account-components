@@ -43,7 +43,7 @@ describe("awsClient", () => {
     const client2 = await getDynamoDbClient();
 
     expect(client1).toBe(client2);
-    expect(client1).toEqual({ client: "dynamodb" });
+    expect(client1).toStrictEqual({ client: "dynamodb" });
   });
 
   it("should return cached SQS client on subsequent calls", async () => {
@@ -51,7 +51,7 @@ describe("awsClient", () => {
     const client2 = await getSqsClient();
 
     expect(client1).toBe(client2);
-    expect(client1).toEqual({ client: "sqs" });
+    expect(client1).toStrictEqual({ client: "sqs" });
   });
 
   it("should return cached KMS client on subsequent calls", async () => {
@@ -59,7 +59,7 @@ describe("awsClient", () => {
     const client2 = await getKmsClient();
 
     expect(client1).toBe(client2);
-    expect(client1).toEqual({ client: "kms" });
+    expect(client1).toStrictEqual({ client: "kms" });
   });
 
   it("should return cached parameters provider on subsequent calls", async () => {
@@ -67,7 +67,7 @@ describe("awsClient", () => {
     const provider2 = await getParametersProvider();
 
     expect(provider1).toBe(provider2);
-    expect(provider1).toEqual({ provider: "ssm" });
+    expect(provider1).toStrictEqual({ provider: "ssm" });
   });
 
   it("should return cached AppConfig client on subsequent calls", async () => {
@@ -75,6 +75,6 @@ describe("awsClient", () => {
     const client2 = await getAppConfigClient();
 
     expect(client1).toBe(client2);
-    expect(client1).toEqual({ client: "appconfig" });
+    expect(client1).toStrictEqual({ client: "appconfig" });
   });
 });

@@ -64,7 +64,7 @@ describe("getClient", () => {
       "https://example.com/callback",
     );
 
-    expect(result).toEqual(mockClient);
+    expect(result).toStrictEqual(mockClient);
   });
 
   it("returns ErrorResponse when client not found", async () => {
