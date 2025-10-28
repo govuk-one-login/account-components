@@ -8,86 +8,59 @@ describe("sqsClient", () => {
     vi.resetModules();
     process.env = { ...ORIGINAL_ENV };
     delete process.env["AWS_REGION"];
-    delete process.env["LOCALSTACK_ENDPOINT"];
-    delete process.env["LOCALSTACK_ACCESS_KEY_ID"];
-    delete process.env["LOCALSTACK_SECRET_ACCESS_KEY"];
-    delete process.env["AWS_MAX_ATTEMPTS"];
-    delete process.env["AWS_CLIENT_REQUEST_TIMEOUT"];
-    delete process.env["AWS_CLIENT_CONNECT_TIMEOUT"];
+    delete process.env["ENVIRONMENT"];
   });
 
   it("should create an SQS client", () => {
+    process.env["AWS_REGION"] = "eu-west-2";
     const client = createSqsClient();
 
     expect(client).toBeDefined();
+    expect(client.client).toBeDefined();
+    expect(client.config).toBeDefined();
+    expect(client.sendMessage).toBeDefined();
+    expect(client.receiveMessage).toBeDefined();
+    expect(client.deleteMessage).toBeDefined();
   });
 
-  it("should use Localstack settings when USE_LOCALSTACK is true", async () => {
-    process.env["USE_LOCALSTACK"] = "true";
-    process.env["LOCALSTACK_ENDPOINT"] = "https://test:1234";
-    const client = createSqsClient();
+  it("should not use XRAY when in local environment", async () => {
+    process.env["AWS_REGION"] = "eu-west-2";
+    process.env["ENVIRONMENT"] = "local";
 
-    await expect(
-      client.config.endpoint
-        ? client.config.endpoint()
-        : Promise.resolve("fail"),
-    ).resolves.toStrictEqual({
-      hostname: "test",
-      port: 1234,
-      protocol: "https:",
-      path: "/",
-      query: undefined,
-    });
+    const { default: AWSXRay } = await import("aws-xray-sdk");
+    const spy = vi.spyOn(AWSXRay, "captureAWSv3Client");
+
+    createSqsClient();
+
+    expect(spy).toHaveBeenCalledTimes(0);
   });
 
-  it("should sendMessages correctly", async () => {
+  it("should use XRAY when not in local environment", async () => {
+    process.env["AWS_REGION"] = "eu-west-2";
+    process.env["ENVIRONMENT"] = "integration";
+
+    const { default: AWSXRay } = await import("aws-xray-sdk");
+    const spy = vi.spyOn(AWSXRay, "captureAWSv3Client");
+
+    createSqsClient();
+
+    expect(spy).toHaveBeenCalledTimes(1);
+  });
+
+  it("should send commands correctly", async () => {
+    process.env["AWS_REGION"] = "eu-west-2";
     const client = createSqsClient();
+
     const sendSpy = vi
-      .spyOn(client.sqsClient, "send")
-      .mockResolvedValue({ MessageId: "12345" } as never);
-
-    const result = await client.sendMessage({
-      QueueUrl: "https://sqs.us-east-1.amazonaws.com/123456789012/MyQueue",
-      MessageBody: "Hello, world!",
-    });
-
-    expect(sendSpy).toHaveBeenCalledTimes(1);
-    expect(result.MessageId).toBe("12345");
-  });
-
-  it("should receiveMessages correctly", async () => {
-    const client = createSqsClient();
-    const sendSpy = vi.spyOn(client.sqsClient, "send").mockResolvedValue({
-      Messages: [
-        {
-          MessageId: "12345",
-          ReceiptHandle: "abcde",
-          Body: "Hello, world!",
-        },
-      ],
-    } as never);
-
-    const result = await client.receiveMessage({
-      QueueUrl: "https://sqs.us-east-1.amazonaws.com/123456789012/MyQueue",
-      MaxNumberOfMessages: 1,
-      WaitTimeSeconds: 0,
-    });
-
-    expect(sendSpy).toHaveBeenCalledTimes(1);
-    expect(result.Messages).toHaveLength(1);
-  });
-
-  it("should deleteMessage correctly", async () => {
-    const client = createSqsClient();
-    const sendSpy = vi
-      .spyOn(client.sqsClient, "send")
+      .spyOn(client.client, "send")
       .mockResolvedValue({} as never);
 
-    await client.deleteMessage({
-      QueueUrl: "https://sqs.us-east-1.amazonaws.com/123456789012/MyQueue",
-      ReceiptHandle: "abcde",
-    });
+    await Promise.all([
+      client.sendMessage({ QueueUrl: "test", MessageBody: "test" }),
+      client.receiveMessage({ QueueUrl: "test" }),
+      client.deleteMessage({ QueueUrl: "test", ReceiptHandle: "test" }),
+    ]);
 
-    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(sendSpy).toHaveBeenCalledTimes(3);
   });
 });

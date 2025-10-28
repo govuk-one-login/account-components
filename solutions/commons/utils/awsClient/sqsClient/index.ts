@@ -1,3 +1,8 @@
+import type {
+  DeleteMessageCommandInput,
+  ReceiveMessageCommandInput,
+  SendMessageCommandInput,
+} from "@aws-sdk/client-sqs";
 import { SQSClient } from "@aws-sdk/client-sqs";
 import { getAwsClientConfig } from "../getAwsClientConfig/index.js";
 import { getEnvironment } from "../../getEnvironment/index.js";
@@ -12,25 +17,17 @@ const createSqsClient = () => {
       : AWSXRay.captureAWSv3Client(sqsClient);
 
   return {
-    sqsClient: wrappedClient,
+    client: wrappedClient,
     config: wrappedClient.config,
-    sendMessage: async (params: { QueueUrl: string; MessageBody: string }) => {
+    sendMessage: async (params: SendMessageCommandInput) => {
       const { SendMessageCommand } = await import("@aws-sdk/client-sqs");
       return await wrappedClient.send(new SendMessageCommand(params));
     },
-    receiveMessage: async (params: {
-      QueueUrl: string;
-      MaxNumberOfMessages?: number;
-      WaitTimeSeconds?: number;
-      VisibilityTimeout?: number;
-    }) => {
+    receiveMessage: async (params: ReceiveMessageCommandInput) => {
       const { ReceiveMessageCommand } = await import("@aws-sdk/client-sqs");
       return await wrappedClient.send(new ReceiveMessageCommand(params));
     },
-    deleteMessage: async (params: {
-      QueueUrl: string;
-      ReceiptHandle: string;
-    }) => {
+    deleteMessage: async (params: DeleteMessageCommandInput) => {
       const { DeleteMessageCommand } = await import("@aws-sdk/client-sqs");
       return await wrappedClient.send(new DeleteMessageCommand(params));
     },

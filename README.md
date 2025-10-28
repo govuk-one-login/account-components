@@ -14,6 +14,7 @@ This repo contains the code for Account Components
 - Install NPM dependencies with `npm ci`
 - Install Git Hooks with `npm run install-git-hooks`
 - Run `cd solutions/integration-tests && npm ci` to install integration testing dependencies
+- Run `npm run run:all` to start all the local servers and watch for changes. The frontend will be available at `http://localhost:6002`, the stubs at `http://localhost:6003` and the API at `http://localhost:6004`.
 
 ## Updating Node version
 

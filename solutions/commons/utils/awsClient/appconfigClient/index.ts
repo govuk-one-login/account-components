@@ -12,7 +12,7 @@ const createAppConfigClient = () => {
       : AWSXRay.captureAWSv3Client(appConfigClient);
 
   return {
-    appConfigClient: wrappedClient,
+    client: wrappedClient,
     config: wrappedClient.config,
   };
 };
