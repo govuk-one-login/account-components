@@ -108,7 +108,7 @@ describe("handler", () => {
     await expect(handler({}, context)).resolves.not.toThrow();
 
     expect(GetPublicKeyCommand).toHaveBeenCalledWith({
-      KeyId: "alias/components-core-JAREncryptionKey",
+      KeyId: "alias/components-core-JARRSAEncryptionKey",
     });
     expect(PutObjectCommand).toHaveBeenCalledWith({
       Bucket: "test-bucket",
@@ -124,7 +124,7 @@ describe("handler", () => {
     mockKmsSend.mockResolvedValueOnce({ PublicKey: undefined });
 
     await expect(handler({}, context)).rejects.toThrow(
-      "Public key not found for KMS Key Alias: alias/components-core-JAREncryptionKey",
+      "Public key not found for KMS Key Alias: alias/components-core-JARRSAEncryptionKey",
     );
   });
 

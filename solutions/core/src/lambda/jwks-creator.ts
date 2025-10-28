@@ -25,7 +25,7 @@ export const handler = async (
   const s3 = new S3Client({ region: region });
   logger.info("Created AWS clients");
   const jwks = await generateJwksFromKmsPublicKey(
-    `alias/${stackName}-JAREncryptionKey`,
+    `alias/${stackName}-JARRSAEncryptionKey`,
     algorithm,
     "enc",
   );

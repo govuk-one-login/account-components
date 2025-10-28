@@ -53,7 +53,7 @@ jobs:
           USE_LOCALSTACK=1
           MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME=/components-mocks/MockClientEcPrivateKey  
           MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME=/components-mocks/MockClientEcPublicKey  
-          JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/components-core-JAREncryptionKey 
+          JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/components-core-JARRSAEncryptionKey 
           DEFAULT_AUDIENCE=http://127.0.0.1:6004/authorize
           ACCESS_TOKEN_ISSUER=http://127.0.0.1:6003
           AUTHORIZE_URL=http://127.0.0.1:6004/authorize

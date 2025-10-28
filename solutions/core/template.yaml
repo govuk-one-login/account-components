@@ -257,7 +257,7 @@ Resources:
       AliasName: !Sub "alias/${AWS::StackName}-LambdaEnvironmentVariableEncryptionKey"
       TargetKeyId: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
 
-  JAREncryptionKey:
+  JARRSAEncryptionKey:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Type: AWS::KMS::Key
@@ -299,21 +299,21 @@ Resources:
                   - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}*"
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-JAREncryptionKey"
+          Value: !Sub "${AWS::StackName}-JARRSAEncryptionKey"
 
-  JAREncryptionKeyAlias:
+  JARRSAEncryptionKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-JAREncryptionKey"
-      TargetKeyId: !GetAtt JAREncryptionKey.Arn
+      AliasName: !Sub "alias/${AWS::StackName}-JARRSAEncryptionKey"
+      TargetKeyId: !GetAtt JARRSAEncryptionKey.Arn
 
-  JAREncryptionKeyArnSSM:
+  JARRSAEncryptionKeyArnSSM:
     Type: AWS::SSM::Parameter
     Properties:
-      Description: "The ARN of the JAREncryptionKey KMS key"
-      Name: !Sub "/${AWS::StackName}/KMS/JAREncryptionKey/ARN"
+      Description: "The ARN of the JARRSAEncryptionKey KMS key"
+      Name: !Sub "/${AWS::StackName}/KMS/JARRSAEncryptionKey/ARN"
       Type: String
-      Value: !GetAtt JAREncryptionKey.Arn
+      Value: !GetAtt JARRSAEncryptionKey.Arn
 
   S3SSEKey:
     Type: AWS::KMS::Key
@@ -458,19 +458,19 @@ Resources:
               Bool:
                 "aws:SecureTransport": true
 
-  JWKSGeneratorLambda:
+  JwksGeneratorLambda:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub "${AWS::StackName}-JWKSGenerator"
       Description: "Creates a JWKS doc and stores it into a S3 Bucket"
       MemorySize: 128
       Handler: jwks-creator.handler
-      Role: !GetAtt JWKSGeneratorLambdaRole.Arn
+      Role: !GetAtt JwksGeneratorLambdaRole.Arn
       ReservedConcurrentExecutions: 1
       Timeout: 15
       KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
       LoggingConfig:
-        LogGroup: !Ref JWKSGeneratorLambdaLogGroup
+        LogGroup: !Ref JwksGeneratorLambdaLogGroup
       Environment:
         Variables:
           BUCKET_NAME: !Ref JWKSStoreBucket
@@ -496,7 +496,7 @@ Resources:
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 
-  JWKSGeneratorLambdaRole:
+  JwksGeneratorLambdaRole:
     Type: AWS::IAM::Role
     Properties:
       PermissionsBoundary: !If
@@ -516,10 +516,10 @@ Resources:
             Action:
               - "sts:AssumeRole"
 
-  JWKSGeneratorLambdaPolicy:
+  JwksGeneratorLambdaPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: !Sub "${AWS::StackName}-JWKSGeneratorLambdaPolicy"
+      PolicyName: !Sub "${AWS::StackName}-JwksGeneratorLambdaPolicy"
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -527,7 +527,7 @@ Resources:
             Action:
               - kms:GetPublicKey
               - kms:DescribeKey
-            Resource: !GetAtt JAREncryptionKey.Arn
+            Resource: !GetAtt JARRSAEncryptionKey.Arn
           - Effect: Allow
             Action:
               - kms:GenerateDataKey
@@ -541,14 +541,14 @@ Resources:
               - logs:CreateLogGroup
               - logs:CreateLogStream
               - logs:PutLogEvents
-            Resource: !GetAtt JWKSGeneratorLambdaLogGroup.Arn
+            Resource: !GetAtt JwksGeneratorLambdaLogGroup.Arn
       Roles:
-        - !Ref JWKSGeneratorLambdaRole
+        - !Ref JwksGeneratorLambdaRole
 
-  JWKSGeneratorLambdaLogGroup:
+  JwksGeneratorLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/JWKSGeneratorLambda"
+      LogGroupName: !Sub "/aws/lambda/JwksGeneratorLambda"
       RetentionInDays: 30
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
@@ -579,6 +579,11 @@ Outputs:
     Value: !GetAtt DynamoDbSSEKey.Arn
     Export:
       Name: !Sub "${AWS::StackName}:DynamoDbSSEKeyArn"
+  JARRSAEncryptionKeyAliasName:
+    Description: Alias name of the JAR RSA encryption KMS key
+    Value: !Ref JARRSAEncryptionKeyAlias
+    Export:
+      Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyAliasName"
   JWKSStoreBucketName:
     Description: Name of the S3 bucket that stores the JWKS document
     Value: !Ref JWKSStoreBucket

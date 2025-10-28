@@ -301,7 +301,7 @@ Resources:
         Variables:
           MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPrivateKey"
           MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPublicKey"
-          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "alias/${CoreStackName}-JAREncryptionKey"
+          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "alias/${CoreStackName}-JARRSAEncryptionKey"
           DEFAULT_AUDIENCE: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
           AUTHORIZE_URL: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
