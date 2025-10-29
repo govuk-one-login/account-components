@@ -34,6 +34,11 @@ jobs:
           persist-credentials: false
           ref: ${{ inputs.gitRef }}
 
+      - name: Set up Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444
+        with:
+          node-version-file: .nvmrc
+
       - name: Set commit SHA
         if: github.event.inputs.refType == 'Commit SHA'
         run: echo GIT_REF_SHA=${GIT_REF} >> $GITHUB_ENV
@@ -78,8 +83,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build SAM template
-        run: cd ./solutions/core && sam build
+      - name: Build core
+        run: npm run build:core
 
       - name: Deploy core
         uses: govuk-one-login/devplatform-upload-action@fda75612a1b0e5a8c84ae7c44a23340e50e5bbde

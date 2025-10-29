@@ -98,6 +98,7 @@
     "run:stubs": "([ -n \"$RUN_ALL\" ] || bash solutions/localstack/provision.sh) && npm run build-local:stubs && concurrently 'npm run watch:stubs' 'cd solutions/stubs && node --enable-source-maps --watch --env-file=$([ \"$IS_INTEGRATION_TEST\" = \"1\" ] && echo \".env.integration-tests\" || echo \".env\") ./dist/local.js' --kill-others",
     "build:api": "cd solutions/api && sam build --base-dir ../../",
     "run:api": "([ -n \"$RUN_ALL\" ] || bash solutions/localstack/provision.sh) && npm run build:api && cd solutions/api && ARCH=$(uname -m) && sam local start-api --warm-containers EAGER --port 6004 --env-vars=$([ \"$IS_INTEGRATION_TEST\" = \"1\" ] && echo \"env.integration-tests.json\" || echo \"env.json\") --parameter-overrides LambdaArchitecture=$([ \"$ARCH\" = \"arm64\" ] || [ \"$ARCH\" = \"aarch64\" ] && echo \"arm64\" || echo \"x86_64\")",
+    "build:core": "cd solutions/core && sam build",
     "run:all": "bash solutions/localstack/provision.sh && RUN_ALL=1 concurrently 'npm run run:frontend' 'npm run run:stubs' 'npm run run:api' --kill-others",
     "config:validate": "for f in solutions/config/*.json; do (jsonschema validate solutions/config/schema/config.json $f) || exit 1; done",
     "api-specs:validate": "for f in solutions/api/src/specs/*.yaml; do (spectral lint $f) || exit 1; done"
