@@ -459,7 +459,6 @@ Resources:
       MemorySize: 128
       Handler: jwks-creator.handler
       Role: !GetAtt JwksGeneratorLambdaRole.Arn
-      ReservedConcurrentExecutions: 1
       Timeout: 15
       KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
       LoggingConfig:
