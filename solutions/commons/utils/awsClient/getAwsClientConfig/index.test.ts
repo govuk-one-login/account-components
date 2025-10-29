@@ -49,7 +49,7 @@ describe("getAwsClientConfig", () => {
     const config = getAwsClientConfig();
 
     expect(config.endpoint).toBe("http://localhost:4566");
-    expect(config.credentials).toEqual({
+    expect(config.credentials).toStrictEqual({
       accessKeyId: "test",
       secretAccessKey: "test", // pragma: allowlist secret
     });

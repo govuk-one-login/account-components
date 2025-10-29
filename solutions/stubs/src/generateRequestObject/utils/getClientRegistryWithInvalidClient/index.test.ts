@@ -34,6 +34,6 @@ describe("getClientRegistryWithInvalidClient", () => {
 
     const result = await getClientRegistryWithInvalidClient();
 
-    expect(result).toEqual([mockClient, invalidClient]);
+    expect(result).toStrictEqual([mockClient, invalidClient]);
   });
 });
