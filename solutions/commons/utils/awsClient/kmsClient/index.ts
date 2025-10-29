@@ -1,4 +1,5 @@
 import type {
+  DecryptCommandInput,
   DescribeKeyCommandInput,
   GetPublicKeyCommandInput,
 } from "@aws-sdk/client-kms";
@@ -21,6 +22,10 @@ const createKmsClient = () => {
     getPublicKey: async (params: GetPublicKeyCommandInput) => {
       const { GetPublicKeyCommand } = await import("@aws-sdk/client-kms");
       return await wrappedClient.send(new GetPublicKeyCommand(params));
+    },
+    decrypt: async (params: DecryptCommandInput) => {
+      const { DecryptCommand } = await import("@aws-sdk/client-kms");
+      return await wrappedClient.send(new DecryptCommand(params));
     },
     describeKey: async (params: DescribeKeyCommandInput) => {
       const { DescribeKeyCommand } = await import("@aws-sdk/client-kms");

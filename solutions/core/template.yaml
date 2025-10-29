@@ -283,7 +283,8 @@ Resources:
             Resource: "*"
             Condition:
               ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
+                "aws:SourceArn":
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-api-AuthorizeLambda*"
           - Effect: "Allow"
             Principal:
               Service: lambda.amazonaws.com
@@ -555,3 +556,8 @@ Outputs:
     Value: !GetAtt CodeDeployServiceRole.Arn
     Export:
       Name: !Sub "${AWS::StackName}:CodeDeployServiceRoleArn"
+  JARRSAEncryptionKeyArn:
+    Description: ARN of the JAR RSA encryption KMS key
+    Value: !GetAtt JARRSAEncryptionKey.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyArn"

@@ -150,7 +150,7 @@ Globals:
           ]
         POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
         AWS_XRAY_CONTEXT_MISSING: IGNORE_ERROR
-        NODE_OPTIONS: !Ref AWS::NoValue
+        NODE_OPTIONS: !If [IsLocal, "--enable-source-maps", !Ref AWS::NoValue]
         USE_LOCALSTACK: !Ref AWS::NoValue
         ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"
@@ -305,8 +305,7 @@ Resources:
         OutExtension:
           - .js=.mjs
         Target: "es2022"
-        Sourcemap: !If [IsLocal, true, false]
-        Splitting: true
+        Sourcemap: true
         EntryPoints:
           - solutions/api/src/lambda/healthcheck.ts
 
@@ -332,15 +331,21 @@ Resources:
               !Ref Environment,
               authorizeErrorPageUrl,
             ]
+          JAR_RSA_ENCRYPTION_KEY_ALIAS:
+            Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyAliasName"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
             - Effect: Allow
               Action:
                 - kms:Decrypt
-                - kms:GenerateDataKey
               Resource:
-                Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"
+                Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyArn"
+            - Effect: Allow
+              Action:
+                - appconfig:GetLatestConfiguration
+                - appconfig:StartConfigurationSession
+              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -349,8 +354,7 @@ Resources:
         OutExtension:
           - .js=.mjs
         Target: "es2022"
-        Sourcemap: !If [IsLocal, true, false]
-        Splitting: true
+        Sourcemap: true
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:
