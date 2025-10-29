@@ -68,6 +68,29 @@ describe("getQueryParams", () => {
     });
   });
 
+  it("returns parsed query params with optional state parameter", () => {
+    const event = createMockEvent({
+      queryStringParameters: {
+        request: "test-request",
+        response_type: "code",
+        scope: "test-scope",
+        client_id: "test-client",
+        redirect_uri: "https://example.com/callback",
+        state: "test-state",
+      },
+    });
+    const result = getQueryParams(event);
+
+    expect(result).toEqual({
+      request: "test-request",
+      response_type: "code",
+      scope: "test-scope",
+      client_id: "test-client",
+      redirect_uri: "https://example.com/callback",
+      state: "test-state",
+    });
+  });
+
   it("returns ErrorResponse for missing request parameter", () => {
     const event = createMockEvent({
       queryStringParameters: {

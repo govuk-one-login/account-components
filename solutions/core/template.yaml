@@ -284,7 +284,8 @@ Resources:
             Resource: "*"
             Condition:
               ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
+                "aws:SourceArn":
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-api-AuthorizeLambda*"
           - Effect: "Allow"
             Principal:
               Service: lambda.amazonaws.com
@@ -584,6 +585,11 @@ Outputs:
     Value: !Ref JARRSAEncryptionKeyAlias
     Export:
       Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyAliasName"
+  JARRSAEncryptionKeyArn:
+    Description: ARN of the JAR RSA encryption KMS key
+    Value: !GetAtt JARRSAEncryptionKey.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyArn"
   JWKSStoreBucketName:
     Description: Name of the S3 bucket that stores the JWKS document
     Value: !Ref JWKSStoreBucket

@@ -47,6 +47,7 @@ describe("buildJar", async () => {
     client: {} as any,
     config: {} as any,
     getPublicKey: mockGetPublicKey,
+    decrypt: vi.fn(),
     describeKey: vi.fn(),
   };
 

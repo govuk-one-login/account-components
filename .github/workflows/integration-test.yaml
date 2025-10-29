@@ -78,7 +78,8 @@ jobs:
               "LOCALSTACK_ACCESS_KEY": "test"
             },
             "AuthorizeLambda": {
-              "AUTHORIZE_ERROR_PAGE_URL": "http://localhost:6002/authorize-error"
+              "AUTHORIZE_ERROR_PAGE_URL": "http://localhost:6002/authorize-error",
+              "JAR_RSA_ENCRYPTION_KEY_ALIAS": "alias/components-core-JARRSAEncryptionKey"
             }          
           }
           EOF

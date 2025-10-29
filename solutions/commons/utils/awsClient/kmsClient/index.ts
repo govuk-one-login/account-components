@@ -1,4 +1,8 @@
-import type { GetPublicKeyCommandInput } from "@aws-sdk/client-kms";
+import type {
+  DecryptCommandInput,
+  DescribeKeyCommandInput,
+  GetPublicKeyCommandInput,
+} from "@aws-sdk/client-kms";
 import { KMSClient } from "@aws-sdk/client-kms";
 import { getAwsClientConfig } from "../getAwsClientConfig/index.js";
 import { getEnvironment } from "../../getEnvironment/index.js";
@@ -19,7 +23,11 @@ const createKmsClient = () => {
       const { GetPublicKeyCommand } = await import("@aws-sdk/client-kms");
       return await wrappedClient.send(new GetPublicKeyCommand(params));
     },
-    describeKey: async (params: { KeyId: string }) => {
+    decrypt: async (params: DecryptCommandInput) => {
+      const { DecryptCommand } = await import("@aws-sdk/client-kms");
+      return await wrappedClient.send(new DecryptCommand(params));
+    },
+    describeKey: async (params: DescribeKeyCommandInput) => {
       const { DescribeKeyCommand } = await import("@aws-sdk/client-kms");
       return await wrappedClient.send(new DescribeKeyCommand(params));
     },
