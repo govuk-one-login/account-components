@@ -79,3 +79,15 @@ jobs:
 
       - name: Validate API Specs
         run: npm run api-specs:validate
+
+      - name: Build core
+        run: npm run build:core
+
+      - name: Build frontend
+        run: npm run build:frontend
+
+      - name: Build stubs
+        run: npm run build:stubs
+
+      - name: Build API
+        run: npm run build:api

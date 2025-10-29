@@ -39,6 +39,7 @@ There are various commands which can be run manually and which may also be run b
 - `npm run build:stubs` to build the stubs
 - `npm run run:api` to run the API locally and watch for changes
 - `npm run build:api` to build the API
+- `npm run build:core` to build core
 - `npm run test` to run [Vitest](https://vitest.dev/) tests
 - `npm run test:watch` to run [Vitest](https://vitest.dev/) tests in watch mode
 - `npm run test:coverage` to run [Vitest](https://vitest.dev/) tests and report coverage
