@@ -235,6 +235,8 @@ Resources:
     Properties:
       LogGroupName: !Sub "/lambda/${AWS::StackName}/ApiLambdaLogGroup"
       RetentionInDays: 30
+      KmsKeyId:
+        Fn::ImportValue: !Sub "${CoreStackName}:CloudWatchEncryptionKeyArn"
 
   HealthcheckLambda:
     Type: AWS::Serverless::Function

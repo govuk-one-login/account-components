@@ -418,3 +418,5 @@ Resources:
     Properties:
       LogGroupName: !Sub "/lambda/${AWS::StackName}/FrontendLambda"
       RetentionInDays: 30
+      KmsKeyId:
+        Fn::ImportValue: !Sub "${CoreStackName}:CloudWatchEncryptionKeyArn"

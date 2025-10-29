@@ -568,3 +568,8 @@ Outputs:
     Value: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
     Export:
       Name: !Sub "${AWS::StackName}:LambdaEnvironmentVariableEncryptionKeyArn"
+  CloudWatchEncryptionKeyArn:
+    Description: ARN of the KMS key used to encrypt CloudWatch logs
+    Value: !GetAtt CloudWatchEncryptionKey.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}:CloudWatchEncryptionKeyArn"

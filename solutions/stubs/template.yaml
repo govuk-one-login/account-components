@@ -286,3 +286,5 @@ Resources:
     Properties:
       LogGroupName: !Sub "/lambda/${AWS::StackName}/StubsLambda"
       RetentionInDays: 30
+      KmsKeyId:
+        Fn::ImportValue: !Sub "${CoreStackName}:CloudWatchEncryptionKeyArn"
