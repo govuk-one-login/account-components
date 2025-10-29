@@ -107,7 +107,7 @@ describe("authorize handler", () => {
 
     const result = await handler(mockEvent);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       statusCode: 200,
       body: JSON.stringify({ message: "Authorized" }),
     });

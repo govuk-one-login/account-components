@@ -61,7 +61,7 @@ describe("getClientRegistry", () => {
     it("returns client registry from local config", async () => {
       const result = await getClientRegistry();
 
-      expect(result).toEqual([
+      expect(result).toStrictEqual([
         {
           client_id: "ABCDEF12345678901234567890123456",
           scope: "am-account-delete",
@@ -103,7 +103,7 @@ describe("getClientRegistry", () => {
 
       const result = await getClientRegistry();
 
-      expect(result).toEqual(mockConfig.client_registry);
+      expect(result).toStrictEqual(mockConfig.client_registry);
       expect(mockGetAppConfig).toHaveBeenCalledWith("operational", {
         application: "account-components",
         environment: "dev",
@@ -117,7 +117,7 @@ describe("getClientRegistry", () => {
 
       const result = await getClientRegistry();
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
     });
 
     it("returns empty array when config has no client_registry", async () => {
@@ -125,7 +125,7 @@ describe("getClientRegistry", () => {
 
       const result = await getClientRegistry();
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
     });
 
     it("returns empty array when config is not an object", async () => {
@@ -133,7 +133,7 @@ describe("getClientRegistry", () => {
 
       const result = await getClientRegistry();
 
-      expect(result).toEqual([]);
+      expect(result).toStrictEqual([]);
     });
   });
 });

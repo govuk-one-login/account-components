@@ -20,6 +20,7 @@ describe("kmsClient", () => {
     expect(client.config).toBeDefined();
     expect(client.getPublicKey).toBeDefined();
     expect(client.decrypt).toBeDefined();
+    expect(client.describeKey).toBeDefined();
   });
 
   it("should not use XRAY when in local environment", async () => {
@@ -69,6 +70,21 @@ describe("kmsClient", () => {
 
     await client.decrypt({
       CiphertextBlob: Buffer.from("test-ciphertext-blob"),
+    });
+
+    expect(sendSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("should send describeKey command correctly", async () => {
+    process.env["AWS_REGION"] = "eu-west-2";
+    const client = createKmsClient();
+
+    const sendSpy = vi
+      .spyOn(client.client, "send")
+      .mockResolvedValue({} as never);
+
+    await client.describeKey({
+      KeyId: "test-key-id",
     });
 
     expect(sendSpy).toHaveBeenCalledTimes(1);
