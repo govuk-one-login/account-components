@@ -109,7 +109,10 @@ describe("authorize handler", () => {
 
     expect(result).toStrictEqual({
       statusCode: 200,
-      body: JSON.stringify({ message: "Authorized" }),
+      body: JSON.stringify({
+        message: "Authorized",
+        signedJwtString: "decrypted-jwt-string",
+      }),
     });
     expect(decryptJar).toHaveBeenCalledWith(
       "encrypted-jar",

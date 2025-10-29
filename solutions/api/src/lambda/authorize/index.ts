@@ -30,8 +30,9 @@ export const handler = async (
     return signedJwtString.errorResponse;
   }
 
+  // TODO used for debugging. Remove before going live!
   return {
     statusCode: 200,
-    body: JSON.stringify({ message: "Authorized" }),
+    body: JSON.stringify({ message: "Authorized", signedJwtString }, null, 2),
   };
 };
