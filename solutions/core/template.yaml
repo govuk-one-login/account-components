@@ -80,6 +80,13 @@ Mappings:
 
 Globals:
   Function:
+    DeploymentPreference:
+      Type: !If
+        - CanariesEnabled
+        - !Ref LambdaDeploymentPreference
+        - AllAtOnce
+      Alarms: []
+      Role: !GetAtt CodeDeployServiceRole.Arn
     Runtime: nodejs22.x
     Architectures:
       - arm64
@@ -448,19 +455,14 @@ Resources:
       Handler: jwks-creator.handler
       Role: !GetAtt JwksGeneratorLambdaRole.Arn
       Timeout: 15
+      DeploymentPreference:
+        Enabled: false
       LoggingConfig:
         LogGroup: !Ref JwksGeneratorLambdaLogGroup
       Environment:
         Variables:
           BUCKET_NAME: !Ref JWKSStoreBucket
           STACK_NAME: !Ref AWS::StackName
-      DeploymentPreference:
-        Type: !If
-          - CanariesEnabled
-          - !Ref LambdaDeploymentPreference
-          - AllAtOnce
-        Alarms: []
-        Role: !GetAtt CodeDeployServiceRole.Arn
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -573,3 +575,7 @@ Outputs:
     Value: !GetAtt CloudWatchEncryptionKey.Arn
     Export:
       Name: !Sub "${AWS::StackName}:CloudWatchEncryptionKeyArn"
+  CodeDeployServiceRoleArn:
+    Value: !GetAtt CodeDeployServiceRole.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}:CodeDeployServiceRoleArn"
