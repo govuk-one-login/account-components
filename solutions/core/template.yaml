@@ -352,12 +352,6 @@ Resources:
                 "aws:SourceArn":
                   - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}*"
 
-  S3SSEKeyAlias:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-S3SSEKey"
-      TargetKeyId: !GetAtt S3SSEKey.Arn
-
   JWKSStoreBucket:
     Type: AWS::S3::Bucket
     DependsOn: AccessLogsBucket
@@ -583,9 +577,3 @@ Outputs:
     Value: !Ref JARRSAEncryptionKeyAlias
     Export:
       Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyAliasName"
-  JWKSStoreBucketName:
-    Description: Name of the S3 bucket that stores the JWKS document
-    Value: !Ref JWKSStoreBucket
-  S3SSEKeyArn:
-    Description: ARN of the KMS key used for encryption of S3 buckets
-    Value: !GetAtt S3SSEKey.Arn
