@@ -10,15 +10,19 @@ vi.mock(import("../../../../commons/utils/getEnvironment/index.js"), () => ({
   getEnvironment: mockGetEnvironment,
 }));
 
-vi.mock(import("../../../../commons/utils/awsClient/index.js"), () => ({
-  getDynamoDbClient: mockGetDynamoDbClient,
-}));
+vi.mock(
+  import("../../../../commons/utils/awsClients/dynamodbClient/index.js"),
+  () => ({
+    getDynamoDbClient: mockGetDynamoDbClient,
+  }),
+);
 
 vi.mock(import("connect-dynamodb"), () => ({
   default: mockConnectDynamoDB,
 }));
 
-vi.mock("express-session", () => ({
+// @ts-expect-error
+vi.mock(import("express-session"), () => ({
   default: mockSession,
 }));
 
@@ -30,7 +34,7 @@ describe("getSessionOptions", () => {
   beforeEach(() => {
     process.env = { ...originalEnv };
 
-    mockGetDynamoDbClient.mockResolvedValue({
+    mockGetDynamoDbClient.mockReturnValue({
       client: {},
     });
 
@@ -92,7 +96,7 @@ describe("getSessionOptions", () => {
     const mockClient = {};
     const mockStoreConstructor = vi.fn();
 
-    mockGetDynamoDbClient.mockResolvedValue({
+    mockGetDynamoDbClient.mockReturnValue({
       client: mockClient,
     });
     mockConnectDynamoDB.mockReturnValue(mockStoreConstructor);

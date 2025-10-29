@@ -8,7 +8,7 @@ import { Algorithms, SignatureTypes } from "../types/common.js";
 import type { SSMProvider } from "@aws-lambda-powertools/parameters/ssm";
 
 vi.mock(import("jose"));
-vi.mock(import("../../../commons/utils/awsClient/index.js"), () => ({
+vi.mock(import("../../../commons/utils/awsClients/ssmClient/index.js"), () => ({
   getParametersProvider: vi.fn(),
 }));
 vi.mock(import("../../../commons/utils/logger/index.js"));
@@ -42,9 +42,9 @@ describe("jwtAdapter", () => {
     );
 
     const { getParametersProvider } = await import(
-      "../../../commons/utils/awsClient/index.js"
+      "../../../commons/utils/awsClients/ssmClient/index.js"
     );
-    vi.mocked(getParametersProvider).mockResolvedValue(mockParametersProvider);
+    vi.mocked(getParametersProvider).mockReturnValue(mockParametersProvider);
     mockGet.mockResolvedValue("privateKey");
   });
 

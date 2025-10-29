@@ -3,7 +3,7 @@ import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.j
 import assert from "node:assert";
 import ConnectDynamoDB from "connect-dynamodb";
 import session from "express-session";
-import { getDynamoDbClient } from "../../../../commons/utils/awsClient/index.js";
+import { getDynamoDbClient } from "../../../../commons/utils/awsClients/dynamodbClient/index.js";
 import { ScalarAttributeType } from "@aws-sdk/client-dynamodb";
 
 let dynamodbStore: ConnectDynamoDB.DynamoDBStore | undefined = undefined;
@@ -14,7 +14,7 @@ export const getSessionOptions = async (): Promise<FastifySessionOptions> => {
 
   dynamodbStore ??= new (ConnectDynamoDB(session))({
     table: process.env["SESSIONS_TABLE_NAME"],
-    client: (await getDynamoDbClient()).client,
+    client: getDynamoDbClient().client,
     specialKeys: [{ name: "user_id", type: ScalarAttributeType.S }],
     skipThrowMissingSpecialKeys: true,
   });

@@ -17,4 +17,10 @@ const createAppConfigClient = () => {
   };
 };
 
-export { createAppConfigClient };
+let cachedAppConfigClient: ReturnType<typeof createAppConfigClient> | undefined;
+const getAppConfigClient = (): ReturnType<typeof createAppConfigClient> => {
+  cachedAppConfigClient ??= createAppConfigClient();
+  return cachedAppConfigClient;
+};
+
+export { getAppConfigClient };

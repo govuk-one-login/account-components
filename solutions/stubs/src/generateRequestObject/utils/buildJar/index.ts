@@ -2,7 +2,7 @@ import { CompactEncrypt } from "jose";
 import { logger } from "../../../../../commons/utils/logger/index.js";
 import { JWKS_KEY_TYPES, SignatureTypes } from "../../../types/common.js";
 import { convertPemToJwk } from "../../../utils/convert-pem-to-jwk.js";
-import { getKmsClient } from "../../../../../commons/utils/awsClient/index.js";
+import { getKmsClient } from "../../../../../commons/utils/awsClients/kmsClient/index.js";
 import { createPublicKey } from "node:crypto";
 
 const getPublicKeyKmsAliasName = (keyType: SignatureTypes): string => {
@@ -21,9 +21,7 @@ const getPublicKeyKmsAliasName = (keyType: SignatureTypes): string => {
 export async function buildJar(signedJwt: string): Promise<string> {
   let publicKeyPem: string;
   try {
-    const publicKey = await (
-      await getKmsClient()
-    ).getPublicKey({
+    const publicKey = await getKmsClient().getPublicKey({
       KeyId: getPublicKeyKmsAliasName(SignatureTypes.RSA),
     });
 

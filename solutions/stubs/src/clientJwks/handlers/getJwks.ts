@@ -1,6 +1,6 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import * as v from "valibot";
-import { getParametersProvider } from "../../../../commons/utils/awsClient/index.js";
+import { getParametersProvider } from "../../../../commons/utils/awsClients/ssmClient/index.js";
 import assert from "node:assert";
 import { createPublicKey } from "node:crypto";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
@@ -36,9 +36,9 @@ export async function getJwks(request: FastifyRequest, reply: FastifyReply) {
     process.env["MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME"],
     "Environment variable MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME is not set",
   );
-  const publicKey = await (
-    await getParametersProvider()
-  ).get(process.env["MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME"]);
+  const publicKey = await getParametersProvider().get(
+    process.env["MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME"],
+  );
   assert.ok(publicKey, "Public key parameter is not set");
 
   const publicKeyObj = createPublicKey({

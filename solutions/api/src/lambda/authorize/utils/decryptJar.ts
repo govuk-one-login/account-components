@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import { createDecipheriv } from "node:crypto";
 import * as v from "valibot";
-import { getKmsClient } from "../../../../../commons/utils/awsClient/index.js";
+import { getKmsClient } from "../../../../../commons/utils/awsClients/kmsClient/index.js";
 import { logger } from "../../../../../commons/utils/logger/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
@@ -54,9 +54,7 @@ export const decryptJar = async (
     );
 
     try {
-      const kmsResult = await (
-        await getKmsClient()
-      ).decrypt({
+      const kmsResult = await getKmsClient().decrypt({
         KeyId: process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
         CiphertextBlob: Buffer.from(encryptedKey, "base64"),
         EncryptionAlgorithm: headerComponents.alg,

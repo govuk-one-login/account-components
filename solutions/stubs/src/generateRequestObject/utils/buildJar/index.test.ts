@@ -9,7 +9,7 @@ import {
   SignatureTypes,
 } from "../../../types/common.js";
 import { CompactEncrypt } from "jose";
-import * as awsClientModule from "../../../../../commons/utils/awsClient/index.js";
+import * as kmsClientModule from "../../../../../commons/utils/awsClients/kmsClient/index.js";
 import type { Logger } from "@aws-lambda-powertools/logger";
 
 vi.mock(import("node:crypto"), () => ({
@@ -84,7 +84,7 @@ describe("buildJar", async () => {
       compactEncryptMock.encrypt,
     );
 
-    vi.spyOn(awsClientModule, "getKmsClient").mockResolvedValue(mockKmsClient);
+    vi.spyOn(kmsClientModule, "getKmsClient").mockReturnValue(mockKmsClient);
 
     const { createPublicKey } = await import("node:crypto");
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

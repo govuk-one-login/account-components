@@ -6,9 +6,12 @@ const mockGetClientRegistry = vi.fn();
 const mockCreatePublicKey = vi.fn();
 
 // @ts-expect-error
-vi.mock(import("../../../../commons/utils/awsClient/index.js"), () => ({
-  getParametersProvider: vi.fn(() => ({ get: mockGet })),
-}));
+vi.mock(
+  import("../../../../commons/utils/awsClients/ssmClient/index.js"),
+  () => ({
+    getParametersProvider: vi.fn(() => ({ get: mockGet })),
+  }),
+);
 
 vi.mock(import("../../../../commons/utils/getClientRegistry/index.js"), () => ({
   getClientRegistry: vi.fn(),

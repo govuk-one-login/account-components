@@ -2,7 +2,7 @@ import { Logger } from "@aws-lambda-powertools/logger";
 import { exportJWK, importSPKI } from "jose";
 import type { JWK } from "jose";
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import { createKmsClient } from "../../../commons/utils/awsClient/kmsClient/index.js";
+import { getKmsClient } from "../../../commons/utils/awsClients/kmsClient/index.js";
 import type { Context } from "aws-lambda";
 import { createPublicKey } from "node:crypto";
 import assert from "node:assert";
@@ -41,7 +41,10 @@ async function generateJwksFromKmsPublicKey(
 ): Promise<{ keys: JWK[] }> {
   try {
     logger.info("Getting Public Key using Alias: " + keyAlias);
-    const { PublicKey } = await createKmsClient().getPublicKey({
+
+    const kmsClient = getKmsClient();
+
+    const { PublicKey } = await kmsClient.getPublicKey({
       KeyId: keyAlias,
     });
 
@@ -51,7 +54,7 @@ async function generateJwksFromKmsPublicKey(
 
     logger.info("Public key material", { PublicKey });
 
-    const { KeyMetadata } = await createKmsClient().describeKey({
+    const { KeyMetadata } = await kmsClient.describeKey({
       KeyId: keyAlias,
     });
 
