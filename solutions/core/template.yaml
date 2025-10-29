@@ -454,7 +454,6 @@ Resources:
   JwksGeneratorLambda:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-JWKSGenerator"
       Description: "Creates a JWKS doc and stores it into a S3 Bucket"
       MemorySize: 128
       Handler: jwks-creator.handler
