@@ -12,6 +12,7 @@
         "solutions/stubs/rolldown.config.ts",
         "solutions/stubs/rolldown.local.config.ts",
         "solutions/core/src/lambda/jwks-creator.ts",
+        "solutions/api/src/lambda/authorize/index.ts",
       ],
       "ignoreBinaries": [
         "zizmor",
