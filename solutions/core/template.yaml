@@ -85,6 +85,7 @@ Globals:
       - arm64
     Tracing: Active
     AutoPublishAlias: live
+    KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
     CodeUri: ../../
     CodeSigningConfigArn: !If
       - UseCodeSigning
@@ -453,7 +454,6 @@ Resources:
       Handler: jwks-creator.handler
       Role: !GetAtt JwksGeneratorLambdaRole.Arn
       Timeout: 15
-      KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
       LoggingConfig:
         LogGroup: !Ref JwksGeneratorLambdaLogGroup
       Environment:
@@ -569,3 +569,8 @@ Outputs:
     Value: !Ref JARRSAEncryptionKeyAlias
     Export:
       Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyAliasName"
+  LambdaEnvironmentVariableEncryptionKeyArn:
+    Description: ARN of the KMS key used to encrypt lambda environment variables
+    Value: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}:LambdaEnvironmentVariableEncryptionKeyArn"

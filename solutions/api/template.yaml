@@ -79,6 +79,8 @@ Conditions:
 
 Globals:
   Function:
+    KmsKeyArn:
+      Fn::ImportValue: !Sub "${CoreStackName}:LambdaEnvironmentVariableEncryptionKeyArn"
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn

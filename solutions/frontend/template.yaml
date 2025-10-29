@@ -69,6 +69,8 @@ Globals:
   Function:
     CodeUri: dist
     Handler: lambda.handler
+    KmsKeyArn:
+      Fn::ImportValue: !Sub "${CoreStackName}:LambdaEnvironmentVariableEncryptionKeyArn"
     Layers:
       - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1
     CodeSigningConfigArn: !If
@@ -157,33 +159,6 @@ Resources:
       GenerateSecretString:
         PasswordLength: 64
       KmsKeyId: !Ref SecretsEncryptionKey
-
-  FrontendLambdaEnvironmentVariablesEncryptionKey:
-    Type: AWS::KMS::Key
-    Properties:
-      Description: KMS key used to encrypt lambda environment variables
-      EnableKeyRotation: true
-      KeyPolicy:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action:
-              - kms:*
-            Resource: "*"
-          - Effect: "Allow"
-            Principal:
-              Service: lambda.amazonaws.com
-            Action:
-              - "kms:Decrypt"
-            Resource: "*"
-            Condition:
-              ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-FrontendLambdaEnvironmentVariablesEncryptionKey"
 
   UserInfoTable:
     Type: AWS::DynamoDB::Table
@@ -395,7 +370,6 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      KmsKeyArn: !GetAtt FrontendLambdaEnvironmentVariablesEncryptionKey.Arn
       Events:
         Root:
           Type: Api
