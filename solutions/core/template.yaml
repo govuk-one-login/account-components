@@ -250,12 +250,6 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-LambdaEnvironmentVariableEncryptionKey"
 
-  LambdaEnvironmentVariableEncryptionKeyAlias:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-LambdaEnvironmentVariableEncryptionKey"
-      TargetKeyId: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
-
   JARRSAEncryptionKey:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
