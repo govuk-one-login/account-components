@@ -439,6 +439,7 @@ Resources:
               rootCookieDomain,
             ]
       Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
             - Effect: Allow
               Action:

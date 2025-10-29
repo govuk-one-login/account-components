@@ -137,6 +137,10 @@ Globals:
         - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
     Layers:
       - "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_323_2_20250822-051314_with_collector_nodejs:1"
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
 
 Resources:
   DynamoDbSSEKey:
@@ -453,7 +457,6 @@ Resources:
       Description: "Creates a JWKS doc and stores it into a S3 Bucket"
       MemorySize: 128
       Handler: jwks-creator.handler
-      Role: !GetAtt JwksGeneratorLambdaRole.Arn
       Timeout: 15
       DeploymentPreference:
         Enabled: false
@@ -463,6 +466,28 @@ Resources:
         Variables:
           BUCKET_NAME: !Ref JWKSStoreBucket
           STACK_NAME: !Ref AWS::StackName
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - kms:GetPublicKey
+                - kms:DescribeKey
+              Resource: !GetAtt JARRSAEncryptionKey.Arn
+            - Effect: Allow
+              Action:
+                - kms:GenerateDataKey
+              Resource: !GetAtt S3SSEKey.Arn
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource: !Sub "${JWKSStoreBucket.Arn}/*"
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !GetAtt JwksGeneratorLambdaLogGroup.Arn
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -476,55 +501,6 @@ Resources:
           - solutions/core/src/lambda/jwks-creator.ts
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
-
-  JwksGeneratorLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
-        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - "sts:AssumeRole"
-
-  JwksGeneratorLambdaPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: !Sub "${AWS::StackName}-JwksGeneratorLambdaPolicy"
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - kms:GetPublicKey
-              - kms:DescribeKey
-            Resource: !GetAtt JARRSAEncryptionKey.Arn
-          - Effect: Allow
-            Action:
-              - kms:GenerateDataKey
-            Resource: !GetAtt S3SSEKey.Arn
-          - Effect: Allow
-            Action:
-              - s3:PutObject
-            Resource: !Sub "${JWKSStoreBucket.Arn}/*"
-          - Effect: Allow
-            Action:
-              - logs:CreateLogGroup
-              - logs:CreateLogStream
-              - logs:PutLogEvents
-            Resource: !GetAtt JwksGeneratorLambdaLogGroup.Arn
-      Roles:
-        - !Ref JwksGeneratorLambdaRole
 
   JwksGeneratorLambdaLogGroup:
     Type: AWS::Logs::LogGroup

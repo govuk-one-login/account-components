@@ -288,6 +288,8 @@ Resources:
       Handler: healthcheck.handler
       LoggingConfig:
         LogGroup: !Ref ApiLambdaLogGroup
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
       Events:
         Root:
           Type: Api
@@ -331,6 +333,7 @@ Resources:
               authorizeErrorPageUrl,
             ]
       Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
             - Effect: Allow
               Action:

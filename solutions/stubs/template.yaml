@@ -181,67 +181,6 @@ Resources:
       Tags:
         Environment: !Ref Environment
 
-  StubsLambdaExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
-        - !Ref GetSSMParameterPolicy
-        - !Ref GetAppConfigPolicy
-        - !Ref KMSGetPublicKeyPolicy
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - "sts:AssumeRole"
-
-  GetSSMParameterPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action:
-              - ssm:GetParameter
-              - ssm:GetParameters
-              - ssm:GetParametersByPath
-            Resource:
-              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPublicKey
-              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPrivateKey
-
-  KMSGetPublicKeyPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action:
-              - kms:GetPublicKey
-            Resource: "*"
-
-  GetAppConfigPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action:
-              - appconfig:GetLatestConfiguration
-              - appconfig:StartConfigurationSession
-            Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
-
   StubsApiDomain:
     Type: AWS::ApiGateway::DomainName
     Properties:
@@ -316,7 +255,26 @@ Resources:
           DEFAULT_AUDIENCE: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
           AUTHORIZE_URL: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
-      Role: !GetAtt StubsLambdaExecutionRole.Arn
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+                - ssm:GetParameters
+                - ssm:GetParametersByPath
+              Resource:
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPublicKey
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPrivateKey
+            - Effect: Allow
+              Action:
+                - appconfig:GetLatestConfiguration
+                - appconfig:StartConfigurationSession
+              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
+            - Effect: Allow
+              Action:
+                - kms:GetPublicKey
+              Resource: "*"
 
   StubsLambdaLogGroup:
     Type: AWS::Logs::LogGroup
