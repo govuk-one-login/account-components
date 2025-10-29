@@ -289,10 +289,8 @@ Resources:
             - Effect: Allow
               Action:
                 - kms:Decrypt
-              Resource: !Sub
-                - "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:${AliasName}"
-                - AliasName:
-                    Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyAliasName"
+              Resource:
+                Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyArn"
             - Effect: Allow
               Action:
                 - appconfig:GetLatestConfiguration

@@ -251,6 +251,11 @@ Outputs:
     Value: !Ref JARRSAEncryptionKeyAlias
     Export:
       Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyAliasName"
+  JARRSAEncryptionKeyArn:
+    Description: ARN of the JAR RSA encryption KMS key
+    Value: !GetAtt JARRSAEncryptionKey.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyArn"
   JWKSStoreBucketName:
     Description: Name of the S3 bucket
     Value: !Ref JWKSStoreBucket
