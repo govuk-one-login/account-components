@@ -1,6 +1,7 @@
 import type { createDynamoDbClient as createDynamoDbClientForType } from "./dynamodbClient/index.js";
 import type { createSqsClient as createSqsClientForType } from "./sqsClient/index.js";
 import type { createKmsClient as createKmsClientForType } from "./kmsClient/index.js";
+import type { createS3Client as createS3ClientForType } from "./s3Client/index.js";
 import type { SSMProvider } from "@aws-lambda-powertools/parameters/ssm";
 import type { createAppConfigClient as createAppConfigClientForType } from "./appconfigClient/index.js";
 import { getAwsClientConfig } from "./getAwsClientConfig/index.js";
@@ -54,10 +55,19 @@ const getAppConfigClient = async (): Promise<
   return cachedAppConfigClient;
 };
 
+let cachedS3Client: ReturnType<typeof createS3ClientForType> | undefined;
+const getS3Client = async (): Promise<
+  ReturnType<typeof createS3ClientForType>
+> => {
+  cachedS3Client ??= (await import("./s3Client/index.js")).createS3Client();
+  return cachedS3Client;
+};
+
 export {
   getDynamoDbClient,
   getSqsClient,
   getParametersProvider,
   getAppConfigClient,
   getKmsClient,
+  getS3Client,
 };

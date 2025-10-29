@@ -2,11 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { MockInstance } from "vitest";
 import { handler, putContentToS3 } from "./jwks-creator.js";
 import { GetPublicKeyCommand } from "@aws-sdk/client-kms";
-import {
-  PutObjectCommand,
-  S3Client,
-  type PutObjectCommandOutput,
-} from "@aws-sdk/client-s3";
+import { type PutObjectCommandOutput } from "@aws-sdk/client-s3";
 import type { CryptoKey } from "jose";
 import { exportJWK, importSPKI } from "jose";
 import type { Context } from "aws-lambda";
@@ -42,6 +38,10 @@ vi.mock(import("@aws-sdk/client-s3"), () => {
   };
 });
 
+vi.mock(import("../../../commons/utils/awsClient/index.js"), () => ({
+  getS3Client: vi.fn(),
+}));
+
 vi.mock(import("jose"), () => ({
   exportJWK: vi.fn(),
   importSPKI: vi.fn(),
@@ -63,10 +63,10 @@ const { __mockSend: mockKmsSend } = (await import(
   __mockSend: MockInstance;
 };
 
-const { __mockSend: mockS3Send } = (await import(
-  "@aws-sdk/client-s3"
+const { getS3Client } = (await import(
+  "../../../commons/utils/awsClient/index.js"
 )) as unknown as {
-  __mockSend: MockInstance;
+  getS3Client: MockInstance;
 };
 
 const context: Context = {
@@ -103,21 +103,23 @@ describe("handler", () => {
       .mockResolvedValueOnce({ KeyMetadata: { KeyId: "test-key-id" } });
     (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
-    mockS3Send.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
+    const mockPutObject = vi
+      .fn()
+      .mockResolvedValue({ $metadata: { httpStatusCode: 200 } });
+    getS3Client.mockResolvedValue({ putObject: mockPutObject });
 
     await expect(handler({}, context)).resolves.not.toThrow();
 
     expect(GetPublicKeyCommand).toHaveBeenCalledWith({
       KeyId: "alias/components-core-JARRSAEncryptionKey",
     });
-    expect(PutObjectCommand).toHaveBeenCalledWith({
+    expect(mockPutObject).toHaveBeenCalledWith({
       Bucket: "test-bucket",
       Key: "jwks.json",
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       Body: expect.stringContaining('"kty":"RSA"'),
       ContentType: "application/json",
     });
-    expect(mockS3Send).toHaveBeenCalledTimes(1);
   });
 
   it("throws if public key is missing", async () => {
@@ -141,23 +143,21 @@ describe("putContentToS3", () => {
   });
 
   it("uploads successfully", async () => {
-    // const mockResponse: PutObjectCommandOutput = { ETag: "etag123" };
     const mockResponse: PutObjectCommandOutput = {
       ETag: "etag123",
       $metadata: { httpStatusCode: 200 },
     };
 
-    mockS3Send.mockResolvedValueOnce(mockResponse);
+    const mockPutObject = vi.fn().mockResolvedValue(mockResponse);
+    getS3Client.mockResolvedValue({ putObject: mockPutObject });
 
-    const s3 = new S3Client({});
     const response = await putContentToS3(
-      s3,
       "bucket",
       "file.json",
       '{"data":"ok"}',
     );
 
-    expect(PutObjectCommand).toHaveBeenCalledWith({
+    expect(mockPutObject).toHaveBeenCalledWith({
       Bucket: "bucket",
       Key: "file.json",
       Body: '{"data":"ok"}',
@@ -170,12 +170,13 @@ describe("putContentToS3", () => {
   });
 
   it("throws on S3 upload error", async () => {
-    mockS3Send.mockRejectedValueOnce(new Error("S3 upload failed"));
+    const mockPutObject = vi
+      .fn()
+      .mockRejectedValue(new Error("S3 upload failed"));
+    getS3Client.mockResolvedValue({ putObject: mockPutObject });
 
-    const s3 = new S3Client({});
-
-    await expect(
-      putContentToS3(s3, "bucket", "file.json", "{}"),
-    ).rejects.toThrow("S3 upload failed");
+    await expect(putContentToS3("bucket", "file.json", "{}")).rejects.toThrow(
+      "S3 upload failed",
+    );
   });
 });

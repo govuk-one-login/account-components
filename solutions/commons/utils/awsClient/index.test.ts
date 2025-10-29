@@ -5,31 +5,42 @@ import {
   getKmsClient,
   getParametersProvider,
   getAppConfigClient,
+  getS3Client,
 } from "./index.js";
 
 const ORIGINAL_ENV = { ...process.env };
 
-vi.mock("./dynamodbClient/index.js", () => ({
+// @ts-expect-error
+vi.mock(import("./dynamodbClient/index.js"), () => ({
   createDynamoDbClient: vi.fn(() => ({ client: "dynamodb" })),
 }));
 
-vi.mock("./sqsClient/index.js", () => ({
+// @ts-expect-error
+vi.mock(import("./sqsClient/index.js"), () => ({
   createSqsClient: vi.fn(() => ({ client: "sqs" })),
 }));
 
-vi.mock("./kmsClient/index.js", () => ({
+// @ts-expect-error
+vi.mock(import("./kmsClient/index.js"), () => ({
   createKmsClient: vi.fn(() => ({ client: "kms" })),
 }));
 
-vi.mock("./appconfigClient/index.js", () => ({
+// @ts-expect-error
+vi.mock(import("./s3Client/index.js"), () => ({
+  createS3Client: vi.fn(() => ({ client: "s3" })),
+}));
+
+// @ts-expect-error
+vi.mock(import("./appconfigClient/index.js"), () => ({
   createAppConfigClient: vi.fn(() => ({ client: "appconfig" })),
 }));
 
-vi.mock("@aws-lambda-powertools/parameters/ssm", () => ({
+// @ts-expect-error
+vi.mock(import("@aws-lambda-powertools/parameters/ssm"), () => ({
   SSMProvider: vi.fn(() => ({ provider: "ssm" })),
 }));
 
-vi.mock("./getAwsClientConfig/index.js");
+vi.mock(import("./getAwsClientConfig/index.js"));
 
 describe("awsClient", () => {
   beforeEach(() => {
@@ -60,6 +71,14 @@ describe("awsClient", () => {
 
     expect(client1).toBe(client2);
     expect(client1).toStrictEqual({ client: "kms" });
+  });
+
+  it("should return cached S3 client on subsequent calls", async () => {
+    const client1 = await getS3Client();
+    const client2 = await getS3Client();
+
+    expect(client1).toBe(client2);
+    expect(client1).toStrictEqual({ client: "s3" });
   });
 
   it("should return cached parameters provider on subsequent calls", async () => {
