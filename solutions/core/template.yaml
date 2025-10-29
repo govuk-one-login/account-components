@@ -218,12 +218,6 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-CloudWatchEncryptionKey"
 
-  CloudWatchEncryptionKeyAlias:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-CloudWatchEncryptionKey"
-      TargetKeyId: !GetAtt CloudWatchEncryptionKey.Arn
-
   LambdaEnvironmentVariableEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
