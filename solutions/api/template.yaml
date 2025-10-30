@@ -264,6 +264,10 @@ Resources:
               responses:
                 "200":
                   description: JWKS response
+                  headers:
+                    Content-Type:
+                      schema:
+                        type: string
               x-amazon-apigateway-integration:
                 type: aws
                 httpMethod: GET
