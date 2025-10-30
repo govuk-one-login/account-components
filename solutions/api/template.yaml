@@ -217,6 +217,28 @@ Resources:
     DependsOn:
       - ApiGatewayStage # This resource is created as part of the RestApi resource
 
+  ApiGatewayS3Role:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub
+                  - "arn:aws:s3:::${BucketName}/jwks.json"
+                  - BucketName:
+                      Fn::ImportValue: !Sub "${CoreStackName}:JWKSStoreBucketName"
+
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -229,9 +251,15 @@ Resources:
         CustomPolicy: true
       DefinitionBody:
         openapi: 3.0.1
+        info:
+          title: Account Components API
+          version: 1.0.0
         paths:
           /.well-known/jwks.json:
             get:
+              responses:
+                "200":
+                  description: JWKS response
               x-amazon-apigateway-integration:
                 type: aws
                 httpMethod: GET
@@ -239,6 +267,7 @@ Resources:
                   - "arn:aws:apigateway:${AWS::Region}:s3:path/${BucketName}/jwks.json"
                   - BucketName:
                       Fn::ImportValue: !Sub "${CoreStackName}:JWKSStoreBucketName"
+                credentials: !GetAtt ApiGatewayS3Role.Arn
                 responses:
                   default:
                     statusCode: "200"
