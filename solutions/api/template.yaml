@@ -242,6 +242,10 @@ Resources:
                   - "arn:aws:s3:::${BucketName}/jwks.json"
                   - BucketName:
                       Fn::ImportValue: !Sub "${CoreStackName}:JWKSStoreBucketName"
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource:
+                  Fn::ImportValue: !Sub "${CoreStackName}:S3SSEKeyArn"
 
   ApiGateway:
     Type: AWS::Serverless::Api
