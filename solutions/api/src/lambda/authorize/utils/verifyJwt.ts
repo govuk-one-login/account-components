@@ -107,8 +107,6 @@ export const verifyJwt = async (
     }),
     state: v.pipe(v.string(), v.nonEmpty()), // TODO ???
     jti: v.pipe(v.string(), v.nonEmpty()),
-    iat: v.pipe(v.number(), v.integer()),
-    exp: v.pipe(v.number(), v.integer()),
     access_token: v.pipe(v.string(), v.nonEmpty()),
     refresh_token: v.pipe(v.string(), v.nonEmpty()),
     sub: v.pipe(v.string(), v.nonEmpty()),
