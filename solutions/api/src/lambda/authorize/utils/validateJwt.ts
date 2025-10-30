@@ -15,7 +15,7 @@ import { JOSEError, JWTExpired } from "jose/errors";
 import { Lang } from "../../../../../commons/utils/configureI18n/index.js";
 
 export const validateJwt = async (
-  signedJwtString: string,
+  signedJwt: string,
   client: Client,
   redirectUri: string,
   state?: string,
@@ -40,7 +40,7 @@ export const validateJwt = async (
   let payload: JWTPayload | undefined = undefined;
 
   try {
-    payload = (await jwtVerify(signedJwtString, jwks)).payload;
+    payload = (await jwtVerify(signedJwt, jwks)).payload;
   } catch (error) {
     if (error instanceof JWTExpired) {
       logger.warn("Request Object has Expired", {
