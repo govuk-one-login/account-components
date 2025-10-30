@@ -263,6 +263,18 @@ Resources:
           title: Account Components API
           version: 1.0.0
         paths:
+          /healthcheck:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Arn}/invocations"
+          /authorize:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizeLambda.Arn}/invocations"
           /.well-known/jwks.json:
             get:
               responses:
@@ -299,13 +311,6 @@ Resources:
       Handler: healthcheck.handler
       LoggingConfig:
         LogGroup: !Ref ApiLambdaLogGroup
-      Events:
-        Root:
-          Type: Api
-          Properties:
-            Method: GET
-            Path: /healthcheck
-            RestApiId: !Ref ApiGateway
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -325,13 +330,6 @@ Resources:
       Handler: index.handler
       LoggingConfig:
         LogGroup: !Ref ApiLambdaLogGroup
-      Events:
-        Root:
-          Type: Api
-          Properties:
-            Method: GET
-            Path: /authorize
-            RestApiId: !Ref ApiGateway
       Environment:
         Variables:
           AUTHORIZE_ERROR_PAGE_URL:
@@ -367,3 +365,19 @@ Resources:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:
           - solutions/api/src/lambda/authorize/index.ts
+
+  HealthcheckLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref HealthcheckLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
+
+  AuthorizeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AuthorizeLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
