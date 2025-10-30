@@ -227,6 +227,23 @@ Resources:
       Tags:
         FMSRegionalPolicy: false
         CustomPolicy: true
+      DefinitionBody:
+        openapi: 3.0.1
+        paths:
+          /.well-known/jwks.json:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: GET
+                uri: !Sub
+                  - "arn:aws:apigateway:${AWS::Region}:s3:path/${BucketName}/jwks.json"
+                  - BucketName:
+                      Fn::ImportValue: !Sub "${CoreStackName}:JWKSStoreBucketName"
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Content-Type: "'application/json'"
 
   ApiLambdaLogGroup:
     Type: AWS::Logs::LogGroup

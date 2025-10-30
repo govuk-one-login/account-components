@@ -593,6 +593,8 @@ Outputs:
   JWKSStoreBucketName:
     Description: Name of the S3 bucket that stores the JWKS document
     Value: !Ref JWKSStoreBucket
+    Export:
+      Name: !Sub "${AWS::StackName}:JWKSStoreBucketName"
   S3SSEKeyArn:
     Description: ARN of the KMS key used for encryption of S3 buckets
     Value: !GetAtt S3SSEKey.Arn
