@@ -3,6 +3,7 @@ import { getQueryParams } from "./utils/getQueryParams.js";
 import { ErrorResponse } from "./utils/common.js";
 import { getClient } from "./utils/getClient.js";
 import { decryptJar } from "./utils/decryptJar.js";
+import { validateJwt } from "./utils/validateJwt.js";
 
 export const handler = async (
   event: APIGatewayProxyEvent,
@@ -20,19 +21,29 @@ export const handler = async (
     return client.errorResponse;
   }
 
-  const signedJwtString = await decryptJar(
+  const signedJwt = await decryptJar(
     queryParams.request,
     queryParams.client_id,
     queryParams.redirect_uri,
     queryParams.state,
   );
-  if (signedJwtString instanceof ErrorResponse) {
-    return signedJwtString.errorResponse;
+  if (signedJwt instanceof ErrorResponse) {
+    return signedJwt.errorResponse;
+  }
+
+  const claims = await validateJwt(
+    signedJwt,
+    client,
+    queryParams.redirect_uri,
+    queryParams.state,
+  );
+  if (claims instanceof ErrorResponse) {
+    return claims.errorResponse;
   }
 
   // TODO used for debugging. Remove before going live!
   return {
     statusCode: 200,
-    body: JSON.stringify({ message: "Authorized", signedJwtString }, null, 2),
+    body: JSON.stringify({ message: "Authorized", signedJwt }, null, 2),
   };
 };

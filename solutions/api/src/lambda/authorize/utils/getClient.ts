@@ -12,7 +12,7 @@ export const getClient = async (clientId: string, redirectUri: string) => {
 
   if (!client) {
     logger.warn("Client Not Found", {
-      clientId,
+      client_id: clientId,
     });
     metrics.addMetric("ClientNotFound", MetricUnit.Count, 1);
     return new ErrorResponse(badRequestResponse);
@@ -20,9 +20,9 @@ export const getClient = async (clientId: string, redirectUri: string) => {
 
   if (!client.redirect_uris.includes(redirectUri)) {
     logger.warn("Invalid redirect_uri", {
-      clientId,
-      suppliedRedirectUri: redirectUri,
-      clientRedirectUris: client.redirect_uris,
+      client_id: clientId,
+      received_redirect_uri: redirectUri,
+      allowed_redirect_uris: client.redirect_uris,
     });
     metrics.addMetric("InvalidRedirectUri", MetricUnit.Count, 1);
     return new ErrorResponse(badRequestResponse);

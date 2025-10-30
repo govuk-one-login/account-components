@@ -26,10 +26,10 @@ describe("getRedirectToClientRedirectUriResponse", () => {
   it("returns redirect response with error parameters", () => {
     const result = getRedirectToClientRedirectUriResponse(
       "https://client.com/callback",
-      authorizeErrors.invalidRequest,
+      authorizeErrors.jarDecryptionFailed,
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       statusCode: 302,
       headers: {
         location:
@@ -42,11 +42,11 @@ describe("getRedirectToClientRedirectUriResponse", () => {
   it("includes state parameter when provided", () => {
     const result = getRedirectToClientRedirectUriResponse(
       "https://client.com/callback",
-      authorizeErrors.serverError,
+      authorizeErrors.jarDecryptionUnknownError,
       "test-state",
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       statusCode: 302,
       headers: {
         location:
@@ -59,10 +59,10 @@ describe("getRedirectToClientRedirectUriResponse", () => {
   it("handles redirect URI with existing query parameters", () => {
     const result = getRedirectToClientRedirectUriResponse(
       "https://client.com/callback?existing=param",
-      authorizeErrors.invalidRequest,
+      authorizeErrors.jarDecryptionFailed,
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       statusCode: 302,
       headers: {
         location:

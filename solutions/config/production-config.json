@@ -3,7 +3,7 @@
     {
       "client_id": "12345678901234567890123456789012",
       "scope": "am-account-delete",
-      "redirect_uris": ["https://signin.account.gov.uk/acm-callback"],
+      "redirect_uris": ["https://signin.account.gov.uk/auth/callback"],
       "client_name": "dummy_auth",
       "jwks_uri": "https://signin.account.gov.uk/.well-known/jwks.json"
     }
