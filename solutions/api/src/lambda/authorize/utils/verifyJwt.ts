@@ -14,7 +14,7 @@ import assert from "node:assert";
 import { JOSEError, JWTExpired } from "jose/errors";
 import { Lang } from "../../../../../commons/utils/configureI18n/index.js";
 
-export const validateJwt = async (
+export const verifyJwt = async (
   signedJwt: string,
   client: Client,
   redirectUri: string,

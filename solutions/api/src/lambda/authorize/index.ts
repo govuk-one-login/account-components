@@ -3,7 +3,7 @@ import { getQueryParams } from "./utils/getQueryParams.js";
 import { ErrorResponse } from "./utils/common.js";
 import { getClient } from "./utils/getClient.js";
 import { decryptJar } from "./utils/decryptJar.js";
-import { validateJwt } from "./utils/validateJwt.js";
+import { verifyJwt } from "./utils/verifyJwt.js";
 
 export const handler = async (
   event: APIGatewayProxyEvent,
@@ -31,7 +31,7 @@ export const handler = async (
     return signedJwt.errorResponse;
   }
 
-  const claims = await validateJwt(
+  const claims = await verifyJwt(
     signedJwt,
     client,
     queryParams.redirect_uri,
