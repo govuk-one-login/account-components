@@ -598,3 +598,5 @@ Outputs:
   S3SSEKeyArn:
     Description: ARN of the KMS key used for encryption of S3 buckets
     Value: !GetAtt S3SSEKey.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}:S3SSEKeyArn"
