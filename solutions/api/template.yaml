@@ -96,19 +96,9 @@ Conditions:
     Fn::Equals:
       - !Ref "AWS::Region"
       - "local"
-  CanariesEnabled: !Equals
-    - !FindInMap [EnvironmentConfiguration, !Ref Environment, UseCanary]
-    - true
 
 Globals:
   Function:
-    DeploymentPreference:
-      Type: !If
-        - CanariesEnabled
-        - !Ref LambdaDeploymentPreference
-        - AllAtOnce
-      Alarms: []
-      Role: !GetAtt CodeDeployServiceRole.Arn
     Tracing: Active
     AutoPublishAlias: live
     KmsKeyArn:
@@ -203,44 +193,6 @@ Globals:
         DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
 
 Resources:
-  CodeDeployServiceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Action:
-              - sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service:
-                - codedeploy.amazonaws.com
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
-      Policies:
-        - PolicyName: LambdaDeploymentPolicy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - lambda:GetFunction
-                  - lambda:GetFunctionConfiguration
-                  - lambda:UpdateFunctionConfiguration
-                  - lambda:UpdateFunctionCode
-                  - lambda:PublishVersion
-                  - lambda:CreateAlias
-                  - lambda:UpdateAlias
-                  - lambda:GetAlias
-                  - lambda:ListVersionsByFunction
-                Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
-      PermissionsBoundary:
-        !If [
-          UsePermissionsBoundary,
-          !Ref PermissionsBoundary,
-          !Ref AWS::NoValue,
-        ]
-
   ApiDomain:
     Type: AWS::ApiGateway::DomainName
     Properties:
