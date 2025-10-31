@@ -4,12 +4,12 @@ import { getEnvironment } from "../../getEnvironment/index.js";
 import * as AWSXRay from "aws-xray-sdk";
 
 const createAppConfigClient = () => {
-  const appconfigClientTODO = new AppConfigDataClient(getAwsClientConfig());
+  const appconfigClient = new AppConfigDataClient(getAwsClientConfig());
 
   const wrappedClient =
     getEnvironment() === "local"
-      ? appconfigClientTODO
-      : AWSXRay.captureAWSv3Client(appconfigClientTODO);
+      ? appconfigClient
+      : AWSXRay.captureAWSv3Client(appconfigClient);
 
   return {
     client: wrappedClient,

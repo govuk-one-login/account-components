@@ -1,6 +1,6 @@
 import { getAppConfig } from "@aws-lambda-powertools/parameters/appconfig";
 import { getEnvironment } from "../getEnvironment/index.js";
-import { getAppConfigClient } from "../awsClient/appconfigClientTODO/index.js";
+import { getAppConfigClient } from "../awsClient/appconfigClient/index.js";
 
 export interface Client {
   client_id: string;
