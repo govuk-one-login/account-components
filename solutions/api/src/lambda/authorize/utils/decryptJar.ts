@@ -10,6 +10,7 @@ import {
   ErrorResponse,
   getRedirectToClientRedirectUriResponse,
 } from "./common.js";
+import { jarEncryptionKeyAlgorithm } from "../../../../../commons/utils/contstants.js";
 
 export const decryptJar = async (
   jar: string,
@@ -34,7 +35,7 @@ export const decryptJar = async (
       v.message(
         v.pipe(
           v.object({
-            alg: v.literal("RSA-OAEP-256"),
+            alg: v.literal(jarEncryptionKeyAlgorithm),
             enc: v.literal("A256GCM"),
           }),
           v.transform((input) => ({

@@ -8,7 +8,7 @@ export default defineConfig({
       requireAssertions: true,
     },
     coverage: {
-      include: ["solutions/**/*"],
+      include: ["solutions/**/*.ts"],
       reporter: ["lcov", "text"],
     },
   },

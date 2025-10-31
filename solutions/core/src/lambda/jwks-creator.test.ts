@@ -20,15 +20,11 @@ vi.mock(import("@aws-lambda-powertools/logger"), () => ({
 }));
 
 // @ts-expect-error
-vi.mock(import("../../../commons/utils/awsClient/kmsClient/index.js"), () => ({
-  createKmsClient: () => ({
+vi.mock(import("../../../commons/utils/awsClient/index.js"), () => ({
+  getKmsClient: async () => ({
     getPublicKey: mockGetPublicKey,
     describeKey: mockDescribeKey,
   }),
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../commons/utils/awsClient/index.js"), () => ({
   getS3Client: async () => ({
     putObject: mockPutObject,
   }),
@@ -70,10 +66,8 @@ describe("handler", () => {
     mockGetPublicKey.mockReset();
     mockDescribeKey.mockReset();
     mockPutObject.mockReset();
-    process.env["AWS_REGION"] = "us-east-1";
     process.env["BUCKET_NAME"] = "test-bucket";
-    process.env["STACK_NAME"] = "components-core";
-    process.env["ALGORITHM"] = "RSA-OAEP-256";
+    process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"] = "alias/test-key";
   });
 
   it("successfully generates JWKS and uploads to S3", async () => {
@@ -92,10 +86,10 @@ describe("handler", () => {
     await expect(handler({}, context)).resolves.not.toThrow();
 
     expect(mockGetPublicKey).toHaveBeenCalledWith({
-      KeyId: "alias/components-core-JARRSAEncryptionKey",
+      KeyId: "alias/test-key",
     });
     expect(mockDescribeKey).toHaveBeenCalledWith({
-      KeyId: "alias/components-core-JARRSAEncryptionKey",
+      KeyId: "alias/test-key",
     });
     expect(mockPutObject).toHaveBeenCalledWith({
       Bucket: "test-bucket",
@@ -106,10 +100,7 @@ describe("handler", () => {
     });
   });
 
-  it("uses default values for AWS_REGION and ALGORITHM", async () => {
-    delete process.env["AWS_REGION"];
-    delete process.env["ALGORITHM"];
-
+  it("throws if BUCKET_NAME is not set", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
     const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
     const fakeJwk = { kty: "RSA" };
@@ -120,28 +111,25 @@ describe("handler", () => {
     });
     (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
-    mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
 
-    await expect(handler({}, context)).resolves.not.toThrow();
-  });
-
-  it("throws if BUCKET_NAME is not set", async () => {
     delete process.env["BUCKET_NAME"];
 
     await expect(handler({}, context)).rejects.toThrow("BUCKET_NAME not set");
   });
 
-  it("throws if STACK_NAME is not set", async () => {
-    delete process.env["STACK_NAME"];
+  it("throws if JAR_RSA_ENCRYPTION_KEY_ALIAS is not set", async () => {
+    delete process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"];
 
-    await expect(handler({}, context)).rejects.toThrow("STACK_NAME not set");
+    await expect(handler({}, context)).rejects.toThrow(
+      "JAR_RSA_ENCRYPTION_KEY_ALIAS not set",
+    );
   });
 
   it("throws if public key is missing", async () => {
     mockGetPublicKey.mockResolvedValueOnce({ PublicKey: undefined });
 
     await expect(handler({}, context)).rejects.toThrow(
-      "Public key not found for KMS Key Alias: alias/components-core-JARRSAEncryptionKey",
+      "Public key not found for KMS Key Alias: alias/test-key",
     );
   });
 
@@ -152,7 +140,7 @@ describe("handler", () => {
     mockDescribeKey.mockResolvedValueOnce({ KeyMetadata: undefined });
 
     await expect(handler({}, context)).rejects.toThrow(
-      "Key ID not found for KMS Key Alias: alias/components-core-JARRSAEncryptionKey",
+      "Key ID not found for KMS Key Alias: alias/test-key",
     );
   });
 
@@ -276,6 +264,7 @@ describe("putContentToS3", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockPutObject.mockReset();
+    process.env["BUCKET_NAME"] = "test-bucket";
   });
 
   it("uploads successfully", async () => {
@@ -286,15 +275,11 @@ describe("putContentToS3", () => {
 
     mockPutObject.mockResolvedValueOnce(mockResponse);
 
-    const response = await putContentToS3(
-      "bucket",
-      "file.json",
-      '{"data":"ok"}',
-    );
+    const response = await putContentToS3('{"data":"ok"}');
 
     expect(mockPutObject).toHaveBeenCalledWith({
-      Bucket: "bucket",
-      Key: "file.json",
+      Bucket: "test-bucket",
+      Key: "jwks.json",
       Body: '{"data":"ok"}',
       ContentType: "application/json",
     });
@@ -304,8 +289,12 @@ describe("putContentToS3", () => {
   it("throws on S3 upload error", async () => {
     mockPutObject.mockRejectedValueOnce(new Error("S3 upload failed"));
 
-    await expect(putContentToS3("bucket", "file.json", "{}")).rejects.toThrow(
-      "S3 upload failed",
-    );
+    await expect(putContentToS3("{}")).rejects.toThrow("S3 upload failed");
+  });
+
+  it("throws if BUCKET_NAME is not set", async () => {
+    delete process.env["BUCKET_NAME"];
+
+    await expect(putContentToS3("{}")).rejects.toThrow("BUCKET_NAME not set");
   });
 });

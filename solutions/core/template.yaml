@@ -444,7 +444,7 @@ Resources:
       Environment:
         Variables:
           BUCKET_NAME: !Ref JWKSStoreBucket
-          STACK_NAME: !Ref AWS::StackName
+          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Ref JARRSAEncryptionKeyAlias
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
