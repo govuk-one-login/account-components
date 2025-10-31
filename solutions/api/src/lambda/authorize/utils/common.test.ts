@@ -29,7 +29,7 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       authorizeErrors.invalidRequest,
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       statusCode: 302,
       headers: {
         location:
@@ -46,7 +46,7 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       "test-state",
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       statusCode: 302,
       headers: {
         location:
@@ -62,7 +62,7 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       authorizeErrors.invalidRequest,
     );
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       statusCode: 302,
       headers: {
         location:

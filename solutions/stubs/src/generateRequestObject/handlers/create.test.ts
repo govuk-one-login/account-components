@@ -27,9 +27,13 @@ describe("createRequestObjectGet", () => {
     expect(mockReply.render).toHaveBeenCalledWith(
       "generateRequestObject/handlers/create.njk",
       expect.objectContaining({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         availableClients: expect.any(Array),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         availableScopes: expect.any(Array),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         availableScenarios: expect.any(Array),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         availableUsers: expect.any(Array),
         authorizeUrl: undefined,
         jwtPayload: undefined,

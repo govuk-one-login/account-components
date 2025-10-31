@@ -100,6 +100,7 @@ describe("handler", () => {
     expect(mockPutObject).toHaveBeenCalledWith({
       Bucket: "test-bucket",
       Key: "jwks.json",
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       Body: expect.stringContaining('"kty":"RSA"'),
       ContentType: "application/json",
     });
@@ -173,6 +174,7 @@ describe("handler", () => {
     expect(mockPutObject).toHaveBeenCalledWith({
       Bucket: "test-bucket",
       Key: "jwks.json",
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       Body: expect.stringContaining('"kty":"RSA"'),
       ContentType: "application/json",
     });
@@ -196,6 +198,7 @@ describe("handler", () => {
     expect(mockPutObject).toHaveBeenCalledWith({
       Bucket: "test-bucket",
       Key: "jwks.json",
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       Body: expect.stringContaining('"kty":"RSA"'),
       ContentType: "application/json",
     });
@@ -217,6 +220,7 @@ describe("handler", () => {
     expect(mockPutObject).toHaveBeenCalledWith({
       Bucket: "test-bucket",
       Key: "jwks.json",
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       Body: expect.stringContaining('"kid":"unknown"'),
       ContentType: "application/json",
     });

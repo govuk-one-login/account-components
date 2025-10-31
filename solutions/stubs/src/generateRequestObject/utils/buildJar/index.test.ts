@@ -44,7 +44,9 @@ describe("buildJar", async () => {
 
   const mockGetPublicKey = vi.fn();
   const mockKmsClient = {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     client: {} as any,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     config: {} as any,
     getPublicKey: mockGetPublicKey,
     decrypt: vi.fn(),
