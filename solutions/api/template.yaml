@@ -107,8 +107,8 @@ Globals:
         - CanariesEnabled
         - !Ref LambdaDeploymentPreference
         - AllAtOnce
-      Role: !GetAtt TODOCodeDeployServiceRole.Arn
       Alarms: []
+      Role: !GetAtt CodeDeployServiceRole.Arn
     Tracing: Active
     AutoPublishAlias: live
     KmsKeyArn:
@@ -203,7 +203,7 @@ Globals:
         DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
 
 Resources:
-  TODOCodeDeployServiceRole:
+  CodeDeployServiceRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:

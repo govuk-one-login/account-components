@@ -552,10 +552,6 @@ Outputs:
     Value: !GetAtt CloudWatchEncryptionKey.Arn
     Export:
       Name: !Sub "${AWS::StackName}:CloudWatchEncryptionKeyArn"
-  CodeDeployServiceRoleArn:
-    Value: !GetAtt CodeDeployServiceRole.Arn
-    Export:
-      Name: !Sub "${AWS::StackName}:CodeDeployServiceRoleArn"
   JARRSAEncryptionKeyArn:
     Description: ARN of the JAR RSA encryption KMS key
     Value: !GetAtt JARRSAEncryptionKey.Arn

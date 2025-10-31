@@ -73,8 +73,7 @@ Globals:
         - !Ref LambdaDeploymentPreference
         - AllAtOnce
       Alarms: []
-      Role:
-        Fn::ImportValue: !Sub "${CoreStackName}:CodeDeployServiceRoleArn"
+      Role: !GetAtt CodeDeployServiceRole.Arn
     CodeUri: dist
     Handler: lambda.handler
     Tracing: Active
@@ -161,6 +160,27 @@ Globals:
         DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
 
 Resources:
+  CodeDeployServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
+      PermissionsBoundary:
+        !If [
+          UsePermissionsBoundary,
+          !Ref PermissionsBoundary,
+          !Ref AWS::NoValue,
+        ]
+
   MockClientECPrivateKeySSM:
     Type: AWS::SSM::Parameter
     Properties:
