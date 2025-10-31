@@ -1,4 +1,5 @@
-{
+// eslint-disable-next-line no-restricted-exports
+export default JSON.parse(`{
   "client_registry": [
     {
       "client_id": "ABCDEF12345678901234567890123456",
@@ -15,4 +16,4 @@
       "jwks_uri": "http://localhost:6003/home/.well-known/jwks.json"
     }
   ]
-}
+}`);

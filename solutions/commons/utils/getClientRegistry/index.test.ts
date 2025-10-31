@@ -10,7 +10,7 @@ vi.mock(import("../getEnvironment/index.js"), () => ({
 vi.mock(import("../awsClient/index.js"), () => ({
   getAppConfigClient: vi.fn(),
 }));
-vi.mock(import("../../../config/local-config.json"), () => ({
+vi.mock(import("../../../config/local-config.js"), () => ({
   default: {
     client_registry: [
       {
