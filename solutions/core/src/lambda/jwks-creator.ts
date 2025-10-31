@@ -1,11 +1,13 @@
 import { Logger } from "@aws-lambda-powertools/logger";
 import { exportJWK, importSPKI } from "jose";
 import type { JWK } from "jose";
-import { getKmsClient } from "../../../commons/utils/awsClient/index.js";
 import type { Context } from "aws-lambda";
 import { createPublicKey } from "node:crypto";
 import assert from "node:assert";
-import { getS3Client } from "../../../commons/utils/awsClient/index.js";
+import {
+  getS3Client,
+  getKmsClient,
+} from "../../../commons/utils/awsClient/index.js";
 import { jarEncryptionKeyAlgorithm } from "../../../commons/utils/contstants.js";
 
 const logger = new Logger();
