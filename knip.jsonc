@@ -13,6 +13,7 @@
         "solutions/stubs/rolldown.local.config.ts",
         "solutions/core/src/lambda/jwks-creator.ts",
         "solutions/api/src/lambda/authorize/index.ts",
+        "solutions/api/src/lambda/healthcheck.ts",
       ],
       "ignoreBinaries": [
         "zizmor",
