@@ -375,3 +375,93 @@ Resources:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:
           - solutions/api/src/lambda/authorize/index.ts
+
+  ReplayAttackTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-ReplayAttack
+      AttributeDefinitions:
+        - AttributeName: nonce
+          AttributeType: S
+      KeySchema:
+        - AttributeName: nonce
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expires
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      SSESpecification:
+        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-replay_attack"
+
+  UserInfoTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-UserInfo
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: outcome_id
+          AttributeType: S
+        - AttributeName: outcome_type
+          AttributeType: S
+        - AttributeName: access_token
+          AttributeType: S
+      KeySchema:
+        - AttributeName: outcome_id
+          KeyType: HASH
+        - AttributeName: outcome_type
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: AccessTokenIndex
+          KeySchema:
+            - AttributeName: access_token
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+      SSESpecification:
+        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
+        SSEEnabled: true
+        SSEType: KMS
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-user_info"
+
+  AuthCodeTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-AuthCode
+      AttributeDefinitions:
+        - AttributeName: "code"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "code"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      TimeToLiveSpecification:
+        AttributeName: "expiry_time"
+        Enabled: true
+      SSESpecification:
+        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-auth_code"
