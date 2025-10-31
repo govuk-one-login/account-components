@@ -78,8 +78,7 @@ Globals:
     Handler: lambda.handler
     Tracing: Active
     AutoPublishAlias: live
-    KmsKeyArn:
-      Fn::ImportValue: !Sub "${CoreStackName}:LambdaEnvironmentVariableEncryptionKeyArn"
+    KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyArn}}"
     Layers:
       - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1
     CodeSigningConfigArn: !If
@@ -271,7 +270,7 @@ Resources:
         Variables:
           MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPrivateKey"
           MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPublicKey"
-          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "alias/${CoreStackName}-JARRSAEncryptionKey"
+          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAliasName}}"
           DEFAULT_AUDIENCE: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
           AUTHORIZE_URL: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
@@ -294,13 +293,11 @@ Resources:
             - Effect: Allow
               Action:
                 - kms:GetPublicKey
-              Resource:
-                Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyArn"
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyArn}}"
 
   StubsLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/lambda/${AWS::StackName}/StubsLambda"
       RetentionInDays: 30
-      KmsKeyId:
-        Fn::ImportValue: !Sub "${CoreStackName}:CloudWatchEncryptionKeyArn"
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"

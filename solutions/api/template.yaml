@@ -111,8 +111,7 @@ Globals:
       Role: !GetAtt CodeDeployServiceRole.Arn
     Tracing: Active
     AutoPublishAlias: live
-    KmsKeyArn:
-      Fn::ImportValue: !Sub "${CoreStackName}:LambdaEnvironmentVariableEncryptionKeyArn"
+    KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyArn}}"
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
@@ -298,8 +297,7 @@ Resources:
     Properties:
       LogGroupName: !Sub "/lambda/${AWS::StackName}/ApiLambdaLogGroup"
       RetentionInDays: 30
-      KmsKeyId:
-        Fn::ImportValue: !Sub "${CoreStackName}:CloudWatchEncryptionKeyArn"
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
   HealthcheckLambda:
     Type: AWS::Serverless::Function
@@ -351,16 +349,14 @@ Resources:
               !Ref Environment,
               authorizeErrorPageUrl,
             ]
-          JAR_RSA_ENCRYPTION_KEY_ALIAS:
-            Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyAliasName"
+          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAliasName}}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
             - Effect: Allow
               Action:
                 - kms:Decrypt
-              Resource:
-                Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyArn"
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyArn}}"
             - Effect: Allow
               Action:
                 - appconfig:GetLatestConfiguration
