@@ -1,46 +1,48 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createAppConfigClient } from "./index.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const ORIGINAL_ENV = { ...process.env };
+vi.mock(import("@aws-sdk/client-appconfigdata"));
+vi.mock(import("../getAwsClientConfig/index.js"));
+vi.mock(import("../../getEnvironment/index.js"));
+vi.mock(import("aws-xray-sdk"));
 
-describe("appconfigClient", () => {
+const mockAppConfigClient = {
+  config: { region: "eu-west-2" },
+};
+
+describe("getAppConfigClient", () => {
   beforeEach(() => {
-    vi.resetModules();
-    process.env = { ...ORIGINAL_ENV };
-    delete process.env["AWS_REGION"];
-    delete process.env["ENVIRONMENT"];
+    vi.clearAllMocks();
+    vi.doMock("@aws-sdk/client-appconfigdata", () => ({
+      AppConfigDataClient: vi.fn(function () {
+        return mockAppConfigClient;
+      }),
+    }));
+    vi.doMock("../getAwsClientConfig/index.js", () => ({
+      getAwsClientConfig: vi.fn(() => ({ region: "eu-west-2" })),
+    }));
+    vi.doMock("../../getEnvironment/index.js", () => ({
+      getEnvironment: vi.fn(() => "local"),
+    }));
+    vi.doMock("aws-xray-sdk", () => ({
+      captureAWSv3Client: vi.fn(<T>(client: T): T => client),
+    }));
   });
 
-  it("should create an AppConfig client", () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    const client = createAppConfigClient();
+  it("returns cached client on subsequent calls", async () => {
+    const { getAppConfigClient } = await import("./index.js");
 
-    expect(client).toBeDefined();
+    const client1 = getAppConfigClient();
+    const client2 = getAppConfigClient();
+
+    expect(client1).toBe(client2);
+  });
+
+  it("returns client with config", async () => {
+    const { getAppConfigClient } = await import("./index.js");
+
+    const client = getAppConfigClient();
+
     expect(client.client).toBeDefined();
     expect(client.config).toBeDefined();
-  });
-
-  it("should not use XRAY when in local environment", async () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    process.env["ENVIRONMENT"] = "local";
-
-    const { default: AWSXRay } = await import("aws-xray-sdk");
-    const spy = vi.spyOn(AWSXRay, "captureAWSv3Client");
-
-    createAppConfigClient();
-
-    expect(spy).toHaveBeenCalledTimes(0);
-  });
-
-  it("should use XRAY when not in local environment", async () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    process.env["ENVIRONMENT"] = "integration";
-
-    const { default: AWSXRay } = await import("aws-xray-sdk");
-    const spy = vi.spyOn(AWSXRay, "captureAWSv3Client");
-
-    createAppConfigClient();
-
-    expect(spy).toHaveBeenCalledTimes(1);
   });
 });

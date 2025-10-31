@@ -34,4 +34,10 @@ const createKmsClient = () => {
   };
 };
 
-export { createKmsClient };
+let cachedKmsClient: ReturnType<typeof createKmsClient> | undefined;
+const getKmsClient = (): ReturnType<typeof createKmsClient> => {
+  cachedKmsClient ??= createKmsClient();
+  return cachedKmsClient;
+};
+
+export { getKmsClient };

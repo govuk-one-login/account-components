@@ -1,16 +1,16 @@
 import { expect, it, describe, vi, beforeEach, afterEach } from "vitest";
 import { getClientRegistry } from "./index.js";
 
-vi.mock("@aws-lambda-powertools/parameters/appconfig", () => ({
+vi.mock(import("@aws-lambda-powertools/parameters/appconfig"), () => ({
   getAppConfig: vi.fn(),
 }));
-vi.mock("../getEnvironment/index.js", () => ({
+vi.mock(import("../getEnvironment/index.js"), () => ({
   getEnvironment: vi.fn(),
 }));
-vi.mock("../awsClient/index.js", () => ({
+vi.mock(import("../awsClient/appconfigClient/index.js"), () => ({
   getAppConfigClient: vi.fn(),
 }));
-vi.mock("../../../config/local-config.json", () => ({
+vi.mock(import("../../../config/local-config.json"), () => ({
   default: {
     client_registry: [
       {
@@ -41,8 +41,9 @@ vi.mocked(
 // @ts-expect-error
 vi.mocked(await import("../getEnvironment/index.js")).getEnvironment =
   mockGetEnvironment;
-vi.mocked(await import("../awsClient/index.js")).getAppConfigClient =
-  mockGetAppConfigClient;
+vi.mocked(
+  await import("../awsClient/appconfigClient/index.js"),
+).getAppConfigClient = mockGetAppConfigClient;
 
 describe("getClientRegistry", () => {
   beforeEach(() => {

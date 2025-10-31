@@ -4,7 +4,7 @@ import { base64url, importPKCS8, SignJWT } from "jose";
 import type { JwtHeader } from "../types/common.js";
 import { ALG, Algorithms, SignatureTypes } from "../types/common.js";
 import { logger } from "../../../commons/utils/logger/index.js";
-import { getParametersProvider } from "../../../commons/utils/awsClient/index.js";
+import { getParametersProvider } from "../../../commons/utils/awsClient/ssmClient/index.js";
 
 const getPrivateKeyName = (keyType: SignatureTypes): string => {
   const keyEnvironment =
@@ -46,9 +46,7 @@ export class JwtAdapter {
     if (!this.signingKeyMap.has(signatureType)) {
       const privateKeyName = getPrivateKeyName(signatureType);
       try {
-        privateKeyPem = await (
-          await getParametersProvider()
-        ).get(privateKeyName);
+        privateKeyPem = await getParametersProvider().get(privateKeyName);
       } catch (error) {
         logger.error(
           `Failed to retrieve ${signatureType} private key from SSM`,

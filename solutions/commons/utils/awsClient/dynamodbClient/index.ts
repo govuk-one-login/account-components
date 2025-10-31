@@ -68,4 +68,10 @@ const createDynamoDbClient = () => {
   return client;
 };
 
-export { createDynamoDbClient };
+let cachedDynamoDbClient: ReturnType<typeof createDynamoDbClient> | undefined;
+const getDynamoDbClient = (): ReturnType<typeof createDynamoDbClient> => {
+  cachedDynamoDbClient ??= createDynamoDbClient();
+  return cachedDynamoDbClient;
+};
+
+export { getDynamoDbClient };

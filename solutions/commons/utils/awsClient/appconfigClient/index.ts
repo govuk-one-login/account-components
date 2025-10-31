@@ -4,12 +4,12 @@ import { getEnvironment } from "../../getEnvironment/index.js";
 import * as AWSXRay from "aws-xray-sdk";
 
 const createAppConfigClient = () => {
-  const appConfigClient = new AppConfigDataClient(getAwsClientConfig());
+  const appconfigClient = new AppConfigDataClient(getAwsClientConfig());
 
   const wrappedClient =
     getEnvironment() === "local"
-      ? appConfigClient
-      : AWSXRay.captureAWSv3Client(appConfigClient);
+      ? appconfigClient
+      : AWSXRay.captureAWSv3Client(appconfigClient);
 
   return {
     client: wrappedClient,
@@ -17,4 +17,10 @@ const createAppConfigClient = () => {
   };
 };
 
-export { createAppConfigClient };
+let cachedAppConfigClient: ReturnType<typeof createAppConfigClient> | undefined;
+const getAppConfigClient = (): ReturnType<typeof createAppConfigClient> => {
+  cachedAppConfigClient ??= createAppConfigClient();
+  return cachedAppConfigClient;
+};
+
+export { getAppConfigClient };

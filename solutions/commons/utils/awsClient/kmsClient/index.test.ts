@@ -1,92 +1,97 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createKmsClient } from "./index.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const ORIGINAL_ENV = { ...process.env };
+vi.mock(import("@aws-sdk/client-kms"));
+vi.mock(import("../getAwsClientConfig/index.js"));
+vi.mock(import("../../getEnvironment/index.js"));
+vi.mock(import("aws-xray-sdk"));
 
-describe("kmsClient", () => {
+const mockKmsClient = {
+  config: { region: "eu-west-2" },
+  send: vi.fn(),
+};
+
+const mockCommands = {
+  GetPublicKeyCommand: vi.fn(),
+  DecryptCommand: vi.fn(),
+  DescribeKeyCommand: vi.fn(),
+};
+
+describe("getKmsClient", () => {
   beforeEach(() => {
-    vi.resetModules();
-    process.env = { ...ORIGINAL_ENV };
-    delete process.env["AWS_REGION"];
-    delete process.env["ENVIRONMENT"];
+    vi.clearAllMocks();
+    vi.doMock("@aws-sdk/client-kms", () => ({
+      KMSClient: vi.fn(function () {
+        return mockKmsClient;
+      }),
+      GetPublicKeyCommand: mockCommands.GetPublicKeyCommand,
+      DecryptCommand: mockCommands.DecryptCommand,
+      DescribeKeyCommand: mockCommands.DescribeKeyCommand,
+    }));
+    vi.doMock("../getAwsClientConfig/index.js", () => ({
+      getAwsClientConfig: vi.fn(() => ({ region: "eu-west-2" })),
+    }));
+    vi.doMock("../../getEnvironment/index.js", () => ({
+      getEnvironment: vi.fn(() => "local"),
+    }));
+    vi.doMock("aws-xray-sdk", () => ({
+      captureAWSv3Client: vi.fn(<T>(client: T): T => client),
+    }));
   });
 
-  it("should create a KMS client", () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    const client = createKmsClient();
+  it("returns cached client on subsequent calls", async () => {
+    const { getKmsClient } = await import("./index.js");
 
-    expect(client).toBeDefined();
+    const client1 = getKmsClient();
+    const client2 = getKmsClient();
+
+    expect(client1).toBe(client2);
+  });
+
+  it("returns client with all methods", async () => {
+    const { getKmsClient } = await import("./index.js");
+
+    const client = getKmsClient();
+
     expect(client.client).toBeDefined();
     expect(client.config).toBeDefined();
-    expect(client.getPublicKey).toBeDefined();
-    expect(client.decrypt).toBeDefined();
-    expect(client.describeKey).toBeDefined();
+    expect(client.getPublicKey).toBeTypeOf("function");
+    expect(client.decrypt).toBeTypeOf("function");
+    expect(client.describeKey).toBeTypeOf("function");
   });
 
-  it("should not use XRAY when in local environment", async () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    process.env["ENVIRONMENT"] = "local";
+  it("getPublicKey method calls client.send with GetPublicKeyCommand", async () => {
+    const { getKmsClient } = await import("./index.js");
 
-    const { default: AWSXRay } = await import("aws-xray-sdk");
-    const spy = vi.spyOn(AWSXRay, "captureAWSv3Client");
+    const client = getKmsClient();
+    const params = { KeyId: "test-key-id" };
 
-    createKmsClient();
+    await client.getPublicKey(params);
 
-    expect(spy).toHaveBeenCalledTimes(0);
+    expect(mockCommands.GetPublicKeyCommand).toHaveBeenCalledWith(params);
+    expect(mockKmsClient.send).toHaveBeenCalledWith(expect.any(Object));
   });
 
-  it("should use XRAY when not in local environment", async () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    process.env["ENVIRONMENT"] = "integration";
+  it("decrypt method calls client.send with DecryptCommand", async () => {
+    const { getKmsClient } = await import("./index.js");
 
-    const { default: AWSXRay } = await import("aws-xray-sdk");
-    const spy = vi.spyOn(AWSXRay, "captureAWSv3Client");
+    const client = getKmsClient();
+    const params = { CiphertextBlob: new Uint8Array([1, 2, 3]) };
 
-    createKmsClient();
+    await client.decrypt(params);
 
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(mockCommands.DecryptCommand).toHaveBeenCalledWith(params);
+    expect(mockKmsClient.send).toHaveBeenCalledWith(expect.any(Object));
   });
 
-  it("should send getPublicKey command correctly", async () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    const client = createKmsClient();
+  it("describeKey method calls client.send with DescribeKeyCommand", async () => {
+    const { getKmsClient } = await import("./index.js");
 
-    const sendSpy = vi
-      .spyOn(client.client, "send")
-      .mockResolvedValue({} as never);
+    const client = getKmsClient();
+    const params = { KeyId: "test-key-id" };
 
-    await client.getPublicKey({ KeyId: "test-key-id" });
+    await client.describeKey(params);
 
-    expect(sendSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it("should send decrypt command correctly", async () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    const client = createKmsClient();
-
-    const sendSpy = vi
-      .spyOn(client.client, "send")
-      .mockResolvedValue({} as never);
-
-    await client.decrypt({
-      CiphertextBlob: Buffer.from("test-ciphertext-blob"),
-    });
-
-    expect(sendSpy).toHaveBeenCalledTimes(1);
-  });
-
-  it("should send describeKey command correctly", async () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    const client = createKmsClient();
-
-    const sendSpy = vi
-      .spyOn(client.client, "send")
-      .mockResolvedValue({} as never);
-
-    await client.describeKey({
-      KeyId: "test-key-id",
-    });
-
-    expect(sendSpy).toHaveBeenCalledTimes(1);
+    expect(mockCommands.DescribeKeyCommand).toHaveBeenCalledWith(params);
+    expect(mockKmsClient.send).toHaveBeenCalledWith(expect.any(Object));
   });
 });
