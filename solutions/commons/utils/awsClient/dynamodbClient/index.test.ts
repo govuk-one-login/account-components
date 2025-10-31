@@ -110,4 +110,127 @@ describe("getDynamoDbClient", () => {
     expect(mockCommands.GetCommand).toHaveBeenCalledWith(params);
     expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
   });
+
+  it("delete method calls client.send with DeleteCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = { TableName: "test-table", Key: { id: "test" } };
+
+    await client.delete(params);
+
+    expect(mockCommands.DeleteCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("update method calls client.send with UpdateCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = {
+      TableName: "test-table",
+      Key: { id: "test" },
+      UpdateExpression: "SET #a = :val",
+      ExpressionAttributeNames: { "#a": "attr" },
+      ExpressionAttributeValues: { ":val": "value" },
+    };
+
+    await client.update(params);
+
+    expect(mockCommands.UpdateCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("query method calls client.send with QueryCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = {
+      TableName: "test-table",
+      KeyConditionExpression: "id = :id",
+      ExpressionAttributeValues: { ":id": "test" },
+    };
+
+    await client.query(params);
+
+    expect(mockCommands.QueryCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("scan method calls client.send with ScanCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = { TableName: "test-table" };
+
+    await client.scan(params);
+
+    expect(mockCommands.ScanCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("batchWrite method calls client.send with BatchWriteCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = {
+      RequestItems: {
+        "test-table": [{ PutRequest: { Item: { id: "test" } } }],
+      },
+    };
+
+    await client.batchWrite(params);
+
+    expect(mockCommands.BatchWriteCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("batchGet method calls client.send with BatchGetCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = {
+      RequestItems: { "test-table": { Keys: [{ id: "test" }] } },
+    };
+
+    await client.batchGet(params);
+
+    expect(mockCommands.BatchGetCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("transactWrite method calls client.send with TransactWriteCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = {
+      TransactItems: [
+        { Put: { TableName: "test-table", Item: { id: "test" } } },
+      ],
+    };
+
+    await client.transactWrite(params);
+
+    expect(mockCommands.TransactWriteCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("wraps client with XRay when not in local environment", async () => {
+    vi.resetModules();
+
+    const mockCaptureAWSv3Client = vi.fn(<T>(client: T): T => client);
+
+    vi.doMock("../../getEnvironment/index.js", () => ({
+      getEnvironment: vi.fn(() => "production"),
+    }));
+
+    vi.doMock("aws-xray-sdk", () => ({
+      captureAWSv3Client: mockCaptureAWSv3Client,
+    }));
+
+    const { getDynamoDbClient } = await import("./index.js");
+    getDynamoDbClient();
+
+    expect(mockCaptureAWSv3Client).toHaveBeenCalledWith(mockDynamoDbClient);
+  });
 });
