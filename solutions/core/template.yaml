@@ -100,6 +100,8 @@ Globals:
       - !Ref AWS::NoValue
     Environment:
       Variables:
+        NODE_OPTIONS: "--enable-source-maps"
+        NODE_ENV: "production"
         POWERTOOLS_LOG_LEVEL:
           !FindInMap [EnvConfig, !Ref Environment, LambdaLogLevel]
         POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
