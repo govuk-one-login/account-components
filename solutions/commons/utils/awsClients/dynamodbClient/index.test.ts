@@ -1,0 +1,111 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+vi.mock(import("@aws-sdk/client-dynamodb"));
+vi.mock(import("@aws-sdk/lib-dynamodb"));
+vi.mock(import("../getAwsClientConfig/index.js"));
+vi.mock(import("../../getEnvironment/index.js"));
+vi.mock(import("aws-xray-sdk"));
+
+const mockDynamoDbClient = {
+  config: { region: "eu-west-2" },
+};
+
+const mockDocClient = {
+  config: { region: "eu-west-2" },
+  send: vi.fn(),
+};
+
+const mockCommands = {
+  PutCommand: vi.fn(),
+  GetCommand: vi.fn(),
+  DeleteCommand: vi.fn(),
+  UpdateCommand: vi.fn(),
+  QueryCommand: vi.fn(),
+  ScanCommand: vi.fn(),
+  BatchWriteCommand: vi.fn(),
+  BatchGetCommand: vi.fn(),
+  TransactWriteCommand: vi.fn(),
+};
+
+describe("getDynamoDbClient", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.doMock("@aws-sdk/client-dynamodb", () => ({
+      DynamoDBClient: vi.fn(() => mockDynamoDbClient),
+      QueryCommand: mockCommands.QueryCommand,
+      ScanCommand: mockCommands.ScanCommand,
+    }));
+    vi.doMock("@aws-sdk/lib-dynamodb", () => ({
+      DynamoDBDocumentClient: {
+        from: vi.fn(() => mockDocClient),
+      },
+      PutCommand: mockCommands.PutCommand,
+      GetCommand: mockCommands.GetCommand,
+      DeleteCommand: mockCommands.DeleteCommand,
+      UpdateCommand: mockCommands.UpdateCommand,
+      BatchWriteCommand: mockCommands.BatchWriteCommand,
+      BatchGetCommand: mockCommands.BatchGetCommand,
+      TransactWriteCommand: mockCommands.TransactWriteCommand,
+    }));
+    vi.doMock("../getAwsClientConfig/index.js", () => ({
+      getAwsClientConfig: vi.fn(() => ({ region: "eu-west-2" })),
+    }));
+    vi.doMock("../../getEnvironment/index.js", () => ({
+      getEnvironment: vi.fn(() => "local"),
+    }));
+    vi.doMock("aws-xray-sdk", () => ({
+      captureAWSv3Client: vi.fn(<T>(client: T): T => client),
+    }));
+  });
+
+  it("returns cached client on subsequent calls", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client1 = getDynamoDbClient();
+    const client2 = getDynamoDbClient();
+
+    expect(client1).toBe(client2);
+  });
+
+  it("returns client with all methods", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+
+    expect(client.client).toBeDefined();
+    expect(client.config).toBeDefined();
+    expect(client.put).toBeTypeOf("function");
+    expect(client.get).toBeTypeOf("function");
+    expect(client.delete).toBeTypeOf("function");
+    expect(client.update).toBeTypeOf("function");
+    expect(client.query).toBeTypeOf("function");
+    expect(client.scan).toBeTypeOf("function");
+    expect(client.batchWrite).toBeTypeOf("function");
+    expect(client.batchGet).toBeTypeOf("function");
+    expect(client.transactWrite).toBeTypeOf("function");
+  });
+
+  it("put method calls client.send with PutCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = { TableName: "test-table", Item: { id: "test" } };
+
+    await client.put(params);
+
+    expect(mockCommands.PutCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("get method calls client.send with GetCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = { TableName: "test-table", Key: { id: "test" } };
+
+    await client.get(params);
+
+    expect(mockCommands.GetCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+});

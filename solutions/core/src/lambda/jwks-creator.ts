@@ -1,11 +1,11 @@
 import { Logger } from "@aws-lambda-powertools/logger";
 import { exportJWK, importSPKI } from "jose";
 import type { JWK } from "jose";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getKmsClient } from "../../../commons/utils/awsClients/kmsClient/index.js";
 import type { Context } from "aws-lambda";
 import { createPublicKey } from "node:crypto";
 import assert from "node:assert";
+import { getS3Client } from "../../../commons/utils/awsClients/s3Client/index.js";
 
 const logger = new Logger();
 
@@ -19,10 +19,8 @@ export const handler = async (
 
   const bucketName = process.env["BUCKET_NAME"];
   const stackName = process.env["STACK_NAME"];
-  const region = process.env["AWS_REGION"] ?? "eu-west-2";
   const algorithm = process.env["ALGORITHM"] ?? "RSA-OAEP-256";
-  logger.info("Properties", { region, bucketName, algorithm, stackName });
-  const s3 = new S3Client({ region: region });
+  logger.info("Properties", { bucketName, algorithm, stackName });
   logger.info("Created AWS clients");
   const jwks = await generateJwksFromKmsPublicKey(
     `alias/${stackName}-JARRSAEncryptionKey`,
@@ -31,7 +29,7 @@ export const handler = async (
   );
 
   //write to s3
-  await putContentToS3(s3, bucketName, "jwks.json", JSON.stringify(jwks));
+  await putContentToS3(bucketName, "jwks.json", JSON.stringify(jwks));
 };
 
 async function generateJwksFromKmsPublicKey(
@@ -105,20 +103,17 @@ async function generateJwksFromKmsPublicKey(
 }
 
 export async function putContentToS3(
-  s3: S3Client,
   bucketName: string,
   key: string,
   content: string,
 ) {
   try {
-    const command = new PutObjectCommand({
+    const response = await getS3Client().putObject({
       Bucket: bucketName,
       Key: key,
       Body: content,
       ContentType: "application/json",
     });
-    logger.info("Upload Command:", { command });
-    const response = await s3.send(command);
     logger.info("Uploaded successfully:", { bucketName, key });
     return response;
   } catch (err) {
