@@ -189,10 +189,8 @@ Resources:
           - Effect: Allow
             Action:
               - kms:GetPublicKey
-            Resource: !Sub
-              - "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:${AliasName}"
-              - AliasName:
-                  Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyAliasName"
+            Resource:
+              Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyArn"
 
   GetAppConfigPolicy:
     Type: AWS::IAM::ManagedPolicy
