@@ -524,17 +524,6 @@ Resources:
                 - codedeploy.amazonaws.com
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
-      Policies:
-        - PolicyName: TaggingPermissions
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - tag:GetResources
-                  - tag:TagResources
-                  - tag:UntagResources
-                Resource: "*"
       PermissionsBoundary:
         !If [
           UsePermissionsBoundary,
