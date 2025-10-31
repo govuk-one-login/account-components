@@ -137,14 +137,14 @@ create_dynamodb_tables() {
   echo "Creating DynamoDB tables"
 
   # Delete existing tables
-  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-main-UserInfo" 2>/dev/null || true
+  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-UserInfo" 2>/dev/null || true
   aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-main-SessionStore" 2>/dev/null || true
-  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-main-AuthCode" 2>/dev/null || true
-  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-main-ReplayAttack" 2>/dev/null || true
+  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-AuthCode" 2>/dev/null || true
+  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-ReplayAttack" 2>/dev/null || true
 
   # UserInfoTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-main-UserInfo" \
+    --table-name "components-api-UserInfo" \
     --attribute-definitions \
       AttributeName=outcome_id,AttributeType=S \
       AttributeName=outcome_type,AttributeType=S \
@@ -168,7 +168,7 @@ create_dynamodb_tables() {
 
   # AuthCodeTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-main-AuthCode" \
+    --table-name "components-api-AuthCode" \
     --attribute-definitions \
       AttributeName=code,AttributeType=S \
     --key-schema \
@@ -177,7 +177,7 @@ create_dynamodb_tables() {
 
   # ReplayAttackTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-main-ReplayAttack" \
+    --table-name "components-api-ReplayAttack" \
     --attribute-definitions \
       AttributeName=nonce,AttributeType=S \
     --key-schema \
