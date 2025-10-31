@@ -10,7 +10,12 @@ vi.mock(import("jose"), async () => {
   return {
     ...actual,
     importJWK: vi.fn(),
-    SignJWT: vi.fn(),
+    SignJWT: vi.fn().mockImplementation(function () {
+      return {
+        setProtectedHeader: vi.fn().mockReturnThis(),
+        sign: vi.fn(),
+      };
+    }),
   };
 });
 
@@ -42,9 +47,9 @@ describe("generateAccessToken", () => {
       sign: vi.fn().mockResolvedValue(mockSignedToken),
     };
 
-    (jose.SignJWT as unknown as MockInstance).mockImplementation(
-      () => setProtectedHeaderMock,
-    );
+    (jose.SignJWT as unknown as MockInstance).mockImplementation(function () {
+      return setProtectedHeaderMock;
+    });
   });
 
   it("should generate a signed JWT", async () => {
