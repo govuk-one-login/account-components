@@ -9,7 +9,7 @@ import {
   SignatureTypes,
 } from "../../../types/common.js";
 import { CompactEncrypt } from "jose";
-import * as kmsClientModule from "../../../../../commons/utils/awsClients/kmsClient/index.js";
+import * as kmsClientModule from "../../../../../commons/utils/awsClient/kmsClient/index.js";
 import type { Logger } from "@aws-lambda-powertools/logger";
 
 vi.mock(import("node:crypto"), () => ({

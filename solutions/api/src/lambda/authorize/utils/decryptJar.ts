@@ -1,7 +1,7 @@
 import assert from "node:assert";
 import { createDecipheriv } from "node:crypto";
 import * as v from "valibot";
-import { getKmsClient } from "../../../../../commons/utils/awsClients/kmsClient/index.js";
+import { getKmsClient } from "../../../../../commons/utils/awsClient/kmsClient/index.js";
 import { logger } from "../../../../../commons/utils/logger/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";

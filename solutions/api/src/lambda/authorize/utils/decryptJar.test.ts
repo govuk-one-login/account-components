@@ -34,7 +34,7 @@ const mockKmsClient = {
 };
 
 vi.mock(
-  import("../../../../../commons/utils/awsClients/kmsClient/index.js"),
+  import("../../../../../commons/utils/awsClient/kmsClient/index.js"),
   () => ({
     getKmsClient: vi.fn().mockReturnValue(mockKmsClient),
   }),

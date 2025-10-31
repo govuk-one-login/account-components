@@ -1,6 +1,6 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import * as v from "valibot";
-import { getParametersProvider } from "../../../../commons/utils/awsClients/ssmClient/index.js";
+import { getParametersProvider } from "../../../../commons/utils/awsClient/ssmClient/index.js";
 import assert from "node:assert";
 import { createPublicKey } from "node:crypto";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";

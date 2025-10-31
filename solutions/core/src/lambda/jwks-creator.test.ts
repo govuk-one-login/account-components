@@ -21,7 +21,7 @@ const mockDescribeKey = vi.fn();
 const mockPutObject = vi.fn();
 
 // @ts-expect-error
-vi.mock(import("../../../commons/utils/awsClients/kmsClient/index.js"), () => ({
+vi.mock(import("../../../commons/utils/awsClient/kmsClient/index.js"), () => ({
   getKmsClient: vi.fn(() => ({
     getPublicKey: mockGetPublicKey,
     describeKey: mockDescribeKey,
@@ -29,7 +29,7 @@ vi.mock(import("../../../commons/utils/awsClients/kmsClient/index.js"), () => ({
 }));
 
 // @ts-expect-error
-vi.mock(import("../../../commons/utils/awsClients/s3Client/index.js"), () => ({
+vi.mock(import("../../../commons/utils/awsClient/s3Client/index.js"), () => ({
   getS3Client: vi.fn(() => ({
     putObject: mockPutObject,
   })),

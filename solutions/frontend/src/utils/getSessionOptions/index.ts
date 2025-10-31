@@ -3,7 +3,7 @@ import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.j
 import assert from "node:assert";
 import ConnectDynamoDB from "connect-dynamodb";
 import session from "express-session";
-import { getDynamoDbClient } from "../../../../commons/utils/awsClients/dynamodbClient/index.js";
+import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import { ScalarAttributeType } from "@aws-sdk/client-dynamodb";
 
 let dynamodbStore: ConnectDynamoDB.DynamoDBStore | undefined = undefined;

@@ -7,7 +7,7 @@ vi.mock(import("@aws-lambda-powertools/parameters/appconfig"), () => ({
 vi.mock(import("../getEnvironment/index.js"), () => ({
   getEnvironment: vi.fn(),
 }));
-vi.mock(import("../awsClients/appConfigClient/index.js"), () => ({
+vi.mock(import("../awsClient/appConfigClient/index.js"), () => ({
   getAppConfigClient: vi.fn(),
 }));
 vi.mock(import("../../../config/local-config.json"), () => ({
@@ -42,7 +42,7 @@ vi.mocked(
 vi.mocked(await import("../getEnvironment/index.js")).getEnvironment =
   mockGetEnvironment;
 vi.mocked(
-  await import("../awsClients/appConfigClient/index.js"),
+  await import("../awsClient/appConfigClient/index.js"),
 ).getAppConfigClient = mockGetAppConfigClient;
 
 describe("getClientRegistry", () => {

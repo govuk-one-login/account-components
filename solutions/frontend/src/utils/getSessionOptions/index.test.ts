@@ -11,7 +11,7 @@ vi.mock(import("../../../../commons/utils/getEnvironment/index.js"), () => ({
 }));
 
 vi.mock(
-  import("../../../../commons/utils/awsClients/dynamodbClient/index.js"),
+  import("../../../../commons/utils/awsClient/dynamodbClient/index.js"),
   () => ({
     getDynamoDbClient: mockGetDynamoDbClient,
   }),
