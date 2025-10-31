@@ -19,7 +19,13 @@ import type { Logger } from "@aws-lambda-powertools/logger";
 
 const ORIGINAL_ENV = { ...process.env };
 
-vi.mock(import("../../../utils/jwt-adapter.js"));
+vi.mock(import("../../../utils/jwt-adapter.js"), () => ({
+  JwtAdapter: vi.fn().mockImplementation(function () {
+    return {
+      sign: vi.fn(),
+    };
+  }),
+}));
 vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
   logger: {
     debug: vi.fn(),
@@ -44,12 +50,11 @@ describe("generateJwtToken", () => {
     process.env["DEFAULT_AUDIENCE"] = "default-audience";
 
     const fakeToken = "fake.jwt.token";
-    vi.mocked(JwtAdapter).mockImplementation(
-      () =>
-        ({
-          sign: vi.fn().mockResolvedValue(fakeToken),
-        }) as unknown as JwtAdapter,
-    );
+    vi.mocked(JwtAdapter).mockImplementation(function () {
+      return {
+        sign: vi.fn().mockResolvedValue(fakeToken),
+      } as unknown as JwtAdapter;
+    });
 
     const scenario = MockRequestObjectScenarios.VALID;
 
@@ -61,12 +66,11 @@ describe("generateJwtToken", () => {
   it("should throw CustomError if token is not generated", async () => {
     process.env["DEFAULT_AUDIENCE"] = "default-audience";
 
-    vi.mocked(JwtAdapter).mockImplementation(
-      () =>
-        ({
-          sign: vi.fn().mockResolvedValue(null),
-        }) as unknown as JwtAdapter,
-    );
+    vi.mocked(JwtAdapter).mockImplementation(function () {
+      return {
+        sign: vi.fn().mockResolvedValue(null),
+      } as unknown as JwtAdapter;
+    });
 
     const scenario = MockRequestObjectScenarios.VALID;
 
@@ -78,12 +82,11 @@ describe("generateJwtToken", () => {
   it("should throw CustomError if JwtAdapter.sign throws", async () => {
     process.env["DEFAULT_AUDIENCE"] = "default-audience";
 
-    vi.mocked(JwtAdapter).mockImplementation(
-      () =>
-        ({
-          sign: vi.fn().mockRejectedValue(new Error("sign failed")),
-        }) as unknown as JwtAdapter,
-    );
+    vi.mocked(JwtAdapter).mockImplementation(function () {
+      return {
+        sign: vi.fn().mockRejectedValue(new Error("sign failed")),
+      } as unknown as JwtAdapter;
+    });
 
     const scenario = MockRequestObjectScenarios.VALID;
 

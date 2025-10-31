@@ -37,7 +37,9 @@ vi.mock(import("./appconfigClient/index.js"), () => ({
 
 // @ts-expect-error
 vi.mock(import("@aws-lambda-powertools/parameters/ssm"), () => ({
-  SSMProvider: vi.fn(() => ({ provider: "ssm" })),
+  SSMProvider: vi.fn().mockImplementation(function () {
+    return { provider: "ssm" };
+  }),
 }));
 
 vi.mock(import("./getAwsClientConfig/index.js"));

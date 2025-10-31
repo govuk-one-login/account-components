@@ -1,45 +1,37 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { MockInstance } from "vitest";
 import { handler, putContentToS3 } from "./jwks-creator.js";
-import { GetPublicKeyCommand } from "@aws-sdk/client-kms";
-import { type PutObjectCommandOutput } from "@aws-sdk/client-s3";
 import type { CryptoKey } from "jose";
 import { exportJWK, importSPKI } from "jose";
 import type { Context } from "aws-lambda";
 
+const mockGetPublicKey = vi.fn();
+const mockDescribeKey = vi.fn();
+const mockPutObject = vi.fn();
+
 // @ts-expect-error
 vi.mock(import("@aws-lambda-powertools/logger"), () => ({
-  Logger: vi.fn().mockImplementation(() => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    addContext: vi.fn(),
-  })),
+  Logger: class {
+    info = vi.fn();
+    warn = vi.fn();
+    error = vi.fn();
+    addContext = vi.fn();
+  },
 }));
 
 // @ts-expect-error
-vi.mock(import("@aws-sdk/client-kms"), () => {
-  const mockSend = vi.fn();
-  return {
-    KMSClient: vi.fn(() => ({ send: mockSend })),
-    GetPublicKeyCommand: vi.fn(),
-    DescribeKeyCommand: vi.fn(),
-    __mockSend: mockSend,
-  };
-});
+vi.mock(import("../../../commons/utils/awsClient/kmsClient/index.js"), () => ({
+  createKmsClient: () => ({
+    getPublicKey: mockGetPublicKey,
+    describeKey: mockDescribeKey,
+  }),
+}));
 
 // @ts-expect-error
-vi.mock(import("@aws-sdk/client-s3"), () => {
-  const mockSend = vi.fn();
-  return {
-    S3Client: vi.fn(() => ({ send: mockSend })),
-    PutObjectCommand: vi.fn(),
-    __mockSend: mockSend,
-  };
-});
-
 vi.mock(import("../../../commons/utils/awsClient/index.js"), () => ({
-  getS3Client: vi.fn(),
+  getS3Client: async () => ({
+    putObject: mockPutObject,
+  }),
 }));
 
 vi.mock(import("jose"), () => ({
@@ -56,18 +48,6 @@ vi.mock(import("node:crypto"), () => ({
     ),
   })),
 }));
-
-const { __mockSend: mockKmsSend } = (await import(
-  "@aws-sdk/client-kms"
-)) as unknown as {
-  __mockSend: MockInstance;
-};
-
-const { getS3Client } = (await import(
-  "../../../commons/utils/awsClient/index.js"
-)) as unknown as {
-  getS3Client: MockInstance;
-};
 
 const context: Context = {
   awsRequestId: "",
@@ -87,6 +67,9 @@ const context: Context = {
 describe("handler", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mockGetPublicKey.mockReset();
+    mockDescribeKey.mockReset();
+    mockPutObject.mockReset();
     process.env["AWS_REGION"] = "us-east-1";
     process.env["BUCKET_NAME"] = "test-bucket";
     process.env["STACK_NAME"] = "components-core";
@@ -98,58 +81,206 @@ describe("handler", () => {
     const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
     const fakeJwk = { kty: "RSA" };
 
-    mockKmsSend
-      .mockResolvedValueOnce({ PublicKey: fakePublicKey })
-      .mockResolvedValueOnce({ KeyMetadata: { KeyId: "test-key-id" } });
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey.mockResolvedValueOnce({
+      KeyMetadata: { KeyId: "test-key-id" },
+    });
     (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
-    const mockPutObject = vi
-      .fn()
-      .mockResolvedValue({ $metadata: { httpStatusCode: 200 } });
-    getS3Client.mockResolvedValue({ putObject: mockPutObject });
+    mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
 
     await expect(handler({}, context)).resolves.not.toThrow();
 
-    expect(GetPublicKeyCommand).toHaveBeenCalledWith({
+    expect(mockGetPublicKey).toHaveBeenCalledWith({
+      KeyId: "alias/components-core-JARRSAEncryptionKey",
+    });
+    expect(mockDescribeKey).toHaveBeenCalledWith({
       KeyId: "alias/components-core-JARRSAEncryptionKey",
     });
     expect(mockPutObject).toHaveBeenCalledWith({
       Bucket: "test-bucket",
       Key: "jwks.json",
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       Body: expect.stringContaining('"kty":"RSA"'),
       ContentType: "application/json",
     });
   });
 
+  it("uses default values for AWS_REGION and ALGORITHM", async () => {
+    delete process.env["AWS_REGION"];
+    delete process.env["ALGORITHM"];
+
+    const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
+    const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
+    const fakeJwk = { kty: "RSA" };
+
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey.mockResolvedValueOnce({
+      KeyMetadata: { KeyId: "test-key-id" },
+    });
+    (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
+    (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
+    mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
+
+    await expect(handler({}, context)).resolves.not.toThrow();
+  });
+
+  it("throws if BUCKET_NAME is not set", async () => {
+    delete process.env["BUCKET_NAME"];
+
+    await expect(handler({}, context)).rejects.toThrow("BUCKET_NAME not set");
+  });
+
+  it("throws if STACK_NAME is not set", async () => {
+    delete process.env["STACK_NAME"];
+
+    await expect(handler({}, context)).rejects.toThrow("STACK_NAME not set");
+  });
+
   it("throws if public key is missing", async () => {
-    mockKmsSend.mockResolvedValueOnce({ PublicKey: undefined });
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: undefined });
 
     await expect(handler({}, context)).rejects.toThrow(
       "Public key not found for KMS Key Alias: alias/components-core-JARRSAEncryptionKey",
     );
   });
 
-  it("handles error in KMS send", async () => {
-    mockKmsSend.mockRejectedValueOnce(new Error("KMS failure"));
+  it("throws if key metadata is missing", async () => {
+    const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
+
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey.mockResolvedValueOnce({ KeyMetadata: undefined });
+
+    await expect(handler({}, context)).rejects.toThrow(
+      "Key ID not found for KMS Key Alias: alias/components-core-JARRSAEncryptionKey",
+    );
+  });
+
+  it("handles missing kty in JWK", async () => {
+    const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
+    const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
+    const fakeJwk = {}; // Missing kty
+
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey.mockResolvedValueOnce({
+      KeyMetadata: { KeyId: "test-key-id" },
+    });
+    (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
+    (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
+    mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
+
+    await expect(handler({}, context)).resolves.not.toThrow();
+
+    expect(mockPutObject).toHaveBeenCalledWith({
+      Bucket: "test-bucket",
+      Key: "jwks.json",
+      Body: expect.stringContaining('"kty":"RSA"'),
+      ContentType: "application/json",
+    });
+  });
+
+  it("handles incorrect kty in JWK", async () => {
+    const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
+    const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
+    const fakeJwk = { kty: "EC" }; // Wrong kty
+
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey.mockResolvedValueOnce({
+      KeyMetadata: { KeyId: "test-key-id" },
+    });
+    (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
+    (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
+    mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
+
+    await expect(handler({}, context)).resolves.not.toThrow();
+
+    expect(mockPutObject).toHaveBeenCalledWith({
+      Bucket: "test-bucket",
+      Key: "jwks.json",
+      Body: expect.stringContaining('"kty":"RSA"'),
+      ContentType: "application/json",
+    });
+  });
+
+  it("handles missing KeyId in metadata", async () => {
+    const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
+    const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
+    const fakeJwk = { kty: "RSA" };
+
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey.mockResolvedValueOnce({ KeyMetadata: {} }); // Missing KeyId
+    (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
+    (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
+    mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
+
+    await expect(handler({}, context)).resolves.not.toThrow();
+
+    expect(mockPutObject).toHaveBeenCalledWith({
+      Bucket: "test-bucket",
+      Key: "jwks.json",
+      Body: expect.stringContaining('"kid":"unknown"'),
+      ContentType: "application/json",
+    });
+  });
+
+  it("handles error in KMS getPublicKey", async () => {
+    mockGetPublicKey.mockRejectedValueOnce(new Error("KMS failure"));
 
     await expect(handler({}, context)).rejects.toThrow("KMS failure");
+  });
+
+  it("handles error in KMS describeKey", async () => {
+    const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
+
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey.mockRejectedValueOnce(new Error("KMS describe failure"));
+
+    await expect(handler({}, context)).rejects.toThrow("KMS describe failure");
+  });
+
+  it("handles error in JOSE operations", async () => {
+    const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
+
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey.mockResolvedValueOnce({
+      KeyMetadata: { KeyId: "test-key-id" },
+    });
+    (importSPKI as unknown as MockInstance).mockRejectedValue(
+      new Error("JOSE failure"),
+    );
+
+    await expect(handler({}, context)).rejects.toThrow("JOSE failure");
+  });
+
+  it("handles error in S3 upload", async () => {
+    const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
+    const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
+    const fakeJwk = { kty: "RSA" };
+
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey.mockResolvedValueOnce({
+      KeyMetadata: { KeyId: "test-key-id" },
+    });
+    (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
+    (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
+    mockPutObject.mockRejectedValueOnce(new Error("S3 upload failed"));
+
+    await expect(handler({}, context)).rejects.toThrow("S3 upload failed");
   });
 });
 
 describe("putContentToS3", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mockPutObject.mockReset();
   });
 
   it("uploads successfully", async () => {
-    const mockResponse: PutObjectCommandOutput = {
+    const mockResponse = {
       ETag: "etag123",
       $metadata: { httpStatusCode: 200 },
     };
 
-    const mockPutObject = vi.fn().mockResolvedValue(mockResponse);
-    getS3Client.mockResolvedValue({ putObject: mockPutObject });
+    mockPutObject.mockResolvedValueOnce(mockResponse);
 
     const response = await putContentToS3(
       "bucket",
@@ -163,17 +294,11 @@ describe("putContentToS3", () => {
       Body: '{"data":"ok"}',
       ContentType: "application/json",
     });
-    expect(response).toStrictEqual({
-      ETag: "etag123",
-      $metadata: { httpStatusCode: 200 },
-    });
+    expect(response).toStrictEqual(mockResponse);
   });
 
   it("throws on S3 upload error", async () => {
-    const mockPutObject = vi
-      .fn()
-      .mockRejectedValue(new Error("S3 upload failed"));
-    getS3Client.mockResolvedValue({ putObject: mockPutObject });
+    mockPutObject.mockRejectedValueOnce(new Error("S3 upload failed"));
 
     await expect(putContentToS3("bucket", "file.json", "{}")).rejects.toThrow(
       "S3 upload failed",
