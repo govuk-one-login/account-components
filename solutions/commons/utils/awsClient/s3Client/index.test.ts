@@ -16,7 +16,9 @@ describe("getS3Client", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.doMock("@aws-sdk/client-s3", () => ({
-      S3Client: vi.fn(() => mockS3Client),
+      S3Client: vi.fn(function () {
+        return mockS3Client;
+      }),
       PutObjectCommand: mockPutObjectCommand,
     }));
     vi.doMock("../getAwsClientConfig/index.js", () => ({

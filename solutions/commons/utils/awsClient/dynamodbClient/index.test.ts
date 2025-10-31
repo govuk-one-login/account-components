@@ -31,7 +31,9 @@ describe("getDynamoDbClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.doMock("@aws-sdk/client-dynamodb", () => ({
-      DynamoDBClient: vi.fn(() => mockDynamoDbClient),
+      DynamoDBClient: vi.fn(function () {
+        return mockDynamoDbClient;
+      }),
       QueryCommand: mockCommands.QueryCommand,
       ScanCommand: mockCommands.ScanCommand,
     }));

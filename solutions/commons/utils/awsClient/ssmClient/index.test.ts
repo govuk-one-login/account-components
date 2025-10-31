@@ -13,7 +13,9 @@ describe("getParametersProvider", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.doMock("@aws-lambda-powertools/parameters/ssm", () => ({
-      SSMProvider: vi.fn(() => mockSSMProvider),
+      SSMProvider: vi.fn(function () {
+        return mockSSMProvider;
+      }),
     }));
     vi.doMock("../getAwsClientConfig/index.js", () => ({
       getAwsClientConfig: vi.fn(() => ({ region: "eu-west-2" })),

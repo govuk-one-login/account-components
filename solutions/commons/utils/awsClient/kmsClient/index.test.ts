@@ -20,7 +20,9 @@ describe("getKmsClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.doMock("@aws-sdk/client-kms", () => ({
-      KMSClient: vi.fn(() => mockKmsClient),
+      KMSClient: vi.fn(function () {
+        return mockKmsClient;
+      }),
       GetPublicKeyCommand: mockCommands.GetPublicKeyCommand,
       DecryptCommand: mockCommands.DecryptCommand,
       DescribeKeyCommand: mockCommands.DescribeKeyCommand,

@@ -13,7 +13,9 @@ describe("getAppConfigClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.doMock("@aws-sdk/client-appconfigdata", () => ({
-      AppConfigDataClient: vi.fn(() => mockAppConfigClient),
+      AppConfigDataClient: vi.fn(function () {
+        return mockAppConfigClient;
+      }),
     }));
     vi.doMock("../getAwsClientConfig/index.js", () => ({
       getAwsClientConfig: vi.fn(() => ({ region: "eu-west-2" })),
