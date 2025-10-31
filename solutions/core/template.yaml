@@ -185,20 +185,6 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-DynamoDbSSEKey"
 
-  DynamoDbSSEKeyAlias:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-DynamoDbSSEKey"
-      TargetKeyId: !GetAtt DynamoDbSSEKey.Arn
-
-  DynamoDbSSEKeyArnSSM:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Description: "The ARN of the DynamoDbSSEKey KMS key"
-      Name: !Sub "/${AWS::StackName}/KMS/DynamoDbSSEKey/ARN"
-      Type: String
-      Value: !GetAtt DynamoDbSSEKey.Arn
-
   CloudWatchEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -306,14 +292,6 @@ Resources:
     Properties:
       AliasName: !Sub "alias/${AWS::StackName}-JARRSAEncryptionKey"
       TargetKeyId: !GetAtt JARRSAEncryptionKey.Arn
-
-  JARRSAEncryptionKeyArnSSM:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Description: "The ARN of the JARRSAEncryptionKey KMS key"
-      Name: !Sub "/${AWS::StackName}/KMS/JARRSAEncryptionKey/ARN"
-      Type: String
-      Value: !GetAtt JARRSAEncryptionKey.Arn
 
   S3SSEKey:
     Type: AWS::KMS::Key
