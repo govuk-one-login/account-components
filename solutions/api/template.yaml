@@ -286,6 +286,8 @@ Resources:
     Properties:
       StageName: !Ref Environment
       AlwaysDeploy: true
+      DisableExecuteApiEndpoint: true
+      TracingEnabled: true
       EndpointConfiguration:
         Type: REGIONAL
       Tags:
