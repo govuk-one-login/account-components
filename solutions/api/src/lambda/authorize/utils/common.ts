@@ -22,16 +22,29 @@ export const badRequestResponse: APIGatewayProxyResult = {
   body: "",
 };
 
+type AuthorizeErrorType = "invalid_request" | "server_error";
+type AuthorizeErrorDescription = `E${number}`;
+
 export const authorizeErrors = {
-  serverError: {
+  jarDecryptionUnknownError: {
     description: "E5003",
     type: "server_error",
   },
-  invalidRequest: {
+  jarDecryptionFailed: {
     description: "E2003",
     type: "invalid_request",
   },
-} as const;
+  jwtVerificationFailed: {
+    description: "E2001",
+    type: "invalid_request",
+  },
+} as const satisfies Record<
+  string,
+  {
+    description: AuthorizeErrorDescription;
+    type: AuthorizeErrorType;
+  }
+>;
 
 export const getRedirectToClientRedirectUriResponse = (
   redirectUri: string,

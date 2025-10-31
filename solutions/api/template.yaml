@@ -44,22 +44,27 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.dev.account.gov.uk
       authorizeErrorPageUrl: http://manage.dev.account.gov.uk/authorize-error
+      authorizeEndpointUrl: http://api.manage.dev.account.gov.uk/authorize
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.build.account.gov.uk
       authorizeErrorPageUrl: http://manage.build.account.gov.uk/authorize-error
+      authorizeEndpointUrl: http://api.manage.build.account.gov.uk/authorize
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.staging.account.gov.uk
       authorizeErrorPageUrl: http://manage.staging.account.gov.uk/authorize-error
+      authorizeEndpointUrl: http://api.manage.staging.account.gov.uk/authorize
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.integration.account.gov.uk
       authorizeErrorPageUrl: http://manage.integration.account.gov.uk/authorize-error
+      authorizeEndpointUrl: http://api.manage.integration.account.gov.uk/authorize
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.account.gov.uk
       authorizeErrorPageUrl: http://manage.account.gov.uk/authorize-error
+      authorizeEndpointUrl: http://api.manage.account.gov.uk/authorize
 
 Conditions:
   UseCodeSigning:
@@ -281,6 +286,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               authorizeErrorPageUrl,
+            ]
+          AUTHORIZE_ENDPOINT_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              authorizeEndpointUrl,
             ]
           JAR_RSA_ENCRYPTION_KEY_ALIAS:
             Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyAliasName"

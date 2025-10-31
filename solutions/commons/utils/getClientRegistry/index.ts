@@ -16,7 +16,7 @@ export async function getClientRegistry(): Promise<Client[]> {
 
   // localstack does not support appconfig in free edition hence reading in config directly
   if (getEnvironment() === "local") {
-    config = (await import("../../../config/local-config.json")).default;
+    config = (await import("../../../config/local-config.js")).default;
   } else {
     config = await getAppConfig("operational", {
       application: "account-components",

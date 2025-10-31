@@ -80,27 +80,27 @@ export const decryptJar = async (
       return decrypted.toString();
     } catch (error) {
       logger.warn("Failed to decrypt JAR", {
-        clientId,
+        client_id: clientId,
         error,
       });
       metrics.addMetric("JARDecryptFailed", MetricUnit.Count, 1);
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           redirectUri,
-          authorizeErrors.invalidRequest,
+          authorizeErrors.jarDecryptionFailed,
           state,
         ),
       );
     }
   } catch (error) {
     logger.error("Invalid Configuration - Unable to decrypt JAR", {
-      clientId,
+      client_id: clientId,
       error,
     });
     return new ErrorResponse(
       getRedirectToClientRedirectUriResponse(
         redirectUri,
-        authorizeErrors.serverError,
+        authorizeErrors.jarDecryptionUnknownError,
         state,
       ),
     );
