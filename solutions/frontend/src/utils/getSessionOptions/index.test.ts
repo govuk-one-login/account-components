@@ -34,7 +34,9 @@ describe("getSessionOptions", () => {
       client: {},
     });
 
-    const mockStore = vi.fn().mockReturnValue({});
+    const mockStore = vi.fn().mockImplementation(function () {
+      return {};
+    });
     mockConnectDynamoDB.mockReturnValue(mockStore);
   });
 

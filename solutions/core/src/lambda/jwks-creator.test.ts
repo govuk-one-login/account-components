@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { MockInstance } from "vitest";
 import { handler, putContentToS3 } from "./jwks-creator.js";
-import { GetPublicKeyCommand } from "@aws-sdk/client-kms";
 import {
   PutObjectCommand,
   S3Client,
@@ -13,19 +12,23 @@ import type { Context } from "aws-lambda";
 
 // @ts-expect-error
 vi.mock(import("@aws-lambda-powertools/logger"), () => ({
-  Logger: vi.fn().mockImplementation(() => ({
-    info: vi.fn(),
-    warn: vi.fn(),
-    error: vi.fn(),
-    addContext: vi.fn(),
-  })),
+  Logger: vi.fn().mockImplementation(function () {
+    return {
+      info: vi.fn(),
+      warn: vi.fn(),
+      error: vi.fn(),
+      addContext: vi.fn(),
+    };
+  }),
 }));
 
 // @ts-expect-error
 vi.mock(import("@aws-sdk/client-kms"), () => {
   const mockSend = vi.fn();
   return {
-    KMSClient: vi.fn(() => ({ send: mockSend })),
+    KMSClient: vi.fn().mockImplementation(function () {
+      return { send: mockSend };
+    }),
     GetPublicKeyCommand: vi.fn(),
     DescribeKeyCommand: vi.fn(),
     __mockSend: mockSend,
@@ -36,7 +39,9 @@ vi.mock(import("@aws-sdk/client-kms"), () => {
 vi.mock(import("@aws-sdk/client-s3"), () => {
   const mockSend = vi.fn();
   return {
-    S3Client: vi.fn(() => ({ send: mockSend })),
+    S3Client: vi.fn().mockImplementation(function () {
+      return { send: mockSend };
+    }),
     PutObjectCommand: vi.fn(),
     __mockSend: mockSend,
   };
@@ -45,6 +50,16 @@ vi.mock(import("@aws-sdk/client-s3"), () => {
 vi.mock(import("jose"), () => ({
   exportJWK: vi.fn(),
   importSPKI: vi.fn(),
+}));
+
+vi.mock(import("../../../commons/utils/awsClient/kmsClient/index.js"), () => ({
+  createKmsClient: vi.fn(() => ({
+    client: {} as any,
+    config: {} as any,
+    getPublicKey: vi.fn(),
+    decrypt: vi.fn(),
+    describeKey: vi.fn(),
+  })),
 }));
 
 // @ts-expect-error
@@ -57,11 +72,8 @@ vi.mock(import("node:crypto"), () => ({
   })),
 }));
 
-const { __mockSend: mockKmsSend } = (await import(
-  "@aws-sdk/client-kms"
-)) as unknown as {
-  __mockSend: MockInstance;
-};
+const mockGetPublicKey = vi.fn();
+const mockDescribeKey = vi.fn();
 
 const { __mockSend: mockS3Send } = (await import(
   "@aws-sdk/client-s3"
@@ -85,12 +97,30 @@ const context: Context = {
 };
 
 describe("handler", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetAllMocks();
     process.env["AWS_REGION"] = "us-east-1";
     process.env["BUCKET_NAME"] = "test-bucket";
     process.env["STACK_NAME"] = "components-core";
     process.env["ALGORITHM"] = "RSA-OAEP-256";
+
+    // Reset the KMS client mock
+    const kmsModule = await import(
+      "../../../commons/utils/awsClient/kmsClient/index.js"
+    );
+    vi.mocked(kmsModule.createKmsClient).mockReturnValue({
+      client: {} as any,
+      config: {} as any,
+      getPublicKey: mockGetPublicKey,
+      decrypt: vi.fn(),
+      describeKey: mockDescribeKey,
+    });
+
+    // Reset the S3 client mock
+    const s3Module = await import("@aws-sdk/client-s3");
+    vi.mocked(s3Module.S3Client).mockImplementation(function () {
+      return { send: mockS3Send };
+    });
   });
 
   it("successfully generates JWKS and uploads to S3", async () => {
@@ -98,16 +128,20 @@ describe("handler", () => {
     const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
     const fakeJwk = { kty: "RSA" };
 
-    mockKmsSend
-      .mockResolvedValueOnce({ PublicKey: fakePublicKey })
-      .mockResolvedValueOnce({ KeyMetadata: { KeyId: "test-key-id" } });
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey.mockResolvedValueOnce({
+      KeyMetadata: { KeyId: "test-key-id" },
+    });
     (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
     mockS3Send.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
 
     await expect(handler({}, context)).resolves.not.toThrow();
 
-    expect(GetPublicKeyCommand).toHaveBeenCalledWith({
+    expect(mockGetPublicKey).toHaveBeenCalledWith({
+      KeyId: "alias/components-core-JARRSAEncryptionKey",
+    });
+    expect(mockDescribeKey).toHaveBeenCalledWith({
       KeyId: "alias/components-core-JARRSAEncryptionKey",
     });
     expect(PutObjectCommand).toHaveBeenCalledWith({
@@ -121,7 +155,7 @@ describe("handler", () => {
   });
 
   it("throws if public key is missing", async () => {
-    mockKmsSend.mockResolvedValueOnce({ PublicKey: undefined });
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: undefined });
 
     await expect(handler({}, context)).rejects.toThrow(
       "Public key not found for KMS Key Alias: alias/components-core-JARRSAEncryptionKey",
@@ -129,15 +163,21 @@ describe("handler", () => {
   });
 
   it("handles error in KMS send", async () => {
-    mockKmsSend.mockRejectedValueOnce(new Error("KMS failure"));
+    mockGetPublicKey.mockRejectedValueOnce(new Error("KMS failure"));
 
     await expect(handler({}, context)).rejects.toThrow("KMS failure");
   });
 });
 
 describe("putContentToS3", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.resetAllMocks();
+
+    // Reset the S3 client mock
+    const s3Module = await import("@aws-sdk/client-s3");
+    vi.mocked(s3Module.S3Client).mockImplementation(function () {
+      return { send: mockS3Send };
+    });
   });
 
   it("uploads successfully", async () => {
