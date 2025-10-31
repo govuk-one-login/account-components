@@ -4,9 +4,7 @@ import { defineConfig } from "rolldown";
 export default defineConfig({
   input: "src/lambda.ts",
   platform: "node",
-  // @aws-sdk/client-appconfigdata has to be excluded from the bundle as at the
-  // time of writing it causes rolldown to crash
-  external: ["fsevents", "@aws-sdk/client-appconfigdata"],
+  external: ["fsevents"],
   output: {
     minify: true,
   },
