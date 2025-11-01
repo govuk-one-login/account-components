@@ -27,9 +27,13 @@ describe("createRequestObjectGet", () => {
     expect(mockReply.render).toHaveBeenCalledWith(
       "generateRequestObject/handlers/create.njk",
       expect.objectContaining({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         availableClients: expect.any(Array),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         availableScopes: expect.any(Array),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         availableScenarios: expect.any(Array),
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         availableUsers: expect.any(Array),
         authorizeUrl: undefined,
         jwtPayload: undefined,
@@ -93,7 +97,7 @@ describe("createRequestObjectPost", () => {
       "generateRequestObject/handlers/create.njk",
       expect.objectContaining({
         authorizeUrl:
-          "http://localhost:6004/authorize?client_id=23456789012345678901234567890123&scope=am-account-delete&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A6003%2Facm-callback&request=mock-request-object",
+          "http://localhost:6004/authorize?client_id=23456789012345678901234567890123&scope=am-account-delete&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A6003%2Fhome%2Fcallback&request=mock-request-object",
         jwtPayload: { foo: "bar" },
         jwtHeader: { alg: "ES256" },
         originalRequest: mockRequest.body,

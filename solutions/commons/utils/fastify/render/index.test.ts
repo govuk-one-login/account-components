@@ -22,7 +22,8 @@ const nunjucks = {
   render: vi.fn(),
 };
 
-vi.mock("nunjucks", () => ({
+// @ts-expect-error
+vi.mock(import("nunjucks"), () => ({
   default: nunjucks,
 }));
 

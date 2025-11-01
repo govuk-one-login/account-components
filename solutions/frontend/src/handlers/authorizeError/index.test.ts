@@ -40,6 +40,7 @@ describe("authorizeError handler", () => {
         {} as FastifyRequest,
         mockReplyWithoutRender as unknown as FastifyReply,
       ),
+      // eslint-disable-next-line vitest/require-to-throw-message
     ).rejects.toThrow();
   });
 });

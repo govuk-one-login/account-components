@@ -81,7 +81,7 @@ describe("getQueryParams", () => {
     });
     const result = getQueryParams(event);
 
-    expect(result).toEqual({
+    expect(result).toStrictEqual({
       request: "test-request",
       response_type: "code",
       scope: "test-scope",
