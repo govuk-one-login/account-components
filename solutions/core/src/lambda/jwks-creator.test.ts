@@ -30,6 +30,11 @@ vi.mock(import("../../../commons/utils/awsClient/index.js"), () => ({
   }),
 }));
 
+// @ts-expect-error
+vi.mock(import("../../../commons/utils/contstants.js"), () => ({
+  jarKeyEncryptionAlgorithm: "RSA-OAEP-256",
+}));
+
 vi.mock(import("jose"), () => ({
   exportJWK: vi.fn(),
   importSPKI: vi.fn(),
@@ -95,7 +100,9 @@ describe("handler", () => {
       Bucket: "test-bucket",
       Key: "jwks.json",
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      Body: expect.stringContaining('"kty":"RSA"'),
+      Body: expect.stringMatching(
+        /"kid":"test-key-id".*"alg":"RSA-OAEP-256".*"use":"enc"/,
+      ),
       ContentType: "application/json",
     });
   });
@@ -144,55 +151,7 @@ describe("handler", () => {
     );
   });
 
-  it("handles missing kty in JWK", async () => {
-    const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
-    const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
-    const fakeJwk = {}; // Missing kty
-
-    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
-    mockDescribeKey.mockResolvedValueOnce({
-      KeyMetadata: { KeyId: "test-key-id" },
-    });
-    (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
-    (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
-    mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
-
-    await expect(handler({}, context)).resolves.not.toThrow();
-
-    expect(mockPutObject).toHaveBeenCalledWith({
-      Bucket: "test-bucket",
-      Key: "jwks.json",
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      Body: expect.stringContaining('"kty":"RSA"'),
-      ContentType: "application/json",
-    });
-  });
-
-  it("handles incorrect kty in JWK", async () => {
-    const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
-    const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
-    const fakeJwk = { kty: "EC" }; // Wrong kty
-
-    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
-    mockDescribeKey.mockResolvedValueOnce({
-      KeyMetadata: { KeyId: "test-key-id" },
-    });
-    (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
-    (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
-    mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
-
-    await expect(handler({}, context)).resolves.not.toThrow();
-
-    expect(mockPutObject).toHaveBeenCalledWith({
-      Bucket: "test-bucket",
-      Key: "jwks.json",
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      Body: expect.stringContaining('"kty":"RSA"'),
-      ContentType: "application/json",
-    });
-  });
-
-  it("handles missing KeyId in metadata", async () => {
+  it("throws if KeyId is missing in metadata", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
     const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
     const fakeJwk = { kty: "RSA" };
@@ -201,17 +160,10 @@ describe("handler", () => {
     mockDescribeKey.mockResolvedValueOnce({ KeyMetadata: {} }); // Missing KeyId
     (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
-    mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
 
-    await expect(handler({}, context)).resolves.not.toThrow();
-
-    expect(mockPutObject).toHaveBeenCalledWith({
-      Bucket: "test-bucket",
-      Key: "jwks.json",
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      Body: expect.stringContaining('"kid":"unknown"'),
-      ContentType: "application/json",
-    });
+    await expect(handler({}, context)).rejects.toThrow(
+      "KeyMetadata.KeyId not defined",
+    );
   });
 
   it("handles error in KMS getPublicKey", async () => {

@@ -10,7 +10,11 @@ import {
   ErrorResponse,
   getRedirectToClientRedirectUriResponse,
 } from "./common.js";
-import { jarEncryptionKeyAlgorithm } from "../../../../../commons/utils/contstants.js";
+import {
+  jarContentEncryptionAlgorithm,
+  jarKeyEncryptionAlgorithm,
+} from "../../../../../commons/utils/contstants.js";
+import { EncryptionAlgorithmSpec } from "@aws-sdk/client-kms";
 
 export const decryptJar = async (
   jar: string,
@@ -35,12 +39,12 @@ export const decryptJar = async (
       v.message(
         v.pipe(
           v.object({
-            alg: v.literal(jarEncryptionKeyAlgorithm),
-            enc: v.literal("A256GCM"),
+            alg: v.literal(jarKeyEncryptionAlgorithm),
+            enc: v.literal(jarContentEncryptionAlgorithm),
           }),
           v.transform((input) => ({
             ...input,
-            alg: "RSAES_OAEP_SHA_256" as const,
+            alg: EncryptionAlgorithmSpec.RSAES_OAEP_SHA_256,
             enc: "aes-256-gcm" as const,
           })),
         ),

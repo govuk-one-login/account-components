@@ -8,7 +8,7 @@ import {
   getS3Client,
   getKmsClient,
 } from "../../../commons/utils/awsClient/index.js";
-import { jarEncryptionKeyAlgorithm } from "../../../commons/utils/contstants.js";
+import { jarKeyEncryptionAlgorithm } from "../../../commons/utils/contstants.js";
 
 const logger = new Logger();
 
@@ -70,21 +70,14 @@ async function generateJwksFromKmsPublicKey(
 
     logger.info("Created PEM", { pem });
 
-    const cryptoKey = await importSPKI(pem, jarEncryptionKeyAlgorithm);
+    const cryptoKey = await importSPKI(pem, jarKeyEncryptionAlgorithm);
     const jwk = await exportJWK(cryptoKey);
-    jwk.kid = KeyMetadata.KeyId ?? "unknown";
-    jwk.alg = jarEncryptionKeyAlgorithm;
-    jwk.use = "enc";
 
-    if (!jwk.kty) {
-      logger.warn("Expected 'kty' to be defined but it was missing.");
-      jwk.kty = "RSA";
-    } else if (jwk.kty !== "RSA") {
-      logger.warn(
-        `Expected kty 'RSA' but got '${jwk.kty}'. This might indicate an issue with the key type or import.`,
-      );
-      jwk.kty = "RSA";
-    }
+    assert.ok(KeyMetadata.KeyId, "KeyMetadata.KeyId not defined");
+
+    jwk.kid = KeyMetadata.KeyId;
+    jwk.alg = jarKeyEncryptionAlgorithm;
+    jwk.use = "enc";
 
     logger.info("JWK", { jwk });
 
