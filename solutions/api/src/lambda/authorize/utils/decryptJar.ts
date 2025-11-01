@@ -16,6 +16,8 @@ import {
 } from "../../../../../commons/utils/contstants.js";
 import { EncryptionAlgorithmSpec } from "@aws-sdk/client-kms";
 
+let keyId: string | undefined = undefined;
+
 export const decryptJar = async (
   jar: string,
   clientId: string,
@@ -35,12 +37,28 @@ export const decryptJar = async (
 
     const [protectedHeader, encryptedKey, iv, ciphertext, tag] = jarComponents;
 
+    const kmsClient = await getKmsClient();
+
+    assert.ok(
+      process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+      "JAR_RSA_ENCRYPTION_KEY_ALIAS is not set",
+    );
+
+    keyId ??= (
+      await kmsClient.describeKey({
+        KeyId: process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+      })
+    ).KeyMetadata?.KeyId;
+
+    assert.ok(keyId, "Failed to get keyId for JAR_RSA_ENCRYPTION_KEY_ALIAS");
+
     const headerComponents = v.parse(
       v.message(
         v.pipe(
           v.object({
             alg: v.literal(jarKeyEncryptionAlgorithm),
             enc: v.literal(jarContentEncryptionAlgorithm),
+            kid: v.literal(keyId),
           }),
           v.transform((input) => ({
             ...input,
@@ -53,16 +71,11 @@ export const decryptJar = async (
       JSON.parse(Buffer.from(protectedHeader, "base64").toString()),
     );
 
-    assert.ok(
-      process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
-      "JAR_RSA_ENCRYPTION_KEY_ALIAS is not set",
-    );
-
     try {
       const kmsResult = await (
         await getKmsClient()
       ).decrypt({
-        KeyId: process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+        KeyId: keyId,
         CiphertextBlob: Buffer.from(encryptedKey, "base64"),
         EncryptionAlgorithm: headerComponents.alg,
       });

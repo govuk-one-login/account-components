@@ -362,6 +362,7 @@ Resources:
         - Statement:
             - Effect: Allow
               Action:
+                - kms:DescribeKey
                 - kms:Decrypt
               Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyArn}}"
             - Effect: Allow

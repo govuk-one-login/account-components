@@ -294,6 +294,7 @@ Resources:
               Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
             - Effect: Allow
               Action:
+                - kms:DescribeKey
                 - kms:GetPublicKey
               Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyArn}}"
 

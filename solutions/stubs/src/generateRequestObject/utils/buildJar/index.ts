@@ -1,10 +1,13 @@
-import { CompactEncrypt } from "jose";
-import { logger } from "../../../../../commons/utils/logger/index.js";
-import { JWKS_KEY_TYPES, SignatureTypes } from "../../../types/common.js";
-import { convertPemToJwk } from "../../../utils/convert-pem-to-jwk.js";
+import { CompactEncrypt, importSPKI } from "jose";
 import { getKmsClient } from "../../../../../commons/utils/awsClient/index.js";
 import { createPublicKey } from "node:crypto";
 import assert from "node:assert";
+import {
+  jarContentEncryptionAlgorithm,
+  jarKeyEncryptionAlgorithm,
+} from "../../../../../commons/utils/contstants.js";
+
+let keyId: string | undefined = undefined;
 
 export async function buildJar(signedJwt: string): Promise<string> {
   assert.ok(
@@ -12,57 +15,45 @@ export async function buildJar(signedJwt: string): Promise<string> {
     "JAR_RSA_ENCRYPTION_KEY_ALIAS is not set",
   );
 
-  let publicKeyPem: string;
-  try {
-    const publicKey = await (
-      await getKmsClient()
-    ).getPublicKey({
-      KeyId: process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
-    });
+  const kmsClient = await getKmsClient();
+  const publicKey = await kmsClient.getPublicKey({
+    KeyId: process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+  });
 
-    if (!publicKey.PublicKey) {
-      throw new Error("Public key data is missing from KMS response");
-    }
+  if (!publicKey.PublicKey) {
+    throw new Error("Public key data is missing from KMS response");
+  }
 
-    publicKeyPem = createPublicKey({
-      key: Buffer.from(publicKey.PublicKey),
-      format: "der",
+  const publicKeyPem = createPublicKey({
+    key: Buffer.from(publicKey.PublicKey),
+    format: "der",
+    type: "spki",
+  })
+    .export({
+      format: "pem",
       type: "spki",
     })
-      .export({
-        format: "pem",
-        type: "spki",
-      })
-      .toString();
-  } catch (error) {
-    logger.error(
-      `Failed to retrieve ${SignatureTypes.RSA} public key from KMS`,
-      { error },
-    );
-    throw new Error("Failed to retrieve key from KMS");
-  }
+    .toString();
 
-  if (!publicKeyPem) {
-    throw new Error("Public key PEM is empty");
-  }
+  keyId ??= (
+    await kmsClient.describeKey({
+      KeyId: process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+    })
+  ).KeyMetadata?.KeyId;
 
-  const keyType = JWKS_KEY_TYPES.find((kt) => kt.kty === SignatureTypes.RSA);
-  if (!keyType) {
-    throw new Error(`Unsupported signature type: ${SignatureTypes.RSA}`);
-  }
+  assert.ok(keyId, "Failed to get keyId for JAR_RSA_ENCRYPTION_KEY_ALIAS");
 
-  const jwk = await convertPemToJwk(publicKeyPem, keyType);
+  const jwk = await importSPKI(publicKeyPem, jarKeyEncryptionAlgorithm);
 
   const encryptedJwt = await new CompactEncrypt(
     new TextEncoder().encode(signedJwt),
   )
     .setProtectedHeader({
-      alg: keyType.jweAlg,
-      enc: "A256GCM",
-      kid: keyType.kid,
+      alg: jarKeyEncryptionAlgorithm,
+      enc: jarContentEncryptionAlgorithm,
+      kid: keyId,
     })
     .encrypt(jwk);
 
-  logger.info("Successfully build jar ");
   return encryptedJwt;
 }
