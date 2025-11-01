@@ -87,17 +87,32 @@ Globals:
         - AllAtOnce
       Alarms: []
       Role: !GetAtt CodeDeployServiceRole.Arn
-    Runtime: nodejs22.x
-    Architectures:
-      - arm64
     Tracing: Active
     AutoPublishAlias: live
     KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
-    CodeUri: ../../
+    Layers:
+      - "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_323_2_20250822-051314_with_collector_nodejs:1"
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+    VpcConfig:
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+    Timeout: 15
+    MemorySize: 128
+    Architectures:
+      - arm64
+    Runtime: nodejs22.x
+    CodeUri: ../../
     Environment:
       Variables:
         NODE_OPTIONS: "--enable-source-maps"
@@ -130,19 +145,6 @@ Globals:
         DT_LOGGING_NODEJS_FLAGS: Exporter=true,LambdaSensor=false
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: true
         DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
-    VpcConfig:
-      SubnetIds:
-        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
-        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
-        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
-      SecurityGroupIds:
-        - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-    Layers:
-      - "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_323_2_20250822-051314_with_collector_nodejs:1"
-    PermissionsBoundary: !If
-      - UsePermissionsBoundary
-      - !Ref PermissionsBoundary
-      - !Ref AWS::NoValue
 
 Resources:
   DynamoDbSSEKey:
@@ -436,9 +438,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Description: "Creates a JWKS doc and stores it into a S3 Bucket"
-      MemorySize: 128
       Handler: jwks-creator.handler
-      Timeout: 15
       DeploymentPreference:
         Enabled: false
       LoggingConfig:

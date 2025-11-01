@@ -112,6 +112,12 @@ Globals:
     Tracing: Active
     AutoPublishAlias: live
     KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyArn}}"
+    Layers:
+      - !If [
+          IsLocal,
+          !Ref AWS::NoValue,
+          "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1",
+        ]
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
@@ -132,12 +138,6 @@ Globals:
     Architectures:
       - !Ref LambdaArchitecture
     Runtime: nodejs22.x
-    Layers:
-      - !If [
-          IsLocal,
-          !Ref AWS::NoValue,
-          "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1",
-        ]
     Environment:
       Variables:
         POWERTOOLS_LOG_LEVEL:
@@ -294,20 +294,19 @@ Resources:
         FMSRegionalPolicy: false
         CustomPolicy: true
 
-  ApiLambdaLogGroup:
+  HealthcheckLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/lambda/${AWS::StackName}/ApiLambdaLogGroup"
+      LogGroupName: !Sub "/lambda/${AWS::StackName}/HealthcheckLambdaLogGroup"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
   HealthcheckLambda:
     Type: AWS::Serverless::Function
     Properties:
-      PackageType: Zip
-      Handler: healthcheck.handler
       LoggingConfig:
-        LogGroup: !Ref ApiLambdaLogGroup
+        LogGroup: !Ref HealthcheckLambdaLogGroup
+      Handler: healthcheck.handler
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
       Events:
@@ -329,13 +328,19 @@ Resources:
         EntryPoints:
           - solutions/api/src/lambda/healthcheck.ts
 
+  AuthorizeLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/lambda/${AWS::StackName}/AuthorizeLambdaLogGroup"
+      RetentionInDays: 30
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
+
   AuthorizeLambda:
     Type: AWS::Serverless::Function
     Properties:
-      PackageType: Zip
-      Handler: index.handler
       LoggingConfig:
-        LogGroup: !Ref ApiLambdaLogGroup
+        LogGroup: !Ref AuthorizeLambdaLogGroup
+      Handler: index.handler
       Events:
         Root:
           Type: Api

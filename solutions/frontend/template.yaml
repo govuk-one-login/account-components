@@ -97,8 +97,6 @@ Globals:
         - AllAtOnce
       Alarms: []
       Role: !GetAtt CodeDeployServiceRole.Arn
-    CodeUri: dist
-    Handler: lambda.handler
     Tracing: Active
     AutoPublishAlias: live
     KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyArn}}"
@@ -124,6 +122,8 @@ Globals:
     Architectures:
       - arm64
     Runtime: nodejs22.x
+    CodeUri: dist
+    Handler: lambda.handler
     Environment:
       Variables:
         POWERTOOLS_LOG_LEVEL:
@@ -340,6 +340,8 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
+      LoggingConfig:
+        LogGroup: !Ref FrontendLambdaLogGroup
       Events:
         Root:
           Type: Api
@@ -353,8 +355,6 @@ Resources:
             Method: ANY
             Path: /{proxy+}
             RestApiId: !Ref FrontendApiGateway
-      LoggingConfig:
-        LogGroup: !Ref FrontendLambdaLogGroup
       Environment:
         Variables:
           SESSIONS_SIGNER: !Sub "{{resolve:secretsmanager:${SessionSecret}:SecretString}}"

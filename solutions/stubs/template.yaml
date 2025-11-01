@@ -74,8 +74,6 @@ Globals:
         - AllAtOnce
       Alarms: []
       Role: !GetAtt CodeDeployServiceRole.Arn
-    CodeUri: dist
-    Handler: lambda.handler
     Tracing: Active
     AutoPublishAlias: live
     KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyArn}}"
@@ -101,6 +99,8 @@ Globals:
     Architectures:
       - arm64
     Runtime: nodejs22.x
+    CodeUri: dist
+    Handler: lambda.handler
     Environment:
       Variables:
         POWERTOOLS_LOG_LEVEL:
@@ -253,6 +253,8 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
+      LoggingConfig:
+        LogGroup: !Ref StubsLambdaLogGroup
       Events:
         Root:
           Type: Api
@@ -266,8 +268,6 @@ Resources:
             Method: ANY
             Path: /{proxy+}
             RestApiId: !Ref StubsApiGateway
-      LoggingConfig:
-        LogGroup: !Ref StubsLambdaLogGroup
       Environment:
         Variables:
           MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPrivateKey"
