@@ -4,27 +4,20 @@ import { JWKS_KEY_TYPES, SignatureTypes } from "../../../types/common.js";
 import { convertPemToJwk } from "../../../utils/convert-pem-to-jwk.js";
 import { getKmsClient } from "../../../../../commons/utils/awsClient/index.js";
 import { createPublicKey } from "node:crypto";
-
-const getPublicKeyKmsAliasName = (keyType: SignatureTypes): string => {
-  const keyEnvironment =
-    keyType == SignatureTypes.EC
-      ? "JAR_EC_ENCRYPTION_KEY_ALIAS"
-      : "JAR_RSA_ENCRYPTION_KEY_ALIAS";
-
-  const publicKey = process.env[keyEnvironment];
-  if (!publicKey) {
-    throw new Error(`Environment variable ${keyEnvironment} is not set`);
-  }
-  return publicKey;
-};
+import assert from "node:assert";
 
 export async function buildJar(signedJwt: string): Promise<string> {
+  assert.ok(
+    process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+    "JAR_RSA_ENCRYPTION_KEY_ALIAS is not set",
+  );
+
   let publicKeyPem: string;
   try {
     const publicKey = await (
       await getKmsClient()
     ).getPublicKey({
-      KeyId: getPublicKeyKmsAliasName(SignatureTypes.RSA),
+      KeyId: process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
     });
 
     if (!publicKey.PublicKey) {

@@ -130,7 +130,7 @@ describe("buildJar", async () => {
     delete process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"];
 
     await expect(buildJar(dummySignedJwt)).rejects.toThrow(
-      "Failed to retrieve key from KMS",
+      "JAR_RSA_ENCRYPTION_KEY_ALIAS is not set",
     );
 
     // Restore for other tests
