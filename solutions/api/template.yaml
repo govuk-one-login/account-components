@@ -287,8 +287,7 @@ Resources:
                   - BucketName: !Sub "{{resolve:ssm:/${CoreStackName}/JWKSStoreBucketName}}"
               - Effect: Allow
                 Action: kms:Decrypt
-                Resource:
-                  Fn::ImportValue: !Sub "${CoreStackName}:S3SSEKeyArn"
+                Resource: !Sub "{{resolve:ssm:/${CoreStackName}/S3SSEKeyArn}}"
 
   PrivateApiGateway:
     Type: AWS::Serverless::Api

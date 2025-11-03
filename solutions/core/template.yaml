@@ -582,6 +582,14 @@ Resources:
       Value: !Ref JWKSStoreBucket
       Description: Name of the S3 bucket that stores the JWKS document
 
+  S3SSEKeyArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/S3SSEKeyArn"
+      Type: String
+      Value: !GetAtt S3SSEKey.Arn
+      Description: ARN of the KMS key used for encryption of S3 buckets
+
 Outputs:
   DynamoDbSSEKeyArn:
     Description: ARN of the KMS key used to encrypt DynamoDB tables
@@ -598,8 +606,3 @@ Outputs:
     Value: !GetAtt JARRSAEncryptionKey.Arn
     Export:
       Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyArn"
-  S3SSEKeyArn:
-    Description: ARN of the KMS key used for encryption of S3 buckets
-    Value: !GetAtt S3SSEKey.Arn
-    Export:
-      Name: !Sub "${AWS::StackName}:S3SSEKeyArn"
