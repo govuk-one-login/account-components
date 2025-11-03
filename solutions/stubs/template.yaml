@@ -26,15 +26,29 @@ Parameters:
   CoreStackName:
     Type: String
     Default: "components-core"
+  LambdaDeploymentPreference:
+    Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
+    Type: String
+    Default: "Canary10Percent10Minutes"
+    AllowedValues:
+      - AllAtOnce
+      - Canary10Percent5Minutes
+      - Canary10Percent10Minutes
+      - Canary10Percent15Minutes
+      - Canary10Percent30Minutes
 
 Mappings:
   EnvironmentConfiguration:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       stubsDomain: stubs.manage.dev.account.gov.uk
+      LambdaLogLevel: DEBUG
+      UseCanary: false
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       stubsDomain: stubs.manage.build.account.gov.uk
+      LambdaLogLevel: INFO
+      UseCanary: false
 
 Conditions:
   UseCodeSigning:
@@ -47,11 +61,22 @@ Conditions:
       - Fn::Equals:
           - !Ref PermissionsBoundary
           - "none"
+  CanariesEnabled: !Equals
+    - !FindInMap [EnvironmentConfiguration, !Ref Environment, UseCanary]
+    - true
 
 Globals:
   Function:
-    CodeUri: dist
-    Handler: lambda.handler
+    DeploymentPreference:
+      Type: !If
+        - CanariesEnabled
+        - !Ref LambdaDeploymentPreference
+        - AllAtOnce
+      Alarms: []
+      Role: !GetAtt CodeDeployServiceRole.Arn
+    Tracing: Active
+    AutoPublishAlias: live
+    KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyAlias}}"
     Layers:
       - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1
     CodeSigningConfigArn: !If
@@ -74,8 +99,18 @@ Globals:
     Architectures:
       - arm64
     Runtime: nodejs22.x
+    CodeUri: dist
+    Handler: lambda.handler
     Environment:
       Variables:
+        POWERTOOLS_LOG_LEVEL:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            LambdaLogLevel,
+          ]
+        POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
+        AWS_XRAY_CONTEXT_MISSING: IGNORE_ERROR
         ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
@@ -119,9 +154,32 @@ Globals:
                 !Ref Environment,
                 dynatraceSecretArn,
               ]
-        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
+        DT_LOGGING_NODEJS_FLAGS: Exporter=true,LambdaSensor=false
+        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: true
+        DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
 
 Resources:
+  CodeDeployServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
+      PermissionsBoundary:
+        !If [
+          UsePermissionsBoundary,
+          !Ref PermissionsBoundary,
+          !Ref AWS::NoValue,
+        ]
+
   MockClientECPrivateKeySSM:
     Type: AWS::SSM::Parameter
     Properties:
@@ -141,97 +199,6 @@ Resources:
       Value: "set-me"
       Tags:
         Environment: !Ref Environment
-
-  StubsLambdaExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
-        - !Ref GetSSMParameterPolicy
-        - !Ref GetAppConfigPolicy
-        - !Ref KMSGetPublicKeyPolicy
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - "sts:AssumeRole"
-
-  GetSSMParameterPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action:
-              - ssm:GetParameter
-              - ssm:GetParameters
-              - ssm:GetParametersByPath
-            Resource:
-              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPublicKey
-              - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPrivateKey
-
-  KMSGetPublicKeyPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action:
-              - kms:GetPublicKey
-            Resource: !Sub
-              - "arn:aws:kms:${AWS::Region}:${AWS::AccountId}:${AliasName}"
-              - AliasName:
-                  Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyAliasName"
-
-  GetAppConfigPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Action:
-              - appconfig:GetLatestConfiguration
-              - appconfig:StartConfigurationSession
-            Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
-
-  StubsLambdaEnvironmentVariablesEncryptionKey:
-    Type: AWS::KMS::Key
-    Properties:
-      Description: KMS key used to encrypt lambda environment variables
-      EnableKeyRotation: true
-      KeyPolicy:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action:
-              - kms:*
-            Resource: "*"
-          - Effect: "Allow"
-            Principal:
-              Service: lambda.amazonaws.com
-            Action:
-              - "kms:Decrypt"
-            Resource: "*"
-            Condition:
-              ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-StubsLambdaEnvironmentVariablesEncryptionKey"
 
   StubsApiDomain:
     Type: AWS::ApiGateway::DomainName
@@ -271,6 +238,8 @@ Resources:
     Properties:
       StageName: !Ref Environment
       AlwaysDeploy: true
+      DisableExecuteApiEndpoint: true
+      TracingEnabled: true
       EndpointConfiguration:
         Type: REGIONAL
       BinaryMediaTypes:
@@ -284,7 +253,8 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      KmsKeyArn: !GetAtt StubsLambdaEnvironmentVariablesEncryptionKey.Arn
+      LoggingConfig:
+        LogGroup: !Ref StubsLambdaLogGroup
       Events:
         Root:
           Type: Api
@@ -298,20 +268,39 @@ Resources:
             Method: ANY
             Path: /{proxy+}
             RestApiId: !Ref StubsApiGateway
-      LoggingConfig:
-        LogGroup: !Ref StubsLambdaLogGroup
       Environment:
         Variables:
           MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPrivateKey"
           MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPublicKey"
-          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "alias/${CoreStackName}-JARRSAEncryptionKey"
+          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
           DEFAULT_AUDIENCE: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
           AUTHORIZE_URL: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
-      Role: !GetAtt StubsLambdaExecutionRole.Arn
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+                - ssm:GetParameters
+                - ssm:GetParametersByPath
+              Resource:
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPublicKey
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPrivateKey
+            - Effect: Allow
+              Action:
+                - appconfig:GetLatestConfiguration
+                - appconfig:StartConfigurationSession
+              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
+            - Effect: Allow
+              Action:
+                - kms:DescribeKey
+                - kms:GetPublicKey
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyArn}}"
 
   StubsLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/lambda/${AWS::StackName}/StubsLambda"
       RetentionInDays: 30
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyAlias}}"

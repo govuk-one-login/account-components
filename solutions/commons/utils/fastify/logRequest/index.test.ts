@@ -3,7 +3,8 @@ import { logRequest } from "./index.js";
 import type { FastifyRequest } from "fastify";
 import { getRequestParamsToLog } from "../getRequestParamsToLog/index.js";
 
-vi.mock("../getRequestParamsToLog/index.js", () => ({
+// @ts-expect-error
+vi.mock(import("../getRequestParamsToLog/index.js"), () => ({
   getRequestParamsToLog: vi.fn(() => "fakeRequestParams"),
 }));
 

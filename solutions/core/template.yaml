@@ -29,7 +29,6 @@ Parameters:
     Type: String
     Description: >
       The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
-    Default: "vpc"
   LambdaDeploymentPreference:
     Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
     Type: String
@@ -81,18 +80,43 @@ Mappings:
 
 Globals:
   Function:
-    Runtime: nodejs22.x
-    Architectures:
-      - arm64
+    DeploymentPreference:
+      Type: !If
+        - CanariesEnabled
+        - !Ref LambdaDeploymentPreference
+        - AllAtOnce
+      Alarms: []
+      Role: !GetAtt CodeDeployServiceRole.Arn
     Tracing: Active
     AutoPublishAlias: live
-    CodeUri: ../../
+    KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
+    Layers:
+      - "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_323_2_20250822-051314_with_collector_nodejs:1"
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
       - !Ref AWS::NoValue
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+    VpcConfig:
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+    Timeout: 15
+    MemorySize: 128
+    Architectures:
+      - arm64
+    Runtime: nodejs22.x
+    CodeUri: ../../
     Environment:
       Variables:
+        NODE_OPTIONS: "--enable-source-maps"
+        NODE_ENV: "production"
         POWERTOOLS_LOG_LEVEL:
           !FindInMap [EnvConfig, !Ref Environment, LambdaLogLevel]
         POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
@@ -121,15 +145,6 @@ Globals:
         DT_LOGGING_NODEJS_FLAGS: Exporter=true,LambdaSensor=false
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: true
         DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
-    VpcConfig:
-      SubnetIds:
-        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
-        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
-        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
-      SecurityGroupIds:
-        - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
-    Layers:
-      - "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_323_2_20250822-051314_with_collector_nodejs:1"
 
 Resources:
   DynamoDbSSEKey:
@@ -179,14 +194,6 @@ Resources:
     Properties:
       AliasName: !Sub "alias/${AWS::StackName}-DynamoDbSSEKey"
       TargetKeyId: !GetAtt DynamoDbSSEKey.Arn
-
-  DynamoDbSSEKeyArnSSM:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Description: "The ARN of the DynamoDbSSEKey KMS key"
-      Name: !Sub "/${AWS::StackName}/KMS/DynamoDbSSEKey/ARN"
-      Type: String
-      Value: !GetAtt DynamoDbSSEKey.Arn
 
   CloudWatchEncryptionKey:
     Type: AWS::KMS::Key
@@ -307,14 +314,6 @@ Resources:
     Properties:
       AliasName: !Sub "alias/${AWS::StackName}-JARRSAEncryptionKey"
       TargetKeyId: !GetAtt JARRSAEncryptionKey.Arn
-
-  JARRSAEncryptionKeyArnSSM:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Description: "The ARN of the JARRSAEncryptionKey KMS key"
-      Name: !Sub "/${AWS::StackName}/KMS/JARRSAEncryptionKey/ARN"
-      Type: String
-      Value: !GetAtt JARRSAEncryptionKey.Arn
 
   S3SSEKey:
     Type: AWS::KMS::Key
@@ -462,27 +461,38 @@ Resources:
   JwksGeneratorLambda:
     Type: AWS::Serverless::Function
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-JWKSGenerator"
       Description: "Creates a JWKS doc and stores it into a S3 Bucket"
-      MemorySize: 128
       Handler: jwks-creator.handler
-      Role: !GetAtt JwksGeneratorLambdaRole.Arn
-      ReservedConcurrentExecutions: 1
-      Timeout: 15
-      KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
+      DeploymentPreference:
+        Enabled: false
       LoggingConfig:
         LogGroup: !Ref JwksGeneratorLambdaLogGroup
       Environment:
         Variables:
           BUCKET_NAME: !Ref JWKSStoreBucket
-          STACK_NAME: !Ref AWS::StackName
-      DeploymentPreference:
-        Type: !If
-          - CanariesEnabled
-          - !Ref LambdaDeploymentPreference
-          - AllAtOnce
-        Alarms: []
-        Role: !GetAtt CodeDeployServiceRole.Arn
+          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Ref JARRSAEncryptionKeyAlias
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - kms:GetPublicKey
+                - kms:DescribeKey
+              Resource: !GetAtt JARRSAEncryptionKey.Arn
+            - Effect: Allow
+              Action:
+                - kms:GenerateDataKey
+              Resource: !GetAtt S3SSEKey.Arn
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource: !Sub "${JWKSStoreBucket.Arn}/*"
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !GetAtt JwksGeneratorLambdaLogGroup.Arn
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -496,55 +506,6 @@ Resources:
           - solutions/core/src/lambda/jwks-creator.ts
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
-
-  JwksGeneratorLambdaRole:
-    Type: AWS::IAM::Role
-    Properties:
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
-        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - "sts:AssumeRole"
-
-  JwksGeneratorLambdaPolicy:
-    Type: AWS::IAM::Policy
-    Properties:
-      PolicyName: !Sub "${AWS::StackName}-JwksGeneratorLambdaPolicy"
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - kms:GetPublicKey
-              - kms:DescribeKey
-            Resource: !GetAtt JARRSAEncryptionKey.Arn
-          - Effect: Allow
-            Action:
-              - kms:GenerateDataKey
-            Resource: !GetAtt S3SSEKey.Arn
-          - Effect: Allow
-            Action:
-              - s3:PutObject
-            Resource: !Sub "${JWKSStoreBucket.Arn}/*"
-          - Effect: Allow
-            Action:
-              - logs:CreateLogGroup
-              - logs:CreateLogStream
-              - logs:PutLogEvents
-            Resource: !GetAtt JwksGeneratorLambdaLogGroup.Arn
-      Roles:
-        - !Ref JwksGeneratorLambdaRole
 
   JwksGeneratorLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -574,25 +535,50 @@ Resources:
           !Ref AWS::NoValue,
         ]
 
-Outputs:
-  DynamoDbSSEKeyArn:
-    Description: ARN of the KMS key used to encrypt DynamoDB tables
-    Value: !GetAtt DynamoDbSSEKey.Arn
-    Export:
-      Name: !Sub "${AWS::StackName}:DynamoDbSSEKeyArn"
-  JARRSAEncryptionKeyAliasName:
-    Description: Alias name of the JAR RSA encryption KMS key
-    Value: !Ref JARRSAEncryptionKeyAlias
-    Export:
-      Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyAliasName"
-  JARRSAEncryptionKeyArn:
-    Description: ARN of the JAR RSA encryption KMS key
-    Value: !GetAtt JARRSAEncryptionKey.Arn
-    Export:
-      Name: !Sub "${AWS::StackName}:JARRSAEncryptionKeyArn"
-  JWKSStoreBucketName:
-    Description: Name of the S3 bucket that stores the JWKS document
-    Value: !Ref JWKSStoreBucket
-  S3SSEKeyArn:
-    Description: ARN of the KMS key used for encryption of S3 buckets
-    Value: !GetAtt S3SSEKey.Arn
+  DynamoDbSSEKeyArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/DynamoDbSSEKeyArn"
+      Type: String
+      Value: !GetAtt DynamoDbSSEKey.Arn
+      Description: ARN of the KMS key used to encrypt DynamoDB tables
+
+  DynamoDbSSEKeyAliasParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/DynamoDbSSEKeyAlias"
+      Type: String
+      Value: !Ref DynamoDbSSEKeyAlias
+      Description: Alias of the KMS key used to encrypt DynamoDB tables
+
+  JARRSAEncryptionKeyAliasParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/JARRSAEncryptionKeyAlias"
+      Type: String
+      Value: !Ref JARRSAEncryptionKeyAlias
+      Description: Alias of the JAR RSA encryption KMS key
+
+  LambdaEnvironmentVariableEncryptionKeyAliasParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/LambdaEnvironmentVariableEncryptionKeyAlias"
+      Type: String
+      Value: !Ref LambdaEnvironmentVariableEncryptionKeyAlias
+      Description: Alias of the KMS key used to encrypt lambda environment variables
+
+  CloudWatchEncryptionKeyAliasParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/CloudWatchEncryptionKeyAlias"
+      Type: String
+      Value: !Ref CloudWatchEncryptionKeyAlias
+      Description: Alias of the KMS key used to encrypt CloudWatch logs
+
+  JARRSAEncryptionKeyArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/JARRSAEncryptionKeyArn"
+      Type: String
+      Value: !GetAtt JARRSAEncryptionKey.Arn
+      Description: ARN of the JAR RSA encryption KMS key

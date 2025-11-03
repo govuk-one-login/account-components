@@ -1,11 +1,12 @@
 import { Logger } from "@aws-lambda-powertools/logger";
 import { exportJWK, importSPKI } from "jose";
 import type { JWK } from "jose";
-import { getKmsClient } from "../../../commons/utils/awsClient/kmsClient/index.js";
 import type { Context } from "aws-lambda";
 import { createPublicKey } from "node:crypto";
 import assert from "node:assert";
 import { getS3Client } from "../../../commons/utils/awsClient/s3Client/index.js";
+import { getKmsClient } from "../../../commons/utils/awsClient/kmsClient/index.js";
+import { jarKeyEncryptionAlgorithm } from "../../../commons/utils/contstants.js";
 
 const logger = new Logger();
 
@@ -14,28 +15,20 @@ export const handler = async (
   context: Context,
 ): Promise<void> => {
   logger.addContext(context);
-  assert.ok(process.env["BUCKET_NAME"], "BUCKET_NAME not set");
-  assert.ok(process.env["STACK_NAME"], "STACK_NAME not set");
-
-  const bucketName = process.env["BUCKET_NAME"];
-  const stackName = process.env["STACK_NAME"];
-  const algorithm = process.env["ALGORITHM"] ?? "RSA-OAEP-256";
-  logger.info("Properties", { bucketName, algorithm, stackName });
-  logger.info("Created AWS clients");
-  const jwks = await generateJwksFromKmsPublicKey(
-    `alias/${stackName}-JARRSAEncryptionKey`,
-    algorithm,
-    "enc",
+  assert.ok(
+    process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+    "JAR_RSA_ENCRYPTION_KEY_ALIAS not set",
   );
 
-  //write to s3
-  await putContentToS3(bucketName, "jwks.json", JSON.stringify(jwks));
+  const jwks = await generateJwksFromKmsPublicKey(
+    process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+  );
+
+  await putContentToS3(JSON.stringify(jwks));
 };
 
 async function generateJwksFromKmsPublicKey(
   keyAlias: string,
-  algorithm = "RSA-OAEP-256",
-  use = "enc",
 ): Promise<{ keys: JWK[] }> {
   try {
     logger.info("Getting Public Key using Alias: " + keyAlias);
@@ -75,21 +68,14 @@ async function generateJwksFromKmsPublicKey(
 
     logger.info("Created PEM", { pem });
 
-    const cryptoKey = await importSPKI(pem, algorithm);
+    const cryptoKey = await importSPKI(pem, jarKeyEncryptionAlgorithm);
     const jwk = await exportJWK(cryptoKey);
-    jwk.kid = KeyMetadata.KeyId ?? "unknown";
-    jwk.alg = algorithm;
-    jwk.use = use;
 
-    if (!jwk.kty) {
-      logger.warn("Expected 'kty' to be defined but it was missing.");
-      jwk.kty = "RSA";
-    } else if (jwk.kty !== "RSA") {
-      logger.warn(
-        `Expected kty 'RSA' but got '${jwk.kty}'. This might indicate an issue with the key type or import.`,
-      );
-      jwk.kty = "RSA";
-    }
+    assert.ok(KeyMetadata.KeyId, "KeyMetadata.KeyId not defined");
+
+    jwk.kid = KeyMetadata.KeyId;
+    jwk.alg = jarKeyEncryptionAlgorithm;
+    jwk.use = "enc";
 
     logger.info("JWK", { jwk });
 
@@ -102,19 +88,22 @@ async function generateJwksFromKmsPublicKey(
   }
 }
 
-export async function putContentToS3(
-  bucketName: string,
-  key: string,
-  content: string,
-) {
+export async function putContentToS3(content: string) {
+  assert.ok(process.env["BUCKET_NAME"], "BUCKET_NAME not set");
+
+  const key = "jwks.json";
+
   try {
     const response = await getS3Client().putObject({
-      Bucket: bucketName,
+      Bucket: process.env["BUCKET_NAME"],
       Key: key,
       Body: content,
       ContentType: "application/json",
     });
-    logger.info("Uploaded successfully:", { bucketName, key });
+    logger.info("Uploaded successfully:", {
+      bucketName: process.env["BUCKET_NAME"],
+      key,
+    });
     return response;
   } catch (err) {
     logger.error("Failed to upload to S3:", err as Error);

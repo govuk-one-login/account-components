@@ -7,7 +7,7 @@ describe("healthcheck handler", () => {
 
     expect(result).toStrictEqual({
       statusCode: 200,
-      body: "ok",
+      body: '"ok"',
     });
   });
 });

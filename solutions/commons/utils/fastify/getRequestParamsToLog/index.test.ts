@@ -3,7 +3,8 @@ import { getRequestParamsToLog } from "./index.js";
 import type { FastifyRequest } from "fastify";
 import { getDiSessionIdsFromRequest } from "../getDiSessionIdsFromRequest/index.js";
 
-vi.mock("../getDiSessionIdsFromRequest/index.js", () => ({
+// @ts-expect-error
+vi.mock(import("../getDiSessionIdsFromRequest/index.js"), () => ({
   getDiSessionIdsFromRequest: vi.fn(() => "fakeDiSessionIds"),
 }));
 
