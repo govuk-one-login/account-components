@@ -14,6 +14,8 @@ import assert from "node:assert";
 import { JOSEError, JWTExpired } from "jose/errors";
 import { Lang } from "../../../../../commons/utils/configureI18n/index.js";
 
+const clientJwks: Record<string, ReturnType<typeof createRemoteJWKSet>> = {};
+
 export const verifyJwt = async (
   signedJwt: string,
   client: Client,
@@ -27,7 +29,10 @@ export const verifyJwt = async (
     "AUTHORIZE_ENDPOINT_URL is not set",
   );
 
-  const jwks = createRemoteJWKSet(new URL(client.jwks_uri));
+  clientJwks[client.client_id] ??= createRemoteJWKSet(new URL(client.jwks_uri));
+  const jwks = clientJwks[client.client_id];
+
+  assert.ok(jwks, "JWKS not defined");
 
   const errorResponse = new ErrorResponse(
     getRedirectToClientRedirectUriResponse(
@@ -54,6 +59,7 @@ export const verifyJwt = async (
         client_id: client.client_id,
         jose_error_code: error.code,
       });
+      metrics.addDimensions({ jose_error_code: error.code });
       metrics.addMetric("UnableToVerifyJwt", MetricUnit.Count, 1);
     } else {
       logger.warn("Unknown error verifying JWT", {
@@ -77,7 +83,15 @@ export const verifyJwt = async (
       metrics.addMetric("ClientIdDescrepancy", MetricUnit.Count, 1);
       return "";
     }),
-    iss: v.literal("TODO"), // TODO
+    iss: v.literal(client.client_id, (issue) => {
+      logger.warn("Issuer discrepancy", {
+        client_id: client.client_id,
+        expected_client_id: client.client_id,
+        received_client_id: issue.received,
+      });
+      metrics.addMetric("IssuerDescrepancy", MetricUnit.Count, 1);
+      return "";
+    }),
     aud: v.literal(process.env["AUTHORIZE_ENDPOINT_URL"], (issue) => {
       logger.warn("Unexpected Audience", {
         client_id: client.client_id,
@@ -105,7 +119,7 @@ export const verifyJwt = async (
       metrics.addMetric("ScopeDenied", MetricUnit.Count, 1);
       return "";
     }),
-    state: v.pipe(v.string(), v.nonEmpty()), // TODO ???
+    state: state !== undefined ? v.literal(state) : v.undefined(),
     jti: v.pipe(v.string(), v.nonEmpty()),
     access_token: v.pipe(v.string(), v.nonEmpty()),
     refresh_token: v.pipe(v.string(), v.nonEmpty()),
