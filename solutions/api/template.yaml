@@ -340,7 +340,7 @@ Resources:
                 uri: !Sub
                   - "arn:aws:apigateway:${AWS::Region}:s3:path/${BucketName}/jwks.json"
                   - BucketName: !Sub "{{resolve:ssm:/${CoreStackName}/JWKSStoreBucketName}}"
-                credentials: !GetAtt ApiGatewayS3Role.Arn
+                credentials: !GetAtt PrivateApiGatewayS3Role.Arn
                 responses:
                   default:
                     statusCode: "200"
