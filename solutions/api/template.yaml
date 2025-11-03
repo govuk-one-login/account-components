@@ -54,30 +54,45 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.dev.account.gov.uk
       authorizeErrorPageUrl: http://manage.dev.account.gov.uk/authorize-error
+      privateApiAllowedVpceIds: [
+          "vpce-087ac48f23f28a39b", # di-account-dev
+        ]
       LambdaLogLevel: DEBUG
       UseCanary: false
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.build.account.gov.uk
       authorizeErrorPageUrl: http://manage.build.account.gov.uk/authorize-error
+      privateApiAllowedVpceIds: [
+          "vpce-0e1bb7e9c33b0e516", # di-account-build
+        ]
       LambdaLogLevel: INFO
       UseCanary: false
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.staging.account.gov.uk
       authorizeErrorPageUrl: http://manage.staging.account.gov.uk/authorize-error
+      privateApiAllowedVpceIds: [
+          "vpce-0c9ce65be09f99db7", # di-account-staging
+        ]
       LambdaLogLevel: INFO
       UseCanary: true
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.integration.account.gov.uk
       authorizeErrorPageUrl: http://manage.integration.account.gov.uk/authorize-error
+      privateApiAllowedVpceIds: [
+          "vpce-0e594accb3d775457", # di-account-integration
+        ]
       LambdaLogLevel: INFO
       UseCanary: true
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.account.gov.uk
       authorizeErrorPageUrl: http://manage.account.gov.uk/authorize-error
+      privateApiAllowedVpceIds: [
+          "vpce-0d7972874707185a0", # di-account-production
+        ]
       LambdaLogLevel: INFO
       UseCanary: true
 
@@ -293,6 +308,110 @@ Resources:
       Tags:
         FMSRegionalPolicy: false
         CustomPolicy: true
+      DefinitionBody:
+        openapi: 3.0.1
+        info:
+          title: Account Components API
+          version: 1.0.0
+        paths:
+          /healthcheck:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Arn}/invocations"
+          /authorize:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizeLambda.Arn}/invocations"
+
+  PrivateApiGatewayS3Role:
+    Type: AWS::IAM::Role
+    Properties:
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub
+                  - "arn:aws:s3:::${BucketName}/jwks.json"
+                  - BucketName: !Sub "{{resolve:ssm:/${CoreStackName}/JWKSStoreBucketName}}"
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: !Sub "{{resolve:ssm:/${CoreStackName}/S3SSEKeyArn}}"
+
+  PrivateApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      AlwaysDeploy: true
+      EndpointConfiguration:
+        Type: PRIVATE
+        VpcEndpointIds:
+          - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+      Policy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: execute-api:Invoke
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:sourceVpce:
+                  !FindInMap [
+                    EnvironmentConfiguration,
+                    !Ref Environment,
+                    privateApiAllowedVpceIds,
+                  ]
+      DefinitionBody:
+        openapi: 3.0.1
+        info:
+          title: Account Components private API
+          version: 1.0.0
+        paths:
+          /healthcheck:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Arn}/invocations"
+          /.well-known/jwks.json:
+            get:
+              responses:
+                "200":
+                  description: JWKS response
+                  headers:
+                    Content-Type:
+                      schema:
+                        type: string
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: GET
+                uri: !Sub
+                  - "arn:aws:apigateway:${AWS::Region}:s3:path/${BucketName}/jwks.json"
+                  - BucketName: !Sub "{{resolve:ssm:/${CoreStackName}/JWKSStoreBucketName}}"
+                credentials: !GetAtt PrivateApiGatewayS3Role.Arn
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Content-Type: "'application/json'"
 
   HealthcheckLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -309,13 +428,6 @@ Resources:
       Handler: healthcheck.handler
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
-      Events:
-        Root:
-          Type: Api
-          Properties:
-            Method: GET
-            Path: /healthcheck
-            RestApiId: !Ref ApiGateway
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -341,13 +453,6 @@ Resources:
       LoggingConfig:
         LogGroup: !Ref AuthorizeLambdaLogGroup
       Handler: index.handler
-      Events:
-        Root:
-          Type: Api
-          Properties:
-            Method: GET
-            Path: /authorize
-            RestApiId: !Ref ApiGateway
       Environment:
         Variables:
           AUTHORIZE_ERROR_PAGE_URL:
@@ -383,6 +488,30 @@ Resources:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:
           - solutions/api/src/lambda/authorize/index.ts
+
+  HealthcheckLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref HealthcheckLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
+
+  PrivateHealthcheckLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref HealthcheckLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
+
+  AuthorizeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AuthorizeLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
 
   ReplayAttackTable:
     Type: AWS::DynamoDB::Table
@@ -434,7 +563,7 @@ Resources:
         SSEType: KMS
       Tags:
         - Key: Name
-          Value: !Sub "${AWS::StackName}-user_info"
+          Value: !Sub "${AWS::StackName}-journey_outcome"
 
   AuthCodeTable:
     Type: AWS::DynamoDB::Table

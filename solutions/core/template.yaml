@@ -535,6 +535,22 @@ Resources:
           !Ref AWS::NoValue,
         ]
 
+  JWKSStoreBucketNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/JWKSStoreBucketName"
+      Type: String
+      Value: !Ref JWKSStoreBucket
+      Description: Name of the S3 bucket that stores the JWKS document
+
+  S3SSEKeyArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/S3SSEKeyArn"
+      Type: String
+      Value: !GetAtt S3SSEKey.Arn
+      Description: ARN of the KMS key used for encryption of S3 buckets
+
   DynamoDbSSEKeyArnParameter:
     Type: AWS::SSM::Parameter
     Properties:
