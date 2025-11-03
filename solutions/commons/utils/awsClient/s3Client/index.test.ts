@@ -45,7 +45,7 @@ describe("s3Client", () => {
     expect(spy).toHaveBeenCalledTimes(1);
   });
 
-  it("should send getPublicKey command correctly", async () => {
+  it("should send putObject command correctly", async () => {
     process.env["AWS_REGION"] = "eu-west-2";
     const client = createS3Client();
 

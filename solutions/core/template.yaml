@@ -189,6 +189,12 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-DynamoDbSSEKey"
 
+  DynamoDbSSEKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-DynamoDbSSEKey"
+      TargetKeyId: !GetAtt DynamoDbSSEKey.Arn
+
   CloudWatchEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -219,6 +225,12 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-CloudWatchEncryptionKey"
 
+  CloudWatchEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-CloudWatchEncryptionKey"
+      TargetKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
   LambdaEnvironmentVariableEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -245,6 +257,12 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-LambdaEnvironmentVariableEncryptionKey"
+
+  LambdaEnvironmentVariableEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-LambdaEnvironmentVariableEncryptionKey"
+      TargetKeyId: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
 
   JARRSAEncryptionKey:
     DeletionPolicy: Retain
@@ -334,6 +352,12 @@ Resources:
               ArnLike:
                 "aws:SourceArn":
                   - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}*"
+
+  S3SSEKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-S3SSEKey"
+      TargetKeyId: !GetAtt S3SSEKey.Arn
 
   JWKSStoreBucket:
     Type: AWS::S3::Bucket
@@ -519,29 +543,37 @@ Resources:
       Value: !GetAtt DynamoDbSSEKey.Arn
       Description: ARN of the KMS key used to encrypt DynamoDB tables
 
-  JARRSAEncryptionKeyAliasNameParameter:
+  DynamoDbSSEKeyAliasParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub "/${AWS::StackName}/JARRSAEncryptionKeyAliasName"
+      Name: !Sub "/${AWS::StackName}/DynamoDbSSEKeyAlias"
+      Type: String
+      Value: !Ref DynamoDbSSEKeyAlias
+      Description: Alias of the KMS key used to encrypt DynamoDB tables
+
+  JARRSAEncryptionKeyAliasParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/JARRSAEncryptionKeyAlias"
       Type: String
       Value: !Ref JARRSAEncryptionKeyAlias
-      Description: Alias name of the JAR RSA encryption KMS key
+      Description: Alias of the JAR RSA encryption KMS key
 
-  LambdaEnvironmentVariableEncryptionKeyArnParameter:
+  LambdaEnvironmentVariableEncryptionKeyAliasParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub "/${AWS::StackName}/LambdaEnvironmentVariableEncryptionKeyArn"
+      Name: !Sub "/${AWS::StackName}/LambdaEnvironmentVariableEncryptionKeyAlias"
       Type: String
-      Value: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
-      Description: ARN of the KMS key used to encrypt lambda environment variables
+      Value: !Ref LambdaEnvironmentVariableEncryptionKeyAlias
+      Description: Alias of the KMS key used to encrypt lambda environment variables
 
-  CloudWatchEncryptionKeyArnParameter:
+  CloudWatchEncryptionKeyAliasParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub "/${AWS::StackName}/CloudWatchEncryptionKeyArn"
+      Name: !Sub "/${AWS::StackName}/CloudWatchEncryptionKeyAlias"
       Type: String
-      Value: !GetAtt CloudWatchEncryptionKey.Arn
-      Description: ARN of the KMS key used to encrypt CloudWatch logs
+      Value: !Ref CloudWatchEncryptionKeyAlias
+      Description: Alias of the KMS key used to encrypt CloudWatch logs
 
   JARRSAEncryptionKeyArnParameter:
     Type: AWS::SSM::Parameter
