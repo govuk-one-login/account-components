@@ -297,7 +297,7 @@ Resources:
       EndpointConfiguration:
         Type: PRIVATE
         VpcEndpointIds:
-          - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayVpcEndpointId"
+          - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
       Policy:
         Version: "2012-10-17"
         Statement:
