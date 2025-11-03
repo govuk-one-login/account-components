@@ -25,7 +25,7 @@ export enum MockRequestObjectScenarios {
 }
 
 export enum Scope {
-  ACCOUNT_DELETION = "am-account-delete",
+  ACCOUNT_DELETION = "account-delete",
   UNKNOWN = "am-unknown",
 }
 

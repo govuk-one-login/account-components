@@ -2,14 +2,14 @@
   "client_registry": [
     {
       "client_id": "ABCDEF12345678901234567890123456",
-      "scope": "am-account-delete",
+      "scope": "account-delete",
       "redirect_uris": ["https://signin.build.account.gov.uk/auth/callback"],
       "client_name": "dummy_auth",
       "jwks_uri": "https://stubs.manage.build.account.gov.uk/auth/.well-known/jwks.json"
     },
     {
       "client_id": "23456789012345678901234567890123",
-      "scope": "am-account-delete",
+      "scope": "account-delete",
       "redirect_uris": ["https://home.build.account.gov.uk/home/callback"],
       "client_name": "dummy_home",
       "jwks_uri": "https://stubs.manage.build.account.gov.uk/home/.well-known/jwks.json"

@@ -6,6 +6,7 @@ process.env["AUTHORIZE_ERROR_PAGE_URL"] = "https://example.com/error";
 const getQueryParams = vi.fn();
 const getClient = vi.fn();
 const decryptJar = vi.fn();
+const verifyJwt = vi.fn();
 
 vi.mock(import("./utils/getQueryParams.js"), () => ({
   getQueryParams,
@@ -17,6 +18,10 @@ vi.mock(import("./utils/getClient.js"), () => ({
 
 vi.mock(import("./utils/decryptJar.js"), () => ({
   decryptJar,
+}));
+
+vi.mock(import("./utils/verifyJwt.js"), () => ({
+  verifyJwt,
 }));
 
 const { handler } = await import("./index.js");
@@ -91,6 +96,37 @@ describe("authorize handler", () => {
     );
   });
 
+  it("returns error when verifyJwt fails", async () => {
+    const queryParams = {
+      client_id: "test-client",
+      redirect_uri: "http://test.com",
+      request: "encrypted-jar",
+      state: "test-state",
+    };
+    const client = { id: "test-client" };
+    const signedJwt = "signed-jwt-string";
+    const errorResponse = new ErrorResponse({
+      statusCode: 302,
+      headers: { location: "https://example.com/error" },
+      body: "",
+    });
+
+    getQueryParams.mockReturnValue(queryParams);
+    getClient.mockResolvedValue(client);
+    decryptJar.mockResolvedValue(signedJwt);
+    verifyJwt.mockResolvedValue(errorResponse);
+
+    const result = await handler(mockEvent);
+
+    expect(result).toBe(errorResponse.errorResponse);
+    expect(verifyJwt).toHaveBeenCalledWith(
+      signedJwt,
+      client,
+      "http://test.com",
+      "test-state",
+    );
+  });
+
   it("returns success when all functions succeed", async () => {
     const queryParams = {
       client_id: "test-client",
@@ -99,11 +135,13 @@ describe("authorize handler", () => {
       state: "test-state",
     };
     const client = { id: "test-client" };
-    const decryptedJwt = "decrypted-jwt-string";
+    const signedJwt = "signed-jwt-string";
+    const claims = { sub: "user123" };
 
     getQueryParams.mockReturnValue(queryParams);
     getClient.mockResolvedValue(client);
-    decryptJar.mockResolvedValue(decryptedJwt);
+    decryptJar.mockResolvedValue(signedJwt);
+    verifyJwt.mockResolvedValue(claims);
 
     const result = await handler(mockEvent);
 
@@ -112,15 +150,15 @@ describe("authorize handler", () => {
       body: JSON.stringify(
         {
           message: "Authorized",
-          signedJwtString: "decrypted-jwt-string",
+          signedJwt,
         },
         null,
         2,
       ),
     });
-    expect(decryptJar).toHaveBeenCalledWith(
-      "encrypted-jar",
-      "test-client",
+    expect(verifyJwt).toHaveBeenCalledWith(
+      signedJwt,
+      client,
       "http://test.com",
       "test-state",
     );

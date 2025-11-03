@@ -7,28 +7,27 @@ vi.mock(import("@aws-lambda-powertools/parameters/appconfig"), () => ({
 vi.mock(import("../getEnvironment/index.js"), () => ({
   getEnvironment: vi.fn(),
 }));
-vi.mock(import("../awsClient/index.js"), () => ({
+vi.mock(import("../awsClient/appconfigClient/index.js"), () => ({
   getAppConfigClient: vi.fn(),
 }));
-vi.mock(import("../../../config/local-config.js"), () => ({
-  default: {
-    client_registry: [
-      {
-        client_id: "ABCDEF12345678901234567890123456",
-        scope: "am-account-delete",
-        redirect_uris: ["https://signin.build.account.gov.uk/auth/callback"],
-        client_name: "Auth",
-        jwks_uri: "https://signin.build.account.gov.uk/.well-known/jwks.json",
-      },
-      {
-        client_id: "23456789012345678901234567890123",
-        scope: "am-account-delete",
-        redirect_uris: ["https://home.build.account.gov.uk/home/callback"],
-        client_name: "Home",
-        jwks_uri: "https://home.build.account.gov.uk/.well-known/jwks.json",
-      },
-    ],
-  },
+// @ts-expect-error
+vi.mock(import("../../../config/local-config.json"), () => ({
+  client_registry: [
+    {
+      client_id: "ABCDEF12345678901234567890123456",
+      scope: "account-delete",
+      redirect_uris: ["https://signin.build.account.gov.uk/auth/callback"],
+      client_name: "Auth",
+      jwks_uri: "https://signin.build.account.gov.uk/.well-known/jwks.json",
+    },
+    {
+      client_id: "23456789012345678901234567890123",
+      scope: "account-delete",
+      redirect_uris: ["https://home.build.account.gov.uk/home/callback"],
+      client_name: "Home",
+      jwks_uri: "https://home.build.account.gov.uk/.well-known/jwks.json",
+    },
+  ],
 }));
 
 const mockGetAppConfig = vi.fn();
@@ -41,8 +40,9 @@ vi.mocked(
 // @ts-expect-error
 vi.mocked(await import("../getEnvironment/index.js")).getEnvironment =
   mockGetEnvironment;
-vi.mocked(await import("../awsClient/index.js")).getAppConfigClient =
-  mockGetAppConfigClient;
+vi.mocked(
+  await import("../awsClient/appconfigClient/index.js"),
+).getAppConfigClient = mockGetAppConfigClient;
 
 describe("getClientRegistry", () => {
   beforeEach(() => {
@@ -64,14 +64,14 @@ describe("getClientRegistry", () => {
       expect(result).toStrictEqual([
         {
           client_id: "ABCDEF12345678901234567890123456",
-          scope: "am-account-delete",
+          scope: "account-delete",
           redirect_uris: ["https://signin.build.account.gov.uk/auth/callback"],
           client_name: "Auth",
           jwks_uri: "https://signin.build.account.gov.uk/.well-known/jwks.json",
         },
         {
           client_id: "23456789012345678901234567890123",
-          scope: "am-account-delete",
+          scope: "account-delete",
           redirect_uris: ["https://home.build.account.gov.uk/home/callback"],
           client_name: "Home",
           jwks_uri: "https://home.build.account.gov.uk/.well-known/jwks.json",

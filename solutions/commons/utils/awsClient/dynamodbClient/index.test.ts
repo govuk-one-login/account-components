@@ -1,78 +1,236 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { createDynamoDbClient } from "./index.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const ORIGINAL_ENV = { ...process.env };
+vi.mock(import("@aws-sdk/client-dynamodb"));
+vi.mock(import("@aws-sdk/lib-dynamodb"));
+vi.mock(import("../getAwsClientConfig/index.js"));
+vi.mock(import("../../getEnvironment/index.js"));
+vi.mock(import("aws-xray-sdk"));
 
-describe("dynamodbClient", () => {
+const mockDynamoDbClient = {
+  config: { region: "eu-west-2" },
+};
+
+const mockDocClient = {
+  config: { region: "eu-west-2" },
+  send: vi.fn(),
+};
+
+const mockCommands = {
+  PutCommand: vi.fn(),
+  GetCommand: vi.fn(),
+  DeleteCommand: vi.fn(),
+  UpdateCommand: vi.fn(),
+  QueryCommand: vi.fn(),
+  ScanCommand: vi.fn(),
+  BatchWriteCommand: vi.fn(),
+  BatchGetCommand: vi.fn(),
+  TransactWriteCommand: vi.fn(),
+};
+
+describe("getDynamoDbClient", () => {
   beforeEach(() => {
-    vi.resetModules();
-    process.env = { ...ORIGINAL_ENV };
-    delete process.env["AWS_REGION"];
-    delete process.env["ENVIRONMENT"];
+    vi.clearAllMocks();
+    vi.doMock("@aws-sdk/client-dynamodb", () => ({
+      DynamoDBClient: vi.fn(function () {
+        return mockDynamoDbClient;
+      }),
+      QueryCommand: mockCommands.QueryCommand,
+      ScanCommand: mockCommands.ScanCommand,
+    }));
+    vi.doMock("@aws-sdk/lib-dynamodb", () => ({
+      DynamoDBDocumentClient: {
+        from: vi.fn(() => mockDocClient),
+      },
+      PutCommand: mockCommands.PutCommand,
+      GetCommand: mockCommands.GetCommand,
+      DeleteCommand: mockCommands.DeleteCommand,
+      UpdateCommand: mockCommands.UpdateCommand,
+      BatchWriteCommand: mockCommands.BatchWriteCommand,
+      BatchGetCommand: mockCommands.BatchGetCommand,
+      TransactWriteCommand: mockCommands.TransactWriteCommand,
+    }));
+    vi.doMock("../getAwsClientConfig/index.js", () => ({
+      getAwsClientConfig: vi.fn(() => ({ region: "eu-west-2" })),
+    }));
+    vi.doMock("../../getEnvironment/index.js", () => ({
+      getEnvironment: vi.fn(() => "local"),
+    }));
+    vi.doMock("aws-xray-sdk", () => ({
+      captureAWSv3Client: vi.fn(<T>(client: T): T => client),
+    }));
   });
 
-  it("should create a DynamoDB client", () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    const client = createDynamoDbClient();
+  it("returns cached client on subsequent calls", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
 
-    expect(client).toBeDefined();
+    const client1 = getDynamoDbClient();
+    const client2 = getDynamoDbClient();
+
+    expect(client1).toBe(client2);
+  });
+
+  it("returns client with all methods", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+
     expect(client.client).toBeDefined();
     expect(client.config).toBeDefined();
-    expect(client.put).toBeDefined();
-    expect(client.get).toBeDefined();
-    expect(client.delete).toBeDefined();
-    expect(client.update).toBeDefined();
-    expect(client.query).toBeDefined();
-    expect(client.scan).toBeDefined();
-    expect(client.batchWrite).toBeDefined();
-    expect(client.batchGet).toBeDefined();
-    expect(client.transactWrite).toBeDefined();
+    expect(client.put).toBeTypeOf("function");
+    expect(client.get).toBeTypeOf("function");
+    expect(client.delete).toBeTypeOf("function");
+    expect(client.update).toBeTypeOf("function");
+    expect(client.query).toBeTypeOf("function");
+    expect(client.scan).toBeTypeOf("function");
+    expect(client.batchWrite).toBeTypeOf("function");
+    expect(client.batchGet).toBeTypeOf("function");
+    expect(client.transactWrite).toBeTypeOf("function");
   });
 
-  it("should not use XRAY when in local environment", async () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    process.env["ENVIRONMENT"] = "local";
+  it("put method calls client.send with PutCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
 
-    const { default: AWSXRay } = await import("aws-xray-sdk");
-    const spy = vi.spyOn(AWSXRay, "captureAWSv3Client");
+    const client = getDynamoDbClient();
+    const params = { TableName: "test-table", Item: { id: "test" } };
 
-    createDynamoDbClient();
+    await client.put(params);
 
-    expect(spy).toHaveBeenCalledTimes(0);
+    expect(mockCommands.PutCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
   });
 
-  it("should use XRAY when not in local environment", async () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    process.env["ENVIRONMENT"] = "integration";
+  it("get method calls client.send with GetCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
 
-    const { default: AWSXRay } = await import("aws-xray-sdk");
-    const spy = vi.spyOn(AWSXRay, "captureAWSv3Client");
+    const client = getDynamoDbClient();
+    const params = { TableName: "test-table", Key: { id: "test" } };
 
-    createDynamoDbClient();
+    await client.get(params);
 
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(mockCommands.GetCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
   });
 
-  it("should send commands correctly", async () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    const client = createDynamoDbClient();
+  it("delete method calls client.send with DeleteCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
 
-    const sendSpy = vi
-      .spyOn(client.client, "send")
-      .mockResolvedValue({} as never);
+    const client = getDynamoDbClient();
+    const params = { TableName: "test-table", Key: { id: "test" } };
 
-    await Promise.all([
-      client.put({ TableName: "test", Item: {} }),
-      client.get({ TableName: "test", Key: {} }),
-      client.delete({ TableName: "test", Key: {} }),
-      client.update({ TableName: "test", Key: {} }),
-      client.query({ TableName: "test" }),
-      client.scan({ TableName: "test" }),
-      client.batchWrite({ RequestItems: {} }),
-      client.batchGet({ RequestItems: {} }),
-      client.transactWrite({ TransactItems: [] }),
-    ]);
+    await client.delete(params);
 
-    expect(sendSpy).toHaveBeenCalledTimes(9);
+    expect(mockCommands.DeleteCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("update method calls client.send with UpdateCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = {
+      TableName: "test-table",
+      Key: { id: "test" },
+      UpdateExpression: "SET #a = :val",
+      ExpressionAttributeNames: { "#a": "attr" },
+      ExpressionAttributeValues: { ":val": "value" },
+    };
+
+    await client.update(params);
+
+    expect(mockCommands.UpdateCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("query method calls client.send with QueryCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = {
+      TableName: "test-table",
+      KeyConditionExpression: "id = :id",
+      ExpressionAttributeValues: { ":id": "test" },
+    };
+
+    await client.query(params);
+
+    expect(mockCommands.QueryCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("scan method calls client.send with ScanCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = { TableName: "test-table" };
+
+    await client.scan(params);
+
+    expect(mockCommands.ScanCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("batchWrite method calls client.send with BatchWriteCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = {
+      RequestItems: {
+        "test-table": [{ PutRequest: { Item: { id: "test" } } }],
+      },
+    };
+
+    await client.batchWrite(params);
+
+    expect(mockCommands.BatchWriteCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("batchGet method calls client.send with BatchGetCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = {
+      RequestItems: { "test-table": { Keys: [{ id: "test" }] } },
+    };
+
+    await client.batchGet(params);
+
+    expect(mockCommands.BatchGetCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("transactWrite method calls client.send with TransactWriteCommand", async () => {
+    const { getDynamoDbClient } = await import("./index.js");
+
+    const client = getDynamoDbClient();
+    const params = {
+      TransactItems: [
+        { Put: { TableName: "test-table", Item: { id: "test" } } },
+      ],
+    };
+
+    await client.transactWrite(params);
+
+    expect(mockCommands.TransactWriteCommand).toHaveBeenCalledWith(params);
+    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
+  });
+
+  it("wraps client with XRay when not in local environment", async () => {
+    vi.resetModules();
+
+    const mockCaptureAWSv3Client = vi.fn(<T>(client: T): T => client);
+
+    vi.doMock("../../getEnvironment/index.js", () => ({
+      getEnvironment: vi.fn(() => "production"),
+    }));
+
+    vi.doMock("aws-xray-sdk", () => ({
+      captureAWSv3Client: mockCaptureAWSv3Client,
+    }));
+
+    const { getDynamoDbClient } = await import("./index.js");
+    getDynamoDbClient();
+
+    expect(mockCaptureAWSv3Client).toHaveBeenCalledWith(mockDynamoDbClient);
   });
 });
