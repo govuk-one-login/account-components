@@ -37,6 +37,16 @@ Parameters:
       - "x86_64"
       - "arm64"
     Default: "arm64"
+  LambdaDeploymentPreference:
+    Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
+    Type: String
+    Default: "Canary10Percent10Minutes"
+    AllowedValues:
+      - AllAtOnce
+      - Canary10Percent5Minutes
+      - Canary10Percent10Minutes
+      - Canary10Percent15Minutes
+      - Canary10Percent30Minutes
 
 Mappings:
   EnvironmentConfiguration:
@@ -45,26 +55,51 @@ Mappings:
       apiDomain: api.manage.dev.account.gov.uk
       authorizeErrorPageUrl: http://manage.dev.account.gov.uk/authorize-error
       authorizeEndpointUrl: http://api.manage.dev.account.gov.uk/authorize
+      privateApiAllowedVpceIds: [
+          "vpce-087ac48f23f28a39b", # di-account-dev
+        ]
+      LambdaLogLevel: DEBUG
+      UseCanary: false
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.build.account.gov.uk
       authorizeErrorPageUrl: http://manage.build.account.gov.uk/authorize-error
       authorizeEndpointUrl: http://api.manage.build.account.gov.uk/authorize
+      privateApiAllowedVpceIds: [
+          "vpce-0e1bb7e9c33b0e516", # di-account-build
+        ]
+      LambdaLogLevel: INFO
+      UseCanary: false
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.staging.account.gov.uk
       authorizeErrorPageUrl: http://manage.staging.account.gov.uk/authorize-error
       authorizeEndpointUrl: http://api.manage.staging.account.gov.uk/authorize
+      privateApiAllowedVpceIds: [
+          "vpce-0c9ce65be09f99db7", # di-account-staging
+        ]
+      LambdaLogLevel: INFO
+      UseCanary: true
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.integration.account.gov.uk
       authorizeErrorPageUrl: http://manage.integration.account.gov.uk/authorize-error
       authorizeEndpointUrl: http://api.manage.integration.account.gov.uk/authorize
+      privateApiAllowedVpceIds: [
+          "vpce-0e594accb3d775457", # di-account-integration
+        ]
+      LambdaLogLevel: INFO
+      UseCanary: true
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.account.gov.uk
       authorizeErrorPageUrl: http://manage.account.gov.uk/authorize-error
       authorizeEndpointUrl: http://api.manage.account.gov.uk/authorize
+      privateApiAllowedVpceIds: [
+          "vpce-0d7972874707185a0", # di-account-production
+        ]
+      LambdaLogLevel: INFO
+      UseCanary: true
 
 Conditions:
   UseCodeSigning:
@@ -81,9 +116,28 @@ Conditions:
     Fn::Equals:
       - !Ref "AWS::Region"
       - "local"
+  CanariesEnabled: !Equals
+    - !FindInMap [EnvironmentConfiguration, !Ref Environment, UseCanary]
+    - true
 
 Globals:
   Function:
+    DeploymentPreference:
+      Type: !If
+        - CanariesEnabled
+        - !Ref LambdaDeploymentPreference
+        - AllAtOnce
+      Alarms: []
+      Role: !GetAtt CodeDeployServiceRole.Arn
+    Tracing: Active
+    AutoPublishAlias: live
+    KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyAlias}}"
+    Layers:
+      - !If [
+          IsLocal,
+          !Ref AWS::NoValue,
+          "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1",
+        ]
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
@@ -104,14 +158,16 @@ Globals:
     Architectures:
       - !Ref LambdaArchitecture
     Runtime: nodejs22.x
-    Layers:
-      - !If [
-          IsLocal,
-          !Ref AWS::NoValue,
-          "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1",
-        ]
     Environment:
       Variables:
+        POWERTOOLS_LOG_LEVEL:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            LambdaLogLevel,
+          ]
+        POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
+        AWS_XRAY_CONTEXT_MISSING: IGNORE_ERROR
         NODE_OPTIONS: !If [IsLocal, "--enable-source-maps", !Ref AWS::NoValue]
         USE_LOCALSTACK: !Ref AWS::NoValue
         ENVIRONMENT: !Ref Environment
@@ -161,9 +217,32 @@ Globals:
                 !Ref Environment,
                 dynatraceSecretArn,
               ]
-        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
+        DT_LOGGING_NODEJS_FLAGS: Exporter=true,LambdaSensor=false
+        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: true
+        DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
 
 Resources:
+  CodeDeployServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
+      PermissionsBoundary:
+        !If [
+          UsePermissionsBoundary,
+          !Ref PermissionsBoundary,
+          !Ref AWS::NoValue,
+        ]
+
   ApiDomain:
     Type: AWS::ApiGateway::DomainName
     Properties:
@@ -227,32 +306,133 @@ Resources:
     Properties:
       StageName: !Ref Environment
       AlwaysDeploy: true
+      DisableExecuteApiEndpoint: true
+      TracingEnabled: true
       EndpointConfiguration:
         Type: REGIONAL
       Tags:
         FMSRegionalPolicy: false
         CustomPolicy: true
+      DefinitionBody:
+        openapi: 3.0.1
+        info:
+          title: Account Components API
+          version: 1.0.0
+        paths:
+          /healthcheck:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Arn}/invocations"
+          /authorize:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizeLambda.Arn}/invocations"
 
-  ApiLambdaLogGroup:
+  PrivateApiGatewayS3Role:
+    Type: AWS::IAM::Role
+    Properties:
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub
+                  - "arn:aws:s3:::${BucketName}/jwks.json"
+                  - BucketName: !Sub "{{resolve:ssm:/${CoreStackName}/JWKSStoreBucketName}}"
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: !Sub "{{resolve:ssm:/${CoreStackName}/S3SSEKeyArn}}"
+
+  PrivateApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      AlwaysDeploy: true
+      EndpointConfiguration:
+        Type: PRIVATE
+        VpcEndpointIds:
+          - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+      Policy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: execute-api:Invoke
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:sourceVpce:
+                  !FindInMap [
+                    EnvironmentConfiguration,
+                    !Ref Environment,
+                    privateApiAllowedVpceIds,
+                  ]
+      DefinitionBody:
+        openapi: 3.0.1
+        info:
+          title: Account Components private API
+          version: 1.0.0
+        paths:
+          /healthcheck:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Arn}/invocations"
+          /.well-known/jwks.json:
+            get:
+              responses:
+                "200":
+                  description: JWKS response
+                  headers:
+                    Content-Type:
+                      schema:
+                        type: string
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: GET
+                uri: !Sub
+                  - "arn:aws:apigateway:${AWS::Region}:s3:path/${BucketName}/jwks.json"
+                  - BucketName: !Sub "{{resolve:ssm:/${CoreStackName}/JWKSStoreBucketName}}"
+                credentials: !GetAtt PrivateApiGatewayS3Role.Arn
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Content-Type: "'application/json'"
+
+  HealthcheckLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/lambda/${AWS::StackName}/ApiLambdaLogGroup"
+      LogGroupName: !Sub "/lambda/${AWS::StackName}/HealthcheckLambdaLogGroup"
       RetentionInDays: 30
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyAlias}}"
 
   HealthcheckLambda:
     Type: AWS::Serverless::Function
     Properties:
-      PackageType: Zip
-      Handler: healthcheck.handler
       LoggingConfig:
-        LogGroup: !Ref ApiLambdaLogGroup
-      Events:
-        Root:
-          Type: Api
-          Properties:
-            Method: GET
-            Path: /healthcheck
-            RestApiId: !Ref ApiGateway
+        LogGroup: !Ref HealthcheckLambdaLogGroup
+      Handler: healthcheck.handler
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -265,20 +445,19 @@ Resources:
         EntryPoints:
           - solutions/api/src/lambda/healthcheck.ts
 
+  AuthorizeLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/lambda/${AWS::StackName}/AuthorizeLambdaLogGroup"
+      RetentionInDays: 30
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyAlias}}"
+
   AuthorizeLambda:
     Type: AWS::Serverless::Function
     Properties:
-      PackageType: Zip
-      Handler: index.handler
       LoggingConfig:
-        LogGroup: !Ref ApiLambdaLogGroup
-      Events:
-        Root:
-          Type: Api
-          Properties:
-            Method: GET
-            Path: /authorize
-            RestApiId: !Ref ApiGateway
+        LogGroup: !Ref AuthorizeLambdaLogGroup
+      Handler: index.handler
       Environment:
         Variables:
           AUTHORIZE_ERROR_PAGE_URL:
@@ -293,15 +472,15 @@ Resources:
               !Ref Environment,
               authorizeEndpointUrl,
             ]
-          JAR_RSA_ENCRYPTION_KEY_ALIAS:
-            Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyAliasName"
+          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
       Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
             - Effect: Allow
               Action:
+                - kms:DescribeKey
                 - kms:Decrypt
-              Resource:
-                Fn::ImportValue: !Sub "${CoreStackName}:JARRSAEncryptionKeyArn"
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyArn}}"
             - Effect: Allow
               Action:
                 - appconfig:GetLatestConfiguration
@@ -320,3 +499,108 @@ Resources:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:
           - solutions/api/src/lambda/authorize/index.ts
+
+  HealthcheckLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref HealthcheckLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
+
+  PrivateHealthcheckLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref HealthcheckLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
+
+  AuthorizeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AuthorizeLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
+
+  ReplayAttackTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-ReplayAttack
+      AttributeDefinitions:
+        - AttributeName: nonce
+          AttributeType: S
+      KeySchema:
+        - AttributeName: nonce
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expires
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      SSESpecification:
+        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyAlias}}"
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-replay_attack"
+
+  JourneyOutcomeTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-JourneyOutcome
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: outcome_id
+          AttributeType: S
+        - AttributeName: outcome_type
+          AttributeType: S
+      KeySchema:
+        - AttributeName: outcome_id
+          KeyType: HASH
+        - AttributeName: outcome_type
+          KeyType: RANGE
+      SSESpecification:
+        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyAlias}}"
+        SSEEnabled: true
+        SSEType: KMS
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-journey_outcome"
+
+  AuthCodeTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-AuthCode
+      AttributeDefinitions:
+        - AttributeName: "code"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "code"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      TimeToLiveSpecification:
+        AttributeName: "expiry_time"
+        Enabled: true
+      SSESpecification:
+        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyAlias}}"
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-auth_code"

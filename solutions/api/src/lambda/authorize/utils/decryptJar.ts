@@ -10,6 +10,13 @@ import {
   ErrorResponse,
   getRedirectToClientRedirectUriResponse,
 } from "./common.js";
+import {
+  jarContentEncryptionAlgorithm,
+  jarKeyEncryptionAlgorithm,
+} from "../../../../../commons/utils/contstants.js";
+import { EncryptionAlgorithmSpec } from "@aws-sdk/client-kms";
+
+let keyId: string | undefined = undefined;
 
 export const decryptJar = async (
   jar: string,
@@ -30,16 +37,32 @@ export const decryptJar = async (
 
     const [protectedHeader, encryptedKey, iv, ciphertext, tag] = jarComponents;
 
+    const kmsClient = getKmsClient();
+
+    assert.ok(
+      process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+      "JAR_RSA_ENCRYPTION_KEY_ALIAS is not set",
+    );
+
+    keyId ??= (
+      await kmsClient.describeKey({
+        KeyId: process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+      })
+    ).KeyMetadata?.KeyId;
+
+    assert.ok(keyId, "Failed to get keyId for JAR_RSA_ENCRYPTION_KEY_ALIAS");
+
     const headerComponents = v.parse(
       v.message(
         v.pipe(
           v.object({
-            alg: v.literal("RSA-OAEP-256"),
-            enc: v.literal("A256GCM"),
+            alg: v.literal(jarKeyEncryptionAlgorithm),
+            enc: v.literal(jarContentEncryptionAlgorithm),
+            kid: v.literal(keyId),
           }),
           v.transform((input) => ({
             ...input,
-            alg: "RSAES_OAEP_SHA_256" as const,
+            alg: EncryptionAlgorithmSpec.RSAES_OAEP_SHA_256,
             enc: "aes-256-gcm" as const,
           })),
         ),
@@ -48,14 +71,9 @@ export const decryptJar = async (
       JSON.parse(Buffer.from(protectedHeader, "base64").toString()),
     );
 
-    assert.ok(
-      process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
-      "JAR_RSA_ENCRYPTION_KEY_ALIAS is not set",
-    );
-
     try {
-      const kmsResult = await getKmsClient().decrypt({
-        KeyId: process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+      const kmsResult = await kmsClient.decrypt({
+        KeyId: keyId,
         CiphertextBlob: Buffer.from(encryptedKey, "base64"),
         EncryptionAlgorithm: headerComponents.alg,
       });

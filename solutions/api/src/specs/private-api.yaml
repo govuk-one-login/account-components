@@ -3,11 +3,11 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components OAuth Provider Private API
-  version: 0.0.2
+  version: 0.0.3
   description: |
     OAuth 2.0 provider endpoints, including:
     - POST /v1/token (supports client assertions via private_key_jwt)
-    - GET /v1/userinfo
+    - GET /v1/journeyoutcome
     - GET /v1/.well-known/jwks.json (publishes signing and encryption keys)
     - GET /v1/.well-known/oauth-authorization-server (OAuth Discovery)
   contact:
@@ -22,7 +22,11 @@ tags:
       Supporting methods for Account Management Component Journeys.
 
       **Note:** This functionality is intended to be used by systems solely belonging internally to GDS DI.
+  - name: AMC
+    description: |-
+      Specific methods for Account Management Component Journeys.
 
+      **Note:** This functionality is intended to be used by systems solely belonging internally to GDS DI.
 servers:
   - url: https://abcd1234.execute-api.eu-west-2.amazonaws.com
     description: private development server
@@ -100,22 +104,22 @@ paths:
               schema:
                 $ref: "#/components/schemas/OAuthError"
 
-  /v1/userinfo:
+  /v1/journeyoutcome:
     get:
-      summary: UserInfo endpoint
+      summary: Journey Outcome endpoint
       description: Get Journey Outcome information
       security:
         - bearerAuth: []
-      operationId: userinfo
+      operationId: journeyoutcome
       tags:
-        - OAuth
+        - AMC
       responses:
         "200":
           description: Claims about the outcome of the user's journey
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserInfo"
+                $ref: "#/components/schemas/JourneyOutcome"
         "401":
           description: Missing or invalid access token
           content:
@@ -168,7 +172,6 @@ paths:
                     issuer: https://api.manage.account.gov.uk
                     authorization_endpoint: https://api.manage.account.gov.uk/authorize
                     token_endpoint: https://abcd1234.execute-api.eu-west-2.amazonaws.com/v1/token
-                    userinfo_endpoint: https://abcd1234.execute-api.eu-west-2.amazonaws.com/v1/userinfo
                     jwks_uri: https://api.manage.account.gov.uk/.well-known/jwks.json
                     response_types_supported: [code]
                     token_endpoint_auth_methods_supported: [private_key_jwt]
@@ -212,9 +215,9 @@ components:
           example: 3600
       required: [access_token, token_type, expires_in]
 
-    UserInfo:
+    JourneyOutcome:
       type: object
-      description: Standard OIDC UserInfo claims (subset)
+      description: Provides the outcomes of the Account Component journeys undertaken by the user
       properties:
         sub:
           description: The internal pairwise identifier of the user
@@ -287,9 +290,6 @@ components:
           type: string
           format: uri
         token_endpoint:
-          type: string
-          format: uri
-        userinfo_endpoint:
           type: string
           format: uri
         jwks_uri:

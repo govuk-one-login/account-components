@@ -29,6 +29,16 @@ Parameters:
   CoreStackName:
     Type: String
     Default: "components-core"
+  LambdaDeploymentPreference:
+    Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
+    Type: String
+    Default: "Canary10Percent10Minutes"
+    AllowedValues:
+      - AllAtOnce
+      - Canary10Percent5Minutes
+      - Canary10Percent10Minutes
+      - Canary10Percent15Minutes
+      - Canary10Percent30Minutes
 
 Mappings:
   EnvironmentConfiguration:
@@ -36,22 +46,32 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: dev.account.gov.uk
       frontendDomain: manage.dev.account.gov.uk
+      LambdaLogLevel: DEBUG
+      UseCanary: false
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
       frontendDomain: manage.build.account.gov.uk
+      LambdaLogLevel: INFO
+      UseCanary: false
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
       frontendDomain: manage.staging.account.gov.uk
+      LambdaLogLevel: INFO
+      UseCanary: true
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
       frontendDomain: manage.integration.account.gov.uk
+      LambdaLogLevel: INFO
+      UseCanary: true
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
       frontendDomain: manage.account.gov.uk
+      LambdaLogLevel: INFO
+      UseCanary: true
 
 Conditions:
   UseCodeSigning:
@@ -64,11 +84,22 @@ Conditions:
       - Fn::Equals:
           - !Ref PermissionsBoundary
           - "none"
+  CanariesEnabled: !Equals
+    - !FindInMap [EnvironmentConfiguration, !Ref Environment, UseCanary]
+    - true
 
 Globals:
   Function:
-    CodeUri: dist
-    Handler: lambda.handler
+    DeploymentPreference:
+      Type: !If
+        - CanariesEnabled
+        - !Ref LambdaDeploymentPreference
+        - AllAtOnce
+      Alarms: []
+      Role: !GetAtt CodeDeployServiceRole.Arn
+    Tracing: Active
+    AutoPublishAlias: live
+    KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyAlias}}"
     Layers:
       - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1
     CodeSigningConfigArn: !If
@@ -91,8 +122,18 @@ Globals:
     Architectures:
       - arm64
     Runtime: nodejs22.x
+    CodeUri: dist
+    Handler: lambda.handler
     Environment:
       Variables:
+        POWERTOOLS_LOG_LEVEL:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            LambdaLogLevel,
+          ]
+        POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
+        AWS_XRAY_CONTEXT_MISSING: IGNORE_ERROR
         ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"
         AWS_LAMBDA_EXEC_WRAPPER: /opt/dynatrace
@@ -136,9 +177,32 @@ Globals:
                 !Ref Environment,
                 dynatraceSecretArn,
               ]
-        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: "true"
+        DT_LOGGING_NODEJS_FLAGS: Exporter=true,LambdaSensor=false
+        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: true
+        DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
 
 Resources:
+  CodeDeployServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
+      PermissionsBoundary:
+        !If [
+          UsePermissionsBoundary,
+          !Ref PermissionsBoundary,
+          !Ref AWS::NoValue,
+        ]
+
   SecretsEncryptionKey:
     Type: AWS::KMS::Key
     Properties:
@@ -151,72 +215,18 @@ Resources:
             Action: "kms:*"
             Resource: "*"
 
+  SecretsEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-SecretsEncryptionKey"
+      TargetKeyId: !GetAtt SecretsEncryptionKey.Arn
+
   SessionSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
       GenerateSecretString:
         PasswordLength: 64
       KmsKeyId: !Ref SecretsEncryptionKey
-
-  FrontendLambdaEnvironmentVariablesEncryptionKey:
-    Type: AWS::KMS::Key
-    Properties:
-      Description: KMS key used to encrypt lambda environment variables
-      EnableKeyRotation: true
-      KeyPolicy:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action:
-              - kms:*
-            Resource: "*"
-          - Effect: "Allow"
-            Principal:
-              Service: lambda.amazonaws.com
-            Action:
-              - "kms:Decrypt"
-            Resource: "*"
-            Condition:
-              ArnLike:
-                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-FrontendLambdaEnvironmentVariablesEncryptionKey"
-
-  UserInfoTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub ${AWS::StackName}-UserInfo
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: outcome_id
-          AttributeType: S
-        - AttributeName: outcome_type
-          AttributeType: S
-        - AttributeName: access_token
-          AttributeType: S
-      KeySchema:
-        - AttributeName: outcome_id
-          KeyType: HASH
-        - AttributeName: outcome_type
-          KeyType: RANGE
-      GlobalSecondaryIndexes:
-        - IndexName: AccessTokenIndex
-          KeySchema:
-            - AttributeName: access_token
-              KeyType: HASH
-          Projection:
-            ProjectionType: ALL
-      SSESpecification:
-        KMSMasterKeyId:
-          Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"
-        SSEEnabled: true
-        SSEType: KMS
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-user_info"
 
   SessionsTable:
     Type: AWS::DynamoDB::Table
@@ -248,71 +258,10 @@ Resources:
           Projection:
             ProjectionType: KEYS_ONLY
       SSESpecification:
-        KMSMasterKeyId:
-          Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"
+        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyAlias}}"
         SSEEnabled: true
         SSEType: KMS
       TableClass: STANDARD
-
-  AuthCodeTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
-    Properties:
-      TableName: !Sub ${AWS::StackName}-AuthCode
-      AttributeDefinitions:
-        - AttributeName: "code"
-          AttributeType: "S"
-      KeySchema:
-        - AttributeName: "code"
-          KeyType: "HASH"
-      BillingMode: PAY_PER_REQUEST
-      ContributorInsightsSpecification:
-        Enabled: true
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: false
-      TimeToLiveSpecification:
-        AttributeName: "expiry_time"
-        Enabled: true
-      SSESpecification:
-        KMSMasterKeyId:
-          Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"
-        SSEEnabled: true
-        SSEType: KMS
-      TableClass: STANDARD
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-auth_code"
-
-  ReplayAttackTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
-    Properties:
-      TableName: !Sub ${AWS::StackName}-ReplayAttack
-      AttributeDefinitions:
-        - AttributeName: nonce
-          AttributeType: S
-      KeySchema:
-        - AttributeName: nonce
-          KeyType: HASH
-      TimeToLiveSpecification:
-        AttributeName: expires
-        Enabled: true
-      BillingMode: PAY_PER_REQUEST
-      ContributorInsightsSpecification:
-        Enabled: true
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: false
-      SSESpecification:
-        KMSMasterKeyId:
-          Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"
-        SSEEnabled: true
-        SSEType: KMS
-      TableClass: STANDARD
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-replay_attack"
 
   FrontendApiDomain:
     Type: AWS::ApiGateway::DomainName
@@ -382,6 +331,8 @@ Resources:
     Properties:
       StageName: !Ref Environment
       AlwaysDeploy: true
+      DisableExecuteApiEndpoint: true
+      TracingEnabled: true
       EndpointConfiguration:
         Type: REGIONAL
       BinaryMediaTypes:
@@ -395,7 +346,8 @@ Resources:
     Metadata:
       BuildMethod: makefile
     Properties:
-      KmsKeyArn: !GetAtt FrontendLambdaEnvironmentVariablesEncryptionKey.Arn
+      LoggingConfig:
+        LogGroup: !Ref FrontendLambdaLogGroup
       Events:
         Root:
           Type: Api
@@ -409,8 +361,6 @@ Resources:
             Method: ANY
             Path: /{proxy+}
             RestApiId: !Ref FrontendApiGateway
-      LoggingConfig:
-        LogGroup: !Ref FrontendLambdaLogGroup
       Environment:
         Variables:
           SESSIONS_SIGNER: !Sub "{{resolve:secretsmanager:${SessionSecret}:SecretString}}"
@@ -422,6 +372,7 @@ Resources:
               rootCookieDomain,
             ]
       Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
             - Effect: Allow
               Action:
@@ -436,11 +387,11 @@ Resources:
               Action:
                 - kms:Decrypt
                 - kms:GenerateDataKey
-              Resource:
-                Fn::ImportValue: !Sub "${CoreStackName}:DynamoDbSSEKeyArn"
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
 
   FrontendLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/lambda/${AWS::StackName}/FrontendLambda"
       RetentionInDays: 30
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyAlias}}"

@@ -9,11 +9,6 @@ export enum Algorithms {
   INVALID = "AB123",
 }
 
-export enum JWEAlgorithms {
-  EC = "ECDH-ES+A256KW",
-  RSA = "RSA-OAEP-256",
-}
-
 export enum MockRequestObjectScenarios {
   VALID = "valid",
   INVALID_ALGORITHM = "invalidAlg",
@@ -39,28 +34,6 @@ export enum Kids {
   RSA = "rsaKid123",
   WRONG = "wrongKid123",
 }
-
-export interface JwksKeyType {
-  kty: SignatureTypes;
-  alg: Algorithms;
-  kid: string;
-  jweAlg: JWEAlgorithms;
-}
-
-export const JWKS_KEY_TYPES: JwksKeyType[] = [
-  {
-    kty: SignatureTypes.EC,
-    alg: Algorithms.EC,
-    kid: Kids.EC,
-    jweAlg: JWEAlgorithms.EC,
-  },
-  {
-    kty: SignatureTypes.RSA,
-    alg: Algorithms.RSA,
-    kid: Kids.RSA,
-    jweAlg: JWEAlgorithms.RSA,
-  },
-];
 
 type AlgType = Record<SignatureTypes, Algorithms>;
 

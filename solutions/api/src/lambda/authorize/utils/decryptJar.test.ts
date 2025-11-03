@@ -31,6 +31,7 @@ vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
 
 const mockKmsClient = {
   decrypt: vi.fn(),
+  describeKey: vi.fn(),
 };
 
 vi.mock(
@@ -55,6 +56,9 @@ describe("decryptJar", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"] = "test-key-alias";
+    mockKmsClient.describeKey.mockResolvedValue({
+      KeyMetadata: { KeyId: "test-key-id" },
+    });
   });
 
   afterAll(() => {
@@ -70,6 +74,7 @@ describe("decryptJar", () => {
       JSON.stringify({
         alg: "RSA-OAEP-256",
         enc: "A256GCM",
+        kid: "test-key-id",
       }),
     ).toString("base64");
 
@@ -122,6 +127,7 @@ describe("decryptJar", () => {
       JSON.stringify({
         alg: "invalid-alg",
         enc: "A256GCM",
+        kid: "test-key-id",
       }),
     ).toString("base64");
 
@@ -144,6 +150,7 @@ describe("decryptJar", () => {
       JSON.stringify({
         alg: "RSA-OAEP-256",
         enc: "A256GCM",
+        kid: "test-key-id",
       }),
     ).toString("base64");
 
@@ -168,6 +175,7 @@ describe("decryptJar", () => {
       JSON.stringify({
         alg: "RSA-OAEP-256",
         enc: "A256GCM",
+        kid: "test-key-id",
       }),
     ).toString("base64");
 
@@ -224,5 +232,62 @@ describe("decryptJar", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.headers?.["location"]).not.toContain("state=");
+  });
+
+  it("returns ErrorResponse when kid does not match keyId", async () => {
+    const invalidHeader = Buffer.from(
+      JSON.stringify({
+        alg: "RSA-OAEP-256",
+        enc: "A256GCM",
+        kid: "wrong-key-id",
+      }),
+    ).toString("base64");
+
+    const jar = [invalidHeader, "key", "iv", "ciphertext", "tag"].join(".");
+
+    const result = await decryptJar(jar, clientId, redirectUri, state);
+
+    expect(result).toBeInstanceOf(ErrorResponse);
+
+    assert.ok(result instanceof ErrorResponse);
+
+    expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5003",
+    );
+  });
+
+  it("returns ErrorResponse when describeKey fails", async () => {
+    mockKmsClient.describeKey.mockRejectedValue(new Error("KMS error"));
+
+    const jar = "header.key.iv.ciphertext.tag";
+
+    const result = await decryptJar(jar, clientId, redirectUri, state);
+
+    expect(result).toBeInstanceOf(ErrorResponse);
+
+    assert.ok(result instanceof ErrorResponse);
+
+    expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5003",
+    );
+  });
+
+  it("returns ErrorResponse when describeKey returns no keyId", async () => {
+    mockKmsClient.describeKey.mockResolvedValue({ KeyMetadata: {} });
+
+    const jar = "header.key.iv.ciphertext.tag";
+
+    const result = await decryptJar(jar, clientId, redirectUri, state);
+
+    expect(result).toBeInstanceOf(ErrorResponse);
+
+    assert.ok(result instanceof ErrorResponse);
+
+    expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5003",
+    );
   });
 });

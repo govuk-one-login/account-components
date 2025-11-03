@@ -12,7 +12,8 @@ vi.mock(import("../contstants.js"), () => ({
   rootCookieDomain: "account.gov.uk",
 }));
 
-vi.mock("i18next", () => {
+// @ts-expect-error
+vi.mock(import("i18next"), () => {
   const mockI18next = {
     use: vi.fn().mockReturnThis(),
     init: vi.fn(),
@@ -85,6 +86,7 @@ describe("configureI18n", () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(i18next.init).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         detection: expect.objectContaining({
           cookieSecure: true,
           cookieDomain: "account.gov.uk",

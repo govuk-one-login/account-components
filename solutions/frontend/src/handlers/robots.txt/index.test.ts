@@ -3,7 +3,7 @@ import { handler } from "./index.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.js";
 
-vi.mock("../../../../commons/utils/getEnvironment/index.js", () => ({
+vi.mock(import("../../../../commons/utils/getEnvironment/index.js"), () => ({
   getEnvironment: vi.fn(),
 }));
 

@@ -33,6 +33,7 @@ describe("csrfProtection", () => {
       expect.any(Function),
       expect.objectContaining({
         sessionPlugin: "@fastify/session",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         getToken: expect.any(Function),
       }),
     );
