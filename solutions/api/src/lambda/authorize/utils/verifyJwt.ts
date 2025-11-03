@@ -119,7 +119,7 @@ export const verifyJwt = async (
       metrics.addMetric("ScopeDenied", MetricUnit.Count, 1);
       return "";
     }),
-    state: state !== undefined ? v.literal(state) : v.undefined(),
+    state: state === undefined ? v.undefined() : v.literal(state),
     jti: v.pipe(v.string(), v.nonEmpty()),
     access_token: v.pipe(v.string(), v.nonEmpty()),
     refresh_token: v.pipe(v.string(), v.nonEmpty()),
