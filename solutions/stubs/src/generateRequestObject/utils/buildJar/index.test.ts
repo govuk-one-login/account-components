@@ -34,7 +34,7 @@ describe("buildJar", () => {
     vi.clearAllMocks();
     process.env = { ...ORIGINAL_ENV };
 
-    vi.mocked(kmsClient.getKmsClient).mockResolvedValue(mockKmsClient);
+    vi.mocked(kmsClient.getKmsClient).mockReturnValue(mockKmsClient);
     vi.mocked(createPublicKey).mockReturnValue({
       export: vi.fn().mockReturnValue(mockPublicKeyPem),
     } as unknown as ReturnType<typeof createPublicKey>);
