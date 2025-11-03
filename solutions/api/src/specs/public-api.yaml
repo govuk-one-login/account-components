@@ -161,7 +161,7 @@ components:
       schema:
         type: string
         pattern: ^[a-z]+(?:-?[a-z]+)*(?:\s[a-z]+(?:-?[a-z]+)*)*$
-        example: am-account-delete
+        example: account-delete
 
     RequestObjectJAR:
       in: query
