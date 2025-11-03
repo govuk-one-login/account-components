@@ -44,22 +44,37 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.dev.account.gov.uk
       authorizeErrorPageUrl: http://manage.dev.account.gov.uk/authorize-error
+      privateApiAllowedVpceIds: [
+          "vpce-087ac48f23f28a39b", # di-account-dev
+        ]
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.build.account.gov.uk
       authorizeErrorPageUrl: http://manage.build.account.gov.uk/authorize-error
+      privateApiAllowedVpceIds: [
+          "vpce-0e1bb7e9c33b0e516", # di-account-build
+        ]
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.staging.account.gov.uk
       authorizeErrorPageUrl: http://manage.staging.account.gov.uk/authorize-error
+      privateApiAllowedVpceIds: [
+          "vpce-0c9ce65be09f99db7", # di-account-staging
+        ]
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.integration.account.gov.uk
       authorizeErrorPageUrl: http://manage.integration.account.gov.uk/authorize-error
+      privateApiAllowedVpceIds: [
+          "vpce-0e594accb3d775457", # di-account-integration
+        ]
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.account.gov.uk
       authorizeErrorPageUrl: http://manage.account.gov.uk/authorize-error
+      privateApiAllowedVpceIds: [
+          "vpce-0d7972874707185a0", # di-account-production
+        ]
 
 Conditions:
   UseCodeSigning:
@@ -217,36 +232,6 @@ Resources:
     DependsOn:
       - ApiGatewayStage # This resource is created as part of the RestApi resource
 
-  ApiGatewayS3Role:
-    Type: AWS::IAM::Role
-    Properties:
-      PermissionsBoundary: !If
-        - UsePermissionsBoundary
-        - !Ref PermissionsBoundary
-        - !Ref AWS::NoValue
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: apigateway.amazonaws.com
-            Action: sts:AssumeRole
-      Policies:
-        - PolicyName: S3Access
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action: s3:GetObject
-                Resource: !Sub
-                  - "arn:aws:s3:::${BucketName}/jwks.json"
-                  - BucketName:
-                      Fn::ImportValue: !Sub "${CoreStackName}:JWKSStoreBucketName"
-              - Effect: Allow
-                Action: kms:Decrypt
-                Resource:
-                  Fn::ImportValue: !Sub "${CoreStackName}:S3SSEKeyArn"
-
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
@@ -275,6 +260,72 @@ Resources:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizeLambda.Arn}/invocations"
+
+  PrivateApiGatewayS3Role:
+    Type: AWS::IAM::Role
+    Properties:
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub
+                  - "arn:aws:s3:::${BucketName}/jwks.json"
+                  - BucketName: !Sub "{{resolve:ssm:/${CoreStackName}/JWKSStoreBucketName}}"
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource:
+                  Fn::ImportValue: !Sub "${CoreStackName}:S3SSEKeyArn"
+
+  PrivateApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref Environment
+      AlwaysDeploy: true
+      EndpointConfiguration:
+        Type: PRIVATE
+        VpcEndpointIds:
+          - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayVpcEndpointId"
+      Policy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: execute-api:Invoke
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:sourceVpce:
+                  !FindInMap [
+                    EnvironmentConfiguration,
+                    !Ref Environment,
+                    privateApiAllowedVpceIds,
+                  ]
+      DefinitionBody:
+        openapi: 3.0.1
+        info:
+          title: Account Components private API
+          version: 1.0.0
+        paths:
+          /healthcheck:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Arn}/invocations"
           /.well-known/jwks.json:
             get:
               responses:
@@ -289,8 +340,7 @@ Resources:
                 httpMethod: GET
                 uri: !Sub
                   - "arn:aws:apigateway:${AWS::Region}:s3:path/${BucketName}/jwks.json"
-                  - BucketName:
-                      Fn::ImportValue: !Sub "${CoreStackName}:JWKSStoreBucketName"
+                  - BucketName: !Sub "{{resolve:ssm:/${CoreStackName}/JWKSStoreBucketName}}"
                 credentials: !GetAtt ApiGatewayS3Role.Arn
                 responses:
                   default:
@@ -373,6 +423,14 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
+
+  PrivateHealthcheckLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref HealthcheckLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
 
   AuthorizeLambdaPermission:
     Type: AWS::Lambda::Permission
