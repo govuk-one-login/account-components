@@ -34,9 +34,12 @@ const mockKmsClient = {
   describeKey: vi.fn(),
 };
 
-vi.mock(import("../../../../../commons/utils/awsClient/index.js"), () => ({
-  getKmsClient: vi.fn().mockResolvedValue(mockKmsClient),
-}));
+vi.mock(
+  import("../../../../../commons/utils/awsClient/kmsClient/index.js"),
+  () => ({
+    getKmsClient: vi.fn().mockReturnValue(mockKmsClient),
+  }),
+);
 
 let decryptJar: typeof decryptJarForType;
 

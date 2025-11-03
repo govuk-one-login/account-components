@@ -22,4 +22,10 @@ const createS3Client = () => {
   };
 };
 
-export { createS3Client };
+let cachedS3Client: ReturnType<typeof createS3Client> | undefined;
+const getS3Client = (): ReturnType<typeof createS3Client> => {
+  cachedS3Client ??= createS3Client();
+  return cachedS3Client;
+};
+
+export { getS3Client };

@@ -4,10 +4,8 @@ import type { JWK } from "jose";
 import type { Context } from "aws-lambda";
 import { createPublicKey } from "node:crypto";
 import assert from "node:assert";
-import {
-  getS3Client,
-  getKmsClient,
-} from "../../../commons/utils/awsClient/index.js";
+import { getS3Client } from "../../../commons/utils/awsClient/s3Client/index.js";
+import { getKmsClient } from "../../../commons/utils/awsClient/kmsClient/index.js";
 import { jarKeyEncryptionAlgorithm } from "../../../commons/utils/contstants.js";
 
 const logger = new Logger();
@@ -35,7 +33,7 @@ async function generateJwksFromKmsPublicKey(
   try {
     logger.info("Getting Public Key using Alias: " + keyAlias);
 
-    const kmsClient = await getKmsClient();
+    const kmsClient = getKmsClient();
 
     const { PublicKey } = await kmsClient.getPublicKey({
       KeyId: keyAlias,
@@ -96,9 +94,7 @@ export async function putContentToS3(content: string) {
   const key = "jwks.json";
 
   try {
-    const response = await (
-      await getS3Client()
-    ).putObject({
+    const response = await getS3Client().putObject({
       Bucket: process.env["BUCKET_NAME"],
       Key: key,
       Body: content,

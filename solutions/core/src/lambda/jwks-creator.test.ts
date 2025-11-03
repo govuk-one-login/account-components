@@ -20,12 +20,16 @@ vi.mock(import("@aws-lambda-powertools/logger"), () => ({
 }));
 
 // @ts-expect-error
-vi.mock(import("../../../commons/utils/awsClient/index.js"), () => ({
-  getKmsClient: async () => ({
+vi.mock(import("../../../commons/utils/awsClient/kmsClient/index.js"), () => ({
+  getKmsClient: () => ({
     getPublicKey: mockGetPublicKey,
     describeKey: mockDescribeKey,
   }),
-  getS3Client: async () => ({
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../commons/utils/awsClient/s3Client/index.js"), () => ({
+  getS3Client: () => ({
     putObject: mockPutObject,
   }),
 }));
@@ -51,17 +55,18 @@ vi.mock(import("node:crypto"), () => ({
 }));
 
 const context: Context = {
-  awsRequestId: "",
   callbackWaitsForEmptyEventLoop: false,
-  functionName: "",
-  functionVersion: "",
-  invokedFunctionArn: "",
-  logGroupName: "",
-  logStreamName: "",
-  memoryLimitInMB: "",
+  functionName: "test-function",
+  functionVersion: "1",
+  invokedFunctionArn:
+    "arn:aws:lambda:us-east-1:123456789012:function:test-function",
+  memoryLimitInMB: "128",
+  awsRequestId: "test-request-id",
+  logGroupName: "/aws/lambda/test-function",
+  logStreamName: "2023/01/01/[$LATEST]test-stream",
+  getRemainingTimeInMillis: () => 30000,
   done: vi.fn(),
   fail: vi.fn(),
-  getRemainingTimeInMillis: vi.fn(),
   succeed: vi.fn(),
 };
 

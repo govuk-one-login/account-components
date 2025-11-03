@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { buildJar } from "./index.js";
-import * as awsClient from "../../../../../commons/utils/awsClient/index.js";
+import * as kmsClient from "../../../../../commons/utils/awsClient/kmsClient/index.js";
 import { CompactEncrypt, importSPKI } from "jose";
 import { createPublicKey } from "node:crypto";
 import type {
@@ -10,7 +10,7 @@ import type {
 
 const ORIGINAL_ENV = { ...process.env };
 
-vi.mock(import("../../../../../commons/utils/awsClient/index.js"));
+vi.mock(import("../../../../../commons/utils/awsClient/kmsClient/index.js"));
 vi.mock(import("jose"));
 vi.mock(import("node:crypto"));
 
@@ -21,7 +21,7 @@ describe("buildJar", () => {
     getPublicKey: vi.fn(),
     describeKey: vi.fn(),
     decrypt: vi.fn(),
-  } as unknown as Awaited<ReturnType<typeof awsClient.getKmsClient>>;
+  } as unknown as Awaited<ReturnType<typeof kmsClient.getKmsClient>>;
 
   const mockPublicKeyBuffer = Buffer.from("mock-public-key-data");
   const mockPublicKeyPem =
@@ -34,7 +34,7 @@ describe("buildJar", () => {
     vi.clearAllMocks();
     process.env = { ...ORIGINAL_ENV };
 
-    vi.mocked(awsClient.getKmsClient).mockResolvedValue(mockKmsClient);
+    vi.mocked(kmsClient.getKmsClient).mockResolvedValue(mockKmsClient);
     vi.mocked(createPublicKey).mockReturnValue({
       export: vi.fn().mockReturnValue(mockPublicKeyPem),
     } as unknown as ReturnType<typeof createPublicKey>);

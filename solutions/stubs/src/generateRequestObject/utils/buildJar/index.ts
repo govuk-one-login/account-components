@@ -1,5 +1,5 @@
 import { CompactEncrypt, importSPKI } from "jose";
-import { getKmsClient } from "../../../../../commons/utils/awsClient/index.js";
+import { getKmsClient } from "../../../../../commons/utils/awsClient/kmsClient/index.js";
 import { createPublicKey } from "node:crypto";
 import assert from "node:assert";
 import {
@@ -15,7 +15,7 @@ export async function buildJar(signedJwt: string): Promise<string> {
     "JAR_RSA_ENCRYPTION_KEY_ALIAS is not set",
   );
 
-  const kmsClient = await getKmsClient();
+  const kmsClient = getKmsClient();
   const publicKey = await kmsClient.getPublicKey({
     KeyId: process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
   });

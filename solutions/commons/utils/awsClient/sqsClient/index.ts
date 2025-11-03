@@ -34,4 +34,10 @@ const createSqsClient = () => {
   };
 };
 
-export { createSqsClient };
+let cachedSqsClient: ReturnType<typeof createSqsClient> | undefined;
+const getSqsClient = (): ReturnType<typeof createSqsClient> => {
+  cachedSqsClient ??= createSqsClient();
+  return cachedSqsClient;
+};
+
+export { getSqsClient };
