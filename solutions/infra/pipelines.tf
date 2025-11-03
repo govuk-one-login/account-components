@@ -22,9 +22,10 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
     BuildNotificationStackName              = "build-notifications"
     SlackNotificationType                   = var.environment == "production" ? "All" : "Failures"
     ProgrammaticPermissionsBoundary         = "True"
-    AllowedServiceOne                       = "AppConfig"
-    AllowedServiceTwo                       = "EC2"
-    AllowedServiceThree                     = "DynamoDB"
+    AllowedServiceOne                       = "EC2"
+    AllowedServiceTwo                       = "DynamoDB"
+    AllowedServiceThree                     = "Lambda"
+    LambdaCanaryDeployment                  = contains(["production", "integration"], var.environment) ? "Canary10Percent30Minutes" : "AllAtOnce"
   }
 
   capabilities = var.capabilities
@@ -55,6 +56,8 @@ resource "aws_cloudformation_stack" "api_pipeline_stack" {
     AllowedServiceOne                       = "AppConfig"
     AllowedServiceTwo                       = "EC2"
     AllowedServiceThree                     = "DynamoDB"
+    AllowedServiceFour                      = "Lambda"
+    LambdaCanaryDeployment                  = contains(["production", "integration"], var.environment) ? "Canary10Percent30Minutes" : "AllAtOnce"
   }
 
   capabilities = var.capabilities
@@ -82,6 +85,10 @@ resource "aws_cloudformation_stack" "core_pipeline_stack" {
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
     SlackNotificationType                   = var.environment == "production" ? "All" : "Failures"
+    ProgrammaticPermissionsBoundary         = "True"
+    AllowedServiceOne                       = "EC2"
+    AllowedServiceTwo                       = "Lambda"
+    LambdaCanaryDeployment                  = "AllAtOnce"
   }
 
   capabilities = var.capabilities
@@ -136,6 +143,8 @@ resource "aws_cloudformation_stack" "mocks_pipeline_stack" {
     AllowedServiceOne                = "AppConfig"
     AllowedServiceTwo                = "SSM"
     AllowedServiceThree              = "EC2"
+    AllowedServiceFour               = "Lambda"
+    LambdaCanaryDeployment           = "AllAtOnce"
   }
 
   capabilities = var.capabilities

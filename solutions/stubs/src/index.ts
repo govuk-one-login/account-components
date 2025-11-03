@@ -14,6 +14,7 @@ import staticHash from "./utils/static-hash.json" with { type: "json" };
 import { generateRequestObject } from "./generateRequestObject/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 import { clientJwks } from "./clientJwks/index.js";
+import { clientCallback } from "./clientCallback/index.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
@@ -102,6 +103,7 @@ export const initStubs = async function () {
 
   fastify.register(generateRequestObject);
   fastify.register(clientJwks);
+  fastify.register(clientCallback);
 
   return fastify;
 };

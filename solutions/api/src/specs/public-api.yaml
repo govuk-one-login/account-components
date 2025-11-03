@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components OAuth Provider Public API
-  version: 0.0.3
+  version: 0.0.4
   description: |
     OAuth 2.0 provider endpoints, including:
     - GET /authorize
@@ -58,6 +58,7 @@ paths:
         - $ref: "#/components/parameters/Scope"
         - $ref: "#/components/parameters/RedirectUri"
         - $ref: "#/components/parameters/RequestObjectJAR"
+        - $ref: "#/components/parameters/State"
       responses:
         "302":
           description: Redirect the user agent to the redirect uri
@@ -161,7 +162,7 @@ components:
       schema:
         type: string
         pattern: ^[a-z]+(?:-?[a-z]+)*(?:\s[a-z]+(?:-?[a-z]+)*)*$
-        example: am-account-delete
+        example: account-delete
 
     RequestObjectJAR:
       in: query
@@ -171,3 +172,12 @@ components:
       schema:
         type: string
         example: eyJhbGciOiJSU0EtT0FFUC0yNTYiLCJlbmMiOiJBMjU2R0NNIiwia2lkIjoicnNhS2lkMTIzIn0.RD5GmRxN6FYnpJlBkpHPipkjqitgFe2srZFGWDs0jL5oP2vDhf6Bzp5Vfm3uGU_H0uzo_kEAF0tWLA-5N7k9CqNzW_Lc8iN_uxyPCv_9SuPmeCYQyGJckBwE7LO9eBIrLrMEVFL6ei7O0T3o7MlKUcJFtd1D7hh_Kyb9Fejb0H5YeE2hDdjTzkxpAVHx3pWzhW1BHInluamX3EpFMCYsYrwA5v8PHJ2UZW-q4VKlmzvdjrhj_7q4RZPg9rei8bS0jpL1GNr-qj2UiQWsVjx7lXNS8qpxlkpof4LkC9XKQdFEPOJTsNL7ksf57YgwvH4EdV7codNPdZ38qEwh-8F-SA.VPsK7-RRH0OzoDiG.dWGngx419R465g7KVrrpU66HfxI5LzvyZV5ejprj1lLW9AtXq_rXeEKoMf5_Vj3lkQ_b5biQWUcdtdJ0xeeX0Iqhkya_DrHE_aocDSYY0U_W_EdjtolXavLF_vMpdXLiyOab5vTZXlcOl5jMRLjkqOCU5HKoLhyYjcvHzVtA9dRGQnhuQa462BjV4YZbXDtciU6EC8e6OZ_XXO3R9lZ7pN9lZMeaer6ThYgsdyiJfI82A_FAvFLcBWCO4xs1BEyGCt1ltXJNosEFeM_PPqiQ59WyNUy6kdiXrm6GeFKoOUwz3HCFuNd3VfJs-oBSt4o9e6tUSuQimmoamhDHcb6eguevv1TxoXlNqg1Y1X48UXwvH0NjpFkS3RyZcdY5vZmQvD51lvfbEvyUzNk31k-2mrfLZ2XrWJZJ77GKvifYfUufX1IzIQbRdyNj54nDsOKcPZe7KIFLs4rd-ZTX4SqEqpYRFwnXWUlEt689E-hQOUgm9nvAH4GZeWGByrnw8yuYmOC6MI6yfkavBhxOYKzRms47Hf308r6k6lm3evET1WRfX-MsF4txJ_tybW5jUz3fToS93i1Gp66DGG3Q_fZHhM_CQVSURI8KF6P72QPL8_RCVVBMZt-hoJGUSDPIOFmWuOaXpnFlI5cDao1OnctC5NNcc0ayY91mVQhzcXcFz4mxntTUDfoOd1OxCDvgVi04lut_qibVvc6NTyHk11Q76oX6Cy6IhcXdr1J_uIuYXXcQBgezCWhUnVCVnW90x0rqeFN98tHHWfxjUC-pyc_GXz5dEZ1vVh8Xus45-NI4GXYjFx-5x2dWsJhDxYf7C7zrUwtHOk9lcMKHXFgGYZ8qpRjScsVG9c8pxKsU5MPQISFRyp6aao3AKCVLdP25CzFR6CcezyA8r1temMLM8uwRUkVtR70uyKLihMj9yQ34Z8DpiRfNdIoCmlCGrn2Jso6CU38_lEG5wRGX4vXci-T50MjBXdmc6dPSXZI1DN94toR6eBI4mHMnZfmo67c8d_E4MOiD9FZRi8YsQ8XDlKfoPDXp3F-SY2P9nwedJS8-SOHBXhrXSeYwJts420VuWpHfCySQ2XIem-BeqCy2EUG2WNeayD6ZvZGFMQ_bHo-xJs-balEw39EOb6Q3ulVYn8O6q8Z54B6TE_eAduiVVH7_UWi8-n4ClvogZYfS7_Ul4F1beH23LK8pQaB8rW0dsNjlColqlqpQ93gpR8T-RkKoC1uZHVTB9E0OQIeex_pkdqSTIfeJa_VLygwDRZ0n20hWLEGcNQQuIuIEsnaDjlnnafR7vTnbecv6UT8hX6JHlaONWB8B3v_wmIi_1daxsui7zRYyItRu_99bJ3tsknvpsEy7ci4SHRWJiJu8PH3HgpjdXOPq8XwcRWpGvBOn2J3ollLnKiwMDVgCTkIWQ_BZOyhiF971heXkpZXTkzqppWt5CdjBf3nVUPe57L3tMBXnLGuINaRGooGWnn6OTZwwcetDwX6buPLbaZqRAQ5KYgW6mdmOrRdJ_lsIAI6lzQAI_AEGvJ_ZkkyDbCFUta5hXaDNlmMr5lkV5xdVq0_fatXGVJkxUsm1LZYLLL2ryAmJpNBQCiG8ijhFPXNpZ3wTi4LRJqs2t0gxa7uREKgfoQ6AX9vNni2Xyt2GWP9F41hy1CgVjJNFuDjWXiQqsf5o5ospKp_2-49UAIW9e3PxW-wJT60jGAm4IKqJsIJGp0FG7KZZghxD49gKYCv7COOdUGuYsTEHnxDDZT12oNRCM6TH6zBaZiWvFjswMkL9DYF0QIzflm1_NBzREFWOGtMoN4hqoWpIVQwhpqD3CKl0UWcfDfX2iscCBnEAPVyarJzFRp004K0fBb-B7bDyRofnqFkWwBB4uG8fmmpAZb7kZnU608Fi0iQRV5xEzLO8oOQUBvkDGzyfmWKsX8ZCixc0OgPEf4Dqhcr6UfZY16R6kbjms177wWjIsOK3Wz7UpcJTpjHJeEHj4a_uVKHbMDsfHaXE0HpOlGCAYCXyzLdJcxBwMUfZf4B1pxC3M5-7KW3yK0-JW1-6EXjshE1yBnqmQxpWYIFQ5ss_YltZ6jSy9x9cNxPtPKR3GIb1nPukkSuEgr_VLzyjbuxFazGrHqv4QkGyfOrhSLxL_0jsaStZhYHymsM5ZBfHgEM4nBjxfVzSshXLd0lmhSvZc6s5J-d1WO8FwPdVAj-UuWGeF5JrIJ9ad1v2izAj3F56MHYcR2s9hY7HdCCKjgJNViNvCO65ABki4XAV0fbwwglgWffQUD6cXgzyiKRCraxT73T_onKPP1AHoTvD3BQPRa4P_rzlYcIuOTT3Vb9zR5EuZArJYiIhixPDBDhDo2Wq9OPJa72d2KWPkg8P0fSf-5NWp1Jj307q4eyJ7Lr4_N1XvQScMyW50pSQizO_z0iORIBcorgZc2wXlKhOWO-b8Jpa0ou6I3E_D8rs__m3kqfADpIneyofZyE4EiWWFnpjzEoTw2d9YxrFm7Q85bRFhsF3CLjHzw2mAJDV-t5oYqwuSpctluiX-K_cgtlPZriv-w712x-Pzat2SWcbLd06YqPHdjg_Ti8Dbg1efq2IXegqUbHHy-OSC40xd7GwIVeJFs5BLNuxeK6iAl_iXn3u2oBoWlnq3RzrYxeBwUa5z8aagP7wyWBvZvvdkrRYm_7mh2fFcydApoCm4znkScakqZ8UbvfhqkbcSZwziJMOOzaSoMY9H8t59aZZIZAdZsvFv1nVYVYCoovK0V_QWMsX-vWq6mBjbD0nFWcSnSo_mgdI8Olb46kJuJ90ymV36BIbcPehF3_5Q0FM3jTlZAwoXUHFbtu5Genfnp0z6cid_FtgAXVlEdTEjtuY19RbYCwqXPOUO_A_T_UnbCd5dzWyxuFGxEz_5XQPcJfLZZ855oEK9RJMRhbyl_v6t4dqchjyGG8v0BFX9ompGJczUERT-vXyCcCgWWjIal2OOcuL57jHuORrGnI6J1_6fNHBs1uah2p5WQy6DPkCHrhKA8PEv-KxuvS8fO0L36SV_OuBzMd5Y0d5XFiS4o8Ux9jTCsXTv81sXWgAb_VmZbZ0GHd6.4q4viJNZyy_T6N-mIdHgjQ # pragma: allowlist secret
+
+    State:
+      in: query
+      name: state
+      description: Essential for protecting against Cross-Site Request Forgery (CSRF) attacks by ensuring that the response from the authorization server matches the original request.
+      required: false
+      schema:
+        type: string
+        example: aRandomString123

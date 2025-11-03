@@ -89,7 +89,7 @@ Doing so will gain the user access to the account deletion component in which th
 
 Intended to be used by:
 
-- Auth for Single Factor (Self-Serve) Account Deletion (scope: `am-account-delete`)  
+- Auth for Single Factor (Self-Serve) Account Deletion (scope: `account-delete`)  
   ![Single Factor Account Deletion](./images/single-factor-account-deletion.png "SFAD")
 
   ![Service View](./images/sfad-service-view.png "Service View")
