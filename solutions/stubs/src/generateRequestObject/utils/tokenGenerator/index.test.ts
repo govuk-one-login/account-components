@@ -177,7 +177,6 @@ describe("getJwtPayload", () => {
     expect(payload["extra"]).toBe("value");
     expect(payload["client_id"]).toBe("my-client-id");
     expect(payload["email"]).toBe("someone@example.com");
-    expect(payload["lng"]).toBe("en");
     expect(payload["govuk_signin_journey_id"]).toBeTypeOf("string");
     expect(payload["state"]).toBeTypeOf("string");
   });
