@@ -131,7 +131,7 @@ Globals:
       Role: !GetAtt CodeDeployServiceRole.Arn
     Tracing: Active
     AutoPublishAlias: live
-    KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyAlias}}"
+    KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyArn}}"
     Layers:
       - !If [
           IsLocal,
@@ -423,7 +423,7 @@ Resources:
     Properties:
       LogGroupName: !Sub "/lambda/${AWS::StackName}/HealthcheckLambdaLogGroup"
       RetentionInDays: 30
-      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyAlias}}"
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
   HealthcheckLambda:
     Type: AWS::Serverless::Function
@@ -450,7 +450,7 @@ Resources:
     Properties:
       LogGroupName: !Sub "/lambda/${AWS::StackName}/AuthorizeLambdaLogGroup"
       RetentionInDays: 30
-      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyAlias}}"
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
   AuthorizeLambda:
     Type: AWS::Serverless::Function
@@ -545,7 +545,7 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: false
       SSESpecification:
-        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyAlias}}"
+        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
         SSEEnabled: true
         SSEType: KMS
       TableClass: STANDARD
@@ -569,7 +569,7 @@ Resources:
         - AttributeName: outcome_type
           KeyType: RANGE
       SSESpecification:
-        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyAlias}}"
+        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
         SSEEnabled: true
         SSEType: KMS
       Tags:
@@ -597,7 +597,7 @@ Resources:
         AttributeName: "expiry_time"
         Enabled: true
       SSESpecification:
-        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyAlias}}"
+        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
         SSEEnabled: true
         SSEType: KMS
       TableClass: STANDARD
