@@ -62,8 +62,6 @@ export interface RequestBody {
   sub?: string;
   email?: string;
   govuk_signin_journey_id?: string;
-  lng?: string;
-  rp_client_id?: string;
   scenario?: string;
   [key: string]: unknown;
 }
@@ -77,24 +75,21 @@ export enum Users {
 interface User {
   sub: string;
   email: string;
-  lng: string;
 }
 
 export const getUsers = (user: string): User => {
   switch (user) {
     case "non_existent":
-      return { sub: "", email: "", lng: "en" };
+      return { sub: "", email: "" };
     case "welsh":
       return {
         sub: "urn:fdc:gov.uk:welsh-user",
         email: "jones@wales.com",
-        lng: "cy",
       };
     default:
       return {
         sub: "urn:fdc:gov.uk:default",
         email: "someone@example.com",
-        lng: "en",
       };
   }
 };
