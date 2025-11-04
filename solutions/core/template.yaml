@@ -559,37 +559,21 @@ Resources:
       Value: !GetAtt DynamoDbSSEKey.Arn
       Description: ARN of the KMS key used to encrypt DynamoDB tables
 
-  DynamoDbSSEKeyAliasParameter:
+  LambdaEnvironmentVariableEncryptionKeyArnParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub "/${AWS::StackName}/DynamoDbSSEKeyAlias"
+      Name: !Sub "/${AWS::StackName}/LambdaEnvironmentVariableEncryptionKeyArn"
       Type: String
-      Value: !Ref DynamoDbSSEKeyAlias
-      Description: Alias of the KMS key used to encrypt DynamoDB tables
+      Value: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
+      Description: ARN of the KMS key used to encrypt lambda environment variables
 
-  JARRSAEncryptionKeyAliasParameter:
+  CloudWatchEncryptionKeyArnParameter:
     Type: AWS::SSM::Parameter
     Properties:
-      Name: !Sub "/${AWS::StackName}/JARRSAEncryptionKeyAlias"
+      Name: !Sub "/${AWS::StackName}/CloudWatchEncryptionKeyArn"
       Type: String
-      Value: !Ref JARRSAEncryptionKeyAlias
-      Description: Alias of the JAR RSA encryption KMS key
-
-  LambdaEnvironmentVariableEncryptionKeyAliasParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub "/${AWS::StackName}/LambdaEnvironmentVariableEncryptionKeyAlias"
-      Type: String
-      Value: !Ref LambdaEnvironmentVariableEncryptionKeyAlias
-      Description: Alias of the KMS key used to encrypt lambda environment variables
-
-  CloudWatchEncryptionKeyAliasParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub "/${AWS::StackName}/CloudWatchEncryptionKeyAlias"
-      Type: String
-      Value: !Ref CloudWatchEncryptionKeyAlias
-      Description: Alias of the KMS key used to encrypt CloudWatch logs
+      Value: !GetAtt CloudWatchEncryptionKey.Arn
+      Description: ARN of the KMS key used to encrypt CloudWatch logs
 
   JARRSAEncryptionKeyArnParameter:
     Type: AWS::SSM::Parameter
@@ -598,3 +582,11 @@ Resources:
       Type: String
       Value: !GetAtt JARRSAEncryptionKey.Arn
       Description: ARN of the JAR RSA encryption KMS key
+
+  JARRSAEncryptionKeyAliasParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/JARRSAEncryptionKeyAlias"
+      Type: String
+      Value: !Ref JARRSAEncryptionKeyAlias
+      Description: Alias of the JAR RSA encryption KMS key

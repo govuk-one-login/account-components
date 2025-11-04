@@ -99,7 +99,7 @@ Globals:
       Role: !GetAtt CodeDeployServiceRole.Arn
     Tracing: Active
     AutoPublishAlias: live
-    KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyAlias}}"
+    KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyArn}}"
     Layers:
       - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1
     CodeSigningConfigArn: !If
@@ -258,7 +258,7 @@ Resources:
           Projection:
             ProjectionType: KEYS_ONLY
       SSESpecification:
-        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyAlias}}"
+        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
         SSEEnabled: true
         SSEType: KMS
       TableClass: STANDARD
@@ -394,4 +394,4 @@ Resources:
     Properties:
       LogGroupName: !Sub "/lambda/${AWS::StackName}/FrontendLambda"
       RetentionInDays: 30
-      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyAlias}}"
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
