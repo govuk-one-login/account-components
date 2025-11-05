@@ -62,7 +62,6 @@ export interface RequestBody {
   sub?: string;
   email?: string;
   govuk_signin_journey_id?: string;
-  rp_client_id?: string;
   scenario?: string;
   [key: string]: unknown;
 }
