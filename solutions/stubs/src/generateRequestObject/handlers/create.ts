@@ -87,6 +87,9 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
     url.searchParams.append("response_type", "code");
     url.searchParams.append("redirect_uri", redirectUrl);
     url.searchParams.append("request", result.encryptedJar);
+    if (typeof result.jwtPayload["state"] === "string") {
+      url.searchParams.append("state", result.jwtPayload["state"]);
+    }
 
     await createRequestObjectGet(
       request,

@@ -259,6 +259,18 @@ const checkClaims = (
       metrics.addMetric("UnexpectedResponseType", MetricUnit.Count, 1);
       return "";
     }),
+    iat: v.pipe(
+      v.number(),
+      v.maxValue(Date.now() / 1000, (issue) => {
+        logger.warn("iat is in the future", {
+          client_id: client.client_id,
+          iat: new Date(Number(issue.received) * 1000).toISOString(),
+          current_datetime: new Date().toISOString(),
+        });
+        metrics.addMetric("IATInTheFuture", MetricUnit.Count, 1);
+        return "";
+      }),
+    ),
     scope: v.picklist(client.scope.split(" "), (issue) => {
       logger.warn("Scope Denied", {
         client_id: client.client_id,
@@ -282,7 +294,7 @@ const checkClaims = (
   });
 
   if (!claimsResult.success) {
-    logger.warn("Invalid Request Object", {
+    logger.warn("InvalidRequestObject", {
       client_id: client.client_id,
       claims_with_issues: claimsResult.issues.map((issue) =>
         v.getDotPath(issue),

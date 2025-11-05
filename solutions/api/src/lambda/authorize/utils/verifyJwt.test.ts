@@ -87,6 +87,7 @@ describe("verifyJwt", () => {
       iss: "test-client",
       aud: "https://auth.example.com",
       response_type: "code",
+      iat: Math.floor(Date.now() / 1000) - 60,
       scope: "openid",
       state: "test-state",
       jti: "unique-id",
@@ -296,6 +297,7 @@ describe("verifyJwt", () => {
       iss: "test-client",
       aud: "https://auth.example.com",
       response_type: "code",
+      iat: Math.floor(Date.now() / 1000) - 60,
       scope: "openid",
       state: "test-state",
       jti: "unique-id",
@@ -321,6 +323,35 @@ describe("verifyJwt", () => {
       iss: "test-client",
       aud: "https://auth.example.com",
       response_type: "code",
+      iat: Math.floor(Date.now() / 1000) - 60,
+      scope: "openid",
+      state: "test-state",
+      jti: "unique-id",
+      access_token: "access-token",
+      refresh_token: "refresh-token",
+      sub: "user-123",
+      email: "test@example.com",
+      govuk_signin_journey_id: "journey-123",
+    };
+
+    mockJwtVerify.mockResolvedValue({ payload: mockPayload });
+
+    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+
+    expect(result).toBeInstanceOf(ErrorResponse);
+
+    assert.ok(result instanceof ErrorResponse);
+
+    expect(result.errorResponse.statusCode).toBe(302);
+  });
+
+  it("returns ErrorResponse when iat is in the future", async () => {
+    const mockPayload = {
+      client_id: "test-client",
+      iss: "test-client",
+      aud: "https://auth.example.com",
+      response_type: "code",
+      iat: Math.floor(Date.now() / 1000) + 3600,
       scope: "openid",
       state: "test-state",
       jti: "unique-id",

@@ -7,6 +7,12 @@ const getQueryParams = vi.fn();
 const getClient = vi.fn();
 const decryptJar = vi.fn();
 const verifyJwt = vi.fn();
+const mockLogger = {
+  error: vi.fn(),
+};
+const mockMetrics = {
+  addMetric: vi.fn(),
+};
 
 vi.mock(import("./utils/getQueryParams.js"), () => ({
   getQueryParams,
@@ -24,8 +30,18 @@ vi.mock(import("./utils/verifyJwt.js"), () => ({
   verifyJwt,
 }));
 
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
+  logger: mockLogger,
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
+  metrics: mockMetrics,
+}));
+
 const { handler } = await import("./index.js");
-const { ErrorResponse } = await import("./utils/common.js");
+const { ErrorResponse, badRequestResponse } = await import("./utils/common.js");
 
 describe("authorize handler", () => {
   const mockEvent = {} as APIGatewayProxyEvent;
@@ -161,6 +177,25 @@ describe("authorize handler", () => {
       client,
       "http://test.com",
       "test-state",
+    );
+  });
+
+  it("handles unexpected errors in try-catch block", async () => {
+    const error = new Error("Unexpected error");
+    getQueryParams.mockImplementation(() => {
+      throw error;
+    });
+
+    const result = await handler(mockEvent);
+
+    expect(result).toStrictEqual(badRequestResponse);
+    expect(mockLogger.error).toHaveBeenCalledWith("Authorize error", {
+      error,
+    });
+    expect(mockMetrics.addMetric).toHaveBeenCalledWith(
+      "InvalidAuthorizeRequest",
+      "Count",
+      1,
     );
   });
 });
