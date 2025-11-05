@@ -77,14 +77,13 @@ interface User {
 }
 
 export const getUsers = (user: string): User => {
-  switch (user) {
-    case "non_existent":
-      return { sub: "", email: "" };
-    default:
-      return {
-        sub: "urn:fdc:gov.uk:default",
-        email: "someone@example.com",
-      };
+  if (user === "non_existent") {
+    return { sub: "", email: "" };
+  } else {
+    return {
+      sub: "urn:fdc:gov.uk:default",
+      email: "someone@example.com",
+    };
   }
 };
 

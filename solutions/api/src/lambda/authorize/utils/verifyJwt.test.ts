@@ -291,6 +291,23 @@ describe("verifyJwt", () => {
   });
 
   it("throws when AUTHORIZE_ENDPOINT_URL is not set", async () => {
+    const mockPayload = {
+      client_id: "wrong-client",
+      iss: "test-client",
+      aud: "https://auth.example.com",
+      response_type: "code",
+      scope: "openid",
+      state: "test-state",
+      jti: "unique-id",
+      access_token: "access-token",
+      refresh_token: "refresh-token",
+      sub: "user-123",
+      email: "test@example.com",
+      govuk_signin_journey_id: "journey-123",
+    };
+
+    mockJwtVerify.mockResolvedValue({ payload: mockPayload });
+
     delete process.env["AUTHORIZE_ENDPOINT_URL"];
 
     await expect(

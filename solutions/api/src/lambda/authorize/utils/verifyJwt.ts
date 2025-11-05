@@ -27,19 +27,12 @@ import {
 } from "jose/errors";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/contstants.js";
 
-export const verifyJwt = async (
+const verifyJwtWithJose = async (
   signedJwt: string,
   client: Client,
   redirectUri: string,
   state?: string,
 ) => {
-  metrics.addDimensions({ client_id: client.client_id });
-
-  assert.ok(
-    process.env["AUTHORIZE_ENDPOINT_URL"],
-    "AUTHORIZE_ENDPOINT_URL is not set",
-  );
-
   let payload: JWTPayload | undefined = undefined;
 
   try {
@@ -213,7 +206,21 @@ export const verifyJwt = async (
     }
   }
 
+  return payload;
+};
+
+const checkClaims = (
+  payload: JWTPayload,
+  client: Client,
+  redirectUri: string,
+  state?: string,
+) => {
   const expectedResponseType = "code";
+
+  assert.ok(
+    process.env["AUTHORIZE_ENDPOINT_URL"],
+    "AUTHORIZE_ENDPOINT_URL is not set",
+  );
 
   const claimsSchema = v.object({
     client_id: v.literal(client.client_id, (issue) => {
@@ -293,4 +300,33 @@ export const verifyJwt = async (
   }
 
   return claimsResult.output;
+};
+
+export const verifyJwt = async (
+  signedJwt: string,
+  client: Client,
+  redirectUri: string,
+  state?: string,
+) => {
+  metrics.addDimensions({ client_id: client.client_id });
+
+  const verifyJwtWithJoseResult = await verifyJwtWithJose(
+    signedJwt,
+    client,
+    redirectUri,
+    state,
+  );
+
+  if (verifyJwtWithJoseResult instanceof ErrorResponse) {
+    return verifyJwtWithJoseResult;
+  }
+
+  const checkClaimsResult = checkClaims(
+    verifyJwtWithJoseResult,
+    client,
+    redirectUri,
+    state,
+  );
+
+  return checkClaimsResult;
 };

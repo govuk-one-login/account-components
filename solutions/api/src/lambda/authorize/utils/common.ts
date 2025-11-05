@@ -22,27 +22,27 @@ export const badRequestResponse: APIGatewayProxyResult = {
   body: "",
 };
 
-interface AuthorizeError_AccessDenied {
+interface AuthorizeErrorAccessDenied {
   code: `E1${number}`;
   description: "access_denied";
 }
-interface AuthorizeError_InvalidRequest {
+interface AuthorizeErrorInvalidRequest {
   code: `E2${number}`;
   description: "invalid_request";
 }
-interface AuthorizeError_InvalidScope {
+interface AuthorizeErrorInvalidScope {
   code: `E3${number}`;
   description: "invalid_scope";
 }
-interface AuthorizeError_UnauthorizedClient {
+interface AuthorizeErrorUnauthorizedClient {
   code: `E4${number}`;
   description: "unauthorized_client";
 }
-interface AuthorizeError_ServerError {
+interface AuthorizeErrorServerError {
   code: `E5${number}`;
   description: "server_error";
 }
-interface AuthorizeError_InvalidGrant {
+interface AuthorizeErrorInvalidGrant {
   code: `E6${number}`;
   description: "invalid_grant";
 }
@@ -114,12 +114,12 @@ export const authorizeErrors = {
   },
 } as const satisfies Record<
   string,
-  | AuthorizeError_AccessDenied
-  | AuthorizeError_InvalidRequest
-  | AuthorizeError_InvalidScope
-  | AuthorizeError_UnauthorizedClient
-  | AuthorizeError_ServerError
-  | AuthorizeError_InvalidGrant
+  | AuthorizeErrorAccessDenied
+  | AuthorizeErrorInvalidRequest
+  | AuthorizeErrorInvalidScope
+  | AuthorizeErrorUnauthorizedClient
+  | AuthorizeErrorServerError
+  | AuthorizeErrorInvalidGrant
 >;
 
 export const getRedirectToClientRedirectUriResponse = (
