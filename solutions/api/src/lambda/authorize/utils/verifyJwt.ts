@@ -11,10 +11,21 @@ import type { JWTPayload } from "jose";
 import { jwtVerify, createRemoteJWKSet } from "jose";
 import type { Client } from "../../../../../commons/utils/getClientRegistry/index.js";
 import assert from "node:assert";
-import { JOSEError, JWTExpired } from "jose/errors";
-import { Lang } from "../../../../../commons/utils/configureI18n/index.js";
-
-const clientJwks: Record<string, ReturnType<typeof createRemoteJWKSet>> = {};
+import {
+  JOSEAlgNotAllowed,
+  JOSEError,
+  JWKInvalid,
+  JWKSInvalid,
+  JWKSMultipleMatchingKeys,
+  JWKSNoMatchingKey,
+  JWKSTimeout,
+  JWSInvalid,
+  JWSSignatureVerificationFailed,
+  JWTClaimValidationFailed,
+  JWTExpired,
+  JWTInvalid,
+} from "jose/errors";
+import { jwtSigningAlgorithm } from "../../../../../commons/utils/contstants.js";
 
 export const verifyJwt = async (
   signedJwt: string,
@@ -29,46 +40,177 @@ export const verifyJwt = async (
     "AUTHORIZE_ENDPOINT_URL is not set",
   );
 
-  clientJwks[client.client_id] ??= createRemoteJWKSet(new URL(client.jwks_uri));
-  const jwks = clientJwks[client.client_id];
-
-  assert.ok(jwks, "JWKS not defined");
-
-  const errorResponse = new ErrorResponse(
-    getRedirectToClientRedirectUriResponse(
-      redirectUri,
-      authorizeErrors.jwtVerificationFailed,
-      state,
-    ),
-  );
-
   let payload: JWTPayload | undefined = undefined;
 
   try {
-    payload = (await jwtVerify(signedJwt, jwks)).payload;
+    payload = (
+      await jwtVerify(signedJwt, createRemoteJWKSet(new URL(client.jwks_uri)), {
+        algorithms: [jwtSigningAlgorithm],
+      })
+    ).payload;
   } catch (error) {
-    if (error instanceof JWTExpired) {
-      logger.warn("Request Object has Expired", {
+    if (error instanceof JWKSTimeout) {
+      logger.warn("JWKSTimeout", {
+        client_id: client.client_id,
+      });
+      metrics.addMetric("JWKSTimeout", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.jwksTimeout,
+          state,
+        ),
+      );
+    } else if (error instanceof JWKSInvalid) {
+      logger.warn("JWKSInvalid", {
+        client_id: client.client_id,
+      });
+      metrics.addMetric("JWKSInvalid", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.jwksInvalid,
+          state,
+        ),
+      );
+    } else if (error instanceof JWKSNoMatchingKey) {
+      logger.warn("JWKSNoMatchingKey", {
+        client_id: client.client_id,
+      });
+      metrics.addMetric("JWKSNoMatchingKey", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.jwksNoMatchingKey,
+          state,
+        ),
+      );
+    } else if (error instanceof JWKSMultipleMatchingKeys) {
+      logger.warn("JWKSMultipleMatchingKeys", {
+        client_id: client.client_id,
+      });
+      metrics.addMetric("JWKSMultipleMatchingKeys", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.jwksMultipleMatchingKeys,
+          state,
+        ),
+      );
+    } else if (error instanceof JWKInvalid) {
+      logger.warn("JWKInvalid", {
+        client_id: client.client_id,
+      });
+      metrics.addMetric("JWKInvalid", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.jwkInvalid,
+          state,
+        ),
+      );
+    } else if (error instanceof JOSEAlgNotAllowed) {
+      logger.warn("JOSEAlgNotAllowed", {
+        client_id: client.client_id,
+      });
+      metrics.addMetric("JOSEAlgNotAllowed", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.algNotAllowed,
+          state,
+        ),
+      );
+    } else if (error instanceof JWSInvalid) {
+      logger.warn("JWSInvalid", {
+        client_id: client.client_id,
+      });
+      metrics.addMetric("JWSInvalid", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.jwsInvalid,
+          state,
+        ),
+      );
+    } else if (error instanceof JWSSignatureVerificationFailed) {
+      logger.warn("JWSSignatureVerificationFailed", {
+        client_id: client.client_id,
+      });
+      metrics.addMetric("JWSSignatureVerificationFailed", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.jwsSignatureVerificationFailed,
+          state,
+        ),
+      );
+    } else if (error instanceof JWTInvalid) {
+      logger.warn("JWTInvalid", {
+        client_id: client.client_id,
+      });
+      metrics.addMetric("JWTInvalid", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.jwtInvalid,
+          state,
+        ),
+      );
+    } else if (error instanceof JWTExpired) {
+      logger.warn("JWTExpired", {
         client_id: client.client_id,
         exp: new Date(Number(error.payload.exp) * 1000).toISOString(),
         current_datetime: new Date().toISOString(),
+        jose_error_code: error.code,
       });
-      metrics.addMetric("ExpiredRequestObject", MetricUnit.Count, 1);
+      metrics.addMetric("JWTExpired", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.jwtExpired,
+          state,
+        ),
+      );
+    } else if (error instanceof JWTClaimValidationFailed) {
+      logger.warn("JWTClaimValidationFailed", {
+        client_id: client.client_id,
+      });
+      metrics.addMetric("JWTClaimValidationFailed", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.jwtClaimValidationFailed,
+          state,
+        ),
+      );
     } else if (error instanceof JOSEError) {
-      logger.warn("Unable to verify JWT", {
+      logger.warn("JOSEError", {
         client_id: client.client_id,
         jose_error_code: error.code,
       });
       metrics.addDimensions({ jose_error_code: error.code });
-      metrics.addMetric("UnableToVerifyJwt", MetricUnit.Count, 1);
+      metrics.addMetric("JOSEError", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.verifyJwtError,
+          state,
+        ),
+      );
     } else {
-      logger.warn("Unknown error verifying JWT", {
+      logger.warn("VerifyJwtUnknownError", {
         client_id: client.client_id,
       });
       metrics.addMetric("VerifyJwtUnknownError", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.verifyJwtUnknownError,
+          state,
+        ),
+      );
     }
-
-    return errorResponse;
   }
 
   const expectedResponseType = "code";
@@ -80,7 +222,7 @@ export const verifyJwt = async (
         expected_client_id: client.client_id,
         received_client_id: issue.received,
       });
-      metrics.addMetric("ClientIdDescrepancy", MetricUnit.Count, 1);
+      metrics.addMetric("ClientIdDiscrepancy", MetricUnit.Count, 1);
       return "";
     }),
     iss: v.literal(client.client_id, (issue) => {
@@ -89,7 +231,7 @@ export const verifyJwt = async (
         expected_client_id: client.client_id,
         received_client_id: issue.received,
       });
-      metrics.addMetric("IssuerDescrepancy", MetricUnit.Count, 1);
+      metrics.addMetric("IssuerDiscrepancy", MetricUnit.Count, 1);
       return "";
     }),
     aud: v.literal(process.env["AUTHORIZE_ENDPOINT_URL"], (issue) => {
@@ -126,7 +268,6 @@ export const verifyJwt = async (
     sub: v.pipe(v.string(), v.nonEmpty()),
     email: v.pipe(v.string(), v.email()),
     govuk_signin_journey_id: v.pipe(v.string(), v.nonEmpty()),
-    lng: v.optional(v.enum(Lang), Lang.English),
   });
 
   const claimsResult = v.safeParse(claimsSchema, payload, {
@@ -142,7 +283,13 @@ export const verifyJwt = async (
     });
     metrics.addMetric("InvalidRequestObject", MetricUnit.Count, 1);
 
-    return errorResponse;
+    return new ErrorResponse(
+      getRedirectToClientRedirectUriResponse(
+        redirectUri,
+        authorizeErrors.invalidClaims,
+        state,
+      ),
+    );
   }
 
   return claimsResult.output;

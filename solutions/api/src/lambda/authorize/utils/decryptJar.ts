@@ -95,7 +95,7 @@ export const decryptJar = async (
 
       return decrypted.toString();
     } catch (error) {
-      logger.warn("Failed to decrypt JAR", {
+      logger.warn("JARDecryptFailed", {
         client_id: clientId,
         error,
       });
@@ -103,20 +103,21 @@ export const decryptJar = async (
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           redirectUri,
-          authorizeErrors.jarDecryptionFailed,
+          authorizeErrors.jarDecryptFailed,
           state,
         ),
       );
     }
   } catch (error) {
-    logger.error("Invalid Configuration - Unable to decrypt JAR", {
+    logger.error("JARDecryptUnknownError", {
       client_id: clientId,
       error,
     });
+    metrics.addMetric("JARDecryptUnknownError", MetricUnit.Count, 1);
     return new ErrorResponse(
       getRedirectToClientRedirectUriResponse(
         redirectUri,
-        authorizeErrors.jarDecryptionUnknownError,
+        authorizeErrors.jarDecryptUnknownError,
         state,
       ),
     );

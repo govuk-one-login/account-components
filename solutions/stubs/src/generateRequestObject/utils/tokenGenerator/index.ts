@@ -144,7 +144,6 @@ export function getJwtPayload(
     sub: user.sub,
     email: user.email,
     govuk_signin_journey_id: Buffer.from(randomBytes(10)).toString("hex"),
-    lng: user.lng,
   } as JWTPayload;
 }
 
