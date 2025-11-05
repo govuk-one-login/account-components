@@ -150,7 +150,7 @@ describe("authorize handler", () => {
       body: JSON.stringify(
         {
           message: "Authorized",
-          signedJwt,
+          claims,
         },
         null,
         2,
