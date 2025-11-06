@@ -50,7 +50,7 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       statusCode: 302,
       headers: {
         location:
-          "https://client.com/callback?error=server_error&error_description=E5009&state=test-state",
+          "https://client.com/callback?error=server_error&error_description=E5003&state=test-state",
       },
       body: "",
     });
