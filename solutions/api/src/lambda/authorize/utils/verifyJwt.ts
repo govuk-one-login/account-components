@@ -181,6 +181,8 @@ const verifyJwtWithJose = async (
       logger.warn("JOSEError", {
         client_id: client.client_id,
         jose_error_code: error.code,
+        msg: error.message,
+        cause: error.cause,
       });
       metrics.addDimensions({ jose_error_code: error.code });
       metrics.addMetric("JOSEError", MetricUnit.Count, 1);
