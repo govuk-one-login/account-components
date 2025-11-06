@@ -1,13 +1,13 @@
 name: Dev - Deploy Configuration
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "solutions/config/dev-config.json"
-      - ".github/workflows/deploy-config-dev.yaml"
-      - ".github/workflows/deploy-config.yaml"
+  workflow_dispatch:
+    inputs:
+      gitRef:
+        description: "Input branch name, commit SHA, or tag"
+        required: true
+        type: string
+        default: main
 
 permissions:
   id-token: write
@@ -24,6 +24,7 @@ jobs:
       gh-environment: development
       target-environment: dev
       config-file: dev-config.json
+      git-ref: ${{ inputs.gitRef }}
     secrets:
       config-source-bucket-name: ${{ secrets.DEV_APP_CONFIG_SOURCE_BUCKET_NAME }}
       aws-role-arn: ${{ secrets.DEV_GHA_APP_CONFIG_ROLE_ARN }}

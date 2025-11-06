@@ -6,6 +6,7 @@ on:
       gh-environment: { required: true, type: string }
       target-environment: { required: false, type: string }
       config-file: { required: false, type: string }
+      git-ref: { required: false, type: string }
     secrets:
       config-source-bucket-name: { required: false }
       aws-role-arn: { required: true }
@@ -32,6 +33,7 @@ jobs:
         with:
           fetch-depth: 0 # Disable shallow cloning
           persist-credentials: false
+          ref: ${{ inputs.git-ref || github.ref }}
 
       - name: Get distribution artifact
         uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
