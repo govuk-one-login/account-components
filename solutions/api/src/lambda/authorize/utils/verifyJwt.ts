@@ -9,7 +9,6 @@ import {
 } from "./common.js";
 import type { JWTPayload } from "jose";
 import { jwtVerify, createRemoteJWKSet } from "jose";
-import type { Client } from "../../../../../commons/utils/getClientRegistry/index.js";
 import assert from "node:assert";
 import {
   JOSEAlgNotAllowed,
@@ -26,10 +25,16 @@ import {
   JWTInvalid,
 } from "jose/errors";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/contstants.js";
+import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
+import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
+import type { ClientEntry } from "../../../../../config/schema/types.js";
+import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
+
+const dynamoDbClient = getDynamoDbClient();
 
 const verify = async (
   signedJwt: string,
-  client: Client,
+  client: ClientEntry,
   redirectUri: string,
   state?: string,
 ) => {
@@ -208,9 +213,71 @@ const verify = async (
   return payload;
 };
 
-const checkClaims = (
+const isJtiValid = async (
+  jti: string,
+  clientId: string,
+  redirectUri: string,
+  state?: string,
+) => {
+  try {
+    const appConfig = await getAppConfig();
+
+    await dynamoDbClient.transactWrite({
+      TransactItems: [
+        {
+          Put: {
+            TableName: process.env["REPLAY_ATTACK_TABLE_NAME"],
+            Item: {
+              nonce: jti,
+              expires:
+                Math.floor(Date.now() / 1000) +
+                appConfig.jti_nonce_ttl_in_seconds,
+            },
+            ConditionExpression: "attribute_not_exists(nonce)",
+          },
+        },
+      ],
+    });
+    return true;
+  } catch (error) {
+    if (
+      error instanceof TransactionCanceledException &&
+      error.CancellationReasons?.find(
+        (reason) => reason.Code === "ConditionalCheckFailed",
+      )
+    ) {
+      logger.warn("JTIAlreadyUsed", {
+        client_id: clientId,
+        jti,
+      });
+      metrics.addMetric("JTIAlreadyUsed", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          redirectUri,
+          authorizeErrors.jtiAlreadyUsed,
+          state,
+        ),
+      );
+    }
+    logger.warn("FailedToSaveJTI", {
+      client_id: clientId,
+      jti,
+      error,
+    });
+    metrics.addMetric("FailedToSaveJTI", MetricUnit.Count, 1);
+    return new ErrorResponse(
+      getRedirectToClientRedirectUriResponse(
+        redirectUri,
+        authorizeErrors.failedToSaveJti,
+        state,
+      ),
+    );
+  }
+};
+
+const checkClaims = async (
   payload: JWTPayload,
-  client: Client,
+  client: ClientEntry,
   redirectUri: string,
   state?: string,
 ) => {
@@ -312,12 +379,23 @@ const checkClaims = (
     );
   }
 
+  const isJtiValidResult = await isJtiValid(
+    claimsResult.output.jti,
+    client.client_id,
+    redirectUri,
+    state,
+  );
+
+  if (isJtiValidResult instanceof ErrorResponse) {
+    return isJtiValidResult;
+  }
+
   return claimsResult.output;
 };
 
 export const verifyJwt = async (
   signedJwt: string,
-  client: Client,
+  client: ClientEntry,
   redirectUri: string,
   state?: string,
 ) => {
@@ -329,7 +407,7 @@ export const verifyJwt = async (
     return verifyResult;
   }
 
-  const checkClaimsResult = checkClaims(
+  const checkClaimsResult = await checkClaims(
     verifyResult,
     client,
     redirectUri,

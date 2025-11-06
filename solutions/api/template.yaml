@@ -473,6 +473,7 @@ Resources:
               authorizeEndpointUrl,
             ]
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
+          REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -486,6 +487,10 @@ Resources:
                 - appconfig:GetLatestConfiguration
                 - appconfig:StartConfigurationSession
               Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
+            - Effect: Allow
+              Action:
+                - dynamodb:TransactWrite
+              Resource: !GetAtt ReplayAttackTable.Arn
     Metadata:
       BuildMethod: esbuild
       BuildProperties:

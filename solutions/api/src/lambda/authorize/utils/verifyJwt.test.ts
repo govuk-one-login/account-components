@@ -24,7 +24,8 @@ import {
   JWTExpired,
   JWTInvalid,
 } from "jose/errors";
-import type { Client } from "../../../../../commons/utils/getClientRegistry/index.js";
+import type { ClientEntry } from "../../../../../config/schema/types.js";
+import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -43,6 +44,22 @@ vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
   metrics: { addMetric: vi.fn(), addDimensions: vi.fn() },
 }));
 
+const mockTransactWrite = vi.fn();
+// @ts-expect-error
+vi.mock(
+  import("../../../../../commons/utils/awsClient/dynamodbClient/index.js"),
+  () => ({
+    getDynamoDbClient: () => ({
+      transactWrite: mockTransactWrite,
+    }),
+  }),
+);
+
+const mockGetAppConfig = vi.fn();
+vi.mock(import("../../../../../commons/utils/getAppConfig/index.js"), () => ({
+  getAppConfig: mockGetAppConfig,
+}));
+
 const mockJwtVerify = vi.fn();
 const mockCreateRemoteJWKSet = vi.fn();
 
@@ -54,7 +71,7 @@ vi.mock(import("jose"), () => ({
 let verifyJwt: typeof verifyJwtForType;
 
 describe("verifyJwt", () => {
-  const mockClient: Client = {
+  const mockClient: ClientEntry = {
     client_id: "test-client",
     scope: "openid profile",
     redirect_uris: ["https://example.com/callback"],
@@ -74,7 +91,12 @@ describe("verifyJwt", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env["AUTHORIZE_ENDPOINT_URL"] = "https://auth.example.com";
+    process.env["REPLAY_ATTACK_TABLE_NAME"] = "test-replay-table";
     mockCreateRemoteJWKSet.mockReturnValue(mockJwks);
+    mockGetAppConfig.mockResolvedValue({
+      jti_nonce_ttl_in_seconds: 300,
+    });
+    mockTransactWrite.mockResolvedValue({});
   });
 
   afterAll(() => {
@@ -121,6 +143,9 @@ describe("verifyJwt", () => {
 
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=unauthorized_client",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
       "state=test-state",
     );
   });
@@ -135,6 +160,9 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=unauthorized_client",
+    );
   });
 
   it("returns ErrorResponse for JWKSNoMatchingKey error", async () => {
@@ -147,6 +175,9 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=unauthorized_client",
+    );
   });
 
   it("returns ErrorResponse for JWKSMultipleMatchingKeys error", async () => {
@@ -161,6 +192,9 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=unauthorized_client",
+    );
   });
 
   it("returns ErrorResponse for JWKInvalid error", async () => {
@@ -173,6 +207,9 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=unauthorized_client",
+    );
   });
 
   it("returns ErrorResponse for JOSEAlgNotAllowed error", async () => {
@@ -187,6 +224,9 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
   });
 
   it("returns ErrorResponse for JWSInvalid error", async () => {
@@ -199,6 +239,9 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
   });
 
   it("returns ErrorResponse for JWSSignatureVerificationFailed error", async () => {
@@ -213,6 +256,9 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
   });
 
   it("returns ErrorResponse for JWTInvalid error", async () => {
@@ -225,6 +271,9 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
   });
 
   it("returns ErrorResponse for JWTExpired error", async () => {
@@ -239,6 +288,9 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
   });
 
   it("returns ErrorResponse for JWTClaimValidationFailed error", async () => {
@@ -253,6 +305,9 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
   });
 
   it("returns ErrorResponse for generic JOSEError", async () => {
@@ -267,6 +322,9 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
   });
 
   it("returns ErrorResponse for unknown error", async () => {
@@ -279,6 +337,9 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=server_error",
+    );
   });
 
   it("works without state parameter", async () => {
@@ -349,6 +410,9 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
   });
 
   it("returns ErrorResponse when iat is in the future", async () => {
@@ -379,5 +443,82 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
+  });
+
+  it("returns ErrorResponse when JTI is already used", async () => {
+    const mockPayload = {
+      client_id: "test-client",
+      iss: "test-client",
+      aud: "https://auth.example.com",
+      response_type: "code",
+      exp: Math.floor(Date.now() / 1000) + 60,
+      iat: Math.floor(Date.now() / 1000) - 60,
+      scope: "openid",
+      state: "test-state",
+      jti: "duplicate-id",
+      access_token: "access-token",
+      refresh_token: "refresh-token",
+      sub: "user-123",
+      email: "test@example.com",
+      govuk_signin_journey_id: "journey-123",
+      redirect_uri: redirectUri,
+    };
+
+    mockJwtVerify.mockResolvedValue({ payload: mockPayload });
+
+    const transactionError = new TransactionCanceledException({
+      message: "Transaction cancelled",
+      $metadata: {},
+    });
+    transactionError.CancellationReasons = [{ Code: "ConditionalCheckFailed" }];
+    mockTransactWrite.mockRejectedValue(transactionError);
+
+    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+
+    expect(result).toBeInstanceOf(ErrorResponse);
+
+    assert.ok(result instanceof ErrorResponse);
+
+    expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
+  });
+
+  it("returns ErrorResponse when DynamoDB write fails", async () => {
+    const mockPayload = {
+      client_id: "test-client",
+      iss: "test-client",
+      aud: "https://auth.example.com",
+      response_type: "code",
+      exp: Math.floor(Date.now() / 1000) + 60,
+      iat: Math.floor(Date.now() / 1000) - 60,
+      scope: "openid",
+      state: "test-state",
+      jti: "unique-id",
+      access_token: "access-token",
+      refresh_token: "refresh-token",
+      sub: "user-123",
+      email: "test@example.com",
+      govuk_signin_journey_id: "journey-123",
+      redirect_uri: redirectUri,
+    };
+
+    mockJwtVerify.mockResolvedValue({ payload: mockPayload });
+    mockTransactWrite.mockRejectedValue(new Error("DynamoDB error"));
+
+    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+
+    expect(result).toBeInstanceOf(ErrorResponse);
+
+    assert.ok(result instanceof ErrorResponse);
+
+    expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=server_error",
+    );
   });
 });

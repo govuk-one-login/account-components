@@ -8,7 +8,7 @@ import {
   afterAll,
 } from "vitest";
 import type { getClient as getClientForType } from "./getClient.js";
-import type { Client } from "../../../../../commons/utils/getClientRegistry/index.js";
+import type { ClientEntry } from "../../../../../config/schema/types.js";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -33,7 +33,7 @@ vi.mock(
 let getClient: typeof getClientForType;
 
 describe("getClient", () => {
-  const mockClient: Client = {
+  const mockClient: ClientEntry = {
     client_id: "test-client",
     scope: "test-scope",
     redirect_uris: ["https://example.com/callback"],

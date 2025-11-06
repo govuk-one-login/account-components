@@ -101,6 +101,8 @@ paths:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2008&state=aRandomString
                 jar_decrypt_failed:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2009&state=aRandomString
+                jti_already_used:
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2010&state=aRandomString
                 account_not_found:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_scope&error_description=E3001&state=aRandomString
                 no_session_found:

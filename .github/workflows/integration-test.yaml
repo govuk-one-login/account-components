@@ -80,7 +80,8 @@ jobs:
             "AuthorizeLambda": {
               "AUTHORIZE_ERROR_PAGE_URL": "http://localhost:6002/authorize-error",
               "JAR_RSA_ENCRYPTION_KEY_ALIAS": "alias/components-core-JARRSAEncryptionKey",
-              "AUTHORIZE_ENDPOINT_URL": "http://localhost:6004/authorize"
+              "AUTHORIZE_ENDPOINT_URL": "http://localhost:6004/authorize",
+              "REPLAY_ATTACK_TABLE_NAME": "components-api-ReplayAttack"
             }          
           }
           EOF
