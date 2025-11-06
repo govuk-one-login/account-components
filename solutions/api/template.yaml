@@ -53,8 +53,8 @@ Mappings:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.dev.account.gov.uk
-      authorizeErrorPageUrl: http://manage.dev.account.gov.uk/authorize-error
-      authorizeEndpointUrl: http://api.manage.dev.account.gov.uk/authorize
+      authorizeErrorPageUrl: https://manage.dev.account.gov.uk/authorize-error
+      authorizeEndpointUrl: https://api.manage.dev.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
           "vpce-087ac48f23f28a39b", # di-account-dev
         ]
@@ -63,8 +63,8 @@ Mappings:
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.build.account.gov.uk
-      authorizeErrorPageUrl: http://manage.build.account.gov.uk/authorize-error
-      authorizeEndpointUrl: http://api.manage.build.account.gov.uk/authorize
+      authorizeErrorPageUrl: https://manage.build.account.gov.uk/authorize-error
+      authorizeEndpointUrl: https://api.manage.build.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
           "vpce-0e1bb7e9c33b0e516", # di-account-build
         ]
@@ -73,8 +73,8 @@ Mappings:
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.staging.account.gov.uk
-      authorizeErrorPageUrl: http://manage.staging.account.gov.uk/authorize-error
-      authorizeEndpointUrl: http://api.manage.staging.account.gov.uk/authorize
+      authorizeErrorPageUrl: https://manage.staging.account.gov.uk/authorize-error
+      authorizeEndpointUrl: https://api.manage.staging.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
           "vpce-0c9ce65be09f99db7", # di-account-staging
         ]
@@ -83,8 +83,8 @@ Mappings:
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.integration.account.gov.uk
-      authorizeErrorPageUrl: http://manage.integration.account.gov.uk/authorize-error
-      authorizeEndpointUrl: http://api.manage.integration.account.gov.uk/authorize
+      authorizeErrorPageUrl: https://manage.integration.account.gov.uk/authorize-error
+      authorizeEndpointUrl: https://api.manage.integration.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
           "vpce-0e594accb3d775457", # di-account-integration
         ]
@@ -93,8 +93,8 @@ Mappings:
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.account.gov.uk
-      authorizeErrorPageUrl: http://manage.account.gov.uk/authorize-error
-      authorizeEndpointUrl: http://api.manage.account.gov.uk/authorize
+      authorizeErrorPageUrl: https://manage.account.gov.uk/authorize-error
+      authorizeEndpointUrl: https://api.manage.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
           "vpce-0d7972874707185a0", # di-account-production
         ]
