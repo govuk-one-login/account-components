@@ -16,6 +16,10 @@ This repo contains the code for Account Components
 - Run `cd solutions/integration-tests && npm ci` to install integration testing dependencies
 - Run `npm run run:all` to start all the local servers and watch for changes. The frontend will be available at `http://localhost:6002`, the stubs at `http://localhost:6003` and the API at `http://localhost:6004`.
 
+## Commiting to GitHub
+
+This repo uses [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#specification).
+
 ## Updating Node version
 
 When updating the Node version you will need to update the following:

@@ -14,7 +14,7 @@ line-length=96
 min-length=10
 
 [title-match-regex]
-regex=^(BAU|OLH-[0-9]{1,4})[: ]+\w
+regex=^((build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test)(\([^)]+\))?(!)?: .+ \[(BAU|OLH-[0-9]{1,4})\])$
 
 [author-valid-email]
 regex=[\w\.\+_-]+@(digital.cabinet-office.gov.uk|dsit.gov.uk|users.noreply.github.com)

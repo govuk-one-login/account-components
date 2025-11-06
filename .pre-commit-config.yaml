@@ -8,6 +8,14 @@ repos:
       - id: gitlint
         stages: [commit-msg]
 
+  - repo: local
+    hooks:
+      - id: commitlint
+        name: Commitlint
+        entry: npx --no-install commitlint --edit $1
+        language: system
+        stages: [commit-msg]
+
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b # pragma: allowlist-secret
     hooks:

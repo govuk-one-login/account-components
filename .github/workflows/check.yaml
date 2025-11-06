@@ -17,6 +17,7 @@ jobs:
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8
         with:
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Check GitHub Actions
         uses: zizmorcore/zizmor-action@e673c3917a1aef3c65c972347ed84ccd013ecda4
@@ -43,6 +44,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci && cd solutions/integration-tests && npm ci
+
+      - name: Enforce Conventional Commits
+        run: npm run lint:commits
 
       - name: Check types
         run: npm run check-types
@@ -91,3 +95,26 @@ jobs:
 
       - name: Build API
         run: npm run build:api
+
+      - name: Archive release assets
+        if: ${{ github.ref_name == 'main' }}
+        run: |
+          mkdir -p artifacts
+          # Frontend dist
+          if [ -d "solutions/frontend/dist" ]; then \
+            (cd solutions/frontend && zip -r ../..//artifacts/frontend-dist.zip dist); \
+          fi
+          # Core SAM build
+          if [ -d "solutions/core/.aws-sam/build" ]; then \
+            (cd solutions/core/.aws-sam && zip -r ../../../artifacts/core-sam-build.zip build); \
+          fi
+          # API SAM build
+          if [ -d "solutions/api/.aws-sam/build" ]; then \
+            (cd solutions/api/.aws-sam && zip -r ../../../artifacts/api-sam-build.zip build); \
+          fi
+
+      - name: Semantic Release
+        if: ${{ github.ref_name == 'main' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run release
