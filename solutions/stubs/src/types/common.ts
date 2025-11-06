@@ -68,7 +68,6 @@ export interface RequestBody {
 
 export enum Users {
   DEFAULT = "default",
-  WELSH = "welsh",
   NON_EXISTENT = "non_existent",
 }
 
@@ -78,19 +77,13 @@ interface User {
 }
 
 export const getUsers = (user: string): User => {
-  switch (user) {
-    case "non_existent":
-      return { sub: "", email: "" };
-    case "welsh":
-      return {
-        sub: "urn:fdc:gov.uk:welsh-user",
-        email: "jones@wales.com",
-      };
-    default:
-      return {
-        sub: "urn:fdc:gov.uk:default",
-        email: "someone@example.com",
-      };
+  if (user === "non_existent") {
+    return { sub: "", email: "" };
+  } else {
+    return {
+      sub: "urn:fdc:gov.uk:default",
+      email: "someone@example.com",
+    };
   }
 };
 

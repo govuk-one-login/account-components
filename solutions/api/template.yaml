@@ -54,6 +54,7 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.dev.account.gov.uk
       authorizeErrorPageUrl: http://manage.dev.account.gov.uk/authorize-error
+      authorizeEndpointUrl: http://api.manage.dev.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
           "vpce-087ac48f23f28a39b", # di-account-dev
         ]
@@ -63,6 +64,7 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.build.account.gov.uk
       authorizeErrorPageUrl: http://manage.build.account.gov.uk/authorize-error
+      authorizeEndpointUrl: http://api.manage.build.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
           "vpce-0e1bb7e9c33b0e516", # di-account-build
         ]
@@ -72,6 +74,7 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.staging.account.gov.uk
       authorizeErrorPageUrl: http://manage.staging.account.gov.uk/authorize-error
+      authorizeEndpointUrl: http://api.manage.staging.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
           "vpce-0c9ce65be09f99db7", # di-account-staging
         ]
@@ -81,6 +84,7 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.integration.account.gov.uk
       authorizeErrorPageUrl: http://manage.integration.account.gov.uk/authorize-error
+      authorizeEndpointUrl: http://api.manage.integration.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
           "vpce-0e594accb3d775457", # di-account-integration
         ]
@@ -90,6 +94,7 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.account.gov.uk
       authorizeErrorPageUrl: http://manage.account.gov.uk/authorize-error
+      authorizeEndpointUrl: http://api.manage.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
           "vpce-0d7972874707185a0", # di-account-production
         ]
@@ -143,9 +148,9 @@ Globals:
       - !Ref AWS::NoValue
     VpcConfig:
       SubnetIds:
-        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
-        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
-        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdC
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
       SecurityGroupIds:
         - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
     Timeout: 10
@@ -460,6 +465,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               authorizeErrorPageUrl,
+            ]
+          AUTHORIZE_ENDPOINT_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              authorizeEndpointUrl,
             ]
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
       Policies:

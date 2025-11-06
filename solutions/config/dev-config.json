@@ -6,7 +6,7 @@
       "redirect_uris": [
         "https://stubs.manage.dev.account.gov.uk/auth/callback"
       ],
-      "client_name": "dummy_auth",
+      "client_name": "Auth",
       "jwks_uri": "https://stubs.manage.dev.account.gov.uk/auth/.well-known/jwks.json"
     },
     {
@@ -15,7 +15,7 @@
       "redirect_uris": [
         "https://stubs.manage.dev.account.gov.uk/home/callback"
       ],
-      "client_name": "dummy_home",
+      "client_name": "Home",
       "jwks_uri": "https://stubs.manage.dev.account.gov.uk/home/.well-known/jwks.json"
     }
   ]

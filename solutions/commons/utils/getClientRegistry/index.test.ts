@@ -16,14 +16,14 @@ vi.mock(import("../../../config/local-config.json"), () => ({
     {
       client_id: "ABCDEF12345678901234567890123456",
       scope: "account-delete",
-      redirect_uris: ["https://signin.build.account.gov.uk/acm-callback"],
+      redirect_uris: ["https://signin.build.account.gov.uk/auth/callback"],
       client_name: "Auth",
       jwks_uri: "https://signin.build.account.gov.uk/.well-known/jwks.json",
     },
     {
       client_id: "23456789012345678901234567890123",
       scope: "account-delete",
-      redirect_uris: ["https://home.build.account.gov.uk/acm-callback"],
+      redirect_uris: ["https://home.build.account.gov.uk/home/callback"],
       client_name: "Home",
       jwks_uri: "https://home.build.account.gov.uk/.well-known/jwks.json",
     },
@@ -65,14 +65,14 @@ describe("getClientRegistry", () => {
         {
           client_id: "ABCDEF12345678901234567890123456",
           scope: "account-delete",
-          redirect_uris: ["https://signin.build.account.gov.uk/acm-callback"],
+          redirect_uris: ["https://signin.build.account.gov.uk/auth/callback"],
           client_name: "Auth",
           jwks_uri: "https://signin.build.account.gov.uk/.well-known/jwks.json",
         },
         {
           client_id: "23456789012345678901234567890123",
           scope: "account-delete",
-          redirect_uris: ["https://home.build.account.gov.uk/acm-callback"],
+          redirect_uris: ["https://home.build.account.gov.uk/home/callback"],
           client_name: "Home",
           jwks_uri: "https://home.build.account.gov.uk/.well-known/jwks.json",
         },

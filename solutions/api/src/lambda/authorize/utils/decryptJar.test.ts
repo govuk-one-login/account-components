@@ -118,7 +118,7 @@ describe("decryptJar", () => {
 
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5003",
+      "error=server_error",
     );
   });
 
@@ -141,7 +141,7 @@ describe("decryptJar", () => {
 
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5003",
+      "error=server_error",
     );
   });
 
@@ -166,7 +166,7 @@ describe("decryptJar", () => {
 
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2003",
+      "error=invalid_request",
     );
   });
 
@@ -191,7 +191,7 @@ describe("decryptJar", () => {
 
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2003",
+      "error=invalid_request",
     );
   });
 
@@ -208,7 +208,7 @@ describe("decryptJar", () => {
 
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5003",
+      "error=server_error",
     );
   });
 
@@ -253,7 +253,7 @@ describe("decryptJar", () => {
 
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5003",
+      "error=server_error",
     );
   });
 
@@ -270,7 +270,7 @@ describe("decryptJar", () => {
 
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5003",
+      "error=server_error",
     );
   });
 
@@ -287,7 +287,7 @@ describe("decryptJar", () => {
 
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5003",
+      "error=server_error",
     );
   });
 });

@@ -26,14 +26,14 @@ describe("getRedirectToClientRedirectUriResponse", () => {
   it("returns redirect response with error parameters", () => {
     const result = getRedirectToClientRedirectUriResponse(
       "https://client.com/callback",
-      authorizeErrors.invalidRequest,
+      authorizeErrors.jarDecryptFailed,
     );
 
     expect(result).toStrictEqual({
       statusCode: 302,
       headers: {
         location:
-          "https://client.com/callback?error=invalid_request&error_description=E2003",
+          "https://client.com/callback?error=invalid_request&error_description=E2009",
       },
       body: "",
     });
@@ -42,7 +42,7 @@ describe("getRedirectToClientRedirectUriResponse", () => {
   it("includes state parameter when provided", () => {
     const result = getRedirectToClientRedirectUriResponse(
       "https://client.com/callback",
-      authorizeErrors.serverError,
+      authorizeErrors.jarDecryptUnknownError,
       "test-state",
     );
 
@@ -50,7 +50,7 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       statusCode: 302,
       headers: {
         location:
-          "https://client.com/callback?error=server_error&error_description=E5003&state=test-state",
+          "https://client.com/callback?error=server_error&error_description=E5009&state=test-state",
       },
       body: "",
     });
@@ -59,14 +59,14 @@ describe("getRedirectToClientRedirectUriResponse", () => {
   it("handles redirect URI with existing query parameters", () => {
     const result = getRedirectToClientRedirectUriResponse(
       "https://client.com/callback?existing=param",
-      authorizeErrors.invalidRequest,
+      authorizeErrors.jarDecryptFailed,
     );
 
     expect(result).toStrictEqual({
       statusCode: 302,
       headers: {
         location:
-          "https://client.com/callback?existing=param&error=invalid_request&error_description=E2003",
+          "https://client.com/callback?existing=param&error=invalid_request&error_description=E2009",
       },
       body: "",
     });
