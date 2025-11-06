@@ -97,7 +97,7 @@ export const authorizeErrors = {
     type: "invalid_request",
   },
   verifyJwtUnknownError: {
-    description: "E5008",
+    description: "E5002",
     type: "server_error",
   },
   invalidClaims: {
@@ -109,7 +109,7 @@ export const authorizeErrors = {
     type: "invalid_request",
   },
   jarDecryptUnknownError: {
-    description: "E5009",
+    description: "E5003",
     type: "server_error",
   },
   jtiAlreadyUsed: {

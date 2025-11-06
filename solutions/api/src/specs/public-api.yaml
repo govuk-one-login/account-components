@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components OAuth Provider Public API
-  version: 0.0.5
+  version: 0.0.6
   description: |
     OAuth 2.0 provider endpoints, including:
     - GET /authorize
@@ -71,18 +71,6 @@ paths:
               examples:
                 success:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?code=anAuthCode&state=aRandomString
-                user_aborted:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1001&state=aRandomString
-                password_incorrect:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1002&state=aRandomString
-                permanently_suspended:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1003&state=aRandomString
-                otp_too_many_sent:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1004&state=aRandomString
-                otp_blocked:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1005&state=aRandomString
-                otp_too_many_entered:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1006&state=aRandomString
                 alg_not_allowed:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2001&state=aRandomString
                 jws_invalid:
@@ -103,10 +91,6 @@ paths:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2009&state=aRandomString
                 jti_already_used:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2010&state=aRandomString
-                account_not_found:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_scope&error_description=E3001&state=aRandomString
-                no_session_found:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_scope&error_description=E3002&state=aRandomString
                 jwks_timeout:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=unauthorized_client&error_description=E4001&state=aRandomString
                 jwks_invalid:
@@ -119,22 +103,10 @@ paths:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=unauthorized_client&error_description=E4005&state=aRandomString
                 failed_to_save_jti:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5001&state=aRandomString
-                failed_to_create_session:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5002&state=aRandomString
-                failed_to_save_outcome:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5003&state=aRandomString
-                failed_to_delete:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5004&state=aRandomString
-                failed_to_challenge_password:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5005&state=aRandomString
-                failed_to_challenge_otp:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5006&state=aRandomString
-                failed_to_get_session:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5007&state=aRandomString
                 verify_jwt_unknown_error:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5008&state=aRandomString
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5002&state=aRandomString
                 jar_decrypt_unknown_error:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5009&state=aRandomString
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5003&state=aRandomString
 
 components:
   parameters:
