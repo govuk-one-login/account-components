@@ -48,26 +48,6 @@ interface AuthorizeErrorInvalidGrant {
 }
 
 export const authorizeErrors = {
-  jwksTimeout: {
-    description: "E4001",
-    type: "unauthorized_client",
-  },
-  jwksInvalid: {
-    description: "E4002",
-    type: "unauthorized_client",
-  },
-  jwksNoMatchingKey: {
-    description: "E4003",
-    type: "unauthorized_client",
-  },
-  jwksMultipleMatchingKeys: {
-    description: "E4004",
-    type: "unauthorized_client",
-  },
-  jwkInvalid: {
-    description: "E4005",
-    type: "unauthorized_client",
-  },
   algNotAllowed: {
     description: "E2001",
     type: "invalid_request",
@@ -96,10 +76,6 @@ export const authorizeErrors = {
     description: "E2007",
     type: "invalid_request",
   },
-  verifyJwtUnknownError: {
-    description: "E5002",
-    type: "server_error",
-  },
   invalidClaims: {
     description: "E2008",
     type: "invalid_request",
@@ -108,16 +84,41 @@ export const authorizeErrors = {
     description: "E2009",
     type: "invalid_request",
   },
-  jarDecryptUnknownError: {
-    description: "E5003",
-    type: "server_error",
-  },
   jtiAlreadyUsed: {
     description: "E2010",
     type: "invalid_request",
   },
+  jwksTimeout: {
+    description: "E4001",
+    type: "unauthorized_client",
+  },
+  jwksInvalid: {
+    description: "E4002",
+    type: "unauthorized_client",
+  },
+  jwksNoMatchingKey: {
+    description: "E4003",
+    type: "unauthorized_client",
+  },
+  jwksMultipleMatchingKeys: {
+    description: "E4004",
+    type: "unauthorized_client",
+  },
+  jwkInvalid: {
+    description: "E4005",
+    type: "unauthorized_client",
+  },
   failedToSaveJti: {
     description: "E5001",
+    type: "server_error",
+  },
+  verifyJwtUnknownError: {
+    description: "E5002",
+    type: "server_error",
+  },
+
+  jarDecryptUnknownError: {
+    description: "E5003",
     type: "server_error",
   },
 } as const satisfies Record<
