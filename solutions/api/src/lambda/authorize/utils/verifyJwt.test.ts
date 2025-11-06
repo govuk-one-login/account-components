@@ -87,6 +87,7 @@ describe("verifyJwt", () => {
       iss: "test-client",
       aud: "https://auth.example.com",
       response_type: "code",
+      exp: Math.floor(Date.now() / 1000) + 60,
       iat: Math.floor(Date.now() / 1000) - 60,
       scope: "openid",
       state: "test-state",
@@ -96,6 +97,7 @@ describe("verifyJwt", () => {
       sub: "user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
+      redirect_uri: redirectUri,
     };
 
     mockJwtVerify.mockResolvedValue({ payload: mockPayload });
@@ -297,6 +299,7 @@ describe("verifyJwt", () => {
       iss: "test-client",
       aud: "https://auth.example.com",
       response_type: "code",
+      exp: Math.floor(Date.now() / 1000) + 60,
       iat: Math.floor(Date.now() / 1000) - 60,
       scope: "openid",
       state: "test-state",
@@ -306,6 +309,7 @@ describe("verifyJwt", () => {
       sub: "user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
+      redirect_uri: redirectUri,
     };
 
     mockJwtVerify.mockResolvedValue({ payload: mockPayload });
@@ -323,6 +327,7 @@ describe("verifyJwt", () => {
       iss: "test-client",
       aud: "https://auth.example.com",
       response_type: "code",
+      exp: Math.floor(Date.now() / 1000) + 60,
       iat: Math.floor(Date.now() / 1000) - 60,
       scope: "openid",
       state: "test-state",
@@ -332,6 +337,7 @@ describe("verifyJwt", () => {
       sub: "user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
+      redirect_uri: redirectUri,
     };
 
     mockJwtVerify.mockResolvedValue({ payload: mockPayload });
@@ -351,6 +357,7 @@ describe("verifyJwt", () => {
       iss: "test-client",
       aud: "https://auth.example.com",
       response_type: "code",
+      exp: Math.floor(Date.now() / 1000) + 60,
       iat: Math.floor(Date.now() / 1000) + 3600,
       scope: "openid",
       state: "test-state",
@@ -360,6 +367,7 @@ describe("verifyJwt", () => {
       sub: "user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
+      redirect_uri: redirectUri,
     };
 
     mockJwtVerify.mockResolvedValue({ payload: mockPayload });

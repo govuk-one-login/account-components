@@ -23,6 +23,7 @@ const requestBodySchema = v.object({
   exp: v.string(),
   iss: v.string(),
   user: v.string(),
+  state: v.string(),
 });
 
 export async function createRequestObjectGet(

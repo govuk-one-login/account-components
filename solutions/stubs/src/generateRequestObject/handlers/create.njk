@@ -92,9 +92,14 @@
             </fieldset>
             <fieldset>
                 <legend>Issuer (optional)</legend>
-                <input type="text" name="iss" name="stub-issuer" />
+                <input type="text" name="iss" />
                 <i>Leave blank to be set to client_id</i>
             </fieldset>
+            <fieldset>
+                <legend>State (optional)</legend>
+                <input type="text" name="state" />
+                <i>Leave blank to auto-generate</i>
+            </fieldset>            
             <input type="submit" value="Generate Request Object">
         </form>
         {% endif %}

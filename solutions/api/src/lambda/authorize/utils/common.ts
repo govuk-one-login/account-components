@@ -23,94 +23,94 @@ export const badRequestResponse: APIGatewayProxyResult = {
 };
 
 interface AuthorizeErrorAccessDenied {
-  code: `E1${number}`;
-  description: "access_denied";
+  description: `E1${number}`;
+  type: "access_denied";
 }
 interface AuthorizeErrorInvalidRequest {
-  code: `E2${number}`;
-  description: "invalid_request";
+  description: `E2${number}`;
+  type: "invalid_request";
 }
 interface AuthorizeErrorInvalidScope {
-  code: `E3${number}`;
-  description: "invalid_scope";
+  description: `E3${number}`;
+  type: "invalid_scope";
 }
 interface AuthorizeErrorUnauthorizedClient {
-  code: `E4${number}`;
-  description: "unauthorized_client";
+  description: `E4${number}`;
+  type: "unauthorized_client";
 }
 interface AuthorizeErrorServerError {
-  code: `E5${number}`;
-  description: "server_error";
+  description: `E5${number}`;
+  type: "server_error";
 }
 interface AuthorizeErrorInvalidGrant {
-  code: `E6${number}`;
-  description: "invalid_grant";
+  description: `E6${number}`;
+  type: "invalid_grant";
 }
 
 export const authorizeErrors = {
   jwksTimeout: {
-    code: "E4001",
-    description: "unauthorized_client",
+    description: "E4001",
+    type: "unauthorized_client",
   },
   jwksInvalid: {
-    code: "E4002",
-    description: "unauthorized_client",
+    description: "E4002",
+    type: "unauthorized_client",
   },
   jwksNoMatchingKey: {
-    code: "E4003",
-    description: "unauthorized_client",
+    description: "E4003",
+    type: "unauthorized_client",
   },
   jwksMultipleMatchingKeys: {
-    code: "E4004",
-    description: "unauthorized_client",
+    description: "E4004",
+    type: "unauthorized_client",
   },
   jwkInvalid: {
-    code: "E4005",
-    description: "unauthorized_client",
+    description: "E4005",
+    type: "unauthorized_client",
   },
   algNotAllowed: {
-    code: "E2001",
-    description: "invalid_request",
+    description: "E2001",
+    type: "invalid_request",
   },
   jwsInvalid: {
-    code: "E2002",
-    description: "invalid_request",
+    description: "E2002",
+    type: "invalid_request",
   },
   jwsSignatureVerificationFailed: {
-    code: "E2003",
-    description: "invalid_request",
+    description: "E2003",
+    type: "invalid_request",
   },
   jwtInvalid: {
-    code: "E2004",
-    description: "invalid_request",
+    description: "E2004",
+    type: "invalid_request",
   },
   jwtExpired: {
-    code: "E2005",
-    description: "invalid_request",
+    description: "E2005",
+    type: "invalid_request",
   },
   jwtClaimValidationFailed: {
-    code: "E2006",
-    description: "invalid_request",
+    description: "E2006",
+    type: "invalid_request",
   },
   verifyJwtError: {
-    code: "E2007",
-    description: "invalid_request",
+    description: "E2007",
+    type: "invalid_request",
   },
   verifyJwtUnknownError: {
-    code: "E5008",
-    description: "server_error",
+    description: "E5008",
+    type: "server_error",
   },
   invalidClaims: {
-    code: "E2008",
-    description: "invalid_request",
+    description: "E2008",
+    type: "invalid_request",
   },
   jarDecryptFailed: {
-    code: "E2009",
-    description: "invalid_request",
+    description: "E2009",
+    type: "invalid_request",
   },
   jarDecryptUnknownError: {
-    code: "E5009",
-    description: "server_error",
+    description: "E5009",
+    type: "server_error",
   },
 } as const satisfies Record<
   string,
@@ -131,7 +131,7 @@ export const getRedirectToClientRedirectUriResponse = (
   headers: {
     location: (() => {
       const url = new URL(redirectUri);
-      url.searchParams.set("error", error.code);
+      url.searchParams.set("error", error.type);
       url.searchParams.set("error_description", error.description);
       if (state) {
         url.searchParams.set("state", state);

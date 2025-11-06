@@ -27,7 +27,7 @@ import {
 } from "jose/errors";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/contstants.js";
 
-const verifyJwtWithJose = async (
+const verify = async (
   signedJwt: string,
   client: Client,
   redirectUri: string,
@@ -155,7 +155,6 @@ const verifyJwtWithJose = async (
         client_id: client.client_id,
         exp: new Date(Number(error.payload.exp) * 1000).toISOString(),
         current_datetime: new Date().toISOString(),
-        jose_error_code: error.code,
       });
       metrics.addMetric("JWTExpired", MetricUnit.Count, 1);
       return new ErrorResponse(
@@ -181,8 +180,6 @@ const verifyJwtWithJose = async (
       logger.warn("JOSEError", {
         client_id: client.client_id,
         jose_error_code: error.code,
-        msg: error.message,
-        cause: error.cause,
       });
       metrics.addDimensions({ jose_error_code: error.code });
       metrics.addMetric("JOSEError", MetricUnit.Count, 1);
@@ -261,6 +258,7 @@ const checkClaims = (
       metrics.addMetric("UnexpectedResponseType", MetricUnit.Count, 1);
       return "";
     }),
+    exp: v.number(),
     iat: v.pipe(
       v.number(),
       v.maxValue(Date.now() / 1000, (issue) => {
@@ -273,6 +271,7 @@ const checkClaims = (
         return "";
       }),
     ),
+    redirect_uri: v.literal(redirectUri),
     scope: v.picklist(client.scope.split(" "), (issue) => {
       logger.warn("Scope Denied", {
         client_id: client.client_id,
@@ -324,19 +323,14 @@ export const verifyJwt = async (
 ) => {
   metrics.addDimensions({ client_id: client.client_id });
 
-  const verifyJwtWithJoseResult = await verifyJwtWithJose(
-    signedJwt,
-    client,
-    redirectUri,
-    state,
-  );
+  const verifyResult = await verify(signedJwt, client, redirectUri, state);
 
-  if (verifyJwtWithJoseResult instanceof ErrorResponse) {
-    return verifyJwtWithJoseResult;
+  if (verifyResult instanceof ErrorResponse) {
+    return verifyResult;
   }
 
   const checkClaimsResult = checkClaims(
-    verifyJwtWithJoseResult,
+    verifyResult,
     client,
     redirectUri,
     state,

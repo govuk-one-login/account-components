@@ -127,7 +127,11 @@ export function getJwtPayload(
     aud: bodyAud ?? process.env["DEFAULT_AUDIENCE"],
     response_type: "code",
     scope: bodyScope ?? Scope.ACCOUNT_DELETION,
-    state: Buffer.from(randomBytes(10)).toString("hex"),
+    state:
+      typeof requestObjectOptions["state"] === "string" &&
+      requestObjectOptions["state"].length > 0
+        ? requestObjectOptions["state"]
+        : Buffer.from(randomBytes(10)).toString("hex"),
     jti:
       requestObjectOptions.jti && requestObjectOptions.jti.length > 0
         ? requestObjectOptions.jti

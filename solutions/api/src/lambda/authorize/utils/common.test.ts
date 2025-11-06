@@ -33,7 +33,7 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       statusCode: 302,
       headers: {
         location:
-          "https://client.com/callback?error=E2009&error_description=invalid_request",
+          "https://client.com/callback?error=invalid_request&error_description=E2009",
       },
       body: "",
     });
@@ -50,7 +50,7 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       statusCode: 302,
       headers: {
         location:
-          "https://client.com/callback?error=E5009&error_description=server_error&state=test-state",
+          "https://client.com/callback?error=server_error&error_description=E5009&state=test-state",
       },
       body: "",
     });
@@ -66,7 +66,7 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       statusCode: 302,
       headers: {
         location:
-          "https://client.com/callback?existing=param&error=E2009&error_description=invalid_request",
+          "https://client.com/callback?existing=param&error=invalid_request&error_description=E2009",
       },
       body: "",
     });

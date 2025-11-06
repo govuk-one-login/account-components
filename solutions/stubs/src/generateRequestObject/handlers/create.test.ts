@@ -71,6 +71,7 @@ describe("createRequestObjectPost", () => {
         exp: "1234567890",
         iss: "issuer.example.com",
         user: "default",
+        state: "example-state",
       },
     };
 
