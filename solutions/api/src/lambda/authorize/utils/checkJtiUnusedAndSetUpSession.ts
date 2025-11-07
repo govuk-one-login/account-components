@@ -39,7 +39,7 @@ export const checkJtiUnusedAndSetUpSession = async (
 
     const sessionId = randomBytes(24).toString("hex");
     const sessionExpires =
-      Math.floor(Date.now() / 1000) + appConfig.pre_session_ttl_in_seconds;
+      Math.floor(Date.now() / 1000) + appConfig.api_session_ttl_in_seconds;
 
     await dynamoDbClient.transactWrite({
       TransactItems: [
@@ -73,7 +73,7 @@ export const checkJtiUnusedAndSetUpSession = async (
       statusCode: 302,
       headers: {
         location: frontendUrl.toString(),
-        "Set-Cookie": `${apiSessionCookieName}=${sessionId}; Secure; HttpOnly; SameSite=Strict; Max-Age=${appConfig.pre_session_ttl_in_seconds.toString()}; Domain=${
+        "Set-Cookie": `${apiSessionCookieName}=${sessionId}; Secure; HttpOnly; SameSite=Strict; Max-Age=${appConfig.api_session_ttl_in_seconds.toString()}; Domain=${
           process.env["API_SESSION_COOKIE_DOMAIN"]
         }`,
       },

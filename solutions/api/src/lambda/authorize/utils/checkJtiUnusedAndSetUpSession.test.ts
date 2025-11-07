@@ -76,7 +76,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
   const mockState = "test-state";
   const mockAppConfig = {
     jti_nonce_ttl_in_seconds: 300,
-    pre_session_ttl_in_seconds: 1800,
+    api_session_ttl_in_seconds: 1800,
   };
 
   beforeEach(() => {
@@ -314,7 +314,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
   it("calculates correct expiry times", async () => {
     const customConfig = {
       jti_nonce_ttl_in_seconds: 600,
-      pre_session_ttl_in_seconds: 3600,
+      api_session_ttl_in_seconds: 3600,
     };
     mockGetAppConfig.mockResolvedValue(customConfig);
     mockTransactWrite.mockResolvedValue({});
