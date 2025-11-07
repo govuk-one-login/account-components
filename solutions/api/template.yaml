@@ -490,6 +490,7 @@ Resources:
             - Effect: Allow
               Action:
                 - dynamodb:TransactWrite
+                - dynamodb:GetItem
               Resource: !GetAtt ReplayAttackTable.Arn
     Metadata:
       BuildMethod: esbuild
