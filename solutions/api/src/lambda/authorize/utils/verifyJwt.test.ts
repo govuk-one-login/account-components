@@ -43,17 +43,6 @@ vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
   metrics: { addMetric: vi.fn(), addDimensions: vi.fn() },
 }));
 
-const mockGet = vi.fn();
-// @ts-expect-error
-vi.mock(
-  import("../../../../../commons/utils/awsClient/dynamodbClient/index.js"),
-  () => ({
-    getDynamoDbClient: () => ({
-      get: mockGet,
-    }),
-  }),
-);
-
 const mockJwtVerify = vi.fn();
 const mockCreateRemoteJWKSet = vi.fn();
 
@@ -87,7 +76,6 @@ describe("verifyJwt", () => {
     process.env["AUTHORIZE_ENDPOINT_URL"] = "https://auth.example.com";
     process.env["REPLAY_ATTACK_TABLE_NAME"] = "test-replay-table";
     mockCreateRemoteJWKSet.mockReturnValue(mockJwks);
-    mockGet.mockResolvedValue({});
   });
 
   afterAll(() => {
@@ -481,80 +469,6 @@ describe("verifyJwt", () => {
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error_description=E2008",
-    );
-  });
-
-  it("returns ErrorResponse when JTI is already used", async () => {
-    const mockPayload = {
-      client_id: "test-client",
-      iss: "test-client",
-      aud: "https://auth.example.com",
-      response_type: "code",
-      exp: Math.floor(Date.now() / 1000) + 60,
-      iat: Math.floor(Date.now() / 1000) - 60,
-      scope: "openid",
-      state: "test-state",
-      jti: "duplicate-id",
-      access_token: "access-token",
-      refresh_token: "refresh-token",
-      sub: "user-123",
-      email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
-      redirect_uri: redirectUri,
-    };
-
-    mockJwtVerify.mockResolvedValue({ payload: mockPayload });
-    mockGet.mockResolvedValue({ Item: { nonce: "duplicate-id" } });
-
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
-
-    expect(result).toBeInstanceOf(ErrorResponse);
-
-    assert.ok(result instanceof ErrorResponse);
-
-    expect(result.errorResponse.statusCode).toBe(302);
-    expect(result.errorResponse.headers?.["location"]).toContain(
-      "error=invalid_request",
-    );
-    expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2010",
-    );
-  });
-
-  it("returns ErrorResponse when DynamoDB get fails", async () => {
-    const mockPayload = {
-      client_id: "test-client",
-      iss: "test-client",
-      aud: "https://auth.example.com",
-      response_type: "code",
-      exp: Math.floor(Date.now() / 1000) + 60,
-      iat: Math.floor(Date.now() / 1000) - 60,
-      scope: "openid",
-      state: "test-state",
-      jti: "unique-id",
-      access_token: "access-token",
-      refresh_token: "refresh-token",
-      sub: "user-123",
-      email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
-      redirect_uri: redirectUri,
-    };
-
-    mockJwtVerify.mockResolvedValue({ payload: mockPayload });
-    mockGet.mockRejectedValue(new Error("DynamoDB error"));
-
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
-
-    expect(result).toBeInstanceOf(ErrorResponse);
-
-    assert.ok(result instanceof ErrorResponse);
-
-    expect(result.errorResponse.statusCode).toBe(302);
-    expect(result.errorResponse.headers?.["location"]).toContain(
-      "error=server_error",
-    );
-    expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5001",
     );
   });
 });

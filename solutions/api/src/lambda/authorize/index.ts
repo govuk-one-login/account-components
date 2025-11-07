@@ -7,7 +7,7 @@ import { verifyJwt } from "./utils/verifyJwt.js";
 import { logger } from "../../../../commons/utils/logger/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { metrics } from "../../../../commons/utils/metrics/index.js";
-import { saveJti } from "./utils/saveJti.js";
+import { checkJtiUnusedAndSetUpSession } from "./utils/checkJtiUnusedAndSetUpSession.js";
 
 export const handler = async (
   event: APIGatewayProxyEvent,
@@ -46,16 +46,14 @@ export const handler = async (
       return claims.errorResponse;
     }
 
-    // set up session here
-
-    const saveJtiResult = await saveJti(
+    const saveJtiAndSetupSessionResult = await checkJtiUnusedAndSetUpSession(
       claims.jti,
       client.client_id,
       queryParams.redirect_uri,
       queryParams.state,
     );
-    if (saveJtiResult instanceof ErrorResponse) {
-      return saveJtiResult.errorResponse;
+    if (saveJtiAndSetupSessionResult instanceof ErrorResponse) {
+      return saveJtiAndSetupSessionResult.errorResponse;
     }
 
     // TODO used for debugging. Remove before going live!
