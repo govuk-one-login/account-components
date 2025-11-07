@@ -29,7 +29,7 @@ repos:
     hooks:
       - id: package-audit-check
         name: Check Dependencies
-        entry: npm audit --audit-level=moderate && npm audit signatures
+        entry: npm run audit
         language: system
         exclude: .*
         always_run: true
