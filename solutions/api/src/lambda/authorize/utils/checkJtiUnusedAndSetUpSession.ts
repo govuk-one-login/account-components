@@ -12,7 +12,7 @@ import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js
 
 const dynamoDbClient = getDynamoDbClient();
 
-export const saveJti = async (
+export const checkJtiUnusedAndSetUpSession = async (
   jti: string,
   clientId: string,
   redirectUri: string,
@@ -35,6 +35,7 @@ export const saveJti = async (
             ConditionExpression: "attribute_not_exists(nonce)",
           },
         },
+        // write session here
       ],
     });
     return undefined;

@@ -25,10 +25,7 @@ import {
   JWTInvalid,
 } from "jose/errors";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/contstants.js";
-import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
-
-const dynamoDbClient = getDynamoDbClient();
 
 const verify = async (
   signedJwt: string,
@@ -211,55 +208,6 @@ const verify = async (
   return payload;
 };
 
-const isJtiValid = async (
-  jti: string,
-  clientId: string,
-  redirectUri: string,
-  state?: string,
-) => {
-  try {
-    const jtiNotUsed = !(
-      await dynamoDbClient.get({
-        TableName: process.env["REPLAY_ATTACK_TABLE_NAME"],
-        Key: {
-          nonce: jti,
-        },
-      })
-    ).Item;
-
-    if (!jtiNotUsed) {
-      logger.warn("JTIAlreadyUsed", {
-        client_id: clientId,
-        jti,
-      });
-      metrics.addMetric("JTIAlreadyUsed", MetricUnit.Count, 1);
-      return new ErrorResponse(
-        getRedirectToClientRedirectUriResponse(
-          redirectUri,
-          authorizeErrors.jtiAlreadyUsed,
-          state,
-        ),
-      );
-    }
-
-    return jtiNotUsed;
-  } catch (error) {
-    logger.warn("FailedToSaveJTI", {
-      client_id: clientId,
-      jti,
-      error,
-    });
-    metrics.addMetric("FailedToSaveJTI", MetricUnit.Count, 1);
-    return new ErrorResponse(
-      getRedirectToClientRedirectUriResponse(
-        redirectUri,
-        authorizeErrors.failedToSaveJti,
-        state,
-      ),
-    );
-  }
-};
-
 const checkClaims = async (
   payload: JWTPayload,
   client: ClientEntry,
@@ -362,17 +310,6 @@ const checkClaims = async (
         state,
       ),
     );
-  }
-
-  const isJtiValidResult = await isJtiValid(
-    claimsResult.output.jti,
-    client.client_id,
-    redirectUri,
-    state,
-  );
-
-  if (isJtiValidResult instanceof ErrorResponse) {
-    return isJtiValidResult;
   }
 
   return claimsResult.output;

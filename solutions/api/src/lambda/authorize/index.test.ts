@@ -7,7 +7,7 @@ const getQueryParams = vi.fn();
 const getClient = vi.fn();
 const decryptJar = vi.fn();
 const verifyJwt = vi.fn();
-const saveJti = vi.fn();
+const checkJtiUnusedAndSetUpSession = vi.fn();
 const mockLogger = {
   error: vi.fn(),
 };
@@ -31,8 +31,8 @@ vi.mock(import("./utils/verifyJwt.js"), () => ({
   verifyJwt,
 }));
 
-vi.mock(import("./utils/saveJti.js"), () => ({
-  saveJti,
+vi.mock(import("./utils/checkJtiUnusedAndSetUpSession.js"), () => ({
+  checkJtiUnusedAndSetUpSession,
 }));
 
 // @ts-expect-error
@@ -148,7 +148,7 @@ describe("authorize handler", () => {
     );
   });
 
-  it("returns error when saveJti fails", async () => {
+  it("returns error when checkJtiUnusedAndSetUpSession fails", async () => {
     const queryParams = {
       client_id: "test-client",
       redirect_uri: "http://test.com",
@@ -168,12 +168,12 @@ describe("authorize handler", () => {
     getClient.mockResolvedValue(client);
     decryptJar.mockResolvedValue(signedJwt);
     verifyJwt.mockResolvedValue(claims);
-    saveJti.mockResolvedValue(errorResponse);
+    checkJtiUnusedAndSetUpSession.mockResolvedValue(errorResponse);
 
     const result = await handler(mockEvent);
 
     expect(result).toBe(errorResponse.errorResponse);
-    expect(saveJti).toHaveBeenCalledWith(
+    expect(checkJtiUnusedAndSetUpSession).toHaveBeenCalledWith(
       "jwt-id-123",
       "test-client",
       "http://test.com",
@@ -196,7 +196,7 @@ describe("authorize handler", () => {
     getClient.mockResolvedValue(client);
     decryptJar.mockResolvedValue(signedJwt);
     verifyJwt.mockResolvedValue(claims);
-    saveJti.mockResolvedValue(undefined);
+    checkJtiUnusedAndSetUpSession.mockResolvedValue(undefined);
 
     const result = await handler(mockEvent);
 
@@ -211,7 +211,7 @@ describe("authorize handler", () => {
         2,
       ),
     });
-    expect(saveJti).toHaveBeenCalledWith(
+    expect(checkJtiUnusedAndSetUpSession).toHaveBeenCalledWith(
       "jwt-id-123",
       "test-client",
       "http://test.com",
