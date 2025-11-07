@@ -24,6 +24,7 @@ describe("getClientRegistry", () => {
     const mockAppConfig: AppConfigSchema = {
       client_registry: mockClientRegistry as [ClientEntry, ...ClientEntry[]],
       jti_nonce_ttl_in_seconds: 300,
+      pre_session_ttl_in_seconds: 300,
     };
 
     const { getAppConfig } = await import("../getAppConfig/index.js");

@@ -1,8 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
+import type { Scope } from "./getClaimsSchema.js";
+import type { APIGatewayProxyResult } from "aws-lambda";
 
 process.env["REPLAY_ATTACK_TABLE_NAME"] = "test-replay-table";
+process.env["API_SESSIONS_TABLE_NAME"] = "test-sessions-table";
+process.env["API_SESSION_COOKIE_DOMAIN"] = "example.com";
+process.env["FRONTEND_URL"] = "https://frontend.example.com";
 process.env["AUTHORIZE_ERROR_PAGE_URL"] = "https://example.com/error";
 
 const mockTransactWrite = vi.fn();
@@ -13,6 +18,7 @@ const mockLogger = {
 const mockMetrics = {
   addMetric: vi.fn(),
 };
+const mockRandomBytes = vi.fn();
 
 // @ts-expect-error
 vi.mock(
@@ -38,92 +44,159 @@ vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
   metrics: mockMetrics,
 }));
 
+vi.mock(import("node:crypto"), () => ({
+  randomBytes: mockRandomBytes,
+}));
+
 const { checkJtiUnusedAndSetUpSession } = await import(
   "./checkJtiUnusedAndSetUpSession.js"
 );
 const { ErrorResponse } = await import("./common.js");
 
 describe("checkJtiUnusedAndSetUpSession", () => {
-  const mockJti = "test-jti-123";
+  const mockClaims = {
+    client_id: "test-client-id",
+    iss: "test-client-id",
+    aud: "https://example.com/authorize",
+    response_type: "code" as const,
+    exp: 1234567890,
+    iat: 1234567800,
+    redirect_uri: "https://example.com/callback",
+    scope: "account-delete" as Scope,
+    state: "test-state",
+    jti: "test-jti-123",
+    access_token: "test-access-token",
+    refresh_token: "test-refresh-token",
+    sub: "test-subject",
+    email: "test@example.com",
+    govuk_signin_journey_id: "test-journey-id",
+  };
   const mockClientId = "test-client-id";
   const mockRedirectUri = "https://example.com/callback";
   const mockState = "test-state";
-  const mockAppConfig = { jti_nonce_ttl_in_seconds: 300 };
+  const mockAppConfig = {
+    jti_nonce_ttl_in_seconds: 300,
+    pre_session_ttl_in_seconds: 1800,
+  };
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetAppConfig.mockResolvedValue(mockAppConfig);
     vi.spyOn(Date, "now").mockReturnValue(1000000);
+    mockRandomBytes.mockReturnValue(
+      Buffer.from("abcdef123456789012345678", "hex"), // pragma: allowlist secret
+    );
   });
 
-  it("returns undefined when transaction succeeds", async () => {
+  it("returns redirect response with session cookie when transaction succeeds", async () => {
     mockTransactWrite.mockResolvedValue({});
 
     const result = await checkJtiUnusedAndSetUpSession(
-      mockJti,
+      mockClaims,
       mockClientId,
       mockRedirectUri,
       mockState,
     );
 
-    expect(result).toBeUndefined();
+    expect(result).not.toBeInstanceOf(ErrorResponse);
+
+    const response = result as Exclude<
+      typeof result,
+      InstanceType<typeof ErrorResponse>
+    >;
+
+    expect(response.statusCode).toBe(302);
+    expect(response.headers?.["location"]).toBe(
+      "https://frontend.example.com/start-session",
+    );
+    expect(response.headers?.["Set-Cookie"]).toContain(
+      "apisession=abcdef123456789012345678",
+    );
+    expect(response.headers?.["Set-Cookie"]).toContain(
+      "Secure; HttpOnly; SameSite=Strict",
+    );
+    expect(response.headers?.["Set-Cookie"]).toContain("Max-Age=1800");
+    expect(response.headers?.["Set-Cookie"]).toContain("Domain=example.com");
+
     expect(mockTransactWrite).toHaveBeenCalledWith({
       TransactItems: [
         {
           Put: {
             TableName: "test-replay-table",
             Item: {
-              nonce: mockJti,
+              nonce: mockClaims.jti,
               expires: 1300,
             },
             ConditionExpression: "attribute_not_exists(nonce)",
+          },
+        },
+        {
+          Put: {
+            TableName: "test-sessions-table",
+            Item: {
+              id: "abcdef123456789012345678", // pragma: allowlist secret
+              expires: 2800,
+            },
           },
         },
       ],
     });
   });
 
-  it("returns undefined when state is not provided", async () => {
+  it("returns redirect response when state is not provided", async () => {
     mockTransactWrite.mockResolvedValue({});
 
     const result = await checkJtiUnusedAndSetUpSession(
-      mockJti,
+      mockClaims,
       mockClientId,
       mockRedirectUri,
     );
 
-    expect(result).toBeUndefined();
+    expect(result).not.toBeInstanceOf(ErrorResponse);
+
+    const response = result as Exclude<
+      typeof result,
+      InstanceType<typeof ErrorResponse>
+    >;
+
+    expect(response.statusCode).toBe(302);
+    expect(response.headers?.["location"]).toBe(
+      "https://frontend.example.com/start-session",
+    );
   });
 
   it("returns ErrorResponse when JTI already exists", async () => {
     const transactionError = new TransactionCanceledException({
       message: "Transaction cancelled",
-      CancellationReasons: [{ Code: "ConditionalCheckFailed" }],
+      CancellationReasons: [{ Code: "ConditionalCheckFailed" }, {}],
       $metadata: {},
     });
     mockTransactWrite.mockRejectedValue(transactionError);
 
     const result = await checkJtiUnusedAndSetUpSession(
-      mockJti,
+      mockClaims,
       mockClientId,
       mockRedirectUri,
       mockState,
     );
 
     expect(result).toBeInstanceOf(ErrorResponse);
-    expect(result?.errorResponse.statusCode).toBe(302);
-    expect(result?.errorResponse.headers?.["location"]).toContain(
+
+    const response = result as Exclude<typeof result, APIGatewayProxyResult>;
+
+    expect(response.errorResponse.statusCode).toBe(302);
+    expect(response.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
-    expect(result?.errorResponse.headers?.["location"]).toContain(
+    expect(response.errorResponse.headers?.["location"]).toContain(
       "error_description=E2010",
     );
-    expect(result?.errorResponse.headers?.["location"]).toContain(
+    expect(response.errorResponse.headers?.["location"]).toContain(
       "state=test-state",
     );
     expect(mockLogger.warn).toHaveBeenCalledWith("JTIAlreadyUsed", {
       client_id: mockClientId,
-      jti: mockJti,
+      jti: mockClaims.jti,
     });
     expect(mockMetrics.addMetric).toHaveBeenCalledWith(
       "JTIAlreadyUsed",
@@ -135,19 +208,30 @@ describe("checkJtiUnusedAndSetUpSession", () => {
   it("returns ErrorResponse when JTI already exists without state", async () => {
     const transactionError = new TransactionCanceledException({
       message: "Transaction cancelled",
-      CancellationReasons: [{ Code: "ConditionalCheckFailed" }],
+      CancellationReasons: [{ Code: "ConditionalCheckFailed" }, {}],
       $metadata: {},
     });
     mockTransactWrite.mockRejectedValue(transactionError);
 
     const result = await checkJtiUnusedAndSetUpSession(
-      mockJti,
+      mockClaims,
       mockClientId,
       mockRedirectUri,
     );
 
     expect(result).toBeInstanceOf(ErrorResponse);
-    expect(result?.errorResponse.headers?.["location"]).not.toContain("state=");
+
+    const response = result as Exclude<typeof result, APIGatewayProxyResult>;
+
+    expect(response.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
+    expect(response.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2010",
+    );
+    expect(response.errorResponse.headers?.["location"]).not.toContain(
+      "state=",
+    );
   });
 
   it("returns ErrorResponse for other transaction errors", async () => {
@@ -159,26 +243,32 @@ describe("checkJtiUnusedAndSetUpSession", () => {
     mockTransactWrite.mockRejectedValue(transactionError);
 
     const result = await checkJtiUnusedAndSetUpSession(
-      mockJti,
+      mockClaims,
       mockClientId,
       mockRedirectUri,
       mockState,
     );
 
     expect(result).toBeInstanceOf(ErrorResponse);
-    expect(result?.errorResponse.headers?.["location"]).toContain(
+
+    const response = result as Exclude<typeof result, APIGatewayProxyResult>;
+
+    expect(response.errorResponse.headers?.["location"]).toContain(
       "error=server_error",
     );
-    expect(result?.errorResponse.headers?.["location"]).toContain(
+    expect(response.errorResponse.headers?.["location"]).toContain(
       "error_description=E5001",
     );
-    expect(mockLogger.warn).toHaveBeenCalledWith("FailedToSaveJTI", {
-      client_id: mockClientId,
-      jti: mockJti,
-      error: transactionError,
-    });
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      "FailedToCheckJtiUnusedAndSetUpSession",
+      {
+        client_id: mockClientId,
+        jti: mockClaims.jti,
+        error: transactionError,
+      },
+    );
     expect(mockMetrics.addMetric).toHaveBeenCalledWith(
-      "FailedToSaveJTI",
+      "FailedToCheckJtiUnusedAndSetUpSession",
       MetricUnit.Count,
       1,
     );
@@ -189,38 +279,47 @@ describe("checkJtiUnusedAndSetUpSession", () => {
     mockTransactWrite.mockRejectedValue(genericError);
 
     const result = await checkJtiUnusedAndSetUpSession(
-      mockJti,
+      mockClaims,
       mockClientId,
       mockRedirectUri,
       mockState,
     );
 
     expect(result).toBeInstanceOf(ErrorResponse);
-    expect(result?.errorResponse.headers?.["location"]).toContain(
+
+    const response = result as Exclude<typeof result, APIGatewayProxyResult>;
+
+    expect(response.errorResponse.headers?.["location"]).toContain(
       "error=server_error",
     );
-    expect(result?.errorResponse.headers?.["location"]).toContain(
+    expect(response.errorResponse.headers?.["location"]).toContain(
       "error_description=E5001",
     );
-    expect(mockLogger.warn).toHaveBeenCalledWith("FailedToSaveJTI", {
-      client_id: mockClientId,
-      jti: mockJti,
-      error: genericError,
-    });
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      "FailedToCheckJtiUnusedAndSetUpSession",
+      {
+        client_id: mockClientId,
+        jti: mockClaims.jti,
+        error: genericError,
+      },
+    );
     expect(mockMetrics.addMetric).toHaveBeenCalledWith(
-      "FailedToSaveJTI",
+      "FailedToCheckJtiUnusedAndSetUpSession",
       MetricUnit.Count,
       1,
     );
   });
 
-  it("calculates correct expiry time", async () => {
-    const customTtl = 600;
-    mockGetAppConfig.mockResolvedValue({ jti_nonce_ttl_in_seconds: customTtl });
+  it("calculates correct expiry times", async () => {
+    const customConfig = {
+      jti_nonce_ttl_in_seconds: 600,
+      pre_session_ttl_in_seconds: 3600,
+    };
+    mockGetAppConfig.mockResolvedValue(customConfig);
     mockTransactWrite.mockResolvedValue({});
 
     await checkJtiUnusedAndSetUpSession(
-      mockJti,
+      mockClaims,
       mockClientId,
       mockRedirectUri,
       mockState,
@@ -232,10 +331,19 @@ describe("checkJtiUnusedAndSetUpSession", () => {
           Put: {
             TableName: "test-replay-table",
             Item: {
-              nonce: mockJti,
+              nonce: mockClaims.jti,
               expires: 1600,
             },
             ConditionExpression: "attribute_not_exists(nonce)",
+          },
+        },
+        {
+          Put: {
+            TableName: "test-sessions-table",
+            Item: {
+              id: "abcdef123456789012345678", // pragma: allowlist secret
+              expires: 4600,
+            },
           },
         },
       ],
@@ -250,21 +358,30 @@ describe("checkJtiUnusedAndSetUpSession", () => {
     mockTransactWrite.mockRejectedValue(transactionError);
 
     const result = await checkJtiUnusedAndSetUpSession(
-      mockJti,
+      mockClaims,
       mockClientId,
       mockRedirectUri,
       mockState,
     );
 
     expect(result).toBeInstanceOf(ErrorResponse);
-    expect(result?.errorResponse.headers?.["location"]).toContain(
+
+    const response = result as Exclude<typeof result, APIGatewayProxyResult>;
+
+    expect(response.errorResponse.headers?.["location"]).toContain(
       "error=server_error",
     );
-    expect(mockLogger.warn).toHaveBeenCalledWith("FailedToSaveJTI", {
-      client_id: mockClientId,
-      jti: mockJti,
-      error: transactionError,
-    });
+    expect(response.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5001",
+    );
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      "FailedToCheckJtiUnusedAndSetUpSession",
+      {
+        client_id: mockClientId,
+        jti: mockClaims.jti,
+        error: transactionError,
+      },
+    );
   });
 
   it("handles TransactionCanceledException with empty CancellationReasons", async () => {
@@ -276,15 +393,46 @@ describe("checkJtiUnusedAndSetUpSession", () => {
     mockTransactWrite.mockRejectedValue(transactionError);
 
     const result = await checkJtiUnusedAndSetUpSession(
-      mockJti,
+      mockClaims,
       mockClientId,
       mockRedirectUri,
       mockState,
     );
 
     expect(result).toBeInstanceOf(ErrorResponse);
-    expect(result?.errorResponse.headers?.["location"]).toContain(
+
+    const response = result as Exclude<typeof result, APIGatewayProxyResult>;
+
+    expect(response.errorResponse.headers?.["location"]).toContain(
       "error=server_error",
     );
+    expect(response.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5001",
+    );
+  });
+
+  it("returns ErrorResponse when required environment variables are missing", async () => {
+    const originalDomain = process.env["API_SESSION_COOKIE_DOMAIN"];
+    delete process.env["API_SESSION_COOKIE_DOMAIN"];
+
+    const result = await checkJtiUnusedAndSetUpSession(
+      mockClaims,
+      mockClientId,
+      mockRedirectUri,
+      mockState,
+    );
+
+    expect(result).toBeInstanceOf(ErrorResponse);
+
+    const response = result as Exclude<typeof result, APIGatewayProxyResult>;
+
+    expect(response.errorResponse.headers?.["location"]).toContain(
+      "error=server_error",
+    );
+    expect(response.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5001",
+    );
+
+    process.env["API_SESSION_COOKIE_DOMAIN"] = originalDomain;
   });
 });

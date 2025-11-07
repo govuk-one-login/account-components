@@ -47,7 +47,7 @@ export const handler = async (
     }
 
     const saveJtiAndSetupSessionResult = await checkJtiUnusedAndSetUpSession(
-      claims.jti,
+      claims,
       client.client_id,
       queryParams.redirect_uri,
       queryParams.state,
@@ -56,11 +56,7 @@ export const handler = async (
       return saveJtiAndSetupSessionResult.errorResponse;
     }
 
-    // TODO used for debugging. Remove before going live!
-    return {
-      statusCode: 200,
-      body: JSON.stringify({ message: "Authorized", claims }, null, 2),
-    };
+    return saveJtiAndSetupSessionResult;
   } catch (error) {
     logger.error("Authorize error", {
       error,
