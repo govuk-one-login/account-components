@@ -27,6 +27,16 @@ repos:
 
   - repo: local
     hooks:
+      - id: package-audit-check
+        name: Check Dependencies
+        entry: npm audit --audit-level=moderate && npm audit signatures
+        language: system
+        exclude: .*
+        always_run: true
+        stages: [pre-commit]
+
+  - repo: local
+    hooks:
       - id: check-types
         name: Check types
         entry: npm run check-types

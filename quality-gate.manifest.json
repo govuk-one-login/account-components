@@ -5,7 +5,11 @@
       "service-tag": "home",
       "quality-gates": [
         {
-          "check-types": ["code style and linting", "secret scanning"],
+          "check-types": [
+            "code style and linting",
+            "secret scanning",
+            "vulnerability detection"
+          ],
           "provider": "GitHub",
           "phase": "pre-merge",
           "config": {
@@ -39,7 +43,7 @@
           "phase": "pre-merge",
           "config": {
             "file": ".github/workflows/integration-test.yaml",
-            "path": "jobs.integration test",
+            "path": "jobs.integration-test",
             "name": "Integration test"
           }
         },
@@ -48,8 +52,8 @@
           "provider": "GitHub",
           "phase": "build",
           "config": {
-            "file": ".github/workflows/integration-test.yaml",
-            "path": "jobs.Integration test",
+            "file": ".github/workflows/deploy-frontend.yaml",
+            "path": "jobs.publish-integration-tests-image",
             "name": "Integration test"
           }
         },
@@ -59,7 +63,7 @@
           "phase": "pre-merge",
           "config": {
             "file": ".github/workflows/sonarcloud.yaml",
-            "path": "jobs.sonarCloud",
+            "path": "jobs.sonarcloud",
             "name": "SonarCloud"
           }
         },
