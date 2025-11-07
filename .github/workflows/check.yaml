@@ -47,6 +47,9 @@ jobs:
       - name: Check types
         run: npm run check-types
 
+      - name: Check Dependencies
+        run: npm run audit
+
       - name: ESLint
         run: npm run eslint
 

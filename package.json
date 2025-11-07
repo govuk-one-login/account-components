@@ -101,6 +101,7 @@
     "build:core": "cd solutions/core && sam build",
     "run:all": "bash solutions/localstack/provision.sh && RUN_ALL=1 concurrently 'npm run run:frontend' 'npm run run:stubs' 'npm run run:api' --kill-others",
     "config:validate": "for f in solutions/config/*.json; do (jsonschema validate solutions/config/schema/config.json $f) || exit 1; done",
-    "api-specs:validate": "for f in solutions/api/src/specs/*.yaml; do (spectral lint $f) || exit 1; done"
+    "api-specs:validate": "for f in solutions/api/src/specs/*.yaml; do (spectral lint $f) || exit 1; done",
+    "audit": "npm audit --audit-level=moderate && npm audit signatures"
   }
 }
