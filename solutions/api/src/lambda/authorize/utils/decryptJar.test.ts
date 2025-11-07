@@ -121,7 +121,7 @@ describe("decryptJar", () => {
       "error=server_error",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5009",
+      "error_description=E5003",
     );
   });
 
@@ -147,7 +147,7 @@ describe("decryptJar", () => {
       "error=server_error",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5009",
+      "error_description=E5003",
     );
   });
 
@@ -223,7 +223,7 @@ describe("decryptJar", () => {
       "error=server_error",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5009",
+      "error_description=E5003",
     );
   });
 
@@ -271,7 +271,7 @@ describe("decryptJar", () => {
       "error=server_error",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5009",
+      "error_description=E5003",
     );
   });
 
@@ -291,7 +291,7 @@ describe("decryptJar", () => {
       "error=server_error",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5009",
+      "error_description=E5003",
     );
   });
 
@@ -311,7 +311,7 @@ describe("decryptJar", () => {
       "error=server_error",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5009",
+      "error_description=E5003",
     );
   });
 });
