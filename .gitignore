@@ -9,6 +9,8 @@ env*.json
 .aws-sam
 .idea
 
+solutions/config/schema/types.ts
+
 solutions/frontend/dist
 
 solutions/stubs/dist

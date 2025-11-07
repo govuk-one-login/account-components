@@ -24,7 +24,7 @@ import {
   JWTExpired,
   JWTInvalid,
 } from "jose/errors";
-import type { Client } from "../../../../../commons/utils/getClientRegistry/index.js";
+import type { ClientEntry } from "../../../../../config/schema/types.js";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -54,7 +54,7 @@ vi.mock(import("jose"), () => ({
 let verifyJwt: typeof verifyJwtForType;
 
 describe("verifyJwt", () => {
-  const mockClient: Client = {
+  const mockClient: ClientEntry = {
     client_id: "test-client",
     scope: "openid profile",
     redirect_uris: ["https://example.com/callback"],
@@ -74,6 +74,7 @@ describe("verifyJwt", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env["AUTHORIZE_ENDPOINT_URL"] = "https://auth.example.com";
+    process.env["REPLAY_ATTACK_TABLE_NAME"] = "test-replay-table";
     mockCreateRemoteJWKSet.mockReturnValue(mockJwks);
   });
 
@@ -121,6 +122,12 @@ describe("verifyJwt", () => {
 
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=unauthorized_client",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E4001",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
       "state=test-state",
     );
   });
@@ -135,6 +142,12 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=unauthorized_client",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E4002",
+    );
   });
 
   it("returns ErrorResponse for JWKSNoMatchingKey error", async () => {
@@ -147,6 +160,12 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=unauthorized_client",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E4003",
+    );
   });
 
   it("returns ErrorResponse for JWKSMultipleMatchingKeys error", async () => {
@@ -161,6 +180,12 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=unauthorized_client",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E4004",
+    );
   });
 
   it("returns ErrorResponse for JWKInvalid error", async () => {
@@ -173,6 +198,12 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=unauthorized_client",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E4005",
+    );
   });
 
   it("returns ErrorResponse for JOSEAlgNotAllowed error", async () => {
@@ -187,6 +218,12 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2001",
+    );
   });
 
   it("returns ErrorResponse for JWSInvalid error", async () => {
@@ -199,6 +236,12 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2002",
+    );
   });
 
   it("returns ErrorResponse for JWSSignatureVerificationFailed error", async () => {
@@ -213,6 +256,12 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2003",
+    );
   });
 
   it("returns ErrorResponse for JWTInvalid error", async () => {
@@ -225,6 +274,12 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2004",
+    );
   });
 
   it("returns ErrorResponse for JWTExpired error", async () => {
@@ -239,6 +294,12 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2005",
+    );
   });
 
   it("returns ErrorResponse for JWTClaimValidationFailed error", async () => {
@@ -253,6 +314,12 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2006",
+    );
   });
 
   it("returns ErrorResponse for generic JOSEError", async () => {
@@ -267,6 +334,12 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2007",
+    );
   });
 
   it("returns ErrorResponse for unknown error", async () => {
@@ -279,6 +352,12 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=server_error",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5008",
+    );
   });
 
   it("works without state parameter", async () => {
@@ -349,6 +428,12 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2008",
+    );
   });
 
   it("returns ErrorResponse when iat is in the future", async () => {
@@ -379,5 +464,11 @@ describe("verifyJwt", () => {
     assert.ok(result instanceof ErrorResponse);
 
     expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2008",
+    );
   });
 });

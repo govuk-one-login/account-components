@@ -38,6 +38,7 @@ There are various commands which can be run manually and which may also be run b
 - `npm run run:stubs` to run the stubs locally and watch for changes
 - `npm run build:stubs` to build the stubs
 - `npm run run:api` to run the API locally and watch for changes
+- `npm run generate-config-types` to generate TypeScript types from the App Config JSON schema
 - `npm run build:api` to build the API
 - `npm run build:core` to build core
 - `npm run test` to run [Vitest](https://vitest.dev/) tests

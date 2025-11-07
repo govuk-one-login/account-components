@@ -9,7 +9,6 @@ import {
 } from "./common.js";
 import type { JWTPayload } from "jose";
 import { jwtVerify, createRemoteJWKSet } from "jose";
-import type { Client } from "../../../../../commons/utils/getClientRegistry/index.js";
 import assert from "node:assert";
 import {
   JOSEAlgNotAllowed,
@@ -26,10 +25,11 @@ import {
   JWTInvalid,
 } from "jose/errors";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/contstants.js";
+import type { ClientEntry } from "../../../../../config/schema/types.js";
 
 const verify = async (
   signedJwt: string,
-  client: Client,
+  client: ClientEntry,
   redirectUri: string,
   state?: string,
 ) => {
@@ -208,9 +208,9 @@ const verify = async (
   return payload;
 };
 
-const checkClaims = (
+const checkClaims = async (
   payload: JWTPayload,
-  client: Client,
+  client: ClientEntry,
   redirectUri: string,
   state?: string,
 ) => {
@@ -317,7 +317,7 @@ const checkClaims = (
 
 export const verifyJwt = async (
   signedJwt: string,
-  client: Client,
+  client: ClientEntry,
   redirectUri: string,
   state?: string,
 ) => {
@@ -329,7 +329,7 @@ export const verifyJwt = async (
     return verifyResult;
   }
 
-  const checkClaimsResult = checkClaims(
+  const checkClaimsResult = await checkClaims(
     verifyResult,
     client,
     redirectUri,

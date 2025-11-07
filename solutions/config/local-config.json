@@ -14,5 +14,6 @@
       "client_name": "Home",
       "jwks_uri": "http://host.docker.internal:6003/home/.well-known/jwks.json"
     }
-  ]
+  ],
+  "jti_nonce_ttl_in_seconds": 7200
 }

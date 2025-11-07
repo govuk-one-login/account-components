@@ -14,9 +14,14 @@
       },
       "minItems": 1,
       "uniqueItems": true
+    },
+    "jti_nonce_ttl_in_seconds": {
+      "description": "Time-to-live in seconds for JTI nonce",
+      "type": "integer",
+      "minimum": 1
     }
   },
-  "required": ["client_registry"],
+  "required": ["client_registry", "jti_nonce_ttl_in_seconds"],
   "$defs": {
     "clientEntry": {
       "type": "object",

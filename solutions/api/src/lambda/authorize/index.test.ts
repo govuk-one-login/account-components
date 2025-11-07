@@ -7,6 +7,7 @@ const getQueryParams = vi.fn();
 const getClient = vi.fn();
 const decryptJar = vi.fn();
 const verifyJwt = vi.fn();
+const checkJtiUnusedAndSetUpSession = vi.fn();
 const mockLogger = {
   error: vi.fn(),
 };
@@ -28,6 +29,10 @@ vi.mock(import("./utils/decryptJar.js"), () => ({
 
 vi.mock(import("./utils/verifyJwt.js"), () => ({
   verifyJwt,
+}));
+
+vi.mock(import("./utils/checkJtiUnusedAndSetUpSession.js"), () => ({
+  checkJtiUnusedAndSetUpSession,
 }));
 
 // @ts-expect-error
@@ -143,6 +148,39 @@ describe("authorize handler", () => {
     );
   });
 
+  it("returns error when checkJtiUnusedAndSetUpSession fails", async () => {
+    const queryParams = {
+      client_id: "test-client",
+      redirect_uri: "http://test.com",
+      request: "encrypted-jar",
+      state: "test-state",
+    };
+    const client = { client_id: "test-client" };
+    const signedJwt = "signed-jwt-string";
+    const claims = { jti: "jwt-id-123" };
+    const errorResponse = new ErrorResponse({
+      statusCode: 302,
+      headers: { location: "https://example.com/error" },
+      body: "",
+    });
+
+    getQueryParams.mockReturnValue(queryParams);
+    getClient.mockResolvedValue(client);
+    decryptJar.mockResolvedValue(signedJwt);
+    verifyJwt.mockResolvedValue(claims);
+    checkJtiUnusedAndSetUpSession.mockResolvedValue(errorResponse);
+
+    const result = await handler(mockEvent);
+
+    expect(result).toBe(errorResponse.errorResponse);
+    expect(checkJtiUnusedAndSetUpSession).toHaveBeenCalledWith(
+      "jwt-id-123",
+      "test-client",
+      "http://test.com",
+      "test-state",
+    );
+  });
+
   it("returns success when all functions succeed", async () => {
     const queryParams = {
       client_id: "test-client",
@@ -150,14 +188,15 @@ describe("authorize handler", () => {
       request: "encrypted-jar",
       state: "test-state",
     };
-    const client = { id: "test-client" };
+    const client = { client_id: "test-client" };
     const signedJwt = "signed-jwt-string";
-    const claims = { sub: "user123" };
+    const claims = { jti: "jwt-id-123", sub: "user123" };
 
     getQueryParams.mockReturnValue(queryParams);
     getClient.mockResolvedValue(client);
     decryptJar.mockResolvedValue(signedJwt);
     verifyJwt.mockResolvedValue(claims);
+    checkJtiUnusedAndSetUpSession.mockResolvedValue(undefined);
 
     const result = await handler(mockEvent);
 
@@ -172,9 +211,9 @@ describe("authorize handler", () => {
         2,
       ),
     });
-    expect(verifyJwt).toHaveBeenCalledWith(
-      signedJwt,
-      client,
+    expect(checkJtiUnusedAndSetUpSession).toHaveBeenCalledWith(
+      "jwt-id-123",
+      "test-client",
       "http://test.com",
       "test-state",
     );

@@ -14,5 +14,6 @@
       "client_name": "dummy_home",
       "jwks_uri": "https://home.build.staging.gov.uk/.well-known/jwks.json"
     }
-  ]
+  ],
+  "jti_nonce_ttl_in_seconds": 7200
 }

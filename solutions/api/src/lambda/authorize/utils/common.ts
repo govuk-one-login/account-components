@@ -112,6 +112,14 @@ export const authorizeErrors = {
     description: "E5009",
     type: "server_error",
   },
+  jtiAlreadyUsed: {
+    description: "E2010",
+    type: "invalid_request",
+  },
+  failedToSaveJti: {
+    description: "E5001",
+    type: "server_error",
+  },
 } as const satisfies Record<
   string,
   | AuthorizeErrorAccessDenied
