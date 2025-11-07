@@ -136,6 +136,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
             Item: {
               id: "abcdef123456789012345678", // pragma: allowlist secret
               expires: 2800,
+              claims: mockClaims,
             },
           },
         },
@@ -343,6 +344,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
             Item: {
               id: "abcdef123456789012345678", // pragma: allowlist secret
               expires: 4600,
+              claims: mockClaims,
             },
           },
         },

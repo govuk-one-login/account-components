@@ -59,6 +59,7 @@ export const checkJtiUnusedAndSetUpSession = async (
             Item: {
               id: sessionId,
               expires: sessionExpires,
+              claims,
             },
           },
         },
