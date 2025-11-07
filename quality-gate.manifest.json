@@ -5,7 +5,7 @@
       "service-tag": "home",
       "quality-gates": [
         {
-          "check-types": ["code style and linting", "secret scanning", "unit"],
+          "check-types": ["code style and linting", "secret scanning"],
           "provider": "GitHub",
           "phase": "pre-merge",
           "config": {
@@ -14,19 +14,39 @@
           }
         },
         {
-          "check-types": ["code style and linting", "unit"],
+          "check-types": ["unit", "new feature", "regression"],
+          "provider": "GitHub",
+          "phase": "pre-merge",
+          "config": {
+            "file": ".github/workflows/test.yaml",
+            "path": "jobs.test",
+            "name": "Test"
+          }
+        },
+        {
+          "check-types": ["code style and linting", "vulnerability detection"],
           "provider": "GitHub",
           "phase": "pre-merge",
           "config": {
             "file": ".github/workflows/check.yaml",
-            "path": "jobs.Check",
+            "path": "jobs.check",
             "name": "Check"
           }
         },
         {
-          "check-types": ["integration"],
+          "check-types": ["integration", "accessibility", "regression"],
           "provider": "GitHub",
           "phase": "pre-merge",
+          "config": {
+            "file": ".github/workflows/integration-test.yaml",
+            "path": "jobs.integration test",
+            "name": "Integration test"
+          }
+        },
+        {
+          "check-types": ["integration", "accessibility", "regression"],
+          "provider": "GitHub",
+          "phase": "build",
           "config": {
             "file": ".github/workflows/integration-test.yaml",
             "path": "jobs.Integration test",
@@ -39,8 +59,98 @@
           "phase": "pre-merge",
           "config": {
             "file": ".github/workflows/sonarcloud.yaml",
-            "path": "jobs.SonarCloud",
+            "path": "jobs.sonarCloud",
             "name": "SonarCloud"
+          }
+        },
+        {
+          "check-types": ["canary"],
+          "provider": "GitHub",
+          "phase": "staging",
+          "config": {
+            "file": ".github/workflows/deploy-frontend.yaml",
+            "path": "jobs.deploy-frontend",
+            "name": "Deploy Frontend"
+          }
+        },
+        {
+          "check-types": ["canary"],
+          "provider": "GitHub",
+          "phase": "staging",
+          "config": {
+            "file": ".github/workflows/deploy-api.yaml",
+            "path": "jobs.deploy-api",
+            "name": "Deploy API"
+          }
+        },
+        {
+          "check-types": ["canary"],
+          "provider": "GitHub",
+          "phase": "staging",
+          "config": {
+            "file": ".github/workflows/deploy-core.yaml",
+            "path": "jobs.deploy-core",
+            "name": "Deploy Core"
+          }
+        },
+        {
+          "check-types": ["canary"],
+          "provider": "GitHub",
+          "phase": "integration",
+          "config": {
+            "file": ".github/workflows/deploy-frontend.yaml",
+            "path": "jobs.deploy-frontend",
+            "name": "Deploy Frontend"
+          }
+        },
+        {
+          "check-types": ["canary"],
+          "provider": "GitHub",
+          "phase": "integration",
+          "config": {
+            "file": ".github/workflows/deploy-api.yaml",
+            "path": "jobs.deploy-api",
+            "name": "Deploy API"
+          }
+        },
+        {
+          "check-types": ["canary"],
+          "provider": "GitHub",
+          "phase": "integration",
+          "config": {
+            "file": ".github/workflows/deploy-core.yaml",
+            "path": "jobs.deploy-core",
+            "name": "Deploy Core"
+          }
+        },
+        {
+          "check-types": ["canary"],
+          "provider": "GitHub",
+          "phase": "production",
+          "config": {
+            "file": ".github/workflows/deploy-frontend.yaml",
+            "path": "jobs.deploy-frontend",
+            "name": "Deploy Frontend"
+          }
+        },
+        {
+          "check-types": ["canary"],
+          "provider": "GitHub",
+          "phase": "production",
+          "config": {
+            "file": ".github/workflows/deploy-api.yaml",
+            "path": "jobs.deploy-api",
+            "name": "Deploy API"
+          }
+        },
+        {
+          "check-types": ["canary"],
+          "provider": "GitHub",
+          "phase": "production",
+          "config": {
+            "file": ".github/workflows/deploy-core.yaml",
+            "path": "jobs.deploy-core",
+            "name": "Deploy Core"
           }
         }
       ]
