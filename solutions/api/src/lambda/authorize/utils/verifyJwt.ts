@@ -26,9 +26,7 @@ import {
 } from "jose/errors";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/contstants.js";
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
-import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
-import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -220,32 +218,16 @@ const isJtiValid = async (
   state?: string,
 ) => {
   try {
-    const appConfig = await getAppConfig();
-
-    await dynamoDbClient.transactWrite({
-      TransactItems: [
-        {
-          Put: {
-            TableName: process.env["REPLAY_ATTACK_TABLE_NAME"],
-            Item: {
-              nonce: jti,
-              expires:
-                Math.floor(Date.now() / 1000) +
-                appConfig.jti_nonce_ttl_in_seconds,
-            },
-            ConditionExpression: "attribute_not_exists(nonce)",
-          },
+    const jtiNotUsed = !(
+      await dynamoDbClient.get({
+        TableName: process.env["REPLAY_ATTACK_TABLE_NAME"],
+        Key: {
+          nonce: jti,
         },
-      ],
-    });
-    return true;
-  } catch (error) {
-    if (
-      error instanceof TransactionCanceledException &&
-      error.CancellationReasons?.find(
-        (reason) => reason.Code === "ConditionalCheckFailed",
-      )
-    ) {
+      })
+    ).Item;
+
+    if (!jtiNotUsed) {
       logger.warn("JTIAlreadyUsed", {
         client_id: clientId,
         jti,
@@ -259,6 +241,9 @@ const isJtiValid = async (
         ),
       );
     }
+
+    return jtiNotUsed;
+  } catch (error) {
     logger.warn("FailedToSaveJTI", {
       client_id: clientId,
       jti,

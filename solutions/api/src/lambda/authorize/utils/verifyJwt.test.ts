@@ -25,7 +25,6 @@ import {
   JWTInvalid,
 } from "jose/errors";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
-import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -44,21 +43,16 @@ vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
   metrics: { addMetric: vi.fn(), addDimensions: vi.fn() },
 }));
 
-const mockTransactWrite = vi.fn();
+const mockGet = vi.fn();
 // @ts-expect-error
 vi.mock(
   import("../../../../../commons/utils/awsClient/dynamodbClient/index.js"),
   () => ({
     getDynamoDbClient: () => ({
-      transactWrite: mockTransactWrite,
+      get: mockGet,
     }),
   }),
 );
-
-const mockGetAppConfig = vi.fn();
-vi.mock(import("../../../../../commons/utils/getAppConfig/index.js"), () => ({
-  getAppConfig: mockGetAppConfig,
-}));
 
 const mockJwtVerify = vi.fn();
 const mockCreateRemoteJWKSet = vi.fn();
@@ -93,10 +87,7 @@ describe("verifyJwt", () => {
     process.env["AUTHORIZE_ENDPOINT_URL"] = "https://auth.example.com";
     process.env["REPLAY_ATTACK_TABLE_NAME"] = "test-replay-table";
     mockCreateRemoteJWKSet.mockReturnValue(mockJwks);
-    mockGetAppConfig.mockResolvedValue({
-      jti_nonce_ttl_in_seconds: 300,
-    });
-    mockTransactWrite.mockResolvedValue({});
+    mockGet.mockResolvedValue({});
   });
 
   afterAll(() => {
@@ -146,6 +137,9 @@ describe("verifyJwt", () => {
       "error=unauthorized_client",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E4001",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
       "state=test-state",
     );
   });
@@ -163,6 +157,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=unauthorized_client",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E4002",
+    );
   });
 
   it("returns ErrorResponse for JWKSNoMatchingKey error", async () => {
@@ -177,6 +174,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=unauthorized_client",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E4003",
     );
   });
 
@@ -195,6 +195,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=unauthorized_client",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E4004",
+    );
   });
 
   it("returns ErrorResponse for JWKInvalid error", async () => {
@@ -209,6 +212,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=unauthorized_client",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E4005",
     );
   });
 
@@ -227,6 +233,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2001",
+    );
   });
 
   it("returns ErrorResponse for JWSInvalid error", async () => {
@@ -241,6 +250,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2002",
     );
   });
 
@@ -259,6 +271,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2003",
+    );
   });
 
   it("returns ErrorResponse for JWTInvalid error", async () => {
@@ -273,6 +288,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2004",
     );
   });
 
@@ -291,6 +309,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2005",
+    );
   });
 
   it("returns ErrorResponse for JWTClaimValidationFailed error", async () => {
@@ -307,6 +328,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2006",
     );
   });
 
@@ -325,6 +349,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2007",
+    );
   });
 
   it("returns ErrorResponse for unknown error", async () => {
@@ -339,6 +366,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=server_error",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5008",
     );
   });
 
@@ -413,6 +443,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2008",
+    );
   });
 
   it("returns ErrorResponse when iat is in the future", async () => {
@@ -446,6 +479,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2008",
+    );
   });
 
   it("returns ErrorResponse when JTI is already used", async () => {
@@ -468,13 +504,7 @@ describe("verifyJwt", () => {
     };
 
     mockJwtVerify.mockResolvedValue({ payload: mockPayload });
-
-    const transactionError = new TransactionCanceledException({
-      message: "Transaction cancelled",
-      $metadata: {},
-    });
-    transactionError.CancellationReasons = [{ Code: "ConditionalCheckFailed" }];
-    mockTransactWrite.mockRejectedValue(transactionError);
+    mockGet.mockResolvedValue({ Item: { nonce: "duplicate-id" } });
 
     const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
 
@@ -486,9 +516,12 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2010",
+    );
   });
 
-  it("returns ErrorResponse when DynamoDB write fails", async () => {
+  it("returns ErrorResponse when DynamoDB get fails", async () => {
     const mockPayload = {
       client_id: "test-client",
       iss: "test-client",
@@ -508,7 +541,7 @@ describe("verifyJwt", () => {
     };
 
     mockJwtVerify.mockResolvedValue({ payload: mockPayload });
-    mockTransactWrite.mockRejectedValue(new Error("DynamoDB error"));
+    mockGet.mockRejectedValue(new Error("DynamoDB error"));
 
     const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
 
@@ -519,6 +552,9 @@ describe("verifyJwt", () => {
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=server_error",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5001",
     );
   });
 });
