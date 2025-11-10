@@ -109,7 +109,6 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
   } catch (error) {
     request.log.error(error, "StartSessionError");
     metrics.addMetric("StartSessionError", MetricUnit.Count, 1);
-    reply.setCookie(...getUnsetApiSessionCookieArgs());
     redirectToErrorPage(reply);
     return reply;
   }
