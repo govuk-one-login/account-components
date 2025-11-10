@@ -19,7 +19,7 @@ vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
 
 // @ts-expect-error
 vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
-  metrics: { addMetric: vi.fn(), addDimensions: vi.fn() },
+  metrics: { addMetric: vi.fn() },
 }));
 
 const createMockEvent = (

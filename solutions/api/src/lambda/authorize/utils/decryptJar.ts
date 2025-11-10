@@ -25,8 +25,6 @@ export const decryptJar = async (
   state?: string,
 ) => {
   try {
-    metrics.addDimensions({ client_id: clientId });
-
     const jarComponents = v.parse(
       v.message(
         v.tuple([v.string(), v.string(), v.string(), v.string(), v.string()]),

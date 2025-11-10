@@ -60,6 +60,8 @@ Mappings:
         ]
       LambdaLogLevel: DEBUG
       UseCanary: false
+      apiSessionCookieDomain: manage.dev.account.gov.uk
+      frontendUrl: https://manage.dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.build.account.gov.uk
@@ -70,6 +72,8 @@ Mappings:
         ]
       LambdaLogLevel: INFO
       UseCanary: false
+      apiSessionCookieDomain: manage.build.account.gov.uk
+      frontendUrl: https://manage.build.account.gov.uk
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.staging.account.gov.uk
@@ -80,6 +84,8 @@ Mappings:
         ]
       LambdaLogLevel: INFO
       UseCanary: true
+      apiSessionCookieDomain: manage.staging.account.gov.uk
+      frontendUrl: https://manage.staging.account.gov.uk
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.integration.account.gov.uk
@@ -90,6 +96,8 @@ Mappings:
         ]
       LambdaLogLevel: INFO
       UseCanary: true
+      apiSessionCookieDomain: manage.integration.account.gov.uk
+      frontendUrl: https://manage.integration.account.gov.uk
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.account.gov.uk
@@ -100,6 +108,8 @@ Mappings:
         ]
       LambdaLogLevel: INFO
       UseCanary: true
+      apiSessionCookieDomain: manage.account.gov.uk
+      frontendUrl: https://manage.account.gov.uk
 
 Conditions:
   UseCodeSigning:
@@ -506,6 +516,16 @@ Resources:
               authorizeEndpointUrl,
             ]
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
+          REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
+          API_SESSIONS_TABLE_NAME: !Ref ApiSessionsTable
+          API_SESSION_COOKIE_DOMAIN:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              apiSessionCookieDomain,
+            ]
+          FRONTEND_URL:
+            !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendUrl]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -519,6 +539,14 @@ Resources:
                 - appconfig:GetLatestConfiguration
                 - appconfig:StartConfigurationSession
               Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
+            - Effect: Allow
+              Action:
+                - dynamodb:TransactWrite
+              Resource: !GetAtt ReplayAttackTable.Arn
+            - Effect: Allow
+              Action:
+                - dynamodb:TransactWrite
+              Resource: !GetAtt ApiSessionsTable.Arn
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -645,3 +673,32 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-auth_code"
+
+  ApiSessionsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-ApiSessions
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      TimeToLiveSpecification:
+        AttributeName: "expiry"
+        Enabled: true
+      SSESpecification:
+        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-api_sessions"

@@ -38,6 +38,7 @@ There are various commands which can be run manually and which may also be run b
 - `npm run run:stubs` to run the stubs locally and watch for changes
 - `npm run build:stubs` to build the stubs
 - `npm run run:api` to run the API locally and watch for changes
+- `npm run generate-config-types` to generate TypeScript types from the App Config JSON schema
 - `npm run build:api` to build the API
 - `npm run build:core` to build core
 - `npm run test` to run [Vitest](https://vitest.dev/) tests
@@ -56,6 +57,7 @@ There are various commands which can be run manually and which may also be run b
 - `npm run check-gh-actions` to check GitHub Actions with [Zizmor](https://docs.zizmor.sh/)
 - `npm run detect-secrets` to detect secrets which should not be in the repo. False positives can be [ignored with comments](https://github.com/Yelp/detect-secrets?tab=readme-ov-file#inline-allowlisting)
 - `npm run config:validate` to validate the application's config
+- `npm run audit` to check for NPM package vulnerabilities and check package signature integrity
 
 If these commands detect issues it may be possible to fix them by running:
 

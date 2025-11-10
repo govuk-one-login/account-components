@@ -15,10 +15,6 @@ const queryParamsSchema = v.object({
 });
 
 export const getQueryParams = (event: APIGatewayProxyEvent) => {
-  metrics.addDimensions({
-    client_id: event.queryStringParameters?.["client_id"] ?? "",
-  });
-
   const queryParams = v.safeParse(
     queryParamsSchema,
     event.queryStringParameters,

@@ -1,139 +1,38 @@
-import { expect, it, describe, vi, beforeEach, afterEach } from "vitest";
+import { expect, it, describe, vi } from "vitest";
 import { getClientRegistry } from "./index.js";
+import type {
+  AppConfigSchema,
+  ClientEntry,
+} from "../../../config/schema/types.js";
 
-vi.mock(import("@aws-lambda-powertools/parameters/appconfig"), () => ({
+vi.mock(import("../getAppConfig/index.js"), () => ({
   getAppConfig: vi.fn(),
 }));
-vi.mock(import("../getEnvironment/index.js"), () => ({
-  getEnvironment: vi.fn(),
-}));
-vi.mock(import("../awsClient/appconfigClient/index.js"), () => ({
-  getAppConfigClient: vi.fn(),
-}));
-// @ts-expect-error
-vi.mock(import("../../../config/local-config.json"), () => ({
-  client_registry: [
-    {
-      client_id: "ABCDEF12345678901234567890123456",
-      scope: "account-delete",
-      redirect_uris: ["https://signin.build.account.gov.uk/auth/callback"],
-      client_name: "Auth",
-      jwks_uri: "https://signin.build.account.gov.uk/.well-known/jwks.json",
-    },
-    {
-      client_id: "23456789012345678901234567890123",
-      scope: "account-delete",
-      redirect_uris: ["https://home.build.account.gov.uk/home/callback"],
-      client_name: "Home",
-      jwks_uri: "https://home.build.account.gov.uk/.well-known/jwks.json",
-    },
-  ],
-}));
-
-const mockGetAppConfig = vi.fn();
-const mockGetEnvironment = vi.fn();
-const mockGetAppConfigClient = vi.fn();
-
-vi.mocked(
-  await import("@aws-lambda-powertools/parameters/appconfig"),
-).getAppConfig = mockGetAppConfig;
-// @ts-expect-error
-vi.mocked(await import("../getEnvironment/index.js")).getEnvironment =
-  mockGetEnvironment;
-vi.mocked(
-  await import("../awsClient/appconfigClient/index.js"),
-).getAppConfigClient = mockGetAppConfigClient;
 
 describe("getClientRegistry", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  it("returns client_registry from app config", async () => {
+    const mockClientRegistry = [
+      {
+        client_id: "test-client",
+        scope: "openid profile",
+        redirect_uris: ["https://example.com/callback"],
+        client_name: "Test Client",
+        jwks_uri: "https://example.com/.well-known/jwks.json",
+      },
+    ];
 
-  afterEach(() => {
-    vi.resetModules();
-  });
+    const mockAppConfig: AppConfigSchema = {
+      client_registry: mockClientRegistry as [ClientEntry, ...ClientEntry[]],
+      jti_nonce_ttl_in_seconds: 300,
+      api_session_ttl_in_seconds: 300,
+    };
 
-  describe("local environment", () => {
-    beforeEach(() => {
-      mockGetEnvironment.mockReturnValue("local");
-    });
+    const { getAppConfig } = await import("../getAppConfig/index.js");
+    vi.mocked(getAppConfig).mockResolvedValue(mockAppConfig);
 
-    it("returns client registry from local config", async () => {
-      const result = await getClientRegistry();
+    const result = await getClientRegistry();
 
-      expect(result).toStrictEqual([
-        {
-          client_id: "ABCDEF12345678901234567890123456",
-          scope: "account-delete",
-          redirect_uris: ["https://signin.build.account.gov.uk/auth/callback"],
-          client_name: "Auth",
-          jwks_uri: "https://signin.build.account.gov.uk/.well-known/jwks.json",
-        },
-        {
-          client_id: "23456789012345678901234567890123",
-          scope: "account-delete",
-          redirect_uris: ["https://home.build.account.gov.uk/home/callback"],
-          client_name: "Home",
-          jwks_uri: "https://home.build.account.gov.uk/.well-known/jwks.json",
-        },
-      ]);
-      expect(mockGetAppConfig).not.toHaveBeenCalled();
-    });
-  });
-
-  describe("non-local environment", () => {
-    beforeEach(() => {
-      mockGetEnvironment.mockReturnValue("dev");
-      mockGetAppConfigClient.mockReturnValue({});
-    });
-
-    it("returns client registry from AppConfig", async () => {
-      const mockConfig = {
-        client_registry: [
-          {
-            client_id: "test-client-id",
-            scope: "test-scope",
-            redirect_uris: ["https://test.example.com/callback"],
-            client_name: "Test Client",
-            jwks_uri: "https://test.example.com/.well-known/jwks.json",
-          },
-        ],
-      };
-      mockGetAppConfig.mockResolvedValue(mockConfig);
-
-      const result = await getClientRegistry();
-
-      expect(result).toStrictEqual(mockConfig.client_registry);
-      expect(mockGetAppConfig).toHaveBeenCalledWith("operational", {
-        application: "account-components",
-        environment: "dev",
-        transform: "json",
-        awsSdkV3Client: {},
-      });
-    });
-
-    it("returns empty array when config is null", async () => {
-      mockGetAppConfig.mockResolvedValue(null);
-
-      const result = await getClientRegistry();
-
-      expect(result).toStrictEqual([]);
-    });
-
-    it("returns empty array when config has no client_registry", async () => {
-      mockGetAppConfig.mockResolvedValue({ other_field: "value" });
-
-      const result = await getClientRegistry();
-
-      expect(result).toStrictEqual([]);
-    });
-
-    it("returns empty array when config is not an object", async () => {
-      mockGetAppConfig.mockResolvedValue("invalid config");
-
-      const result = await getClientRegistry();
-
-      expect(result).toStrictEqual([]);
-    });
+    expect(result).toBe(mockClientRegistry);
+    expect(getAppConfig).toHaveBeenCalledTimes(1);
   });
 });

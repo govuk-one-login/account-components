@@ -23,6 +23,7 @@
         "cfn-lint",
         "read",
         "sam",
+        "sleep",
       ],
       "ignoreDependencies": [
         "csso-cli",

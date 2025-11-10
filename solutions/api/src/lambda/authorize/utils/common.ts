@@ -48,25 +48,29 @@ interface AuthorizeErrorInvalidGrant {
 }
 
 export const authorizeErrors = {
-  jwksTimeout: {
-    description: "E4001",
-    type: "unauthorized_client",
+  accountDeleteUserAborted: {
+    description: "E1001",
+    type: "access_denied",
   },
-  jwksInvalid: {
-    description: "E4002",
-    type: "unauthorized_client",
+  accountDeletePasswordIncorrect: {
+    description: "E1002",
+    type: "access_denied",
   },
-  jwksNoMatchingKey: {
-    description: "E4003",
-    type: "unauthorized_client",
+  accountDeletePermanentlySuspended: {
+    description: "E1003",
+    type: "access_denied",
   },
-  jwksMultipleMatchingKeys: {
-    description: "E4004",
-    type: "unauthorized_client",
+  accountDeleteOtpTooManySent: {
+    description: "E1004",
+    type: "access_denied",
   },
-  jwkInvalid: {
-    description: "E4005",
-    type: "unauthorized_client",
+  accountDeleteOtpBlocked: {
+    description: "E1005",
+    type: "access_denied",
+  },
+  accountDeleteOtpTooManyEntered: {
+    description: "E1006",
+    type: "access_denied",
   },
   algNotAllowed: {
     description: "E2001",
@@ -96,10 +100,6 @@ export const authorizeErrors = {
     description: "E2007",
     type: "invalid_request",
   },
-  verifyJwtUnknownError: {
-    description: "E5008",
-    type: "server_error",
-  },
   invalidClaims: {
     description: "E2008",
     type: "invalid_request",
@@ -108,7 +108,71 @@ export const authorizeErrors = {
     description: "E2009",
     type: "invalid_request",
   },
+  jtiAlreadyUsed: {
+    description: "E2010",
+    type: "invalid_request",
+  },
+  sessionNotFound: {
+    description: "E3001",
+    type: "invalid_scope",
+  },
+  accountDeleteAccountNotFound: {
+    description: "E3002",
+    type: "invalid_scope",
+  },
+  jwksTimeout: {
+    description: "E4001",
+    type: "unauthorized_client",
+  },
+  jwksInvalid: {
+    description: "E4002",
+    type: "unauthorized_client",
+  },
+  jwksNoMatchingKey: {
+    description: "E4003",
+    type: "unauthorized_client",
+  },
+  jwksMultipleMatchingKeys: {
+    description: "E4004",
+    type: "unauthorized_client",
+  },
+  jwkInvalid: {
+    description: "E4005",
+    type: "unauthorized_client",
+  },
+  failedToCheckJtiUnusedAndSetUpSession: {
+    description: "E5001",
+    type: "server_error",
+  },
+  verifyJwtUnknownError: {
+    description: "E5002",
+    type: "server_error",
+  },
   jarDecryptUnknownError: {
+    description: "E5003",
+    type: "server_error",
+  },
+  failedToCreateSession: {
+    description: "E5004",
+    type: "server_error",
+  },
+  failedToGetSession: {
+    description: "E5005",
+    type: "server_error",
+  },
+  accountDeleteFailedToChallengePassword: {
+    description: "E5006",
+    type: "server_error",
+  },
+  accountDeleteFailedToChallengeOtp: {
+    description: "E5007",
+    type: "server_error",
+  },
+  accountDeleteFailedToDeleteAccount: {
+    description: "E5008",
+    type: "server_error",
+  },
+  failedToSaveOutcome: {
     description: "E5009",
     type: "server_error",
   },

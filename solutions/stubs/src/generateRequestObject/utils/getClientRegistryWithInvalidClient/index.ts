@@ -1,7 +1,10 @@
-import type { Client } from "../../../../../commons/utils/getClientRegistry/index.js";
 import { getClientRegistry } from "../../../../../commons/utils/getClientRegistry/index.js";
+import type {
+  AppConfigSchema,
+  ClientEntry,
+} from "../../../../../config/schema/types.js";
 
-const invalidClient: Client = {
+const invalidClient: ClientEntry = {
   client_id: "A1B2C3D4E5F6G7H8A1B2C3D4E5F6G7H8",
   scope: "account-delete",
   redirect_uris: ["https://nowhere"],
@@ -9,6 +12,8 @@ const invalidClient: Client = {
   jwks_uri: "https://nowhere/.well-known/jwks.json",
 };
 
-export async function getClientRegistryWithInvalidClient(): Promise<Client[]> {
+export async function getClientRegistryWithInvalidClient(): Promise<
+  AppConfigSchema["client_registry"]
+> {
   return [...(await getClientRegistry()), invalidClient];
 }

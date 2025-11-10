@@ -57,6 +57,7 @@
     "eslint-plugin-depend": "^1.3.1",
     "eslint-plugin-n": "^17.23.1",
     "eslint-plugin-playwright": "^2.2.2",
+    "json-schema-to-typescript": "^15.0.4",
     "knip": "^5.66.4",
     "prettier": "^3.6.2",
     "rolldown": "^1.0.0-beta.44",
@@ -68,7 +69,8 @@
   "scripts": {
     "install-brewfile": "cat Brewfile; echo; echo; read -p \"Install/update Brewfile dependencies as shown above (y/N)?\" -n 1 -r; echo; if [ \"$REPLY\" == \"y\" ]; then brew bundle check || brew bundle install; fi",
     "install-git-hooks": "pre-commit install --install-hooks --overwrite",
-    "check-types": "tsc --noEmit",
+    "generate-config-types": "json2ts -i solutions/config/schema/config.json -o solutions/config/schema/types.ts",
+    "check-types": "npm run generate-config-types && tsc --noEmit",
     "eslint": "eslint . --report-unused-disable-directives --cache --max-warnings 0",
     "eslint:fix": "eslint . --fix --report-unused-disable-directives --cache --max-warnings 0",
     "tflint": "tflint --init && tflint --recursive --format compact --chdir solutions/infra",
@@ -91,16 +93,19 @@
     "build:frontend": "cd solutions/frontend && bash ../commons/utils/fastify/build/production.sh",
     "build-local:frontend": "cd solutions/frontend && bash ../commons/utils/fastify/build/local.sh",
     "watch:frontend": "chokidar \"./solutions/frontend/src/**/*\" \"./solutions/commons/**/*\" \"./solutions/config/local-config.ts\" -c \"npm run build-local:frontend\"",
-    "run:frontend": "([ -n \"$RUN_ALL\" ] || bash solutions/localstack/provision.sh) && npm run build-local:frontend && concurrently 'npm run watch:frontend' 'cd solutions/frontend && node --enable-source-maps --watch --env-file=$([ \"$IS_INTEGRATION_TEST\" = \"1\" ] && echo \".env.integration-tests\" || echo \".env\") ./dist/local.js' --kill-others",
+    "run:frontend": "([ -n \"$RUN_ALL\" ] || bash solutions/localstack/provision.sh) && npm run build-local:frontend && concurrently 'npm run watch:frontend' 'cd solutions/frontend && node --enable-source-maps --watch --env-file=$([ \"$IS_INTEGRATION_TEST\" = \"1\" ] && echo \".env.integration-tests\" || echo \".env\") ./dist/local.js' 'npm run watch:config-schema-if-not-running-all' --kill-others",
     "build:stubs": "cd solutions/stubs && bash ../commons/utils/fastify/build/production.sh",
     "build-local:stubs": "cd solutions/stubs && bash ../commons/utils/fastify/build/local.sh",
     "watch:stubs": "chokidar \"./solutions/stubs/src/**/*\" \"./solutions/commons/**/*\" \"./solutions/config/local-config.ts\" -c \"npm run build-local:stubs\"",
-    "run:stubs": "([ -n \"$RUN_ALL\" ] || bash solutions/localstack/provision.sh) && npm run build-local:stubs && concurrently 'npm run watch:stubs' 'cd solutions/stubs && node --enable-source-maps --watch --env-file=$([ \"$IS_INTEGRATION_TEST\" = \"1\" ] && echo \".env.integration-tests\" || echo \".env\") ./dist/local.js' --kill-others",
+    "run:stubs": "([ -n \"$RUN_ALL\" ] || bash solutions/localstack/provision.sh) && npm run build-local:stubs && concurrently 'npm run watch:stubs' 'cd solutions/stubs && node --enable-source-maps --watch --env-file=$([ \"$IS_INTEGRATION_TEST\" = \"1\" ] && echo \".env.integration-tests\" || echo \".env\") ./dist/local.js' 'npm run watch:config-schema-if-not-running-all' --kill-others",
     "build:api": "cd solutions/api && sam build --base-dir ../../",
-    "run:api": "([ -n \"$RUN_ALL\" ] || bash solutions/localstack/provision.sh) && npm run build:api && cd solutions/api && ARCH=$(uname -m) && sam local start-api --warm-containers EAGER --port 6004 --env-vars=$([ \"$IS_INTEGRATION_TEST\" = \"1\" ] && echo \"env.integration-tests.json\" || echo \"env.json\") --parameter-overrides LambdaArchitecture=$([ \"$ARCH\" = \"arm64\" ] || [ \"$ARCH\" = \"aarch64\" ] && echo \"arm64\" || echo \"x86_64\")",
+    "run:api": "([ -n \"$RUN_ALL\" ] || bash solutions/localstack/provision.sh) && npm run build:api && concurrently 'cd solutions/api && ARCH=$(uname -m) && sam local start-api --warm-containers EAGER --port 6004 --env-vars=$([ \"$IS_INTEGRATION_TEST\" = \"1\" ] && echo \"env.integration-tests.json\" || echo \"env.json\") --parameter-overrides LambdaArchitecture=$([ \"$ARCH\" = \"arm64\" ] || [ \"$ARCH\" = \"aarch64\" ] && echo \"arm64\" || echo \"x86_64\")' 'npm run watch:config-schema-if-not-running-all' --kill-others",
     "build:core": "cd solutions/core && sam build",
-    "run:all": "bash solutions/localstack/provision.sh && RUN_ALL=1 concurrently 'npm run run:frontend' 'npm run run:stubs' 'npm run run:api' --kill-others",
+    "watch:config-schema": "npm run generate-config-types && chokidar \"./solutions/config/schema/config.json\" -c \"npm run generate-config-types\"",
+    "watch:config-schema-if-not-running-all": "[ -n \"$RUN_ALL\" ] && sleep infinity || npm run watch:config-schema",
+    "run:all": "bash solutions/localstack/provision.sh && RUN_ALL=1 concurrently 'npm run run:frontend' 'npm run run:stubs' 'npm run run:api' 'npm run watch:config-schema' --kill-others",
     "config:validate": "for f in solutions/config/*.json; do (jsonschema validate solutions/config/schema/config.json $f) || exit 1; done",
-    "api-specs:validate": "for f in solutions/api/src/specs/*.yaml; do (spectral lint $f) || exit 1; done"
+    "api-specs:validate": "for f in solutions/api/src/specs/*.yaml; do (spectral lint $f) || exit 1; done",
+    "audit": "npm audit --audit-level=moderate && npm audit signatures"
   }
 }

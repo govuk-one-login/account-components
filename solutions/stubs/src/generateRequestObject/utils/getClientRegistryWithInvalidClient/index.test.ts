@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Client } from "../../../../../commons/utils/getClientRegistry/index.js";
 import { getClientRegistryWithInvalidClient } from "./index.js";
+import type { ClientEntry } from "../../../../../config/schema/types.js";
 
 vi.mock(
   import("../../../../../commons/utils/getClientRegistry/index.js"),
@@ -10,7 +10,7 @@ vi.mock(
 );
 
 describe("getClientRegistryWithInvalidClient", () => {
-  const mockClient: Client = {
+  const mockClient: ClientEntry = {
     client_id: "valid_client_id",
     scope: "valid-scope",
     redirect_uris: ["https://valid.com"],
@@ -18,7 +18,7 @@ describe("getClientRegistryWithInvalidClient", () => {
     jwks_uri: "https://valid.com/.well-known/jwks.json",
   };
 
-  const invalidClient: Client = {
+  const invalidClient: ClientEntry = {
     client_id: "A1B2C3D4E5F6G7H8A1B2C3D4E5F6G7H8",
     scope: "account-delete",
     redirect_uris: ["https://nowhere"],

@@ -26,7 +26,7 @@ vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
 
 // @ts-expect-error
 vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
-  metrics: { addMetric: vi.fn(), addDimensions: vi.fn() },
+  metrics: { addMetric: vi.fn() },
 }));
 
 const mockKmsClient = {
@@ -120,6 +120,9 @@ describe("decryptJar", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=server_error",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5003",
+    );
   });
 
   it("returns ErrorResponse when header is invalid", async () => {
@@ -142,6 +145,9 @@ describe("decryptJar", () => {
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=server_error",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5003",
     );
   });
 
@@ -168,6 +174,9 @@ describe("decryptJar", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2009",
+    );
   });
 
   it("returns ErrorResponse when KMS returns no plaintext", async () => {
@@ -193,6 +202,9 @@ describe("decryptJar", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2009",
+    );
   });
 
   it("returns ErrorResponse when JAR_RSA_ENCRYPTION_KEY_ALIAS not set", async () => {
@@ -209,6 +221,9 @@ describe("decryptJar", () => {
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=server_error",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5003",
     );
   });
 
@@ -255,6 +270,9 @@ describe("decryptJar", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=server_error",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5003",
+    );
   });
 
   it("returns ErrorResponse when describeKey fails", async () => {
@@ -272,6 +290,9 @@ describe("decryptJar", () => {
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=server_error",
     );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5003",
+    );
   });
 
   it("returns ErrorResponse when describeKey returns no keyId", async () => {
@@ -288,6 +309,9 @@ describe("decryptJar", () => {
     expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=server_error",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5003",
     );
   });
 });
