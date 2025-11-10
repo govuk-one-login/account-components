@@ -34,15 +34,6 @@ export const checkJtiUnusedAndSetUpSession = async (
 
     const appConfig = await getAppConfig();
 
-    assert.ok(
-      typeof appConfig.jti_nonce_ttl_in_seconds === "number" && !isNaN(appConfig.jti_nonce_ttl_in_seconds),
-      "jti_nonce_ttl_in_seconds must be a valid number"
-    );
-    assert.ok(
-      typeof appConfig.api_session_ttl_in_seconds === "number" && !isNaN(appConfig.api_session_ttl_in_seconds),
-      "api_session_ttl_in_seconds must be a valid number"
-    );
-
     const savedJtiExpires =
       Math.floor(Date.now() / 1000) + appConfig.jti_nonce_ttl_in_seconds;
 

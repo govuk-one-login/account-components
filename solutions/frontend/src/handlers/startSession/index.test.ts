@@ -32,8 +32,8 @@ vi.mock(import("../../../../commons/utils/authorize/index.js"), () => ({
   getRedirectToClientRedirectUri: mockGetRedirectToClientRedirectUri,
   authorizeErrors: {
     failedToDeleteApiSession: {
-      error: "server_error",
-      error_description: "E5001",
+      description: "E5004",
+      type: "server_error",
     },
   },
 }));
@@ -153,7 +153,7 @@ describe("startSession handler", () => {
       });
       expect(mockGetRedirectToClientRedirectUri).toHaveBeenCalledWith(
         "https://client.com/callback",
-        { error: "server_error", error_description: "E5001" },
+        { type: "server_error", description: "E5004" },
         "test-state",
       );
       expect(mockReply.redirect).toHaveBeenCalledWith(
@@ -185,7 +185,7 @@ describe("startSession handler", () => {
   });
 
   describe("when session processing succeeds", () => {
-    it("should regenerate session and redirect to TODO page", async () => {
+    it("should regenerate session and redirect", async () => {
       const mockClaims = {
         client_id: "test-client",
         redirect_uri: "https://client.com/callback",
