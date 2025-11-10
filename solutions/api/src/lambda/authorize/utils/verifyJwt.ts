@@ -3,7 +3,6 @@ import { logger } from "../../../../../commons/utils/logger/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import {
-  authorizeErrors,
   ErrorResponse,
   getRedirectToClientRedirectUriResponse,
 } from "./common.js";
@@ -26,6 +25,7 @@ import {
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/contstants.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
 import { getClaimsSchema } from "./getClaimsSchema.js";
+import { authorizeErrors } from "../../../../../commons/utils/authorize/index.js";
 
 const verify = async (
   signedJwt: string,

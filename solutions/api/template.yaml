@@ -508,12 +508,15 @@ Resources:
               Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
             - Effect: Allow
               Action:
-                - dynamodb:TransactWrite
-              Resource: !GetAtt ReplayAttackTable.Arn
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt ReplayAttackTable.Arn
+                - !GetAtt ApiSessionsTable.Arn
             - Effect: Allow
               Action:
-                - dynamodb:TransactWrite
-              Resource: !GetAtt ApiSessionsTable.Arn
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -661,3 +664,19 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-api_sessions"
+
+  ApiSessionsTableArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/ApiSessionsTableArn"
+      Type: String
+      Value: !GetAtt ApiSessionsTable.Arn
+      Description: ARN of the API sessions table
+
+  ApiSessionsTableNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/ApiSessionsTableName"
+      Type: String
+      Value: !Ref ApiSessionsTable
+      Description: Name of the API sessions table

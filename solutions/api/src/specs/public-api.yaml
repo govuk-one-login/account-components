@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components OAuth Provider Public API
-  version: 0.0.7
+  version: 0.0.8
   description: |
     OAuth 2.0 provider endpoints, including:
     - GET /authorize
@@ -103,10 +103,8 @@ paths:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2009&state=aRandomString
                 jti_already_used:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_request&error_description=E2010&state=aRandomString
-                session_not_found:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_scope&error_description=E3001&state=aRandomString
                 account_delete__account_not_found:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_scope&error_description=E3002&state=aRandomString
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=invalid_scope&error_description=E3001&state=aRandomString
                 jwks_timeout:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=unauthorized_client&error_description=E4001&state=aRandomString
                 jwks_invalid:
@@ -123,18 +121,16 @@ paths:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5002&state=aRandomString
                 jar_decrypt_unknown_error:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5003&state=aRandomString
-                failed_to_create_session:
+                failed_to_delete_api_session:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5004&state=aRandomString
-                failed_to_get_session:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5005&state=aRandomString
                 account_delete__failed_to_challenge_password:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5006&state=aRandomString
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5005&state=aRandomString
                 account_delete__failed_to_challenge_otp:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5007&state=aRandomString
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5006&state=aRandomString
                 account_delete__failed_to_delete_account:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5008&state=aRandomString
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5007&state=aRandomString
                 failed_to_save_outcome:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5009&state=aRandomString
+                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5008&state=aRandomString
 
 components:
   parameters:

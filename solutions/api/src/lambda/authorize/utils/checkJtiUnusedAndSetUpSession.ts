@@ -2,7 +2,6 @@ import { logger } from "../../../../../commons/utils/logger/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import {
-  authorizeErrors,
   ErrorResponse,
   getRedirectToClientRedirectUriResponse,
 } from "./common.js";
@@ -16,6 +15,7 @@ import assert from "node:assert";
 import { paths } from "../../../../../frontend/src/utils/paths.js";
 import type { APIGatewayProxyResult } from "aws-lambda";
 import { apiSessionCookieName } from "../../../../../commons/utils/contstants.js";
+import { authorizeErrors } from "../../../../../commons/utils/authorize/index.js";
 
 const dynamoDbClient = getDynamoDbClient();
 

@@ -1,5 +1,6 @@
 import type { APIGatewayEvent, Context } from "aws-lambda";
-
+import type * as v from "valibot";
+import type { getClaimsSchema } from "../../../api/src/lambda/authorize/utils/getClaimsSchema.ts";
 declare module "fastify" {
   interface FastifyRequest {
     awsLambda?: {
@@ -25,5 +26,6 @@ declare module "fastify" {
 declare module "fastify" {
   interface Session {
     user_id?: string;
+    claims?: v.InferOutput<ReturnType<typeof getClaimsSchema>>;
   }
 }
