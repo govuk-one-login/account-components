@@ -356,7 +356,7 @@ describe("verifyJwt", () => {
       "error=server_error",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5008",
+      "error_description=E5002",
     );
   });
 
