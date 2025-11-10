@@ -48,6 +48,30 @@ interface AuthorizeErrorInvalidGrant {
 }
 
 export const authorizeErrors = {
+  accountDeleteUserAborted: {
+    description: "E1001",
+    type: "access_denied",
+  },
+  accountDeletePasswordIncorrect: {
+    description: "E1002",
+    type: "access_denied",
+  },
+  accountDeletePermanentlySuspended: {
+    description: "E1003",
+    type: "access_denied",
+  },
+  accountDeleteOtpTooManySent: {
+    description: "E1004",
+    type: "access_denied",
+  },
+  accountDeleteOtpBlocked: {
+    description: "E1005",
+    type: "access_denied",
+  },
+  accountDeleteOtpTooManyEntered: {
+    description: "E1006",
+    type: "access_denied",
+  },
   algNotAllowed: {
     description: "E2001",
     type: "invalid_request",
@@ -88,6 +112,14 @@ export const authorizeErrors = {
     description: "E2010",
     type: "invalid_request",
   },
+  sessionNotFound: {
+    description: "E3001",
+    type: "invalid_scope",
+  },
+  accountDeleteAccountNotFound: {
+    description: "E3002",
+    type: "invalid_scope",
+  },
   jwksTimeout: {
     description: "E4001",
     type: "unauthorized_client",
@@ -116,9 +148,32 @@ export const authorizeErrors = {
     description: "E5002",
     type: "server_error",
   },
-
   jarDecryptUnknownError: {
     description: "E5003",
+    type: "server_error",
+  },
+  failedToCreateSession: {
+    description: "E5004",
+    type: "server_error",
+  },
+  failedToGetSession: {
+    description: "E5005",
+    type: "server_error",
+  },
+  accountDeleteFailedToChallengePassword: {
+    description: "E5006",
+    type: "server_error",
+  },
+  accountDeleteFailedToChallengeOtp: {
+    description: "E5007",
+    type: "server_error",
+  },
+  accountDeleteFailedToDeleteAccount: {
+    description: "E5008",
+    type: "server_error",
+  },
+  failedToSaveOutcome: {
+    description: "E5009",
     type: "server_error",
   },
 } as const satisfies Record<
