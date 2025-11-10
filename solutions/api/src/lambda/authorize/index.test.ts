@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { APIGatewayProxyEvent } from "aws-lambda";
+import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 process.env["AUTHORIZE_ERROR_PAGE_URL"] = "https://example.com/error";
 
@@ -13,7 +13,9 @@ const mockLogger = {
 };
 const mockMetrics = {
   addMetric: vi.fn(),
+  addDimensions: vi.fn(),
 };
+const mockContext = {} as unknown as Context;
 
 vi.mock(import("./utils/getQueryParams.js"), () => ({
   getQueryParams,
@@ -43,6 +45,7 @@ vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
   metrics: mockMetrics,
+  flushMetricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
 const { handler } = await import("./index.js");
@@ -63,9 +66,10 @@ describe("authorize handler", () => {
     });
     getQueryParams.mockReturnValue(errorResponse);
 
-    const result = await handler(mockEvent);
+    const result = await handler(mockEvent, mockContext);
 
     expect(result).toBe(errorResponse.errorResponse);
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
   });
 
   it("returns error when getClient fails", async () => {
@@ -82,10 +86,14 @@ describe("authorize handler", () => {
     getQueryParams.mockReturnValue(queryParams);
     getClient.mockResolvedValue(errorResponse);
 
-    const result = await handler(mockEvent);
+    const result = await handler(mockEvent, mockContext);
 
     expect(result).toBe(errorResponse.errorResponse);
     expect(getClient).toHaveBeenCalledWith("test-client", "http://test.com");
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
+      client_id: "test-client",
+    });
   });
 
   it("returns error when decryptJar fails", async () => {
@@ -106,7 +114,7 @@ describe("authorize handler", () => {
     getClient.mockResolvedValue(client);
     decryptJar.mockResolvedValue(errorResponse);
 
-    const result = await handler(mockEvent);
+    const result = await handler(mockEvent, mockContext);
 
     expect(result).toBe(errorResponse.errorResponse);
     expect(decryptJar).toHaveBeenCalledWith(
@@ -115,6 +123,10 @@ describe("authorize handler", () => {
       "http://test.com",
       "test-state",
     );
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
+      client_id: "test-client",
+    });
   });
 
   it("returns error when verifyJwt fails", async () => {
@@ -137,7 +149,7 @@ describe("authorize handler", () => {
     decryptJar.mockResolvedValue(signedJwt);
     verifyJwt.mockResolvedValue(errorResponse);
 
-    const result = await handler(mockEvent);
+    const result = await handler(mockEvent, mockContext);
 
     expect(result).toBe(errorResponse.errorResponse);
     expect(verifyJwt).toHaveBeenCalledWith(
@@ -146,6 +158,10 @@ describe("authorize handler", () => {
       "http://test.com",
       "test-state",
     );
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
+      client_id: "test-client",
+    });
   });
 
   it("returns error when checkJtiUnusedAndSetUpSession fails", async () => {
@@ -170,7 +186,7 @@ describe("authorize handler", () => {
     verifyJwt.mockResolvedValue(claims);
     checkJtiUnusedAndSetUpSession.mockResolvedValue(errorResponse);
 
-    const result = await handler(mockEvent);
+    const result = await handler(mockEvent, mockContext);
 
     expect(result).toBe(errorResponse.errorResponse);
     expect(checkJtiUnusedAndSetUpSession).toHaveBeenCalledWith(
@@ -179,6 +195,10 @@ describe("authorize handler", () => {
       "http://test.com",
       "test-state",
     );
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
+      client_id: "test-client",
+    });
   });
 
   it("returns success when all functions succeed", async () => {
@@ -206,7 +226,7 @@ describe("authorize handler", () => {
     verifyJwt.mockResolvedValue(claims);
     checkJtiUnusedAndSetUpSession.mockResolvedValue(successResponse);
 
-    const result = await handler(mockEvent);
+    const result = await handler(mockEvent, mockContext);
 
     expect(result).toBe(successResponse);
     expect(checkJtiUnusedAndSetUpSession).toHaveBeenCalledWith(
@@ -215,6 +235,10 @@ describe("authorize handler", () => {
       "http://test.com",
       "test-state",
     );
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
+      client_id: "test-client",
+    });
   });
 
   it("handles unexpected errors in try-catch block", async () => {
@@ -223,7 +247,7 @@ describe("authorize handler", () => {
       throw error;
     });
 
-    const result = await handler(mockEvent);
+    const result = await handler(mockEvent, mockContext);
 
     expect(result).toStrictEqual(badRequestResponse);
     expect(mockLogger.error).toHaveBeenCalledWith("Authorize error", {
@@ -234,5 +258,6 @@ describe("authorize handler", () => {
       "Count",
       1,
     );
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
   });
 });

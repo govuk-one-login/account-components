@@ -247,8 +247,6 @@ export const verifyJwt = async (
   redirectUri: string,
   state?: string,
 ) => {
-  metrics.addDimensions({ client_id: client.client_id });
-
   const verifyResult = await verify(signedJwt, client, redirectUri, state);
 
   if (verifyResult instanceof ErrorResponse) {

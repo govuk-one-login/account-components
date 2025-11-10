@@ -30,6 +30,7 @@ import {
   frontendUiTranslationEn,
 } from "@govuk-one-login/frontend-ui";
 import { paths } from "./utils/paths.js";
+import { flushMetrics } from "../../commons/utils/fastify/flushMetrics/index.js";
 
 await configureI18n({
   [Lang.English]: {
@@ -52,6 +53,7 @@ export const initFrontend = async function () {
   fastify.addHook("onRequest", logRequest);
   fastify.addHook("onRequest", removeTrailingSlash);
   fastify.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
+  fastify.addHook("onSend", () => flushMetrics());
   fastify.addHook("onResponse", logResponse);
 
   fastify.register(fastifyCookie);
