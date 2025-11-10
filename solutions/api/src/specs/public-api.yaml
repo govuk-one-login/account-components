@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components OAuth Provider Public API
-  version: 0.0.6
+  version: 0.0.7
   description: |
     OAuth 2.0 provider endpoints, including:
     - GET /authorize
@@ -117,7 +117,7 @@ paths:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=unauthorized_client&error_description=E4004&state=aRandomString
                 jwk_invalid:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=unauthorized_client&error_description=E4005&state=aRandomString
-                failed_to_save_jti:
+                failed_to_check_jti_unused_and_set_up_session:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5001&state=aRandomString
                 verify_jwt_unknown_error:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5002&state=aRandomString

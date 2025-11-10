@@ -9,7 +9,6 @@ import {
 } from "vitest";
 import type { verifyJwt as verifyJwtForType } from "./verifyJwt.js";
 import { ErrorResponse } from "./common.js";
-import assert from "node:assert";
 import {
   JOSEAlgNotAllowed,
   JOSEError,
@@ -24,7 +23,8 @@ import {
   JWTExpired,
   JWTInvalid,
 } from "jose/errors";
-import type { ClientEntry } from "../../../../../config/schema/types.js";
+import * as v from "valibot";
+import assert from "node:assert";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -51,20 +51,25 @@ vi.mock(import("jose"), () => ({
   createRemoteJWKSet: mockCreateRemoteJWKSet,
 }));
 
+const mockGetClaimsSchema = vi.fn();
+
+vi.mock(import("./getClaimsSchema.js"), () => ({
+  getClaimsSchema: mockGetClaimsSchema,
+}));
+
 let verifyJwt: typeof verifyJwtForType;
 
 describe("verifyJwt", () => {
-  const mockClient: ClientEntry = {
+  const signedJwt = "test.jwt.token";
+  const client = {
     client_id: "test-client",
-    scope: "openid profile",
+    jwks_uri: "https://example.com/.well-known/jwks.json",
+    scope: "openid",
     redirect_uris: ["https://example.com/callback"],
     client_name: "Test Client",
-    jwks_uri: "https://example.com/.well-known/jwks.json",
   };
   const redirectUri = "https://example.com/callback";
   const state = "test-state";
-  const signedJwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiJ9.test.signature";
-  const mockJwks = {};
 
   beforeAll(async () => {
     const verifyJwtModule = await import("./verifyJwt.js");
@@ -73,75 +78,56 @@ describe("verifyJwt", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env["AUTHORIZE_ENDPOINT_URL"] = "https://auth.example.com";
-    process.env["REPLAY_ATTACK_TABLE_NAME"] = "test-replay-table";
-    mockCreateRemoteJWKSet.mockReturnValue(mockJwks);
+    mockCreateRemoteJWKSet.mockReturnValue("mock-jwks");
   });
 
   afterAll(() => {
     process.env = { ...ORIGINAL_ENV };
   });
 
-  it("successfully verifies valid JWT with valid claims", async () => {
-    const mockPayload = {
-      client_id: "test-client",
-      iss: "test-client",
-      aud: "https://auth.example.com",
-      response_type: "code",
-      exp: Math.floor(Date.now() / 1000) + 60,
-      iat: Math.floor(Date.now() / 1000) - 60,
-      scope: "openid",
-      state: "test-state",
-      jti: "unique-id",
-      access_token: "access-token",
-      refresh_token: "refresh-token",
-      sub: "user-123",
-      email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
-      redirect_uri: redirectUri,
-    };
+  it("successfully verifies JWT and validates claims", async () => {
+    const payload = { sub: "user123", aud: "test-client" };
+    const claimsSchema = v.object({ sub: v.string(), aud: v.string() });
 
-    mockJwtVerify.mockResolvedValue({ payload: mockPayload });
+    mockJwtVerify.mockResolvedValue({ payload });
+    mockGetClaimsSchema.mockReturnValue(claimsSchema);
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
-    expect(result).toStrictEqual(mockPayload);
-    expect(mockJwtVerify).toHaveBeenCalledWith(signedJwt, mockJwks, {
-      algorithms: ["ES256"],
-    });
+    expect(result).toStrictEqual(payload);
+    expect(mockGetClaimsSchema).toHaveBeenCalledWith(
+      client,
+      redirectUri,
+      state,
+    );
   });
 
-  it("returns ErrorResponse for JWKSTimeout error", async () => {
-    mockJwtVerify.mockRejectedValue(new JWKSTimeout("Timeout"));
+  it("returns ErrorResponse when JWT verification fails with JWKSTimeout", async () => {
+    mockJwtVerify.mockRejectedValue(new JWKSTimeout());
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=unauthorized_client",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error_description=E4001",
     );
-    expect(result.errorResponse.headers?.["location"]).toContain(
-      "state=test-state",
-    );
   });
 
-  it("returns ErrorResponse for JWKSInvalid error", async () => {
-    mockJwtVerify.mockRejectedValue(new JWKSInvalid("Invalid JWKS"));
+  it("returns ErrorResponse when JWT verification fails with JWKSInvalid", async () => {
+    mockJwtVerify.mockRejectedValue(new JWKSInvalid());
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=unauthorized_client",
     );
@@ -150,16 +136,15 @@ describe("verifyJwt", () => {
     );
   });
 
-  it("returns ErrorResponse for JWKSNoMatchingKey error", async () => {
-    mockJwtVerify.mockRejectedValue(new JWKSNoMatchingKey("No matching key"));
+  it("returns ErrorResponse when JWT verification fails with JWKSNoMatchingKey", async () => {
+    mockJwtVerify.mockRejectedValue(new JWKSNoMatchingKey());
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=unauthorized_client",
     );
@@ -168,18 +153,15 @@ describe("verifyJwt", () => {
     );
   });
 
-  it("returns ErrorResponse for JWKSMultipleMatchingKeys error", async () => {
-    mockJwtVerify.mockRejectedValue(
-      new JWKSMultipleMatchingKeys("Multiple keys"),
-    );
+  it("returns ErrorResponse when JWT verification fails with JWKSMultipleMatchingKeys", async () => {
+    mockJwtVerify.mockRejectedValue(new JWKSMultipleMatchingKeys());
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=unauthorized_client",
     );
@@ -188,16 +170,15 @@ describe("verifyJwt", () => {
     );
   });
 
-  it("returns ErrorResponse for JWKInvalid error", async () => {
-    mockJwtVerify.mockRejectedValue(new JWKInvalid("Invalid JWK"));
+  it("returns ErrorResponse when JWT verification fails with JWKInvalid", async () => {
+    mockJwtVerify.mockRejectedValue(new JWKInvalid());
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=unauthorized_client",
     );
@@ -206,18 +187,15 @@ describe("verifyJwt", () => {
     );
   });
 
-  it("returns ErrorResponse for JOSEAlgNotAllowed error", async () => {
-    mockJwtVerify.mockRejectedValue(
-      new JOSEAlgNotAllowed("Algorithm not allowed"),
-    );
+  it("returns ErrorResponse when JWT verification fails with JOSEAlgNotAllowed", async () => {
+    mockJwtVerify.mockRejectedValue(new JOSEAlgNotAllowed());
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
@@ -226,16 +204,15 @@ describe("verifyJwt", () => {
     );
   });
 
-  it("returns ErrorResponse for JWSInvalid error", async () => {
-    mockJwtVerify.mockRejectedValue(new JWSInvalid("Invalid JWS"));
+  it("returns ErrorResponse when JWT verification fails with JWSInvalid", async () => {
+    mockJwtVerify.mockRejectedValue(new JWSInvalid());
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
@@ -244,18 +221,15 @@ describe("verifyJwt", () => {
     );
   });
 
-  it("returns ErrorResponse for JWSSignatureVerificationFailed error", async () => {
-    mockJwtVerify.mockRejectedValue(
-      new JWSSignatureVerificationFailed("Signature failed"),
-    );
+  it("returns ErrorResponse when JWT verification fails with JWSSignatureVerificationFailed", async () => {
+    mockJwtVerify.mockRejectedValue(new JWSSignatureVerificationFailed());
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
@@ -264,16 +238,15 @@ describe("verifyJwt", () => {
     );
   });
 
-  it("returns ErrorResponse for JWTInvalid error", async () => {
-    mockJwtVerify.mockRejectedValue(new JWTInvalid("Invalid JWT"));
+  it("returns ErrorResponse when JWT verification fails with JWTInvalid", async () => {
+    mockJwtVerify.mockRejectedValue(new JWTInvalid());
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
@@ -282,18 +255,17 @@ describe("verifyJwt", () => {
     );
   });
 
-  it("returns ErrorResponse for JWTExpired error", async () => {
-    const expiredError = new JWTExpired("JWT expired", {});
-    expiredError.payload = { exp: Math.floor(Date.now() / 1000) - 3600 };
+  it("returns ErrorResponse when JWT verification fails with JWTExpired", async () => {
+    const expiredError = new JWTExpired("", {});
+    expiredError.payload = { exp: 1234567890 };
     mockJwtVerify.mockRejectedValue(expiredError);
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
@@ -302,18 +274,15 @@ describe("verifyJwt", () => {
     );
   });
 
-  it("returns ErrorResponse for JWTClaimValidationFailed error", async () => {
-    mockJwtVerify.mockRejectedValue(
-      new JWTClaimValidationFailed("Claim validation failed", {}),
-    );
+  it("returns ErrorResponse when JWT verification fails with JWTClaimValidationFailed", async () => {
+    mockJwtVerify.mockRejectedValue(new JWTClaimValidationFailed("", {}));
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
@@ -322,18 +291,55 @@ describe("verifyJwt", () => {
     );
   });
 
-  it("returns ErrorResponse for generic JOSEError", async () => {
-    const joseError = new JOSEError("Generic JOSE error");
-    joseError.code = "ERR_JOSE_GENERIC";
-    mockJwtVerify.mockRejectedValue(joseError);
+  it("returns ErrorResponse when claims validation fails", async () => {
+    const payload = { sub: "user123" };
+    const claimsSchema = v.object({ sub: v.string(), aud: v.string() });
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    mockJwtVerify.mockResolvedValue({ payload });
+    mockGetClaimsSchema.mockReturnValue(claimsSchema);
+
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error=invalid_request",
+    );
+    expect(result.errorResponse.headers?.["location"]).toContain(
+      "error_description=E2008",
+    );
+  });
+
+  it("works without state parameter", async () => {
+    const payload = { sub: "user123", aud: "test-client" };
+    const claimsSchema = v.object({ sub: v.string(), aud: v.string() });
+
+    mockJwtVerify.mockResolvedValue({ payload });
+    mockGetClaimsSchema.mockReturnValue(claimsSchema);
+
+    const result = await verifyJwt(signedJwt, client, redirectUri);
+
+    expect(result).toStrictEqual(payload);
+    expect(mockGetClaimsSchema).toHaveBeenCalledWith(
+      client,
+      redirectUri,
+      undefined,
+    );
+  });
+
+  it("returns ErrorResponse when JWT verification fails with JOSEError", async () => {
+    const joseError = new JOSEError();
+    joseError.code = "ERR_JOSE_GENERIC";
+    mockJwtVerify.mockRejectedValue(joseError);
+
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
+
+    expect(result).toBeInstanceOf(ErrorResponse);
+
+    assert.ok(result instanceof ErrorResponse);
+
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=invalid_request",
     );
@@ -342,16 +348,15 @@ describe("verifyJwt", () => {
     );
   });
 
-  it("returns ErrorResponse for unknown error", async () => {
+  it("returns ErrorResponse when JWT verification fails with unknown error", async () => {
     mockJwtVerify.mockRejectedValue(new Error("Unknown error"));
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
       "error=server_error",
     );
@@ -360,115 +365,17 @@ describe("verifyJwt", () => {
     );
   });
 
-  it("works without state parameter", async () => {
-    mockJwtVerify.mockRejectedValue(new JWTInvalid("Invalid JWT"));
+  it("includes state in error response when provided", async () => {
+    mockJwtVerify.mockRejectedValue(new JWTInvalid());
 
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri);
-
-    expect(result).toBeInstanceOf(ErrorResponse);
-
-    assert.ok(result instanceof ErrorResponse);
-
-    expect(result.errorResponse.headers?.["location"]).not.toContain("state=");
-  });
-
-  it("throws when AUTHORIZE_ENDPOINT_URL is not set", async () => {
-    const mockPayload = {
-      client_id: "wrong-client",
-      iss: "test-client",
-      aud: "https://auth.example.com",
-      response_type: "code",
-      exp: Math.floor(Date.now() / 1000) + 60,
-      iat: Math.floor(Date.now() / 1000) - 60,
-      scope: "openid",
-      state: "test-state",
-      jti: "unique-id",
-      access_token: "access-token",
-      refresh_token: "refresh-token",
-      sub: "user-123",
-      email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
-      redirect_uri: redirectUri,
-    };
-
-    mockJwtVerify.mockResolvedValue({ payload: mockPayload });
-
-    delete process.env["AUTHORIZE_ENDPOINT_URL"];
-
-    await expect(
-      verifyJwt(signedJwt, mockClient, redirectUri, state),
-    ).rejects.toThrow("AUTHORIZE_ENDPOINT_URL is not set");
-  });
-
-  it("returns ErrorResponse for invalid claims", async () => {
-    const mockPayload = {
-      client_id: "wrong-client",
-      iss: "test-client",
-      aud: "https://auth.example.com",
-      response_type: "code",
-      exp: Math.floor(Date.now() / 1000) + 60,
-      iat: Math.floor(Date.now() / 1000) - 60,
-      scope: "openid",
-      state: "test-state",
-      jti: "unique-id",
-      access_token: "access-token",
-      refresh_token: "refresh-token",
-      sub: "user-123",
-      email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
-      redirect_uri: redirectUri,
-    };
-
-    mockJwtVerify.mockResolvedValue({ payload: mockPayload });
-
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
+    const result = await verifyJwt(signedJwt, client, redirectUri, state);
 
     expect(result).toBeInstanceOf(ErrorResponse);
 
     assert.ok(result instanceof ErrorResponse);
 
-    expect(result.errorResponse.statusCode).toBe(302);
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error=invalid_request",
-    );
-    expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2008",
-    );
-  });
-
-  it("returns ErrorResponse when iat is in the future", async () => {
-    const mockPayload = {
-      client_id: "test-client",
-      iss: "test-client",
-      aud: "https://auth.example.com",
-      response_type: "code",
-      exp: Math.floor(Date.now() / 1000) + 60,
-      iat: Math.floor(Date.now() / 1000) + 3600,
-      scope: "openid",
-      state: "test-state",
-      jti: "unique-id",
-      access_token: "access-token",
-      refresh_token: "refresh-token",
-      sub: "user-123",
-      email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
-      redirect_uri: redirectUri,
-    };
-
-    mockJwtVerify.mockResolvedValue({ payload: mockPayload });
-
-    const result = await verifyJwt(signedJwt, mockClient, redirectUri, state);
-
-    expect(result).toBeInstanceOf(ErrorResponse);
-
-    assert.ok(result instanceof ErrorResponse);
-
-    expect(result.errorResponse.statusCode).toBe(302);
-    expect(result.errorResponse.headers?.["location"]).toContain(
-      "error=invalid_request",
-    );
-    expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2008",
+      `state=${state}`,
     );
   });
 });

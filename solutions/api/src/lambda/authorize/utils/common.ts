@@ -140,7 +140,7 @@ export const authorizeErrors = {
     description: "E4005",
     type: "unauthorized_client",
   },
-  failedToSaveJti: {
+  failedToCheckJtiUnusedAndSetUpSession: {
     description: "E5001",
     type: "server_error",
   },

@@ -141,6 +141,7 @@ create_dynamodb_tables() {
   aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-main-SessionStore" 2>/dev/null || true
   aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-AuthCode" 2>/dev/null || true
   aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-ReplayAttack" 2>/dev/null || true
+  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-ApiSessions" 2>/dev/null || true
 
   # JourneyOutcomeTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
@@ -148,12 +149,10 @@ create_dynamodb_tables() {
     --attribute-definitions \
       AttributeName=outcome_id,AttributeType=S \
       AttributeName=outcome_type,AttributeType=S \
-      AttributeName=access_token,AttributeType=S \
     --key-schema \
       AttributeName=outcome_id,KeyType=HASH \
       AttributeName=outcome_type,KeyType=RANGE \
-    --billing-mode PAY_PER_REQUEST \
-    --global-secondary-indexes '[{"IndexName":"AccessTokenIndex","KeySchema":[{"AttributeName":"access_token","KeyType":"HASH"}],"Projection":{"ProjectionType":"ALL"}}]'
+    --billing-mode PAY_PER_REQUEST
 
   # SessionsTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
@@ -182,6 +181,15 @@ create_dynamodb_tables() {
       AttributeName=nonce,AttributeType=S \
     --key-schema \
       AttributeName=nonce,KeyType=HASH \
+    --billing-mode PAY_PER_REQUEST
+
+  # ApiSessionsTable
+  aws --endpoint-url=http://localhost:4566 dynamodb create-table \
+    --table-name "components-api-ApiSessions" \
+    --attribute-definitions \
+      AttributeName=id,AttributeType=S \
+    --key-schema \
+      AttributeName=id,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
   echo "Finished creating DynamoDB tables"

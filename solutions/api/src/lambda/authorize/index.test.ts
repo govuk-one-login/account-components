@@ -174,7 +174,7 @@ describe("authorize handler", () => {
 
     expect(result).toBe(errorResponse.errorResponse);
     expect(checkJtiUnusedAndSetUpSession).toHaveBeenCalledWith(
-      "jwt-id-123",
+      claims,
       "test-client",
       "http://test.com",
       "test-state",
@@ -191,28 +191,26 @@ describe("authorize handler", () => {
     const client = { client_id: "test-client" };
     const signedJwt = "signed-jwt-string";
     const claims = { jti: "jwt-id-123", sub: "user123" };
+    const successResponse = {
+      statusCode: 302,
+      headers: {
+        location: "https://frontend.example.com/start-session",
+        "Set-Cookie": "session-id=abc123; Secure; HttpOnly; SameSite=Strict",
+      },
+      body: "",
+    };
 
     getQueryParams.mockReturnValue(queryParams);
     getClient.mockResolvedValue(client);
     decryptJar.mockResolvedValue(signedJwt);
     verifyJwt.mockResolvedValue(claims);
-    checkJtiUnusedAndSetUpSession.mockResolvedValue(undefined);
+    checkJtiUnusedAndSetUpSession.mockResolvedValue(successResponse);
 
     const result = await handler(mockEvent);
 
-    expect(result).toStrictEqual({
-      statusCode: 200,
-      body: JSON.stringify(
-        {
-          message: "Authorized",
-          claims,
-        },
-        null,
-        2,
-      ),
-    });
+    expect(result).toBe(successResponse);
     expect(checkJtiUnusedAndSetUpSession).toHaveBeenCalledWith(
-      "jwt-id-123",
+      claims,
       "test-client",
       "http://test.com",
       "test-state",
