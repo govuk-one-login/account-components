@@ -508,12 +508,10 @@ Resources:
               Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
             - Effect: Allow
               Action:
-                - dynamodb:TransactWrite
-              Resource: !GetAtt ReplayAttackTable.Arn
-            - Effect: Allow
-              Action:
-                - dynamodb:TransactWrite
-              Resource: !GetAtt ApiSessionsTable.Arn
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt ReplayAttackTable.Arn
+                - !GetAtt ApiSessionsTable.Arn
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
