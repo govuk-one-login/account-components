@@ -661,3 +661,19 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-api_sessions"
+
+  ApiSessionsTableArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/ApiSessionsTableArn"
+      Type: String
+      Value: !GetAtt ApiSessionsTable.Arn
+      Description: ARN of the API sessions table
+
+  ApiSessionsTableNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/ApiSessionsTableName"
+      Type: String
+      Value: !Ref ApiSessionsTable
+      Description: Name of the API sessions table

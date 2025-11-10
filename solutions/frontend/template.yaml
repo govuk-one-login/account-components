@@ -29,6 +29,9 @@ Parameters:
   CoreStackName:
     Type: String
     Default: "components-core"
+  ApiStackName:
+    Type: String
+    Default: "components-api"
   LambdaDeploymentPreference:
     Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
     Type: String
@@ -48,30 +51,40 @@ Mappings:
       frontendDomain: manage.dev.account.gov.uk
       LambdaLogLevel: DEBUG
       UseCanary: false
+      authorizeErrorPageUrl: https://manage.dev.account.gov.uk/authorize-error
+      apiSessionCookieDomain: manage.dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
       frontendDomain: manage.build.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: false
+      authorizeErrorPageUrl: https://manage.build.account.gov.uk/authorize-error
+      apiSessionCookieDomain: manage.build.account.gov.uk
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
       frontendDomain: manage.staging.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: true
+      authorizeErrorPageUrl: https://manage.staging.account.gov.uk/authorize-error
+      apiSessionCookieDomain: manage.staging.account.gov.uk
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
       frontendDomain: manage.integration.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: true
+      authorizeErrorPageUrl: https://manage.integration.account.gov.uk/authorize-error
+      apiSessionCookieDomain: manage.integration.account.gov.uk
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
       frontendDomain: manage.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: true
+      authorizeErrorPageUrl: https://manage.account.gov.uk/authorize-error
+      apiSessionCookieDomain: manage.account.gov.uk
 
 Conditions:
   UseCodeSigning:
@@ -371,6 +384,19 @@ Resources:
               !Ref Environment,
               rootCookieDomain,
             ]
+          AUTHORIZE_ERROR_PAGE_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              authorizeErrorPageUrl,
+            ]
+          API_SESSION_COOKIE_DOMAIN:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              apiSessionCookieDomain,
+            ]
+          API_SESSIONS_TABLE_NAME: !Sub "{{resolve:ssm:/${ApiStackName}/ApiSessionsTableName}}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -383,6 +409,11 @@ Resources:
                 - dynamodb:Scan
                 - dynamodb:UpdateItem
               Resource: !GetAtt SessionsTable.Arn
+            - Effect: Allow
+              Action:
+                - dynamodb:DeleteItem
+                - dynamodb:GetItem
+              Resource: !Sub "{{resolve:ssm:/${ApiStackName}/ApiSessionsTableArn}}"
             - Effect: Allow
               Action:
                 - kms:Decrypt

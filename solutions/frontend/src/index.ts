@@ -187,6 +187,13 @@ export const initFrontend = async function () {
     );
   });
 
+  fastify.get(paths.startSession, async function (request, reply) {
+    return (await import("./handlers/startSession/index.js")).handler(
+      request,
+      reply,
+    );
+  });
+
   fastify.register(journeys);
 
   return fastify;
