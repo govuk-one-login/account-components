@@ -3,7 +3,10 @@ import assert from "node:assert";
 import { getErrorResponse } from "./utils/common.js";
 import { logger } from "../../../../commons/utils/logger/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
-import { metrics } from "../../../../commons/utils/metrics/index.js";
+import {
+  flushMetricsAPIGatewayProxyHandlerWrapper,
+  metrics,
+} from "../../../../commons/utils/metrics/index.js";
 
 interface TokenRequest {
   grant_type: string;
@@ -25,22 +28,22 @@ const assertTokenRequest = (request: TokenRequest) => {
   assert(request.client_assertion, "Missing client_assertion");
 };
 
-export const handler = async (
-  e: APIGatewayProxyEvent,
-): Promise<APIGatewayProxyResult> => {
-  try {
-    const request = JSON.parse(e.body ?? "{}") as TokenRequest;
-    assertTokenRequest(request);
-  } catch (error) {
-    logger.warn("Invalid Request", {
-      error,
-    });
-    metrics.addMetric("InvalidTokenRequest", MetricUnit.Count, 1);
-    return getErrorResponse("invalidRequest");
-  }
+export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
+  async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+    try {
+      const request = JSON.parse(e.body ?? "{}") as TokenRequest;
+      assertTokenRequest(request);
+    } catch (error) {
+      logger.warn("Invalid Request", {
+        error,
+      });
+      metrics.addMetric("InvalidTokenRequest", MetricUnit.Count, 1);
+      return getErrorResponse("invalidRequest");
+    }
 
-  return {
-    statusCode: 200,
-    body: '"hello world"',
-  };
-};
+    return {
+      statusCode: 200,
+      body: '"hello world"',
+    };
+  },
+);
