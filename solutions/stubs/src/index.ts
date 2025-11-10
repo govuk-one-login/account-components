@@ -15,6 +15,7 @@ import { generateRequestObject } from "./generateRequestObject/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 import { clientJwks } from "./clientJwks/index.js";
 import { clientCallback } from "./clientCallback/index.js";
+import { flushMetrics } from "../../commons/utils/fastify/flushMetrics/index.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
@@ -26,6 +27,7 @@ export const initStubs = async function () {
   fastify.addHook("onRequest", logRequest);
   fastify.addHook("onRequest", removeTrailingSlash);
   fastify.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
+  fastify.addHook("onSend", () => flushMetrics());
   fastify.addHook("onResponse", logResponse);
 
   fastify.register(fastifyCookie);
