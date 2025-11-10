@@ -463,7 +463,7 @@ Resources:
     Properties:
       LoggingConfig:
         LogGroup: !Ref TokenLambdaLogGroup
-      Handler: token.handler
+      Handler: index.handler
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
     Metadata:
@@ -476,7 +476,7 @@ Resources:
         Target: "es2022"
         Sourcemap: true
         EntryPoints:
-          - solutions/api/src/lambda/token.ts
+          - solutions/api/src/lambda/token/index.ts
 
   AuthorizeLambdaLogGroup:
     Type: AWS::Logs::LogGroup
