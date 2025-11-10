@@ -389,28 +389,26 @@ Resources:
           - Effect: Deny
             Principal: "*"
             Action: s3:*
-            Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
+            Resource:
+              - !Sub "arn:aws:s3:::${JWKSStoreBucket}"
+              - !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
             Condition:
               Bool:
                 aws:SecureTransport: false
+              NumericLessThan:
+                s3:TlsVersion: "1.2"
           - Effect: Allow
             Principal:
               Service: lambda.amazonaws.com
             Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
             Action:
               - s3:PutObject
-            Condition:
-              Bool:
-                aws:SecureTransport: true
           - Effect: Allow
             Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
             Principal:
               Service: apigateway.amazonaws.com
             Action:
               - s3:GetObject
-            Condition:
-              Bool:
-                aws:SecureTransport: true
 
   AccessLogsBucket:
     Type: AWS::S3::Bucket
@@ -445,7 +443,9 @@ Resources:
               - !Sub "${AccessLogsBucket.Arn}/*"
             Condition:
               Bool:
-                aws:SecureTransport: "false"
+                aws:SecureTransport: false
+              NumericLessThan:
+                s3:TlsVersion: "1.2"
           - Sid: AllowS3LoggingService
             Effect: Allow
             Principal:
@@ -455,8 +455,6 @@ Resources:
             Condition:
               StringEquals:
                 aws:SourceAccount: !Ref AWS::AccountId
-              Bool:
-                "aws:SecureTransport": true
 
   JwksGeneratorLambda:
     Type: AWS::Serverless::Function
