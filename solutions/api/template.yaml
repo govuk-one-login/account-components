@@ -512,6 +512,11 @@ Resources:
               Resource:
                 - !GetAtt ReplayAttackTable.Arn
                 - !GetAtt ApiSessionsTable.Arn
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
