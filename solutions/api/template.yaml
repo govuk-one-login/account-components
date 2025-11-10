@@ -406,6 +406,12 @@ Resources:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Arn}/invocations"
+          /token:
+            post:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TokenLambda.Arn}/invocations"
           /.well-known/jwks.json:
             get:
               responses:
@@ -454,6 +460,33 @@ Resources:
         Sourcemap: true
         EntryPoints:
           - solutions/api/src/lambda/healthcheck.ts
+
+  TokenLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/lambda/${AWS::StackName}/TokenLambdaLogGroup"
+      RetentionInDays: 30
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
+
+  TokenLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      LoggingConfig:
+        LogGroup: !Ref TokenLambdaLogGroup
+      Handler: index.handler
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2022"
+        Sourcemap: true
+        EntryPoints:
+          - solutions/api/src/lambda/token/index.ts
 
   AuthorizeLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -543,6 +576,14 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref HealthcheckLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
+
+  PrivateTokenLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref TokenLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
