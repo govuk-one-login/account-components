@@ -107,7 +107,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
 
     expect(response.statusCode).toBe(302);
     expect(response.headers?.["location"]).toBe(
-      "https://frontend.example.com/start-session",
+      "https://frontend.example.com/start-session?client_id=test-client-id&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&state=test-state",
     );
     expect(response.headers?.["Set-Cookie"]).toContain(
       "apisession=abcdef123456789012345678",
@@ -162,7 +162,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
 
     expect(response.statusCode).toBe(302);
     expect(response.headers?.["location"]).toBe(
-      "https://frontend.example.com/start-session",
+      "https://frontend.example.com/start-session?client_id=test-client-id&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback",
     );
   });
 
