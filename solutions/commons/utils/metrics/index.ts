@@ -20,9 +20,11 @@ export const flushMetricsAPIGatewayProxyHandlerWrapper = (
   const wrappedHandler: APIGatewayProxyHandler = async (event, context) => {
     try {
       const res = await handler(event, context);
+      metrics.captureColdStartMetric();
       metrics.publishStoredMetrics();
       return res;
     } catch (error) {
+      metrics.captureColdStartMetric();
       metrics.publishStoredMetrics();
       throw error;
     }
