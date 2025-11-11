@@ -10,6 +10,7 @@ import {
   getRedirectToClientRedirectUri,
 } from "../../../../commons/utils/authorize/index.js";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
+import { paths } from "../../utils/paths.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -35,12 +36,8 @@ const getUnsetApiSessionCookieArgs = (): Parameters<
 };
 
 const redirectToErrorPage = (reply: FastifyReply) => {
-  assert.ok(
-    process.env["AUTHORIZE_ERROR_PAGE_URL"],
-    "AUTHORIZE_ERROR_PAGE_URL is not set",
-  );
   reply.setCookie(...getUnsetApiSessionCookieArgs());
-  reply.redirect(process.env["AUTHORIZE_ERROR_PAGE_URL"]);
+  reply.redirect(paths.authorizeError);
 };
 
 const queryParamsSchema = v.object({
@@ -107,9 +104,9 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
               v.getDotPath(issue),
             ),
           },
-          "InvalidClaims",
+          "InvalidClaimsInApiSession",
         );
-        metrics.addMetric("InvalidClaims", MetricUnit.Count, 1);
+        metrics.addMetric("InvalidClaimsInApiSession", MetricUnit.Count, 1);
         redirectToErrorPage(reply);
         return await reply;
       }

@@ -8,7 +8,7 @@ import { render } from "../../commons/utils/fastify/render/index.js";
 import fastifyFormbody from "@fastify/formbody";
 import fastifyHelmet from "@fastify/helmet";
 import fastifySession from "@fastify/session";
-import { journeys } from "./journeys/index.js";
+import { journeyRoutes } from "./journeys/index.js";
 import en from "./translations/en.json" with { type: "json" };
 import cy from "./translations/cy.json" with { type: "json" };
 import { getSessionOptions } from "./utils/getSessionOptions/index.js";
@@ -194,7 +194,7 @@ export const initFrontend = async function () {
     );
   });
 
-  fastify.register(journeys);
+  fastify.register(journeyRoutes);
 
   return fastify;
 };
