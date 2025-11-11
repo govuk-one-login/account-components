@@ -44,7 +44,8 @@ jobs:
           LOCALSTACK_ACCESS_KEY=test
           AUTHORIZE_ERROR_PAGE_URL=http://localhost:6002/authorize-error 
           API_SESSION_COOKIE_DOMAIN=localhost    
-          API_SESSIONS_TABLE_NAME=components-api-ApiSessions                         
+          API_SESSIONS_TABLE_NAME=components-api-ApiSessions
+          AUTHORIZE_ENDPOINT_URL=http://localhost:6004/authorize
           EOF
 
       - name: Configure stubs environment

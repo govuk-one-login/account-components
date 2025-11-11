@@ -53,6 +53,7 @@ Mappings:
       UseCanary: false
       authorizeErrorPageUrl: https://manage.dev.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.dev.account.gov.uk
+      authorizeEndpointUrl: https://api.manage.dev.account.gov.uk/authorize
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
@@ -61,6 +62,7 @@ Mappings:
       UseCanary: false
       authorizeErrorPageUrl: https://manage.build.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.build.account.gov.uk
+      authorizeEndpointUrl: https://api.manage.build.account.gov.uk/authorize
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
@@ -69,6 +71,7 @@ Mappings:
       UseCanary: true
       authorizeErrorPageUrl: https://manage.staging.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.staging.account.gov.uk
+      authorizeEndpointUrl: https://api.manage.staging.account.gov.uk/authorize
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
@@ -77,6 +80,7 @@ Mappings:
       UseCanary: true
       authorizeErrorPageUrl: https://manage.integration.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.integration.account.gov.uk
+      authorizeEndpointUrl: https://api.manage.integration.account.gov.uk/authorize
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
@@ -85,6 +89,7 @@ Mappings:
       UseCanary: true
       authorizeErrorPageUrl: https://manage.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.account.gov.uk
+      authorizeEndpointUrl: https://api.manage.account.gov.uk/authorize
 
 Conditions:
   UseCodeSigning:
@@ -397,6 +402,12 @@ Resources:
               apiSessionCookieDomain,
             ]
           API_SESSIONS_TABLE_NAME: !Sub "{{resolve:ssm:/${ApiStackName}/ApiSessionsTableName}}"
+          AUTHORIZE_ENDPOINT_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              authorizeEndpointUrl,
+            ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
