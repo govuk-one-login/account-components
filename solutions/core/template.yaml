@@ -315,6 +315,45 @@ Resources:
       AliasName: !Sub "alias/${AWS::StackName}-JARRSAEncryptionKey"
       TargetKeyId: !GetAtt JARRSAEncryptionKey.Arn
 
+  JWTSigningKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: "JWT Signing Key"
+      KeySpec: ECC_NIST_P256
+      KeyUsage: SIGN_VERIFY
+      Origin: AWS_KMS
+      Enabled: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: "Allow"
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - "kms:Sign"
+              - "kms:Verify"
+              - "kms:DescribeKey"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "aws:SourceArn":
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:components-api-*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-JWTSigningKey"
+
+  JWTSigningKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-JWTSigningKey"
+      TargetKeyId: !GetAtt JWTSigningKey.Arn
+
   S3SSEKey:
     Type: AWS::KMS::Key
     Properties:
@@ -588,3 +627,19 @@ Resources:
       Type: String
       Value: !Ref JARRSAEncryptionKeyAlias
       Description: Alias of the JAR RSA encryption KMS key
+
+  JWTSigningKeyArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/JWTSigningKeyArn"
+      Type: String
+      Value: !GetAtt JWTSigningKey.Arn
+      Description: ARN of the JWT Signing KMS key
+
+  JWTSigningKeyAliasParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/JWTSigningKeyAlias"
+      Type: String
+      Value: !Ref JWTSigningKeyAlias
+      Description: Alias of the JWT Signing KMS key
