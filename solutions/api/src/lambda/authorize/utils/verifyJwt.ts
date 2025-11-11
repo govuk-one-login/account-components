@@ -180,6 +180,10 @@ const verify = async (
       logger.warn("JOSEError", {
         client_id: client.client_id,
         jose_error_code: error.code,
+        jose_error_message: error.message,
+        jose_error_name: error.name,
+        jose_error_stack: error.stack,
+        jose_error_cause: error.cause,
       });
       metrics.addDimensions({ jose_error_code: error.code });
       metrics.addMetric("JOSEError", MetricUnit.Count, 1);
