@@ -13,6 +13,7 @@ const mockGetClaimsSchema = vi.fn();
 const mockParse = vi.fn();
 const mockSafeParse = vi.fn();
 const mockGetDotPath = vi.fn();
+const mockTempSuccessfulJourney = vi.fn();
 
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
@@ -67,6 +68,10 @@ vi.mock(import("valibot"), () => ({
   optional: vi.fn(),
 }));
 
+vi.mock(import("./tempSuccessfulJourney.js"), () => ({
+  tempSuccessfulJourney: mockTempSuccessfulJourney,
+}));
+
 const { handler } = await import("./index.js");
 
 describe("startSession handler", () => {
@@ -76,6 +81,7 @@ describe("startSession handler", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockTempSuccessfulJourney.mockResolvedValue(mockReply);
 
     process.env["API_SESSION_COOKIE_DOMAIN"] = "example.com";
     process.env["AUTHORIZE_ERROR_PAGE_URL"] = "https://example.com/error";
@@ -413,7 +419,10 @@ describe("startSession handler", () => {
         domain: "example.com",
         maxAge: 0,
       });
-      expect(mockReply.redirect).toHaveBeenCalledWith("/TODO");
+      expect(mockTempSuccessfulJourney).toHaveBeenCalledWith(
+        mockReply,
+        mockClaims,
+      );
     });
   });
 

@@ -26,6 +26,7 @@ export const render = async function (
   if (this.request.i18n) {
     env.addFilter("translate", this.request.i18n.t);
   }
+  env.addFilter("JSON.stringify", JSON.stringify);
   env.addGlobal("govukRebrand", true);
   env.addGlobal("addLanguageParam", addLanguageParam);
   env.addGlobal("contactUsUrl", contactUsUrl);

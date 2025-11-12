@@ -14,7 +14,7 @@ import { randomBytes } from "node:crypto";
 import assert from "node:assert";
 import { paths } from "../../../../../frontend/src/utils/paths.js";
 import type { APIGatewayProxyResult } from "aws-lambda";
-import { apiSessionCookieName } from "../../../../../commons/utils/contstants.js";
+import { apiSessionCookieName } from "../../../../../commons/utils/constants.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/index.js";
 
 const dynamoDbClient = getDynamoDbClient();

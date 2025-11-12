@@ -10,6 +10,7 @@ import {
   getRedirectToClientRedirectUri,
 } from "../../../../commons/utils/authorize/index.js";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
+import { tempSuccessfulJourney } from "./tempSuccessfulJourney.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -144,8 +145,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       request.session.user_id = claims.sub;
 
       reply.setCookie(...getUnsetApiSessionCookieArgs());
-      reply.redirect("/TODO");
-      return await reply;
+      return await tempSuccessfulJourney(reply, claims);
     } catch (error) {
       request.log.error(error, "ApiSessionGetError");
       metrics.addMetric("ApiSessionGetError", MetricUnit.Count, 1);

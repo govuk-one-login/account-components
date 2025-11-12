@@ -35,7 +35,7 @@ vi.mock(import("../../../commons/utils/awsClient/s3Client/index.js"), () => ({
 }));
 
 // @ts-expect-error
-vi.mock(import("../../../commons/utils/contstants.js"), () => ({
+vi.mock(import("../../../commons/utils/constants.js"), () => ({
   jarKeyEncryptionAlgorithm: "RSA-OAEP-256",
 }));
 

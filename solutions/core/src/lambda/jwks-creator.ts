@@ -6,7 +6,7 @@ import { createPublicKey } from "node:crypto";
 import assert from "node:assert";
 import { getS3Client } from "../../../commons/utils/awsClient/s3Client/index.js";
 import { getKmsClient } from "../../../commons/utils/awsClient/kmsClient/index.js";
-import { jarKeyEncryptionAlgorithm } from "../../../commons/utils/contstants.js";
+import { jarKeyEncryptionAlgorithm } from "../../../commons/utils/constants.js";
 
 const logger = new Logger();
 

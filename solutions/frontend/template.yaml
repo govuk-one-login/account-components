@@ -402,6 +402,8 @@ Resources:
               apiSessionCookieDomain,
             ]
           API_SESSIONS_TABLE_NAME: !Sub "{{resolve:ssm:/${ApiStackName}/ApiSessionsTableName}}"
+          AUTH_CODE_TABLE_NAME: !Sub "{{resolve:ssm:/${ApiStackName}/AuthCodeTableName}}"
+          JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${ApiStackName}/JourneyOutcomeTableName}}"
           AUTHORIZE_ENDPOINT_URL:
             !FindInMap [
               EnvironmentConfiguration,
@@ -425,6 +427,12 @@ Resources:
                 - dynamodb:DeleteItem
                 - dynamodb:GetItem
               Resource: !Sub "{{resolve:ssm:/${ApiStackName}/ApiSessionsTableArn}}"
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+              Resource:
+                - !Sub "{{resolve:ssm:/${ApiStackName}/AuthCodeTableArn}}"
+                - !Sub "{{resolve:ssm:/${ApiStackName}/JourneyOutcomeTableArn}}"
             - Effect: Allow
               Action:
                 - kms:Decrypt
