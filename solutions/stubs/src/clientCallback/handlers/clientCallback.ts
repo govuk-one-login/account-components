@@ -49,10 +49,13 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
     if ("code" in parsedRequestQueryParams) {
       assert.ok(reply.globals.currentUrl, "currentUrl is not set");
 
+      const currentUrl = new URL(reply.globals.currentUrl);
+      currentUrl.search = "";
+
       const tokenRequestBody = await getTokenRequestBody({
         client,
         authCode: parsedRequestQueryParams.code,
-        currentUrl: reply.globals.currentUrl.toString(),
+        currentUrl: currentUrl.toString(),
       });
 
       assert.ok(
