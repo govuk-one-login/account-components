@@ -44,11 +44,13 @@ Mappings:
       stubsDomain: stubs.manage.dev.account.gov.uk
       LambdaLogLevel: DEBUG
       UseCanary: false
+      apiTokenEndpointUrl: https://api.manage.dev.account.gov.uk/token
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       stubsDomain: stubs.manage.build.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: false
+      apiTokenEndpointUrl: https://api.manage.build.account.gov.uk/token
 
 Conditions:
   UseCodeSigning:
@@ -276,6 +278,12 @@ Resources:
           DEFAULT_AUDIENCE: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
           AUTHORIZE_URL: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
+          API_TOKEN_ENDPOINT_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              apiTokenEndpointUrl,
+            ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:

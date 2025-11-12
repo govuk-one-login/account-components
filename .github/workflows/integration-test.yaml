@@ -46,6 +46,8 @@ jobs:
           API_SESSION_COOKIE_DOMAIN=localhost    
           API_SESSIONS_TABLE_NAME=components-api-ApiSessions
           AUTHORIZE_ENDPOINT_URL=http://localhost:6004/authorize
+          AUTH_CODE_TABLE_NAME=components-api-AuthCode
+          JOURNEY_OUTCOME_TABLE_NAME=components-api-JourneyOutcome          
           EOF
 
       - name: Configure stubs environment
@@ -64,7 +66,8 @@ jobs:
           AWS_REGION=eu-west-2
           LOCALSTACK_ENDPOINT=http://localhost:4566
           LOCALSTACK_ACCESS_KEY_ID=test
-          LOCALSTACK_ACCESS_KEY=test          
+          LOCALSTACK_ACCESS_KEY=test      
+          API_TOKEN_ENDPOINT_URL=http://localhost:6004/token    
           EOF
 
       - name: Configure API environment

@@ -3,37 +3,10 @@ import * as v from "valibot";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
 import assert from "node:assert";
 import crypto from "node:crypto";
-import { SignJWT } from "jose";
+import { SignJWT, importPKCS8 } from "jose";
 import type { ClientEntry } from "../../../../config/schema/types.js";
-
-const getTokenRequestBody = async ({
-  client,
-  authCode,
-}: {
-  client: ClientEntry;
-  authCode: string;
-}) => {
-  const clientAssertion = await new SignJWT({
-    iss: client.client_id,
-    aud: "TODO token URL from env var",
-    jti: crypto.randomUUID(),
-  })
-    .setProtectedHeader({ alg: "TODO alg of mock EC key" })
-    .setIssuedAt()
-    .setExpirationTime("5m")
-    .sign("TODO EC private key");
-
-  const params = new URLSearchParams({
-    grant_type: "authorization_code",
-    code: authCode,
-    redirect_uri: "TODO this URL",
-    client_assertion_type:
-      "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
-    client_assertion: clientAssertion,
-  });
-
-  return params;
-};
+import { getParametersProvider } from "../../../../commons/utils/awsClient/ssmClient/index.js";
+import { jwtSigningAlgorithm } from "../../../../commons/utils/constants.js";
 
 export async function handler(request: FastifyRequest, reply: FastifyReply) {
   assert.ok(reply.render);
@@ -74,14 +47,51 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
     );
 
     if ("code" in parsedRequestQueryParams) {
-      // TODO request token
+      assert.ok(reply.globals.currentUrl, "currentUrl is not set");
+
+      const tokenRequestBody = await getTokenRequestBody({
+        client,
+        authCode: parsedRequestQueryParams.code,
+        currentUrl: reply.globals.currentUrl.toString(),
+      });
+
+      assert.ok(
+        process.env["API_TOKEN_ENDPOINT_URL"],
+        "API_TOKEN_ENDPOINT_URL is not set",
+      );
+
+      const tokenResponse = await fetch(process.env["API_TOKEN_ENDPOINT_URL"], {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: tokenRequestBody.toString(),
+      });
+
+      const parsedTokenResponseBody = v.parse(
+        v.object({
+          access_token: v.string(),
+          token_type: v.literal("Bearer"),
+          expires_in: v.pipe(v.number(), v.integer(), v.minValue(1)),
+        }),
+        await tokenResponse.json(),
+      );
+
+      await reply.render("clientCallback/handlers/clientCallback.njk", {
+        client: `${client.client_name} (${client.client_id})`,
+        tokenDetails: {
+          ...parsedTokenResponseBody,
+        },
+      });
+      return await reply;
+
       // TODO journey outcome request
       // TODO output journey outcome
     }
 
     await reply.render("clientCallback/handlers/clientCallback.njk", {
+      client: `${client.client_name} (${client.client_id})`,
       errorDetails: {
-        client: `${client.client_name} (${client.client_id})`,
         ...parsedRequestQueryParams,
       },
     });
@@ -93,3 +103,49 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
     return reply;
   }
 }
+
+const getTokenRequestBody = async ({
+  client,
+  authCode,
+  currentUrl,
+}: {
+  client: ClientEntry;
+  authCode: string;
+  currentUrl: string;
+}) => {
+  assert.ok(
+    process.env["MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"],
+    "MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME is not set",
+  );
+
+  const privateKeyPem = await getParametersProvider().get(
+    process.env["MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"],
+  );
+
+  assert.ok(privateKeyPem, "privateKeyPem is not set");
+  assert.ok(
+    process.env["API_TOKEN_ENDPOINT_URL"],
+    "API_TOKEN_ENDPOINT_URL is not set",
+  );
+
+  const clientAssertion = await new SignJWT({
+    iss: client.client_id,
+    aud: process.env["API_TOKEN_ENDPOINT_URL"],
+    jti: crypto.randomUUID(),
+    redirect_uri: currentUrl,
+  })
+    .setProtectedHeader({ alg: jwtSigningAlgorithm })
+    .setIssuedAt()
+    .setExpirationTime("5m")
+    .sign(await importPKCS8(privateKeyPem, jwtSigningAlgorithm));
+
+  const params = new URLSearchParams({
+    grant_type: "authorization_code",
+    code: authCode,
+    client_assertion_type:
+      "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+    client_assertion: clientAssertion,
+  });
+
+  return params;
+};

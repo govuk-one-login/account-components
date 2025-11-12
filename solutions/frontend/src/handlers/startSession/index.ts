@@ -10,6 +10,7 @@ import {
   getRedirectToClientRedirectUri,
 } from "../../../../commons/utils/authorize/index.js";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
+import { randomBytes } from "node:crypto";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -144,7 +145,54 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       request.session.user_id = claims.sub;
 
       reply.setCookie(...getUnsetApiSessionCookieArgs());
-      reply.redirect("/TODO");
+
+      /*
+      This temporary code to allow us to test an end to end journey.
+      In reality this will redirect into the journey, not to the callback URL.
+      */
+      const authCode = randomBytes(24).toString("hex");
+      const outcomeId = randomBytes(24).toString("hex");
+
+      await dynamoDbClient.transactWrite({
+        TransactItems: [
+          {
+            Put: {
+              TableName: process.env["JOURNEY_OUTCOME_TABLE_NAME"],
+              Item: {
+                outcome_id: outcomeId,
+                outcome_type: "TODO",
+                // TODO more fields?
+              },
+            },
+          },
+          {
+            Put: {
+              TableName: process.env["AUTH_CODE_TABLE_NAME"],
+              Item: {
+                code: authCode,
+                outcome_id: outcomeId,
+                client_id: claims.client_id,
+                sub: claims.sub,
+                redirect_uri: claims.redirect_uri,
+                scope: claims.scope,
+                expiry_time: Math.floor(Date.now() / 1000) + 300, // TODO when really implementing get 300 from app config
+              },
+            },
+          },
+        ],
+      });
+
+      reply.redirect(
+        getRedirectToClientRedirectUri(
+          claims.redirect_uri,
+          undefined,
+          claims.state,
+          authCode,
+        ),
+      );
+      /*
+        End of temporary code
+        */
       return await reply;
     } catch (error) {
       request.log.error(error, "ApiSessionGetError");

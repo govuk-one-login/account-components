@@ -16,6 +16,7 @@ import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addSt
 import { clientJwks } from "./clientJwks/index.js";
 import { clientCallback } from "./clientCallback/index.js";
 import { flushMetrics } from "../../commons/utils/fastify/flushMetrics/index.js";
+import { getCurrentUrl } from "../../commons/utils/fastify/getCurrentUrl/index.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
@@ -63,6 +64,7 @@ export const initStubs = async function () {
     getter() {
       return {
         staticHash: staticHash.hash,
+        currentUrl: getCurrentUrl(this.request),
       };
     },
   });
