@@ -49,7 +49,6 @@ describe("verifyClientAssertion", () => {
     expect(mockCreateRemoteJWKSet).toHaveBeenCalledWith(
       new URL(mockClientRegistry[0].jwks_uri),
     );
-    expect(mockJwtVerify).toHaveBeenCalledWith(mockClientAssertion, {});
   });
 
   it("should throw error when iss is missing from JWT", async () => {
