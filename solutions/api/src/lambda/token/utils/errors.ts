@@ -1,17 +1,7 @@
-import { logger } from "../../../../../commons/utils/logger/index.js";
-import { metrics } from "../../../../../commons/utils/metrics/index.js";
-import { MetricUnit } from "@aws-lambda-powertools/metrics";
+import type { AppError, ErrorType } from "../../../utils/common.js";
+import { ErrorManager } from "../../../utils/common.js";
 
-export type AppError = Error & { code: keyof typeof tokenErrors };
-
-interface TokenErrorType {
-  code: string;
-  description: string;
-  statusCode: number;
-  metric?: string;
-}
-
-const tokenErrors: Record<string, TokenErrorType> = {
+const tokenErrors: Record<string, ErrorType> = {
   invalidRequest: {
     code: "E4001",
     description: "invalid_request",
@@ -31,44 +21,6 @@ const tokenErrors: Record<string, TokenErrorType> = {
   },
 };
 
-export function throwError(
-  type: keyof typeof tokenErrors,
-  message: string,
-): never {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const error: AppError = new Error(message) as AppError;
-  error.code = type;
-  throw error;
-}
+export type TokenAppError = AppError<keyof typeof tokenErrors>;
 
-const isAppError = (e: Error | AppError): boolean => {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  return !!((e as AppError).code && (e as AppError).code in tokenErrors);
-};
-
-export function handleError(e: AppError | Error) {
-  const error = isAppError(e)
-    ? // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      tokenErrors[(e as AppError).code]
-    : tokenErrors["genericError"];
-
-  if (!error) {
-    //should not need this, but to satisfy typescript
-    throw new Error("Unhandled error type");
-  }
-
-  logger.warn("Invalid Request", {
-    error,
-  });
-  if (error.metric) {
-    metrics.addMetric(error.metric, MetricUnit.Count, 1);
-  }
-
-  return {
-    statusCode: error.statusCode,
-    body: JSON.stringify({
-      error: error.description,
-      error_description: error.code,
-    }),
-  };
-}
+export const errorManager = new ErrorManager(tokenErrors);

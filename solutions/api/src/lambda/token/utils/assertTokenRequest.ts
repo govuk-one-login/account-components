@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { throwError } from "./errors.js";
+import { errorManager } from "./errors.js";
 
 export const assertTokenRequest = (request: TokenRequest) => {
   try {
@@ -13,7 +13,7 @@ export const assertTokenRequest = (request: TokenRequest) => {
     assert(request.client_assertion, "Missing client_assertion");
   } catch (e) {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    throwError("invalidRequest", (e as Error).message);
+    errorManager.throwError("invalidRequest", (e as Error).message);
   }
 };
 
