@@ -7,11 +7,13 @@ describe("flushMetrics", () => {
     vi.clearAllMocks();
   });
 
-  it("calls metrics.publishStoredMetrics", async () => {
+  it("calls captureColdStartMetric and publishStoredMetrics", async () => {
+    const coldStartSpy = vi.spyOn(metrics, "captureColdStartMetric");
     const publishSpy = vi.spyOn(metrics, "publishStoredMetrics");
 
     await flushMetrics();
 
+    expect(coldStartSpy).toHaveBeenCalledTimes(1);
     expect(publishSpy).toHaveBeenCalledTimes(1);
   });
 });

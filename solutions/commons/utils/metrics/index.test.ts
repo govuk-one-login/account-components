@@ -13,6 +13,7 @@ describe("flushMetricsAPIGatewayProxyHandlerWrapper", () => {
       body: "success",
     });
     const publishSpy = vi.spyOn(metrics, "publishStoredMetrics");
+    const coldStartSpy = vi.spyOn(metrics, "captureColdStartMetric");
 
     const wrappedHandler =
       flushMetricsAPIGatewayProxyHandlerWrapper(mockHandler);
@@ -23,6 +24,7 @@ describe("flushMetricsAPIGatewayProxyHandlerWrapper", () => {
     const result = await wrappedHandler(mockEvent, mockContext);
 
     expect(mockHandler).toHaveBeenCalledWith(mockEvent, mockContext);
+    expect(coldStartSpy).toHaveBeenCalledTimes(1);
     expect(publishSpy).toHaveBeenCalledTimes(1);
     expect(result).toStrictEqual({ statusCode: 200, body: "success" });
   });
@@ -30,6 +32,7 @@ describe("flushMetricsAPIGatewayProxyHandlerWrapper", () => {
   it("flushes metrics even when handler throws", async () => {
     const mockHandler = vi.fn().mockRejectedValue(new Error("handler error"));
     const publishSpy = vi.spyOn(metrics, "publishStoredMetrics");
+    const coldStartSpy = vi.spyOn(metrics, "captureColdStartMetric");
 
     const wrappedHandler =
       flushMetricsAPIGatewayProxyHandlerWrapper(mockHandler);
@@ -40,6 +43,7 @@ describe("flushMetricsAPIGatewayProxyHandlerWrapper", () => {
     await expect(wrappedHandler(mockEvent, mockContext)).rejects.toThrow(
       "handler error",
     );
+    expect(coldStartSpy).toHaveBeenCalledTimes(1);
     expect(publishSpy).toHaveBeenCalledTimes(1);
   });
 });
