@@ -85,7 +85,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         "API_JOURNEY_OUTCOME_ENDPOINT_URL is not set",
       );
 
-      const journeyInfoResponse = await fetch(
+      const journeyOutcomeResponse = await fetch(
         process.env["API_JOURNEY_OUTCOME_ENDPOINT_URL"],
         {
           method: "GET",
@@ -95,7 +95,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         },
       );
 
-      const journeyOutcomeDetails = await journeyInfoResponse.json();
+      const journeyOutcomeDetails = await journeyOutcomeResponse.json();
 
       await reply.render("clientCallback/handlers/clientCallback.njk", {
         client: `${client.client_name} (${client.client_id})`,
