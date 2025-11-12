@@ -633,13 +633,9 @@ Resources:
       AttributeDefinitions:
         - AttributeName: outcome_id
           AttributeType: S
-        - AttributeName: outcome_type
-          AttributeType: S
       KeySchema:
         - AttributeName: outcome_id
           KeyType: HASH
-        - AttributeName: outcome_type
-          KeyType: RANGE
       SSESpecification:
         KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
         SSEEnabled: true

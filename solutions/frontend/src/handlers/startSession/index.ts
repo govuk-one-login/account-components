@@ -160,8 +160,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
               TableName: process.env["JOURNEY_OUTCOME_TABLE_NAME"],
               Item: {
                 outcome_id: outcomeId,
-                outcome_type: "TODO",
-                // TODO more fields?
+                outcome: [{ account_delete: true, timestamp: 1234567890 }],
               },
             },
           },

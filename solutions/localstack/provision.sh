@@ -148,10 +148,8 @@ create_dynamodb_tables() {
     --table-name "components-api-JourneyOutcome" \
     --attribute-definitions \
       AttributeName=outcome_id,AttributeType=S \
-      AttributeName=outcome_type,AttributeType=S \
     --key-schema \
       AttributeName=outcome_id,KeyType=HASH \
-      AttributeName=outcome_type,KeyType=RANGE \
     --billing-mode PAY_PER_REQUEST
 
   # SessionsTable
