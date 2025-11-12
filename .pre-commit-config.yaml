@@ -28,7 +28,7 @@ repos:
   - repo: local
     hooks:
       - id: package-audit-check
-        name: Check Dependencies
+        name: Check dependencies
         entry: npm run audit
         language: system
         exclude: .*

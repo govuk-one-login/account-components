@@ -15,13 +15,9 @@
                 <li><strong>State:</strong> {{ errorDetails.state }}</li>
             </ul>
         {% endif %}
-        {% if tokenDetails %}
-            <p>Token details:</p>
-            <ul>
-                <li><strong>Access token:</strong> {{ tokenDetails.access_token }}</li>
-                <li><strong>Token type:</strong> {{ tokenDetails.token_type }}</li>
-                <li><strong>Expires in:</strong> {{ tokenDetails.expires_in }}</li>
-            </ul>
+        {% if journeyOutcomeDetails %}
+            <p>Journey outcome details:</p>
+            <pre>{{ journeyOutcomeDetails | JSON.stringify(null, 2) }}</pre>
         {% endif %}        
         {% if exception %}
             <p>An error occurred:</p>
