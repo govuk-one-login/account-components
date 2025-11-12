@@ -84,9 +84,6 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         },
       });
       return await reply;
-
-      // TODO journey outcome request
-      // TODO output journey outcome
     }
 
     await reply.render("clientCallback/handlers/clientCallback.njk", {
