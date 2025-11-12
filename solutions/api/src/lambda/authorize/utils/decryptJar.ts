@@ -12,7 +12,7 @@ import {
 import {
   jarContentEncryptionAlgorithm,
   jarKeyEncryptionAlgorithm,
-} from "../../../../../commons/utils/contstants.js";
+} from "../../../../../commons/utils/constants.js";
 import { EncryptionAlgorithmSpec } from "@aws-sdk/client-kms";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/index.js";
 

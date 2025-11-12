@@ -22,7 +22,7 @@ import {
   JWTExpired,
   JWTInvalid,
 } from "jose/errors";
-import { jwtSigningAlgorithm } from "../../../../../commons/utils/contstants.js";
+import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
 import { getClaimsSchema } from "./getClaimsSchema.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/index.js";

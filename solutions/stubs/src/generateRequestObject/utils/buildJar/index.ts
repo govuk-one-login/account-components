@@ -5,7 +5,7 @@ import assert from "node:assert";
 import {
   jarContentEncryptionAlgorithm,
   jarKeyEncryptionAlgorithm,
-} from "../../../../../commons/utils/contstants.js";
+} from "../../../../../commons/utils/constants.js";
 
 let keyId: string | undefined = undefined;
 
