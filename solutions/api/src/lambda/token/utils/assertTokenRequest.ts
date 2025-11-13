@@ -1,4 +1,4 @@
-import assert from "assert";
+import assert from "node:assert";
 import { throwError } from "./errors.js";
 
 export const assertTokenRequest = (request: TokenRequest) => {
