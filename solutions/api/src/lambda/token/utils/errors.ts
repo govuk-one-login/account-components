@@ -4,16 +4,25 @@ import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
 export type AppError = Error & { code: keyof typeof tokenErrors };
 
-const tokenErrors = {
+interface TokenErrorType {
+  code: string;
+  description: string;
+  statusCode: number;
+  metric?: string;
+}
+
+const tokenErrors: Record<string, TokenErrorType> = {
   invalidRequest: {
     code: "E4001",
     description: "invalid_request",
     statusCode: 400,
+    metric: "InvalidTokenRequest",
   },
   invalidClientAssertion: {
     code: "E4002",
     description: "invalid_request",
     statusCode: 400,
+    metric: "InvalidClientAssertion",
   },
   genericError: {
     code: "E500",
@@ -32,12 +41,19 @@ export function throwError(
 }
 
 export function handleError(e: AppError) {
-  const error = tokenErrors[e.code];
+  const error = tokenErrors[e.code] ?? tokenErrors["genericError"];
+
+  if (!error) {
+    //should not need this, but to satisfy typescript
+    throw new Error("Unhandled error type");
+  }
 
   logger.warn("Invalid Request", {
     error,
   });
-  metrics.addMetric("InvalidTokenRequest", MetricUnit.Count, 1);
+  if (error.metric) {
+    metrics.addMetric(error.metric, MetricUnit.Count, 1);
+  }
 
   return {
     statusCode: error.statusCode,
