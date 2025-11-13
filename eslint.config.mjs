@@ -62,6 +62,12 @@ export default defineConfig(
           "ts-nocheck": true,
         },
       ],
+      "@typescript-eslint/consistent-type-assertions": [
+        "error",
+        {
+          assertionStyle: "never",
+        },
+      ],
       "depend/ban-dependencies": [
         "error",
         {
@@ -87,6 +93,7 @@ export default defineConfig(
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-explicit-any": "off",
       "@typescript-eslint/no-unsafe-assignment": "warn",
+      "@typescript-eslint/consistent-type-assertions": "off",
     },
   },
   {

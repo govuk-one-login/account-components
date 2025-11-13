@@ -11,6 +11,7 @@ export async function generateRequestObjectPost(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const body = request.body as RequestBody;
 
   body.access_token = await generateAccessToken();

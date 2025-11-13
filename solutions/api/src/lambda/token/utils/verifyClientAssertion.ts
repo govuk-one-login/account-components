@@ -32,6 +32,7 @@ export const verifyClientAssertion = async (
   } catch (e) {
     throwError(
       "invalidClientAssertion",
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       `Failed to verify client assertion: ${(e as Error).message}`,
     );
   }

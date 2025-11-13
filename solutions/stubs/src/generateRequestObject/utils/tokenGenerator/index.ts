@@ -45,6 +45,7 @@ export const generateJwtToken = async (
 export function getScenario(body: RequestBody): MockRequestObjectScenarios {
   const retrievedScenario = Object.values(MockRequestObjectScenarios).find(
     (scenario): scenario is MockRequestObjectScenarios =>
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       scenario === (body.scenario as MockRequestObjectScenarios),
   );
   delete body.scenario;
@@ -83,7 +84,8 @@ const getRequestObjectBuilderOptions = (body: string | RequestBody) => {
   try {
     const requestObjectOptions: JWTPayload =
       typeof body === "string"
-        ? (JSON.parse(body) as Record<string, unknown>)
+        ? // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+          (JSON.parse(body) as Record<string, unknown>)
         : body;
     logger.debug("Request Object Options", { requestObjectOptions });
     return requestObjectOptions;
@@ -116,12 +118,15 @@ export function getJwtPayload(
   const expiresIn = bodyExp ? bodyExp * 1 : DEFAULT_TOKEN_EXPIRY * 60;
   delete payload["exp"];
   const initiatedAt = bodyIat ? bodyIat * -1 : DEFAULT_TOKEN_INITIATED_AT;
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const user = getUsers(requestObjectOptions["user"] as string);
   delete payload["user"];
   const iss =
     bodyIss && bodyIss.length > 0
       ? bodyIss
-      : (requestObjectOptions["client_id"] as string);
+      : // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        (requestObjectOptions["client_id"] as string);
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return {
     ...payload,
     aud: bodyAud ?? process.env["DEFAULT_AUDIENCE"],

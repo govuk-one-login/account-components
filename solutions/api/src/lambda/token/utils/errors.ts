@@ -35,18 +35,21 @@ export function throwError(
   type: keyof typeof tokenErrors,
   message: string,
 ): never {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const error: AppError = new Error(message) as AppError;
   error.code = type;
   throw error;
 }
 
 const isAppError = (e: Error | AppError): boolean => {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return !!((e as AppError).code && (e as AppError).code in tokenErrors);
 };
 
 export function handleError(e: AppError | Error) {
   const error = isAppError(e)
-    ? tokenErrors[(e as AppError).code]
+    ? // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      tokenErrors[(e as AppError).code]
     : tokenErrors["genericError"];
 
   if (!error) {

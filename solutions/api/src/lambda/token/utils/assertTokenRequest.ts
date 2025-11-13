@@ -12,6 +12,7 @@ export const assertTokenRequest = (request: TokenRequest) => {
     );
     assert(request.client_assertion, "Missing client_assertion");
   } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     throwError("invalidRequest", (e as Error).message);
   }
 };

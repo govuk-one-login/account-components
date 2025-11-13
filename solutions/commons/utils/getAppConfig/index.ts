@@ -18,5 +18,6 @@ export async function getAppConfig(): Promise<AppConfigSchema> {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return config as AppConfigSchema;
 }
