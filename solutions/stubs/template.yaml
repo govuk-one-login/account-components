@@ -54,8 +54,8 @@ Mappings:
       stubsDomain: stubs.manage.build.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: false
-      apiTokenEndpointUrl: https://api.manage.build.account.gov.uk/token
-      apiJourneyOutcomeEndpointUrl: https://api.manage.build.account.gov.uk/journeyoutcome
+      apiTokenEndpointUrl: https://ju9v3jyfq2.execute-api.eu-west-2.amazonaws.com/build/token
+      apiJourneyOutcomeEndpointUrl: https://ju9v3jyfq2.execute-api.eu-west-2.amazonaws.com/build/journeyoutcome
 
 Conditions:
   UseCodeSigning:
