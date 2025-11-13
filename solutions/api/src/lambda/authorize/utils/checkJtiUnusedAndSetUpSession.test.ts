@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
-import type { Scope } from "./getClaimsSchema.js";
+import type { Scope } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
 import type { APIGatewayProxyResult } from "aws-lambda";
 
 process.env["REPLAY_ATTACK_TABLE_NAME"] = "test-replay-table";

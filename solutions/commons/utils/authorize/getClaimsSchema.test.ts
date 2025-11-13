@@ -13,12 +13,12 @@ import { getClaimsSchema } from "./getClaimsSchema.js";
 const ORIGINAL_ENV = { ...process.env };
 
 // @ts-expect-error
-vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
+vi.mock(import("../logger/index.js"), () => ({
   logger: { warn: vi.fn() },
 }));
 
 // @ts-expect-error
-vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
+vi.mock(import("../metrics/index.js"), () => ({
   metrics: { addMetric: vi.fn() },
 }));
 

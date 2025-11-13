@@ -35,22 +35,25 @@ vi.mock(
 );
 
 // @ts-expect-error
-vi.mock(import("../../../../commons/utils/authorize/index.js"), () => ({
-  getRedirectToClientRedirectUri: mockGetRedirectToClientRedirectUri,
-  authorizeErrors: {
-    failedToDeleteApiSession: {
-      description: "E5004",
-      type: "server_error",
+vi.mock(
+  import("../../../../commons/utils/authorize/authorizeErrors.js"),
+  () => ({
+    getRedirectToClientRedirectUri: mockGetRedirectToClientRedirectUri,
+    authorizeErrors: {
+      failedToDeleteApiSession: {
+        description: "E5004",
+        type: "server_error",
+      },
     },
-  },
-}));
+  }),
+);
 
 vi.mock(import("../../../../commons/utils/getClientRegistry/index.js"), () => ({
   getClientRegistry: mockGetClientRegistry,
 }));
 
 vi.mock(
-  import("../../../../api/src/lambda/authorize/utils/getClaimsSchema.js"),
+  import("../../../../commons/utils/authorize/getClaimsSchema.js"),
   () => ({
     getClaimsSchema: mockGetClaimsSchema,
   }),
@@ -84,7 +87,6 @@ describe("startSession handler", () => {
     mockTempSuccessfulJourney.mockResolvedValue(mockReply);
 
     process.env["API_SESSION_COOKIE_DOMAIN"] = "example.com";
-    process.env["AUTHORIZE_ERROR_PAGE_URL"] = "https://example.com/error";
     process.env["API_SESSIONS_TABLE_NAME"] = "test-sessions-table";
 
     mockClient = {
@@ -462,15 +464,6 @@ describe("startSession handler", () => {
       await expect(
         handler(mockRequest as FastifyRequest, mockReply as FastifyReply),
       ).rejects.toThrow("API_SESSION_COOKIE_DOMAIN is not set");
-    });
-
-    it("should throw when AUTHORIZE_ERROR_PAGE_URL is not set", async () => {
-      delete process.env["AUTHORIZE_ERROR_PAGE_URL"];
-      mockRequest.cookies = {};
-
-      await expect(
-        handler(mockRequest as FastifyRequest, mockReply as FastifyReply),
-      ).rejects.toThrow("AUTHORIZE_ERROR_PAGE_URL is not set");
     });
   });
 });

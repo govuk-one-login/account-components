@@ -2,8 +2,8 @@ import { randomBytes } from "node:crypto";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import type { FastifyReply } from "fastify";
 import type * as v from "valibot";
-import type { getClaimsSchema } from "../../../../api/src/lambda/authorize/utils/getClaimsSchema.js";
-import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/index.js";
+import type { getClaimsSchema } from "../../../../commons/utils/authorize/getClaimsSchema.js";
+import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
 
 /*
 This temporary code to allow us to test an end to end journey.

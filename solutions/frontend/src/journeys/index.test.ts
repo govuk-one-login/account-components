@@ -1,10 +1,10 @@
 import type { Mock } from "vitest";
 import { expect, it, describe, vi, beforeEach } from "vitest";
-import { journeys } from "./index.js";
+import { journeyRoutes } from "./index.js";
 import { deleteAccount } from "./deleteAccount/index.js";
 import type { FastifyInstance } from "fastify";
 
-describe("journeys plugin", () => {
+describe("journeyRoutes plugin", () => {
   let mockFastify: FastifyInstance;
   let mockAddHook: Mock;
   let mockRegister: Mock;
@@ -20,13 +20,13 @@ describe("journeys plugin", () => {
   });
 
   it("adds onRequest hook", () => {
-    journeys(mockFastify);
+    journeyRoutes(mockFastify);
 
     expect(mockAddHook).toHaveBeenCalledWith("onRequest", expect.any(Function));
   });
 
   it("registers deleteAccount journey", () => {
-    journeys(mockFastify);
+    journeyRoutes(mockFastify);
 
     expect(mockRegister).toHaveBeenCalledWith(deleteAccount);
   });
