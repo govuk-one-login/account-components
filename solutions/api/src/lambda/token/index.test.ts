@@ -3,6 +3,7 @@ import { handler } from "./index.js";
 import type { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy.js";
 import type { Context } from "aws-lambda";
 import type { JWTPayload } from "jose";
+import { throwError } from "./utils/errors.js";
 
 const mockContext = {} as unknown as Context;
 
@@ -39,9 +40,9 @@ describe("token handler", () => {
   });
 
   it("returns 400 status if the client assertion verification fails", async () => {
-    mockVerifyClientAssertion.mockRejectedValue(
-      new Error("Invalid client assertion"),
-    );
+    mockVerifyClientAssertion.mockImplementation(() => {
+      throwError("invalidClientAssertion", "error");
+    });
     const result = await handler(
       {
         body: JSON.stringify({
@@ -60,7 +61,7 @@ describe("token handler", () => {
       statusCode: 400,
       body: JSON.stringify({
         error: "invalid_request",
-        error_description: "E4001",
+        error_description: "E4002",
       }),
     });
   });

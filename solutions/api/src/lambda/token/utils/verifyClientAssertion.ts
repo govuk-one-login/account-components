@@ -1,6 +1,7 @@
 import type { JWTPayload } from "jose";
 import { jwtVerify, decodeJwt, createRemoteJWKSet } from "jose";
 import { getClientRegistry } from "../../../../../commons/utils/getClientRegistry/index.js";
+import { throwError } from "./errors.js";
 
 export const verifyClientAssertion = async (
   clientAssertion: string,
@@ -9,7 +10,7 @@ export const verifyClientAssertion = async (
   const decodedJwt = decodeJwt(clientAssertion);
 
   if (!decodedJwt.iss) {
-    throw new Error("Missing iss in client assertion");
+    throwError("invalidClientAssertion", "Missing iss in client assertion");
   }
 
   const client = clientRegistry.find((c) => {
@@ -17,11 +18,21 @@ export const verifyClientAssertion = async (
   });
 
   if (!client) {
-    throw new Error(`Client ${decodedJwt.iss} not found for client assertion`);
+    throwError(
+      "invalidClientAssertion",
+      `Client ${decodedJwt.iss} not found for client assertion`,
+    );
   }
 
-  const JWKS = createRemoteJWKSet(new URL(client.jwks_uri));
-  const { payload } = await jwtVerify(clientAssertion, JWKS);
+  try {
+    const JWKS = createRemoteJWKSet(new URL(client.jwks_uri));
+    const { payload } = await jwtVerify(clientAssertion, JWKS);
 
-  return payload;
+    return payload;
+  } catch (e) {
+    throwError(
+      "invalidClientAssertion",
+      `Failed to verify client assertion: ${(e as Error).message}`,
+    );
+  }
 };
