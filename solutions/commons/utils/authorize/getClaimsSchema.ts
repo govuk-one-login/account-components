@@ -1,9 +1,9 @@
 import * as v from "valibot";
-import { logger } from "../../../../../commons/utils/logger/index.js";
-import { metrics } from "../../../../../commons/utils/metrics/index.js";
+import { logger } from "../logger/index.js";
+import { metrics } from "../metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import assert from "node:assert";
-import type { ClientEntry } from "../../../../../config/schema/types.js";
+import type { ClientEntry } from "../../../config/schema/types.js";
 
 export enum Scope {
   accountDelete = "account-delete",

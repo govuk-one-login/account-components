@@ -53,9 +53,12 @@ vi.mock(import("jose"), () => ({
 
 const mockGetClaimsSchema = vi.fn();
 
-vi.mock(import("./getClaimsSchema.js"), () => ({
-  getClaimsSchema: mockGetClaimsSchema,
-}));
+vi.mock(
+  import("../../../../../commons/utils/authorize/getClaimsSchema.js"),
+  () => ({
+    getClaimsSchema: mockGetClaimsSchema,
+  }),
+);
 
 let verifyJwt: typeof verifyJwtForType;
 

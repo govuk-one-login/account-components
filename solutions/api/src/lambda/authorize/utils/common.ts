@@ -1,7 +1,7 @@
 import type { APIGatewayProxyResult } from "aws-lambda";
 import assert from "node:assert";
-import type { authorizeErrors } from "../../../../../commons/utils/authorize/index.js";
-import { getRedirectToClientRedirectUri } from "../../../../../commons/utils/authorize/index.js";
+import type { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
+import { getRedirectToClientRedirectUri } from "../../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
 
 assert.ok(
   process.env["AUTHORIZE_ERROR_PAGE_URL"],

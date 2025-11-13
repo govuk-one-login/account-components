@@ -9,13 +9,14 @@ import fastifyFormbody from "@fastify/formbody";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import fastifyHelmet from "@fastify/helmet";
-import { oneYearInSeconds } from "../../commons/utils/contstants.js";
+import { oneYearInSeconds } from "../../commons/utils/constants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
 import { generateRequestObject } from "./generateRequestObject/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 import { clientJwks } from "./clientJwks/index.js";
 import { clientCallback } from "./clientCallback/index.js";
 import { flushMetrics } from "../../commons/utils/fastify/flushMetrics/index.js";
+import { getCurrentUrl } from "../../commons/utils/fastify/getCurrentUrl/index.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
@@ -63,6 +64,7 @@ export const initStubs = async function () {
     getter() {
       return {
         staticHash: staticHash.hash,
+        currentUrl: getCurrentUrl(this.request),
       };
     },
   });

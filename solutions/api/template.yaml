@@ -56,6 +56,7 @@ Mappings:
       authorizeErrorPageUrl: https://manage.dev.account.gov.uk/authorize-error
       authorizeEndpointUrl: https://api.manage.dev.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
+          "vpce-0a7dad1503be13796", # di-account-components-dev
           "vpce-087ac48f23f28a39b", # di-account-dev
         ]
       LambdaLogLevel: DEBUG
@@ -68,6 +69,7 @@ Mappings:
       authorizeErrorPageUrl: https://manage.build.account.gov.uk/authorize-error
       authorizeEndpointUrl: https://api.manage.build.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
+          "vpce-0f4845b63ae267db4", # di-account-components-build
           "vpce-0e1bb7e9c33b0e516", # di-account-build
         ]
       LambdaLogLevel: INFO
@@ -633,13 +635,9 @@ Resources:
       AttributeDefinitions:
         - AttributeName: outcome_id
           AttributeType: S
-        - AttributeName: outcome_type
-          AttributeType: S
       KeySchema:
         - AttributeName: outcome_id
           KeyType: HASH
-        - AttributeName: outcome_type
-          KeyType: RANGE
       SSESpecification:
         KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
         SSEEnabled: true
@@ -721,3 +719,35 @@ Resources:
       Type: String
       Value: !Ref ApiSessionsTable
       Description: Name of the API sessions table
+
+  AuthCodeTableArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/AuthCodeTableArn"
+      Type: String
+      Value: !GetAtt AuthCodeTable.Arn
+      Description: ARN of the auth code table
+
+  AuthCodeTableNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/AuthCodeTableName"
+      Type: String
+      Value: !Ref AuthCodeTable
+      Description: Name of the auth code table
+
+  JourneyOutcomeTableArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/JourneyOutcomeTableArn"
+      Type: String
+      Value: !GetAtt JourneyOutcomeTable.Arn
+      Description: ARN of the journey outcome table
+
+  JourneyOutcomeTableNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/JourneyOutcomeTableName"
+      Type: String
+      Value: !Ref JourneyOutcomeTable
+      Description: Name of the journey outcome table

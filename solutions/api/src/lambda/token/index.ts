@@ -7,11 +7,11 @@ import {
   flushMetricsAPIGatewayProxyHandlerWrapper,
   metrics,
 } from "../../../../commons/utils/metrics/index.js";
+import { verifyClientAssertion } from "./utils/verifyClientAssertion.js";
 
 interface TokenRequest {
   grant_type: string;
   code: string;
-  redirect_uri: string;
   client_assertion_type: string;
   client_assertion: string;
 }
@@ -19,7 +19,6 @@ interface TokenRequest {
 const assertTokenRequest = (request: TokenRequest) => {
   assert(request.grant_type === "authorization_code", "Invalid grant_type");
   assert(request.code, "Missing code");
-  assert(request.redirect_uri, "Missing redirect_uri");
   assert(
     request.client_assertion_type ===
       "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
@@ -32,7 +31,9 @@ export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
   async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
       const request = JSON.parse(e.body ?? "{}") as TokenRequest;
+
       assertTokenRequest(request);
+      await verifyClientAssertion(request.client_assertion);
     } catch (error) {
       logger.warn("Invalid Request", {
         error,

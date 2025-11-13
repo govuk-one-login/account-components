@@ -51,7 +51,6 @@ Mappings:
       frontendDomain: manage.dev.account.gov.uk
       LambdaLogLevel: DEBUG
       UseCanary: false
-      authorizeErrorPageUrl: https://manage.dev.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.dev.account.gov.uk
       authorizeEndpointUrl: https://api.manage.dev.account.gov.uk/authorize
     build:
@@ -60,7 +59,6 @@ Mappings:
       frontendDomain: manage.build.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: false
-      authorizeErrorPageUrl: https://manage.build.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.build.account.gov.uk
       authorizeEndpointUrl: https://api.manage.build.account.gov.uk/authorize
     staging:
@@ -69,7 +67,6 @@ Mappings:
       frontendDomain: manage.staging.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: true
-      authorizeErrorPageUrl: https://manage.staging.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.staging.account.gov.uk
       authorizeEndpointUrl: https://api.manage.staging.account.gov.uk/authorize
     integration:
@@ -78,7 +75,6 @@ Mappings:
       frontendDomain: manage.integration.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: true
-      authorizeErrorPageUrl: https://manage.integration.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.integration.account.gov.uk
       authorizeEndpointUrl: https://api.manage.integration.account.gov.uk/authorize
     production:
@@ -87,7 +83,6 @@ Mappings:
       frontendDomain: manage.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: true
-      authorizeErrorPageUrl: https://manage.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.account.gov.uk
       authorizeEndpointUrl: https://api.manage.account.gov.uk/authorize
 
@@ -389,12 +384,6 @@ Resources:
               !Ref Environment,
               rootCookieDomain,
             ]
-          AUTHORIZE_ERROR_PAGE_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              authorizeErrorPageUrl,
-            ]
           API_SESSION_COOKIE_DOMAIN:
             !FindInMap [
               EnvironmentConfiguration,
@@ -402,6 +391,8 @@ Resources:
               apiSessionCookieDomain,
             ]
           API_SESSIONS_TABLE_NAME: !Sub "{{resolve:ssm:/${ApiStackName}/ApiSessionsTableName}}"
+          AUTH_CODE_TABLE_NAME: !Sub "{{resolve:ssm:/${ApiStackName}/AuthCodeTableName}}"
+          JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${ApiStackName}/JourneyOutcomeTableName}}"
           AUTHORIZE_ENDPOINT_URL:
             !FindInMap [
               EnvironmentConfiguration,
@@ -427,9 +418,20 @@ Resources:
               Resource: !Sub "{{resolve:ssm:/${ApiStackName}/ApiSessionsTableArn}}"
             - Effect: Allow
               Action:
+                - dynamodb:PutItem
+              Resource:
+                - !Sub "{{resolve:ssm:/${ApiStackName}/AuthCodeTableArn}}"
+                - !Sub "{{resolve:ssm:/${ApiStackName}/JourneyOutcomeTableArn}}"
+            - Effect: Allow
+              Action:
                 - kms:Decrypt
                 - kms:GenerateDataKey
               Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
+            - Effect: Allow
+              Action:
+                - appconfig:GetLatestConfiguration
+                - appconfig:StartConfigurationSession
+              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
 
   FrontendLambdaLogGroup:
     Type: AWS::Logs::LogGroup

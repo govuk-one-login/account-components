@@ -3,14 +3,13 @@ import assert from "node:assert";
 import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
-import { getClaimsSchema } from "../../../../api/src/lambda/authorize/utils/getClaimsSchema.js";
 import * as v from "valibot";
-import {
-  authorizeErrors,
-  getRedirectToClientRedirectUri,
-} from "../../../../commons/utils/authorize/index.js";
+import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
 import { paths } from "../../utils/paths.js";
+import { tempSuccessfulJourney } from "./tempSuccessfulJourney.js";
+import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
+import { getClaimsSchema } from "../../../../commons/utils/authorize/getClaimsSchema.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -141,8 +140,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       request.session.user_id = claims.sub;
 
       reply.setCookie(...getUnsetApiSessionCookieArgs());
-      reply.redirect("/TODO");
-      return await reply;
+      return await tempSuccessfulJourney(reply, claims);
     } catch (error) {
       request.log.error(error, "ApiSessionGetError");
       metrics.addMetric("ApiSessionGetError", MetricUnit.Count, 1);
