@@ -30,5 +30,18 @@ describe("errors", () => {
         }),
       });
     });
+
+    it("should return a generic error when there is a non AppError", () => {
+      const error = new Error("Some random error");
+      const result = handleError(error);
+
+      expect(result).toStrictEqual({
+        statusCode: 500,
+        body: JSON.stringify({
+          error: "internal_server_error",
+          error_description: "E500",
+        }),
+      });
+    });
   });
 });
