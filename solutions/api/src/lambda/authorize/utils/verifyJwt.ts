@@ -3,7 +3,6 @@ import { logger } from "../../../../../commons/utils/logger/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import {
-  authorizeErrors,
   ErrorResponse,
   getRedirectToClientRedirectUriResponse,
 } from "./common.js";
@@ -23,9 +22,10 @@ import {
   JWTExpired,
   JWTInvalid,
 } from "jose/errors";
-import { jwtSigningAlgorithm } from "../../../../../commons/utils/contstants.js";
+import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
 import { getClaimsSchema } from "./getClaimsSchema.js";
+import { authorizeErrors } from "../../../../../commons/utils/authorize/index.js";
 
 const verify = async (
   signedJwt: string,
@@ -180,6 +180,10 @@ const verify = async (
       logger.warn("JOSEError", {
         client_id: client.client_id,
         jose_error_code: error.code,
+        jose_error_message: error.message,
+        jose_error_name: error.name,
+        jose_error_cause: error.cause,
+        jose_error_stack: error.stack,
       });
       metrics.addDimensions({ jose_error_code: error.code });
       metrics.addMetric("JOSEError", MetricUnit.Count, 1);

@@ -4,11 +4,24 @@
     </head>
     <body>
         <h1>Client calback</h1>
-        <ul>
-            <li><strong>Client:</strong> {{ client }}</li>
-            <li><strong>Error:</strong> {{ error }}</li>
-            <li><strong>Error description:</strong> {{ error_description }}</li>
-            <li><strong>State:</strong> {{ state }}</li>
-        </ul>
+        {% if client %}        
+            <p><strong>Client:</strong> {{ client }}</p>
+        {% endif %}
+        {% if errorDetails %}
+            <p>Client callback called with the following error parameters:</p>
+            <ul>
+                <li><strong>Error:</strong> {{ errorDetails.error }}</li>
+                <li><strong>Error description:</strong> {{ errorDetails.error_description }}</li>
+                <li><strong>State:</strong> {{ errorDetails.state }}</li>
+            </ul>
+        {% endif %}
+        {% if journeyOutcomeDetails %}
+            <p>Journey outcome details:</p>
+            <pre>{{ journeyOutcomeDetails | JSON.stringify(null, 2) }}</pre>
+        {% endif %}        
+        {% if exception %}
+            <p>An error occurred:</p>
+            <pre>{{ exception | JSON.stringify(null, 2) }}</pre>
+        {% endif %}
     </body>
 </html>

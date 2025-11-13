@@ -14,7 +14,7 @@ import cy from "./translations/cy.json" with { type: "json" };
 import { getSessionOptions } from "./utils/getSessionOptions/index.js";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
-import { oneYearInSeconds } from "../../commons/utils/contstants.js";
+import { oneYearInSeconds } from "../../commons/utils/constants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
 import { csrfProtection } from "../../commons/utils/fastify/csrfProtection/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
@@ -182,6 +182,13 @@ export const initFrontend = async function () {
 
   fastify.get(paths.authorizeError, async function (request, reply) {
     return (await import("./handlers/authorizeError/index.js")).handler(
+      request,
+      reply,
+    );
+  });
+
+  fastify.get(paths.startSession, async function (request, reply) {
+    return (await import("./handlers/startSession/index.js")).handler(
       request,
       reply,
     );

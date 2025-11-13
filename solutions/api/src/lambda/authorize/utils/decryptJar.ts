@@ -6,15 +6,15 @@ import { logger } from "../../../../../commons/utils/logger/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import {
-  authorizeErrors,
   ErrorResponse,
   getRedirectToClientRedirectUriResponse,
 } from "./common.js";
 import {
   jarContentEncryptionAlgorithm,
   jarKeyEncryptionAlgorithm,
-} from "../../../../../commons/utils/contstants.js";
+} from "../../../../../commons/utils/constants.js";
 import { EncryptionAlgorithmSpec } from "@aws-sdk/client-kms";
+import { authorizeErrors } from "../../../../../commons/utils/authorize/index.js";
 
 let keyId: string | undefined = undefined;
 

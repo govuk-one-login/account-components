@@ -25,7 +25,7 @@ describe("authorizeError handler", () => {
 
     expect(mockReply.status).toHaveBeenCalledExactlyOnceWith(400);
     expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(
-      "handlers/authorizeError/index.njk",
+      "handlers/onError/index.njk",
     );
     expect(result).toBe(mockReply);
   });

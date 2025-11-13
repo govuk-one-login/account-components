@@ -15,8 +15,8 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
     ArtifactSourceBucketArn                 = var.main_artifact_source_bucket_arn
     ArtifactSourceBucketEventTriggerRoleArn = var.main_artifact_source_bucket_event_trigger_role_arn
     GitHubRepositoryName                    = var.create_build_stacks ? var.repository_name : "none"
-    TestImageRepositoryNames                = var.repository_name
-    TestImageRepositoryUri                  = contains(["dev", "build"], var.environment) ? aws_cloudformation_stack.test_image_repository[0].outputs["TestRunnerImageEcrRepositoryUri"] : ""
+    TestImageRepositoryNames                = contains(["dev", "build"], var.environment) ? var.repository_name : ""
+    TestImageRepositoryUri                  = contains(["dev", "build"], var.environment) ? aws_cloudformation_stack.test_image_repository[0].outputs["TestRunnerImageEcrRepositoryUri"] : "none"
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
@@ -25,6 +25,7 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
     AllowedServiceOne                       = "EC2"
     AllowedServiceTwo                       = "DynamoDB"
     AllowedServiceThree                     = "Lambda"
+    AllowedServiceFour                      = "AppConfig"
     LambdaCanaryDeployment                  = contains(["production", "integration"], var.environment) ? "Canary10Percent30Minutes" : "AllAtOnce"
   }
 
