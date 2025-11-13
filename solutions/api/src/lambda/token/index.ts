@@ -14,7 +14,7 @@ export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
       assertTokenRequest(request);
       await verifyClientAssertion(request.client_assertion);
     } catch (error) {
-      return handleError(error as AppError);
+      return handleError(error as AppError | Error);
     }
 
     return {

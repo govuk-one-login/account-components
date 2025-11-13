@@ -40,8 +40,14 @@ export function throwError(
   throw error;
 }
 
-export function handleError(e: AppError) {
-  const error = tokenErrors[e.code] ?? tokenErrors["genericError"];
+const isAppError = (e: Error | AppError): boolean => {
+  return !!((e as AppError).code && (e as AppError).code in tokenErrors);
+};
+
+export function handleError(e: AppError | Error) {
+  const error = isAppError(e)
+    ? tokenErrors[(e as AppError).code]
+    : tokenErrors["genericError"];
 
   if (!error) {
     //should not need this, but to satisfy typescript
