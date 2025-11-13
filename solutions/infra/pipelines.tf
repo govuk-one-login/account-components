@@ -25,6 +25,7 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
     AllowedServiceOne                       = "EC2"
     AllowedServiceTwo                       = "DynamoDB"
     AllowedServiceThree                     = "Lambda"
+    AllowedServiceFour                      = "AppConfig"
     LambdaCanaryDeployment                  = contains(["production", "integration"], var.environment) ? "Canary10Percent30Minutes" : "AllAtOnce"
   }
 
