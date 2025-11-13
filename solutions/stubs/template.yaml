@@ -26,6 +26,10 @@ Parameters:
   CoreStackName:
     Type: String
     Default: "components-core"
+  ApiStackName:
+    Type: String
+    Description: >
+      The name of the API stack containing the private API Gateway
   LambdaDeploymentPreference:
     Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
     Type: String
@@ -313,6 +317,12 @@ Resources:
                 - kms:DescribeKey
                 - kms:GetPublicKey
               Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyArn}}"
+            - Effect: Allow
+              Action:
+                - execute-api:Invoke
+              Resource:
+                - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:{{resolve:ssm:/${ApiStackName}/PrivateApiGatewayId}}/${Environment}/POST/token"
+                - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:{{resolve:ssm:/${ApiStackName}/PrivateApiGatewayId}}/${Environment}/GET/journeyoutcome"
 
   StubsLambdaLogGroup:
     Type: AWS::Logs::LogGroup
