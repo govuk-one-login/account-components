@@ -44,15 +44,15 @@ Mappings:
       stubsDomain: stubs.manage.dev.account.gov.uk
       LambdaLogLevel: DEBUG
       UseCanary: false
-      apiTokenEndpointUrl: https://api.manage.dev.account.gov.uk/token
-      apiJourneyOutcomeEndpointUrl: https://api.manage.dev.account.gov.uk/journeyoutcome
+      apiTokenEndpointUrl: https://mzid61vh1j.execute-api.eu-west-2.amazonaws.com/dev/token
+      apiJourneyOutcomeEndpointUrl: https://mzid61vh1j.execute-api.eu-west-2.amazonaws.com/dev/journeyoutcome
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       stubsDomain: stubs.manage.build.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: false
-      apiTokenEndpointUrl: https://api.manage.build.account.gov.uk/token
-      apiJourneyOutcomeEndpointUrl: https://api.manage.build.account.gov.uk/journeyoutcome
+      apiTokenEndpointUrl: https://ju9v3jyfq2.execute-api.eu-west-2.amazonaws.com/build/token
+      apiJourneyOutcomeEndpointUrl: https://ju9v3jyfq2.execute-api.eu-west-2.amazonaws.com/build/journeyoutcome
 
 Conditions:
   UseCodeSigning:
