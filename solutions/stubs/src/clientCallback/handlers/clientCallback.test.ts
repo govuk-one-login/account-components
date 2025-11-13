@@ -72,6 +72,8 @@ describe("clientCallback handler", () => {
     };
 
     process.env["API_TOKEN_ENDPOINT_URL"] = "http://localhost:6004/token";
+    process.env["API_JOURNEY_OUTCOME_ENDPOINT_URL"] =
+      "http://localhost:6004/journey-outcome";
     process.env["MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"] = "/mock/private-key";
 
     mockGetParametersProvider.mockReturnValue({
@@ -250,13 +252,19 @@ describe("clientCallback handler", () => {
         code: "auth-code-123",
       };
 
-      mockFetch.mockResolvedValue({
-        json: vi.fn().mockResolvedValue({
-          access_token: "access-token-123",
-          token_type: "Bearer",
-          expires_in: 3600,
-        }),
-      });
+      const mockJourneyOutcome = { status: "success", data: "test-data" };
+
+      mockFetch
+        .mockResolvedValueOnce({
+          json: vi.fn().mockResolvedValue({
+            access_token: "access-token-123",
+            token_type: "Bearer",
+            expires_in: 3600,
+          }),
+        })
+        .mockResolvedValueOnce({
+          json: vi.fn().mockResolvedValue(mockJourneyOutcome),
+        });
 
       const result = await handler(
         mockRequest as FastifyRequest,
@@ -271,15 +279,21 @@ describe("clientCallback handler", () => {
         body: "grant_type=authorization_code&code=auth-code-123&client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer&client_assertion=mock-jwt-token",
       });
 
+      expect(mockFetch).toHaveBeenCalledWith(
+        "http://localhost:6004/journey-outcome",
+        {
+          method: "GET",
+          headers: {
+            Authorization: "Bearer access-token-123",
+          },
+        },
+      );
+
       expect(mockReply.render).toHaveBeenCalledWith(
         "clientCallback/handlers/clientCallback.njk",
         {
           client: "test-client (test-id)",
-          tokenDetails: {
-            access_token: "access-token-123",
-            token_type: "Bearer",
-            expires_in: 3600,
-          },
+          journeyOutcomeDetails: mockJourneyOutcome,
         },
       );
       expect(result).toBe(mockReply);
@@ -351,13 +365,19 @@ describe("clientCallback handler", () => {
         state: "abc123",
       };
 
-      mockFetch.mockResolvedValue({
-        json: vi.fn().mockResolvedValue({
-          access_token: "access-token-123",
-          token_type: "Bearer",
-          expires_in: 3600,
-        }),
-      });
+      const mockJourneyOutcome = { status: "success", data: "test-data" };
+
+      mockFetch
+        .mockResolvedValueOnce({
+          json: vi.fn().mockResolvedValue({
+            access_token: "access-token-123",
+            token_type: "Bearer",
+            expires_in: 3600,
+          }),
+        })
+        .mockResolvedValueOnce({
+          json: vi.fn().mockResolvedValue(mockJourneyOutcome),
+        });
 
       const result = await handler(
         mockRequest as FastifyRequest,
@@ -368,11 +388,7 @@ describe("clientCallback handler", () => {
         "clientCallback/handlers/clientCallback.njk",
         {
           client: "test-client (test-id)",
-          tokenDetails: {
-            access_token: "access-token-123",
-            token_type: "Bearer",
-            expires_in: 3600,
-          },
+          journeyOutcomeDetails: mockJourneyOutcome,
         },
       );
       expect(result).toBe(mockReply);
