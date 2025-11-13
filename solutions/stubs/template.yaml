@@ -26,9 +26,6 @@ Parameters:
   CoreStackName:
     Type: String
     Default: "components-core"
-  ApiStackName:
-    Type: String
-    Default: "components-api"
   LambdaDeploymentPreference:
     Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
     Type: String

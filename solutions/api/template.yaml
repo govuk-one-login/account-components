@@ -751,11 +751,3 @@ Resources:
       Type: String
       Value: !Ref JourneyOutcomeTable
       Description: Name of the journey outcome table
-
-  PrivateApiGatewayIdParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub "/${AWS::StackName}/PrivateApiGatewayId"
-      Type: String
-      Value: !Ref PrivateApiGateway
-      Description: ID of the private API Gateway
