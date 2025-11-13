@@ -80,11 +80,26 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         await tokenResponse.json(),
       );
 
+      assert.ok(
+        process.env["API_JOURNEY_OUTCOME_ENDPOINT_URL"],
+        "API_JOURNEY_OUTCOME_ENDPOINT_URL is not set",
+      );
+
+      const journeyInfoResponse = await fetch(
+        process.env["API_JOURNEY_OUTCOME_ENDPOINT_URL"],
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${parsedTokenResponseBody.access_token}`,
+          },
+        },
+      );
+
+      const journeyOutcomeDetails = await journeyInfoResponse.json();
+
       await reply.render("clientCallback/handlers/clientCallback.njk", {
         client: `${client.client_name} (${client.client_id})`,
-        tokenDetails: {
-          ...parsedTokenResponseBody,
-        },
+        journeyOutcomeDetails,
       });
       return await reply;
     }

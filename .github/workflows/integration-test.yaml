@@ -68,6 +68,7 @@ jobs:
           LOCALSTACK_ACCESS_KEY_ID=test
           LOCALSTACK_ACCESS_KEY=test      
           API_TOKEN_ENDPOINT_URL=http://localhost:6004/token    
+          API_JOURNEY_OUTCOME_ENDPOINT_URL=http://localhost:6004/journeyoutcome    
           EOF
 
       - name: Configure API environment
