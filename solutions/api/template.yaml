@@ -55,9 +55,10 @@ Mappings:
       apiDomain: api.manage.dev.account.gov.uk
       authorizeErrorPageUrl: https://manage.dev.account.gov.uk/authorize-error
       authorizeEndpointUrl: https://api.manage.dev.account.gov.uk/authorize
-      privateApiAllowedVpceIds:
-        - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
-        - "vpce-087ac48f23f28a39b" # di-account-dev
+      privateApiAllowedVpceIds: [
+          "vpce-0a7dad1503be13796", # di-account-components-dev
+          "vpce-087ac48f23f28a39b", # di-account-dev
+        ]
       LambdaLogLevel: DEBUG
       UseCanary: false
       apiSessionCookieDomain: manage.dev.account.gov.uk
@@ -67,9 +68,10 @@ Mappings:
       apiDomain: api.manage.build.account.gov.uk
       authorizeErrorPageUrl: https://manage.build.account.gov.uk/authorize-error
       authorizeEndpointUrl: https://api.manage.build.account.gov.uk/authorize
-      privateApiAllowedVpceIds:
-        - Fn::ImportValue: !Sub ${VpcStackName}-ExecuteApiGatewayEndpointId
-        - "vpce-0e1bb7e9c33b0e516" # di-account-build
+      privateApiAllowedVpceIds: [
+          "vpce-0f4845b63ae267db4", # di-account-components-build
+          "vpce-0e1bb7e9c33b0e516", # di-account-build
+        ]
       LambdaLogLevel: INFO
       UseCanary: false
       apiSessionCookieDomain: manage.build.account.gov.uk
