@@ -1,26 +1,30 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { MetricUnit } from "@aws-lambda-powertools/metrics";
-import { getHeader, getErrorResponse } from "../../utils/common.js";
-import { Errors } from "./utils/common.js";
-import {
-  flushMetricsAPIGatewayProxyHandlerWrapper,
-  metrics,
-} from "../../../../commons/utils/metrics/index.js";
+import { getHeader } from "../../utils/common.js";
+import { errorManager } from "./utils/errors.js";
+import type { JourneyOutcomeAppError } from "./utils/errors.js";
+import { flushMetricsAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/metrics/index.js";
 
 export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const bearerPrefix = "Bearer ";
     const authorisationHeader = getHeader(event.headers, "Authorization");
-
-    if (authorisationHeader?.startsWith(bearerPrefix)) {
-      // process token here
-      return {
-        statusCode: 200,
-        body: '"hello world"',
-      };
-    } else {
-      metrics.addMetric("InvalidAuthorizationHeader", MetricUnit.Count, 1);
-      return getErrorResponse(Errors.invalidRequest);
+    try {
+      if (authorisationHeader?.startsWith(bearerPrefix)) {
+        // process token here
+      } else {
+        errorManager.throwError(
+          "InvalidAuthorizationHeader",
+          `Authorization header is missing or does not start with '${bearerPrefix}'`,
+        );
+      }
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      return errorManager.handleError(error as JourneyOutcomeAppError | Error);
     }
+
+    return {
+      statusCode: 200,
+      body: '"hello world"',
+    };
   },
 );

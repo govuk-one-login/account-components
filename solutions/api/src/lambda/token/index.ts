@@ -1,8 +1,8 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { flushMetricsAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/metrics/index.js";
 import { verifyClientAssertion } from "./utils/verifyClientAssertion.js";
-import type { AppError } from "./utils/errors.js";
-import { handleError } from "./utils/errors.js";
+import { errorManager } from "./utils/errors.js";
+import type { TokenAppError } from "./utils/errors.js";
 import type { TokenRequest } from "./utils/assertTokenRequest.js";
 import { assertTokenRequest } from "./utils/assertTokenRequest.js";
 
@@ -16,7 +16,7 @@ export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
       await verifyClientAssertion(request.client_assertion);
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      return handleError(error as AppError | Error);
+      return errorManager.handleError(error as TokenAppError | Error);
     }
 
     return {
