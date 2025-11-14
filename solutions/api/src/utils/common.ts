@@ -43,7 +43,6 @@ export class ErrorManager<T extends Record<string, TokenErrorType>> {
     throw error;
   }
 
-   
   public isAppError(e: Error | AppError<keyof T>): boolean {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const appError = e as AppError<keyof T>;
@@ -55,11 +54,10 @@ export class ErrorManager<T extends Record<string, TokenErrorType>> {
     );
   }
 
-   
   public handleError(e: AppError<keyof T> | Error) {
     const error = this.isAppError(e)
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      ? this.tokenErrors[(e as AppError<keyof T>).code]
+      ? // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        this.tokenErrors[(e as AppError<keyof T>).code]
       : this.tokenErrors["genericError"];
 
     if (!error) {
