@@ -3,7 +3,7 @@ import { handler } from "./index.js";
 import type { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy.js";
 import type { Context } from "aws-lambda";
 import type { JWTPayload } from "jose";
-import { throwError } from "./utils/errors.js";
+import { errorManager } from "./utils/errors.js";
 
 const mockContext = {} as unknown as Context;
 
@@ -41,7 +41,9 @@ describe("token handler", () => {
 
   it("returns 400 status if the client assertion verification fails", async () => {
     mockVerifyClientAssertion.mockImplementation(() => {
-      throwError("invalidClientAssertion", "error");
+      errorManager.throwError("invalidClientAssertion", "error");
+      // line below would never be reached, it's to satisfy TS that a value is returned
+      return {} as any as Promise<JWTPayload>;
     });
     const result = await handler(
       {
