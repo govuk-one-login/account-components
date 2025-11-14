@@ -83,6 +83,7 @@ async function generateJwksFromKmsPublicKey(
       keys: [jwk],
     };
   } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     logger.error("Error generating JWKS from KMS public key:", error as Error);
     throw error;
   }
@@ -106,6 +107,7 @@ export async function putContentToS3(content: string) {
     });
     return response;
   } catch (err) {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     logger.error("Failed to upload to S3:", err as Error);
     throw err;
   }
