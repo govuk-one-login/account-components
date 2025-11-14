@@ -29,6 +29,10 @@ Parameters:
   CoreStackName:
     Type: String
     Default: "components-core"
+  ApiStageName:
+    Description: The stage name of the API
+    Type: String
+    Default: v1
   LambdaArchitecture:
     Type: String
     Description: >
@@ -53,6 +57,7 @@ Mappings:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.dev.account.gov.uk
+      privateApiDomain: internal.manage.dev.account.gov.uk
       authorizeErrorPageUrl: https://manage.dev.account.gov.uk/authorize-error
       authorizeEndpointUrl: https://api.manage.dev.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
@@ -63,9 +68,11 @@ Mappings:
       UseCanary: false
       apiSessionCookieDomain: manage.dev.account.gov.uk
       frontendUrl: https://manage.dev.account.gov.uk
+      cacheHeaderMaxAge: 5
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.build.account.gov.uk
+      privateApiDomain: internal.manage.build.account.gov.uk
       authorizeErrorPageUrl: https://manage.build.account.gov.uk/authorize-error
       authorizeEndpointUrl: https://api.manage.build.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
@@ -76,9 +83,11 @@ Mappings:
       UseCanary: false
       apiSessionCookieDomain: manage.build.account.gov.uk
       frontendUrl: https://manage.build.account.gov.uk
+      cacheHeaderMaxAge: 5
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.staging.account.gov.uk
+      privateApiDomain: internal.manage.staging.account.gov.uk
       authorizeErrorPageUrl: https://manage.staging.account.gov.uk/authorize-error
       authorizeEndpointUrl: https://api.manage.staging.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
@@ -88,9 +97,11 @@ Mappings:
       UseCanary: true
       apiSessionCookieDomain: manage.staging.account.gov.uk
       frontendUrl: https://manage.staging.account.gov.uk
+      cacheHeaderMaxAge: 60
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.integration.account.gov.uk
+      privateApiDomain: internal.manage.integration.account.gov.uk
       authorizeErrorPageUrl: https://manage.integration.account.gov.uk/authorize-error
       authorizeEndpointUrl: https://api.manage.integration.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
@@ -100,9 +111,11 @@ Mappings:
       UseCanary: true
       apiSessionCookieDomain: manage.integration.account.gov.uk
       frontendUrl: https://manage.integration.account.gov.uk
+      cacheHeaderMaxAge: 60
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.account.gov.uk
+      privateApiDomain: internal.manage.account.gov.uk
       authorizeErrorPageUrl: https://manage.account.gov.uk/authorize-error
       authorizeEndpointUrl: https://api.manage.account.gov.uk/authorize
       privateApiAllowedVpceIds: [
@@ -112,6 +125,7 @@ Mappings:
       UseCanary: true
       apiSessionCookieDomain: manage.account.gov.uk
       frontendUrl: https://manage.account.gov.uk
+      cacheHeaderMaxAge: 60
 
 Conditions:
   UseCodeSigning:
@@ -287,7 +301,7 @@ Resources:
     Properties:
       WebACLArn:
         Fn::ImportValue: "cloudfront-api-CloakingOriginWebACLArn"
-      ResourceArn: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGateway}/stages/${Environment}"
+      ResourceArn: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGateway}/stages/${ApiStageName}"
     DependsOn:
       - ApiGatewayStage # This resource is created as part of the RestApi resource
 
@@ -309,14 +323,14 @@ Resources:
     Properties:
       DomainName: !Ref ApiDomain
       RestApiId: !Ref ApiGateway
-      Stage: !Ref Environment
+      Stage: !Ref ApiStageName
     DependsOn:
       - ApiGatewayStage # This resource is created as part of the RestApi resource
 
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: !Ref Environment
+      StageName: !Ref ApiStageName
       AlwaysDeploy: true
       DisableExecuteApiEndpoint: true
       TracingEnabled: true
@@ -326,9 +340,9 @@ Resources:
         FMSRegionalPolicy: false
         CustomPolicy: true
       DefinitionBody:
-        openapi: 3.0.1
+        openapi: 3.0.3
         info:
-          title: Account Components API
+          title: Account Components Public API
           version: 1.0.0
         paths:
           /healthcheck:
@@ -372,10 +386,59 @@ Resources:
                 Action: kms:Decrypt
                 Resource: !Sub "{{resolve:ssm:/${CoreStackName}/S3SSEKeyArn}}"
 
+  PrivateApiDomain:
+    Type: AWS::ApiGateway::DomainNameV2
+    Properties:
+      CertificateArn:
+        Fn::ImportValue: certificate-CertificateARN
+      DomainName:
+        !FindInMap [
+          EnvironmentConfiguration,
+          !Ref Environment,
+          privateApiDomain,
+        ]
+      EndpointConfiguration:
+        Types:
+          - PRIVATE
+      SecurityPolicy: TLS_1_2
+      Policy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: execute-api:Invoke
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:sourceVpce:
+                  !FindInMap [
+                    EnvironmentConfiguration,
+                    !Ref Environment,
+                    privateApiAllowedVpceIds,
+                  ]
+
+  PrivateBasePathMapping:
+    Type: AWS::ApiGateway::BasePathMappingV2
+    DependsOn:
+      - PrivateApiGatewayStage
+    Properties:
+      BasePath: prod
+      DomainNameArn: !GetAtt PrivateApiDomain.DomainNameArn
+      RestApiId: !Ref PrivateApiGateway
+      Stage: !Ref ApiStageName
+
+  DomainNameAccessAssociation:
+    Type: AWS::ApiGateway::DomainNameAccessAssociation
+    Properties:
+      DomainNameArn: !GetAtt PrivateApiDomain.DomainNameArn
+      AccessAssociationSource:
+        Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+      AccessAssociationSourceType: VPCE
+
   PrivateApiGateway:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: !Ref Environment
+      StageName: !Ref ApiStageName
       AlwaysDeploy: true
       EndpointConfiguration:
         Type: PRIVATE
@@ -396,10 +459,25 @@ Resources:
                     !Ref Environment,
                     privateApiAllowedVpceIds,
                   ]
+      Variables:
+        ApiDomain:
+          !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
+        PrivateApiDomain:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            privateApiDomain,
+          ]
+        AuthorizeEndpointUrl:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            authorizeEndpointUrl,
+          ]
       DefinitionBody:
-        openapi: 3.0.1
+        openapi: 3.0.3
         info:
-          title: Account Components private API
+          title: Account Components Private API
           version: 1.0.0
         paths:
           /healthcheck:
@@ -423,6 +501,11 @@ Resources:
                     Content-Type:
                       schema:
                         type: string
+                        example: "application/json"
+                    Cache-Control:
+                      schema:
+                        type: string
+                        example: "max-age=60"
               x-amazon-apigateway-integration:
                 type: aws
                 httpMethod: GET
@@ -432,9 +515,62 @@ Resources:
                 credentials: !GetAtt PrivateApiGatewayS3Role.Arn
                 responses:
                   default:
-                    statusCode: "200"
+                    statusCode: 200
                     responseParameters:
                       method.response.header.Content-Type: "'application/json'"
+                      method.response.header.Cache-Control: !Sub
+                        - "'max-age=${headerMaxAge}'"
+                        - headerMaxAge:
+                            !FindInMap [
+                              EnvironmentConfiguration,
+                              !Ref Environment,
+                              cacheHeaderMaxAge,
+                            ]
+          /.well-known/oauth-authorization-server:
+            get:
+              responses:
+                "200":
+                  description: OAuth Discovery
+                  headers:
+                    Content-Type:
+                      schema:
+                        type: string
+                        example: "application/json"
+                    Cache-Control:
+                      schema:
+                        type: string
+                        example: "max-age=60"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: 200
+                    responseParameters:
+                      method.response.header.Content-Type: "'application/json'"
+                      method.response.header.Cache-Control: !Sub
+                        - "'max-age=${headerMaxAge}'"
+                        - headerMaxAge:
+                            !FindInMap [
+                              EnvironmentConfiguration,
+                              !Ref Environment,
+                              cacheHeaderMaxAge,
+                            ]
+                    responseTemplates:
+                      application/json: !Sub >-
+                        {
+                            "issuer": "https://$stageVariables.ApiDomain",
+                            "authorization_endpoint": "$stageVariables.AuthorizeEndpointUrl",
+                            "token_endpoint": "https://$stageVariables.PrivateApiDomain/token",
+                            "jwks_uri": "https://$stageVariables.PrivateApiDomain/.well-known/jwks.json",
+                            "response_types_supported": ["code"],
+                            "token_endpoint_auth_methods_supported": ["private_key_jwt"],
+                            "token_endpoint_auth_signing_alg_values_supported": ["ES256"],
+                            "scopes_supported": ["account-delete"],
+                            "grant_types_supported": ["authorization_code"]
+                        }
+                passthroughBehavior: when_no_match
+                requestTemplates:
+                  application/json: '{"statusCode": 200}'
+                type: mock
 
   HealthcheckLambdaLogGroup:
     Type: AWS::Logs::LogGroup
