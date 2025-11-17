@@ -1,6 +1,9 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
+Description: >-
+  The Frontend stack for Account Components
+
 Parameters:
   Environment:
     Type: String
@@ -282,16 +285,15 @@ Resources:
       TableClass: STANDARD
 
   FrontendApiDomain:
-    Type: AWS::ApiGateway::DomainName
+    Type: AWS::ApiGatewayV2::DomainName
     Properties:
       DomainName:
         !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendDomain]
-      RegionalCertificateArn:
-        Fn::ImportValue: certificate-CertificateARN
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
-      SecurityPolicy: TLS_1_2
+      DomainNameConfigurations:
+        - CertificateArn:
+            Fn::ImportValue: certificate-CertificateARN
+          EndpointType: REGIONAL
+          SecurityPolicy: TLS_1_2
 
   FrontendApiOriginRecord:
     Type: AWS::Route53::RecordSet
@@ -312,14 +314,13 @@ Resources:
         HostedZoneId: !GetAtt FrontendApiDomain.RegionalHostedZoneId
         EvaluateTargetHealth: false
 
-  FrontendApiWafAssociation:
-    Type: "AWS::WAFv2::WebACLAssociation"
-    Properties:
-      WebACLArn:
-        Fn::ImportValue: "cloudfront-main-CloakingOriginWebACLArn"
-      ResourceArn: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${FrontendApiGateway}/stages/${Environment}"
-    DependsOn:
-      - FrontendApiGatewayStage # This resource is created as part of the RestApi resource
+  #  see https://govukverify.atlassian.net/browse/PSREDEV-2955
+  #  FrontendApiWafAssociation:
+  #    Type: AWS::WAFv2::WebACLAssociation
+  #    Properties:
+  #      WebACLArn:
+  #        Fn::ImportValue: "cloudfront-main-CloakingOriginWebACLArn"
+  #      ResourceArn: !Sub "arn:aws:apigateway:${AWS::Region}::/apis/${FrontendApiGateway}/stages/$default"
 
   FrontendDomainRecord:
     Type: AWS::Route53::RecordSet
@@ -336,25 +337,18 @@ Resources:
         EvaluateTargetHealth: false
 
   FrontendApiMapping:
-    Type: AWS::ApiGateway::BasePathMapping
+    Type: AWS::ApiGatewayV2::ApiMapping
     Properties:
       DomainName: !Ref FrontendApiDomain
-      RestApiId: !Ref FrontendApiGateway
-      Stage: !Ref Environment
-    DependsOn:
-      - FrontendApiGatewayStage # This resource is created as part of the RestApi resource
+      ApiId: !Ref FrontendApiGateway
+      Stage: $default #!Ref FrontendApiGatewayStage
 
   FrontendApiGateway:
-    Type: AWS::Serverless::Api
+    Type: AWS::Serverless::HttpApi
     Properties:
-      StageName: !Ref Environment
-      AlwaysDeploy: true
+      Name: Account Components Frontend API
+      PropagateTags: true
       DisableExecuteApiEndpoint: true
-      TracingEnabled: true
-      EndpointConfiguration:
-        Type: REGIONAL
-      BinaryMediaTypes:
-        - "*/*"
       Tags:
         FMSRegionalPolicy: false
         CustomPolicy: true
@@ -368,17 +362,17 @@ Resources:
         LogGroup: !Ref FrontendLambdaLogGroup
       Events:
         Root:
-          Type: Api
+          Type: HttpApi
           Properties:
             Method: ANY
             Path: /
-            RestApiId: !Ref FrontendApiGateway
+            ApiId: !Ref FrontendApiGateway
         CatchAll:
-          Type: Api
+          Type: HttpApi
           Properties:
             Method: ANY
             Path: /{proxy+}
-            RestApiId: !Ref FrontendApiGateway
+            ApiId: !Ref FrontendApiGateway
       Environment:
         Variables:
           SESSIONS_SIGNER: !Sub "{{resolve:secretsmanager:${SessionSecret}:SecretString}}"
