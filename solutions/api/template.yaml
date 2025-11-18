@@ -422,7 +422,6 @@ Resources:
     DependsOn:
       - PrivateApiGatewayStage
     Properties:
-      BasePath: prod
       DomainNameArn: !GetAtt PrivateApiDomain.DomainNameArn
       RestApiId: !Ref PrivateApiGateway
       Stage: !Ref ApiStageName
