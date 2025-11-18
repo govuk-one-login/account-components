@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { AppError } from "./errors.js";
-import { throwError, handleError } from "./errors.js";
+import type { TokenAppError } from "./errors.js";
+import { errorManager } from "./errors.js";
 
 describe("errors", () => {
   beforeEach(() => {
@@ -9,18 +9,18 @@ describe("errors", () => {
 
   describe("throwError", () => {
     it("should throw an AppError with invalidRequest code", () => {
-      expect(() => throwError("invalidRequest", "Test message")).toThrow(
-        "Test message",
-      );
+      expect(() =>
+        errorManager.throwError("invalidRequest", "Test message"),
+      ).toThrow("Test message");
     });
   });
 
   describe("handleError", () => {
     it("should handle invalidRequest error correctly", async () => {
-      const error: AppError = new Error("Test error") as AppError;
+      const error: TokenAppError = new Error("Test error") as TokenAppError;
       error.code = "invalidRequest";
 
-      const result = handleError(error);
+      const result = errorManager.handleError(error);
 
       expect(result).toStrictEqual({
         statusCode: 400,
@@ -33,7 +33,7 @@ describe("errors", () => {
 
     it("should return a generic error when there is a non AppError", () => {
       const error = new Error("Some random error");
-      const result = handleError(error);
+      const result = errorManager.handleError(error);
 
       expect(result).toStrictEqual({
         statusCode: 500,

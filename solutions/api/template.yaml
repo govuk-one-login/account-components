@@ -491,6 +491,12 @@ Resources:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TokenLambda.Arn}/invocations"
+          /journeyoutcome:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: GET
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JourneyOutcomeLambda.Arn}/invocations"
           /.well-known/jwks.json:
             get:
               responses:
@@ -625,6 +631,33 @@ Resources:
         EntryPoints:
           - solutions/api/src/lambda/token/index.ts
 
+  JourneyOutcomeLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/lambda/${AWS::StackName}/JourneyOutcomeLambdaLogGroup"
+      RetentionInDays: 30
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
+
+  JourneyOutcomeLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      LoggingConfig:
+        LogGroup: !Ref JourneyOutcomeLambdaLogGroup
+      Handler: index.handler
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2022"
+        Sourcemap: true
+        EntryPoints:
+          - solutions/api/src/lambda/journeyoutcome/index.ts
+
   AuthorizeLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
@@ -721,6 +754,14 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref TokenLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
+
+  PrivateJourneyOutcomeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref JourneyOutcomeLambda
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
