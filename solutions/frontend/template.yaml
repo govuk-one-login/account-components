@@ -341,7 +341,7 @@ Resources:
     Properties:
       DomainName: !Ref FrontendApiDomain
       ApiId: !Ref FrontendApiGateway
-      Stage: !Ref FrontendApiGatewayStage
+      Stage: "$default"
 
   FrontendApiGateway:
     Type: AWS::Serverless::HttpApi
