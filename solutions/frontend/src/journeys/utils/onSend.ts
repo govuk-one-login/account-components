@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 
 export const onSend = async (request: FastifyRequest, reply: FastifyReply) => {
-  // This is ensures the broser doesn't cache responses which is important
+  // This is ensures the browser doesn't cache responses which is important
   // to prevent users being able to go back to pages they shouldn't
   // because they are no longer in that state of the journey
   reply.headers({ "cache-control": "no-store" });

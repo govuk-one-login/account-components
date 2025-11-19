@@ -102,3 +102,5 @@ export const getClaimsSchema = (
 
   return claimsSchema;
 };
+
+export type Claims = v.InferOutput<ReturnType<typeof getClaimsSchema>>;
