@@ -1,20 +1,16 @@
-import {
-  createJourneyStateMachine,
-  type JourneyStateMachineContext,
-  type JourneyStateMachineMeta,
-} from "../index.js";
+import { Scope } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
+import { createJourneyStateMachine } from "../index.js";
 
-export const accountDeleteStateMachine = createJourneyStateMachine<
-  JourneyStateMachineMeta & {
-    plarp: string;
+export enum AcountDeleteJourneyState {
+  TODO = "TODO",
+}
+
+export const accountDeleteStateMachine = createJourneyStateMachine(
+  Scope.accountDelete,
+  {
+    initial: AcountDeleteJourneyState.TODO,
+    states: {
+      [AcountDeleteJourneyState.TODO]: {},
+    },
   },
-  JourneyStateMachineContext & {
-    thing: number;
-  }
->({
-  context: {
-    thing: 5,
-    isRestored: false,
-    journeyOutcome: {},
-  },
-});
+);

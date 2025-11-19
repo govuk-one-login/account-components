@@ -1,9 +1,11 @@
 import type { APIGatewayEvent, Context } from "aws-lambda";
 import type * as v from "valibot";
-import type { getClaimsSchema } from "../../../api/src/lambda/authorize/utils/getClaimsSchema.ts";
-import type { Scope } from "../authorize/getClaimsSchema.ts";
+import type { Scope, getClaimsSchema } from "../authorize/getClaimsSchema.ts";
+import type { Actor, AnyMachineSnapshot } from "xstate";
 import type { accountDeleteStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/account-delete.ts";
-import type { Actor, SnapshotFrom } from "xstate";
+import type { testingJourneyStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/testing-journey.ts";
+import type { ClientEntry } from "../../../config/schema/types.ts";
+
 declare module "fastify" {
   interface FastifyRequest {
     awsLambda?: {
@@ -23,18 +25,19 @@ declare module "fastify" {
       currentUrl?: URL;
       htmlLang?: string | undefined;
     };
-    journeyStateMachines?: {
+    journeyStates?: {
+      [Scope.testingJourney]?: Actor<typeof testingJourneyStateMachine>;
       [Scope.accountDelete]?: Actor<typeof accountDeleteStateMachine>;
     };
+    client?: ClientEntry;
   }
 }
 
 declare module "fastify" {
   interface Session {
+    _csrf?: string;
     user_id?: string;
     claims?: v.InferOutput<ReturnType<typeof getClaimsSchema>>;
-    journeyStateMachines?: {
-      [Scope.accountDelete]?: SnapshotFrom<typeof accountDeleteStateMachine>;
-    };
+    journeyStateSnapshot?: AnyMachineSnapshot;
   }
 }

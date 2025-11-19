@@ -6,6 +6,7 @@ import assert from "node:assert";
 import type { ClientEntry } from "../../../config/schema/types.js";
 
 export enum Scope {
+  testingJourney = "testing-journey",
   accountDelete = "account-delete",
 }
 

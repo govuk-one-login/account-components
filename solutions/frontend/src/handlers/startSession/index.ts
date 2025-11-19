@@ -6,8 +6,7 @@ import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbC
 import * as v from "valibot";
 import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
-import { paths } from "../../utils/paths.js";
-import { tempSuccessfulJourney } from "./tempSuccessfulJourney.js";
+import { initialJourneyPaths, paths } from "../../utils/paths.js";
 import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
 import { getClaimsSchema } from "../../../../commons/utils/authorize/getClaimsSchema.js";
 
@@ -36,7 +35,7 @@ const getUnsetApiSessionCookieArgs = (): Parameters<
 
 const redirectToErrorPage = (reply: FastifyReply) => {
   reply.setCookie(...getUnsetApiSessionCookieArgs());
-  reply.redirect(paths.authorizeError);
+  reply.redirect(paths.others.authorizeError.path);
 };
 
 const queryParamsSchema = v.object({
@@ -140,7 +139,8 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       request.session.user_id = claims.sub;
 
       reply.setCookie(...getUnsetApiSessionCookieArgs());
-      return await tempSuccessfulJourney(reply, claims);
+      reply.redirect(initialJourneyPaths[claims.scope]);
+      return await reply;
     } catch (error) {
       request.log.error(error, "ApiSessionGetError");
       metrics.addMetric("ApiSessionGetError", MetricUnit.Count, 1);

@@ -14,7 +14,10 @@ export const csrfProtection = fp(async function (fastify) {
     },
   });
   fastify.addHook("preHandler", (request, reply, done) => {
-    reply.globals.csrfToken = reply.generateCsrf();
+    reply.globals = {
+      ...reply.globals,
+      csrfToken: reply.generateCsrf(),
+    };
 
     if (!["GET", "HEAD", "OPTIONS"].includes(request.method)) {
       fastify.csrfProtection(request, reply, done);

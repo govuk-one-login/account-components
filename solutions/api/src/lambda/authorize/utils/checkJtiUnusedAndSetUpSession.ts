@@ -67,7 +67,7 @@ export const checkJtiUnusedAndSetUpSession = async (
     });
 
     const frontendUrl = new URL(process.env["FRONTEND_URL"]);
-    frontendUrl.pathname = paths.startSession;
+    frontendUrl.pathname = paths.others.startSession.path;
     frontendUrl.searchParams.append("client_id", clientId);
     frontendUrl.searchParams.append("redirect_uri", redirectUri);
     if (state) {

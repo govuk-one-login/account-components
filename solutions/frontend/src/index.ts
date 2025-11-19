@@ -19,7 +19,10 @@ import staticHash from "./utils/static-hash.json" with { type: "json" };
 import { csrfProtection } from "../../commons/utils/fastify/csrfProtection/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 import i18next from "i18next";
-import { plugin as i18nextMiddlewarePlugin } from "i18next-http-middleware";
+import {
+  plugin as i18nextMiddlewarePlugin,
+  handle as i18nextMiddlewareHandle,
+} from "i18next-http-middleware";
 import { getCurrentUrl } from "../../commons/utils/fastify/getCurrentUrl/index.js";
 import {
   configureI18n,
@@ -31,6 +34,7 @@ import {
 } from "@govuk-one-login/frontend-ui";
 import { paths } from "./utils/paths.js";
 import { flushMetrics } from "../../commons/utils/fastify/flushMetrics/index.js";
+import { getEnvironment } from "../../commons/utils/getEnvironment/index.js";
 
 await configureI18n({
   [Lang.English]: {
@@ -52,20 +56,21 @@ export const initFrontend = async function () {
 
   fastify.addHook("onRequest", logRequest);
   fastify.addHook("onRequest", removeTrailingSlash);
-  fastify.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
-  fastify.addHook("onSend", () => flushMetrics());
+  fastify.addHook("onResponse", (_request, reply) => addDefaultCaching(reply));
+  fastify.addHook("onResponse", () => flushMetrics());
   fastify.addHook("onResponse", logResponse);
 
   fastify.register(fastifyCookie);
   fastify.register(i18nextMiddlewarePlugin, { i18next });
-  fastify.decorateReply("globals", {
-    getter() {
-      return {
-        staticHash: staticHash.hash,
-        currentUrl: getCurrentUrl(this.request),
-        htmlLang: this.request.i18n.language,
-      };
-    },
+  // @ts-expect-error
+  fastify.addHook("onRequest", i18nextMiddlewareHandle(i18next));
+  fastify.addHook("onRequest", async (request, reply) => {
+    reply.globals = {
+      ...reply.globals,
+      staticHash: staticHash.hash,
+      currentUrl: getCurrentUrl(request),
+      htmlLang: request.i18n.language,
+    };
   });
   fastify.decorateReply("render", render);
 
@@ -160,7 +165,10 @@ export const initFrontend = async function () {
           "https://*.ruxit.com",
           "https://*.dynatrace.com",
         ],
-        formAction: ["'self'", "https://*.account.gov.uk"],
+        formAction:
+          getEnvironment() === "local"
+            ? ["'self'", "http://localhost:*"]
+            : ["'self'", "https://*.account.gov.uk"],
       },
     },
     dnsPrefetchControl: {
@@ -180,14 +188,17 @@ export const initFrontend = async function () {
   fastify.register(fastifySession, await getSessionOptions());
   fastify.register(csrfProtection);
 
-  fastify.get(paths.authorizeError, async function (request, reply) {
-    return (await import("./handlers/authorizeError/index.js")).handler(
-      request,
-      reply,
-    );
-  });
+  fastify.get(
+    paths.others.authorizeError.path,
+    async function (request, reply) {
+      return (await import("./handlers/authorizeError/index.js")).handler(
+        request,
+        reply,
+      );
+    },
+  );
 
-  fastify.get(paths.startSession, async function (request, reply) {
+  fastify.get(paths.others.startSession.path, async function (request, reply) {
     return (await import("./handlers/startSession/index.js")).handler(
       request,
       reply,

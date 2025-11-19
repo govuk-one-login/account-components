@@ -1,14 +1,48 @@
 import { Scope } from "../../../commons/utils/authorize/getClaimsSchema.js";
+import type { AcountDeleteJourneyState } from "../journeys/utils/stateMachines/account-delete.js";
+import { TestingJourneyState } from "../journeys/utils/stateMachines/testing-journey.js";
+
+type PathsMap = Record<string, { path: `/${string}` }>;
 
 export const paths = {
-  authorizeError: "/authorize-error",
-  startSession: "/start-session",
   journeys: {
+    [Scope.testingJourney]: {
+      [TestingJourneyState.beforePasswordEntered]: {
+        step1: {
+          path: "/testing-journey/step-1",
+        },
+        enterPassword: {
+          path: "/testing-journey/enter-password",
+        },
+      },
+      [TestingJourneyState.afterPasswordEntered]: {
+        confirm: {
+          path: "/testing-journey/confirm",
+        },
+      },
+    },
     [Scope.accountDelete]: {
-      TODO: "/TODO",
+      TODO: {
+        TODO: {
+          path: "/TODO",
+        },
+      },
     },
   },
-} as const;
+  others: {
+    authorizeError: { path: "/authorize-error" },
+    startSession: { path: "/start-session" },
+  },
+} as const satisfies {
+  journeys: {
+    [Scope.testingJourney]: Record<TestingJourneyState, PathsMap>;
+    [Scope.accountDelete]: Record<AcountDeleteJourneyState, PathsMap>;
+  };
+  others: PathsMap;
+};
 
-export type JourneyPath =
-  (typeof paths.journeys)[Scope][keyof (typeof paths.journeys)[Scope]];
+export const initialJourneyPaths: Record<Scope, string> = {
+  [Scope.testingJourney]:
+    paths.journeys[Scope.testingJourney].BEFORE_PASSWORD_ENTERED.step1.path,
+  [Scope.accountDelete]: paths.journeys[Scope.accountDelete].TODO.TODO.path,
+} as const;

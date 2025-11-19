@@ -20,6 +20,7 @@ export enum MockRequestObjectScenarios {
 }
 
 export enum Scope {
+  TESTING_JOURNEY = "testing-journey",
   ACCOUNT_DELETION = "account-delete",
   UNKNOWN = "am-unknown",
 }

@@ -144,6 +144,18 @@ export const authorizeErrors = {
     description: "E5008",
     type: "server_error",
   },
+  failedToCreateStateMachineActor: {
+    description: "E5009",
+    type: "server_error",
+  },
+  failedToValidateJourneyUrl: {
+    description: "E5010",
+    type: "server_error",
+  },
+  failedToCompleteJourney: {
+    description: "E5011",
+    type: "server_error",
+  },
 } as const satisfies Record<
   string,
   | AuthorizeErrorAccessDenied

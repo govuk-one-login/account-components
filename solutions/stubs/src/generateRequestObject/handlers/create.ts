@@ -84,7 +84,7 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
 
     const url = new URL(process.env["AUTHORIZE_URL"]);
     url.searchParams.append("client_id", requestBody.client_id);
-    url.searchParams.append("scope", "account-delete");
+    url.searchParams.append("scope", requestBody.scope);
     url.searchParams.append("response_type", "code");
     url.searchParams.append("redirect_uri", redirectUrl);
     url.searchParams.append("request", result.encryptedJar);

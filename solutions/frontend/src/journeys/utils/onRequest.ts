@@ -2,24 +2,22 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { paths } from "../../utils/paths.js";
 import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
-import * as v from "valibot";
-import type { createJourneyStateMachine } from "./index.js";
 import { journeys } from "./index.js";
-import { getClaimsSchema } from "../../../../commons/utils/authorize/getClaimsSchema.js";
-import type { Actor } from "xstate";
+import type { AnyActor } from "xstate";
 import { createActor } from "xstate";
+import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
+import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
+import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 import assert from "node:assert";
 
 const redirectToErrorPage = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  await request.session.destroy();
-  reply.redirect(paths.authorizeError);
+  await request.session.regenerate();
+  reply.redirect(paths.others.authorizeError.path);
   return reply;
 };
-
-// TODO comment the steps in this function?
 
 export const onRequest = async (
   request: FastifyRequest,
@@ -31,82 +29,107 @@ export const onRequest = async (
     return await redirectToErrorPage(request, reply);
   }
 
-  const claimsSchema = getClaimsSchema();
+  const claims = request.session.claims;
 
-  const claimsResult = v.safeParse(claimsSchema, request.session.claims, {
-    abortEarly: false,
-  });
+  const clientRegistry = await getClientRegistry();
+  const client = clientRegistry.find(
+    (client) => client.client_id === claims.client_id,
+  );
 
-  if (!claimsResult.success) {
+  if (!client) {
     request.log.warn(
       {
-        claims_with_issues: claimsResult.issues.map((issue) =>
-          v.getDotPath(issue),
-        ),
+        client_id: claims.client_id,
       },
-      "InvalidClaimsInSession",
+      "ClientNotFound",
     );
-    metrics.addMetric("InvalidClaimsInSession", MetricUnit.Count, 1);
+    metrics.addMetric("ClientNotFound", MetricUnit.Count, 1);
     return await redirectToErrorPage(request, reply);
   }
 
-  const claims = claimsResult.output;
+  reply.client = client;
 
-  const serializedSnapshot =
-    request.session.journeyStateMachines?.[claims.scope];
+  const journey = await journeys[claims.scope]();
 
-  let actor: Actor<ReturnType<typeof createJourneyStateMachine>>;
+  Object.entries(journey.translations).forEach(([lang, translations]) => {
+    request.i18n.addResourceBundle(lang, "journey", translations);
+  });
 
-  if (serializedSnapshot) {
-    try {
-      const snapshot = journeys[claims.scope].resolveState(serializedSnapshot);
-      snapshot.context = {
-        ...snapshot.context,
-        isRestored: true,
-      };
-      actor = createActor(journeys[claims.scope], {
-        snapshot,
-      });
-    } catch (error) {
-      request.log.warn({ error }, "TODO");
-      metrics.addMetric("TODO", MetricUnit.Count, 1);
-      // TODO redirect to callback, update public api doc
-      return;
-    }
-  } else {
-    actor = createActor(journeys[claims.scope]);
-    const snapshot = actor.getSnapshot();
-    snapshot.context = {
-      ...snapshot.context,
-      isRestored: false,
-    };
-    actor = createActor(journeys[claims.scope], {
-      snapshot,
-    });
-  }
+  const journeyStateMachine = journey.stateMachine;
 
-  if (actor.id !== claims.scope.toString()) {
-    request.log.warn({ actorId: actor.id, claimsScope: claims.scope }, "TODO");
-    metrics.addMetric("TODO", MetricUnit.Count, 1);
-    // TODO redirect to callback, update public api doc, destroy session
-    return;
+  const serializedSnapshot = request.session.journeyStateSnapshot;
+
+  let actor: AnyActor;
+
+  try {
+    actor = createActor(
+      journeyStateMachine,
+      serializedSnapshot
+        ? {
+            snapshot: journeyStateMachine.resolveState(serializedSnapshot),
+          }
+        : {},
+    );
+  } catch (error) {
+    request.log.warn({ error }, "FailedToCreateStateMachineActor");
+    metrics.addMetric("FailedToCreateStateMachineActor", MetricUnit.Count, 1);
+    await request.session.regenerate();
+    reply.redirect(
+      getRedirectToClientRedirectUri(
+        claims.redirect_uri,
+        authorizeErrors.failedToCreateStateMachineActor,
+        claims.state,
+      ),
+    );
+    return reply;
   }
 
   actor.start();
 
-  // TODO check that the current state node has a meta.path property and that it is
-  // an allowed path for the journey
+  try {
+    /*
+      There are lots of eslint-disable and @ts-expect-error comments here because of the
+      fact the types for AnyActor in xstate are annoyingly really broad.
+    */
 
-  assert.ok(reply.globals.currentUrl, "reply.globals.currentUrl is not set");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+    const currentState = actor.getSnapshot().value;
 
-  // TODO check that the current state node's meta.path property matches the current URL
-  // if not then redirect to the URL for the state node which does match the path
-  // if there is no state node which matches the path then handle error
+    /* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access */
+    const pathsForCurrentState = Object.values(
+      // @ts-expect-error
+      paths.journeys[claims.scope][currentState],
+      // @ts-expect-error
+    ).map((val) => val.path as string);
+    /* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access */
 
-  reply.journeyStateMachines = {
-    ...reply.journeyStateMachines,
-    [claims.scope]: actor,
-  };
+    assert.ok(pathsForCurrentState[0], "pathsForCurrentState has no entries");
 
-  return reply;
+    assert.ok(
+      reply.globals.currentUrl?.pathname,
+      "reply.globals.currentUrl is not defined",
+    );
+
+    if (!pathsForCurrentState.includes(reply.globals.currentUrl.pathname)) {
+      reply.redirect(pathsForCurrentState[0]);
+      return await reply;
+    }
+
+    reply.journeyStates = {
+      ...reply.journeyStates,
+      [claims.scope]: actor,
+    };
+  } catch (error) {
+    request.log.warn({ error }, "FailedToValidateJourneyUrl");
+    metrics.addMetric("FailedToValidateJourneyUrl", MetricUnit.Count, 1);
+    await request.session.regenerate();
+    reply.redirect(
+      getRedirectToClientRedirectUri(
+        claims.redirect_uri,
+        authorizeErrors.failedToValidateJourneyUrl,
+        claims.state,
+      ),
+    );
+    return reply;
+  }
 };

@@ -1,6 +1,5 @@
 import { Scope } from "../../../../commons/utils/authorize/getClaimsSchema.js";
-import { accountDeleteStateMachine } from "./stateMachines/account-delete.js";
-import type { JourneyPath } from "../../utils/paths.js";
+import { Lang } from "../../../../commons/utils/configureI18n/index.js";
 import type {
   AnyEventObject,
   AnyStateMachine,
@@ -14,22 +13,46 @@ import type {
 import { createMachine } from "xstate";
 
 export const journeys = {
-  [Scope.accountDelete]: accountDeleteStateMachine,
-} satisfies Record<Scope, AnyStateMachine>;
+  [Scope.testingJourney]: async () => {
+    const [stateMachineModule, en, cy] = await Promise.all([
+      import("./stateMachines/testing-journey.js"),
+      import("../../translations/journeys/testing-journey/en.json"),
+      import("../../translations/journeys/testing-journey/cy.json"),
+    ]);
 
-export type JourneyStateMachineContext = MachineContext & {
-  isRestored: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  journeyOutcome: Record<string, any>;
-};
+    return {
+      stateMachine: stateMachineModule.testingJourneyStateMachine,
+      translations: {
+        [Lang.English]: en,
+        [Lang.Welsh]: cy,
+      },
+    };
+  },
+  [Scope.accountDelete]: async () => {
+    const [stateMachineModule, en, cy] = await Promise.all([
+      import("./stateMachines/account-delete.js"),
+      import("../../translations/journeys/account-delete/en.json"),
+      import("../../translations/journeys/account-delete/cy.json"),
+    ]);
 
-export type JourneyStateMachineMeta = MetaObject & {
-  path: JourneyPath;
-};
+    return {
+      stateMachine: stateMachineModule.accountDeleteStateMachine,
+      translations: {
+        [Lang.English]: en,
+        [Lang.Welsh]: cy,
+      },
+    };
+  },
+} satisfies Record<
+  Scope,
+  () => Promise<{
+    stateMachine: AnyStateMachine;
+    translations: Record<Lang, object>;
+  }>
+>;
 
 export const createJourneyStateMachine = <
-  TMeta extends MetaObject = MetaObject,
-  TContext extends JourneyStateMachineContext = JourneyStateMachineContext,
+  TContext extends MachineContext = MachineContext,
   TEvent extends AnyEventObject = AnyEventObject,
   TActor extends ProvidedActor = ProvidedActor,
   TAction extends ParameterizedObject = ParameterizedObject,
@@ -39,7 +62,9 @@ export const createJourneyStateMachine = <
   TInput = unknown,
   TOutput extends NonReducibleUnknown = NonReducibleUnknown,
   TEmitted extends EventObject = EventObject,
+  TMeta extends MetaObject = MetaObject,
 >(
+  id: Scope,
   ...args: Parameters<
     typeof createMachine<
       TContext,
@@ -56,6 +81,9 @@ export const createJourneyStateMachine = <
     >
   >
 ) => {
+  const [config, ...restArgs] = args;
+  config.id = id;
+
   return createMachine<
     TContext,
     TEvent,
@@ -68,5 +96,5 @@ export const createJourneyStateMachine = <
     TOutput,
     TEmitted,
     TMeta
-  >(...args);
+  >(config, ...restArgs);
 };

@@ -10,6 +10,14 @@
     "header": {
       "productName": "One Login",
       "signOutLink": "Sign out"
+    },
+    "passwordInput": {
+      "show": "Show",
+      "hide": "Hide",
+      "showFullText": "Show password",
+      "hideFullText": "Hide password",
+      "announceShown": "Your password is shown",
+      "announceHidden": "Your password is hidden"
     }
   },
   "error": {

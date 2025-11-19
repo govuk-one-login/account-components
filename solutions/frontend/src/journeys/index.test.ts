@@ -1,7 +1,7 @@
 import type { Mock } from "vitest";
 import { expect, it, describe, vi, beforeEach } from "vitest";
 import { journeyRoutes } from "./index.js";
-import { deleteAccount } from "./deleteAccount/index.js";
+import { deleteAccount } from "./account-delete/index.js";
 import type { FastifyInstance } from "fastify";
 
 describe("journeyRoutes plugin", () => {
