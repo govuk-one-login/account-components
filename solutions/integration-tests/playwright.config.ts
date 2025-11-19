@@ -21,6 +21,7 @@ if (env.PRE_OR_POST_DEPLOY === "pre") {
     name: "test-server",
     gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
     stderr: "pipe",
+    stdout: "pipe",
   });
 }
 
@@ -34,6 +35,7 @@ if (env.TEST_TARGET === "local") {
       name: "all-servers",
       gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
       stderr: "pipe",
+      stdout: "pipe",
     },
     /*
     These are needed to check the stubs and API servers are running.
@@ -50,6 +52,7 @@ if (env.TEST_TARGET === "local") {
       name: "stubs-server-healthcheck",
       gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
       stderr: "pipe",
+      stdout: "pipe",
     },
     {
       command: "sleep 310",
@@ -59,6 +62,7 @@ if (env.TEST_TARGET === "local") {
       name: "api-server-healthcheck",
       gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
       stderr: "pipe",
+      stdout: "pipe",
     },
   );
 }
