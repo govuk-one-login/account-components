@@ -106,3 +106,11 @@ jobs:
           echo "PRE_OR_POST_DEPLOY=pre" >> .env
           echo "PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:3000/" >> .env
           npm run test
+
+      - name: Upload test results artifact
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        with:
+          name: integration-test-results-${{ github.sha }}
+          path: solutions/integration-tests/test-results/
+          retention-days: 4
+          overwrite: true

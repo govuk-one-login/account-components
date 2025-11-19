@@ -71,6 +71,7 @@ if (env.TEST_TARGET === "local") {
 export default defineConfig({
   testDir,
   forbidOnly: !env.HUMAN_IN_THE_LOOP,
+  preserveOutput: "failures-only",
   workers: "50%",
   snapshotPathTemplate: `./${env.UPDATE_SNAPSHOTS ? "snapshots-updated" : "snapshots"}/{projectName}/{testFilePath}/{arg}{ext}`,
   reporter: env.TEST_REPORT_DIR
@@ -84,6 +85,7 @@ export default defineConfig({
   webServer: webServers,
   use: {
     baseURL: getBaseUrl(),
+    video: "retain-on-failure",
   },
   projects: [
     {

@@ -41,7 +41,7 @@ Given("I begin a {string} journey", async ({ page }, scope: string) => {
     .getByRole("button", { name: "Generate Request Object", exact: true })
     .click();
   await page
-    .getByRole("button", { name: "Start AMC Journey", exact: true })
+    .getByRole("link", { name: "Start AMC Journey", exact: true })
     .click();
 });
 
