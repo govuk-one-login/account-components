@@ -28,6 +28,10 @@
             pre {
                 white-space: pre-wrap;
             }
+            .inline-form-button {
+                display: inline-block;
+                margin: 0;
+            }
         </style>
     </head>
     <body>
@@ -104,8 +108,8 @@
         </form>
         {% endif %}
         {% if authorizeUrl %}
-            <a href="{{ authorizeUrl }}"><input type="submit" value="Start AMC Journey"></a>
-            <a href="/"><input type="submit" value="Reset"></a>
+            <form class="inline-form-button" href="{{ authorizeUrl }}"><input type="submit" value="Start AMC Journey"></form>
+            <form class="inline-form-button" href="/"><input type="submit" value="Reset"></form>
             <h2>Options Chosen</h2>
             <pre>{{ originalRequest | dump(2) | safe }}</pre>
             <h2>JWT Request Object</h2>
