@@ -109,6 +109,7 @@ jobs:
 
       - name: Upload test results artifact
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        if: always()
         with:
           name: integration-test-results-${{ github.sha }}
           path: solutions/integration-tests/test-results/
