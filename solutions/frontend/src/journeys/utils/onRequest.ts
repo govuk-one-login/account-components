@@ -100,6 +100,7 @@ export const onRequest = async (
       // @ts-expect-error
       paths.journeys[claims.scope][currentState],
       // @ts-expect-error
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     ).map((val) => val.path as string);
     /* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access */
 

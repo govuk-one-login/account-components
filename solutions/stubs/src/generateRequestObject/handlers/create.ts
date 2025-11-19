@@ -78,6 +78,7 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
       jwtHeader: JwtHeader;
     }
     const { body } = response;
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const result = JSON.parse(body) as GenerateJARResponse;
 
     assert.ok(process.env["AUTHORIZE_URL"], "AUTHORIZE_URL is not set");

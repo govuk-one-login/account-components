@@ -2,14 +2,14 @@
 openapi: 3.0.3
 
 info:
-  title: Account Management Components OAuth Provider Private API
-  version: 0.0.3
+  title: Account Management Components Private API
+  version: 0.0.4
   description: |
     OAuth 2.0 provider endpoints, including:
-    - POST /v1/token (supports client assertions via private_key_jwt)
-    - GET /v1/journeyoutcome
-    - GET /v1/.well-known/jwks.json (publishes signing and encryption keys)
-    - GET /v1/.well-known/oauth-authorization-server (OAuth Discovery)
+    - POST /token (supports client assertions via private_key_jwt)
+    - GET /journeyoutcome
+    - GET /.well-known/jwks.json (publishes signing and encryption keys)
+    - GET /.well-known/oauth-authorization-server (OAuth Discovery)
   contact:
     name: GDS - DI Accounts Pod - Home Team
     email: one-login-home-team@digital.cabinet-office.gov.uk
@@ -28,19 +28,19 @@ tags:
 
       **Note:** This functionality is intended to be used by systems solely belonging internally to GDS DI.
 servers:
-  - url: https://abcd1234.execute-api.eu-west-2.amazonaws.com
+  - url: https://internal.manage.dev.account.gov.uk
     description: private development server
-  - url: https://abcd1234.execute-api.eu-west-2.amazonaws.com
+  - url: https://internal.manage.build.account.gov.uk
     description: private build server
-  - url: https://abcd1234.execute-api.eu-west-2.amazonaws.com
+  - url: https://internal.manage.staging.account.gov.uk
     description: private staging server
-  - url: https://abcd1234.execute-api.eu-west-2.amazonaws.com
+  - url: https://internal.manage.integration.account.gov.uk
     description: private integration server
-  - url: https://abcd1234.execute-api.eu-west-2.amazonaws.com
+  - url: https://internal.manage.account.gov.uk
     description: private production server
 
 paths:
-  /v1/token:
+  /token:
     post:
       summary: Token endpoint
       description: |
@@ -87,6 +87,9 @@ paths:
       responses:
         "200":
           description: Token response
+          headers:
+            Cache-Control:
+              $ref: "#/components/headers/CacheControlNoStore"
           content:
             application/json:
               schema:
@@ -104,7 +107,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/OAuthError"
 
-  /v1/journeyoutcome:
+  /journeyoutcome:
     get:
       summary: Journey Outcome endpoint
       description: Get Journey Outcome information
@@ -116,6 +119,9 @@ paths:
       responses:
         "200":
           description: Claims about the outcome of the user's journey
+          headers:
+            Cache-Control:
+              $ref: "#/components/headers/CacheControlNoStore"
           content:
             application/json:
               schema:
@@ -127,7 +133,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/OAuthError"
 
-  /v1/.well-known/jwks.json:
+  /.well-known/jwks.json:
     get:
       summary: JSON Web Key Set (JWKS)
       description: Publishes public keys for signature and encryption.
@@ -137,6 +143,9 @@ paths:
       responses:
         "200":
           description: JWK Set
+          headers:
+            Cache-Control:
+              $ref: "#/components/headers/CacheControlMaxAge"
           content:
             application/json:
               schema:
@@ -152,7 +161,7 @@ paths:
                         n: "t7Z...base64url-modulus" # pragma: allowlist secret
                         e: "AQAB" # pragma: allowlist secret
 
-  /v1/.well-known/oauth-authorization-server:
+  /.well-known/oauth-authorization-server:
     get:
       summary: OAuth Provider Configuration (Discovery)
       description: Discover OAuth method URLs
@@ -162,6 +171,9 @@ paths:
       responses:
         "200":
           description: OAuth discovery metadata document (rfc8414)
+          headers:
+            Cache-Control:
+              $ref: "#/components/headers/CacheControlMaxAge"
           content:
             application/json:
               schema:
@@ -171,11 +183,11 @@ paths:
                   value:
                     issuer: https://api.manage.account.gov.uk
                     authorization_endpoint: https://api.manage.account.gov.uk/authorize
-                    token_endpoint: https://abcd1234.execute-api.eu-west-2.amazonaws.com/v1/token
-                    jwks_uri: https://api.manage.account.gov.uk/.well-known/jwks.json
+                    token_endpoint: https://internal.manage.account.gov.uk/token
+                    jwks_uri: https://internal.manage.account.gov.uk/.well-known/jwks.json
                     response_types_supported: [code]
                     token_endpoint_auth_methods_supported: [private_key_jwt]
-                    token_endpoint_auth_signing_alg_values_supported: [RS256]
+                    token_endpoint_auth_signing_alg_values_supported: [ES256]
                     scopes_supported: [testing-journey, account-delete]
                     grant_types_supported: [authorization_code]
 
@@ -185,6 +197,18 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  headers:
+    CacheControlMaxAge:
+      description: Caching directives for public, cacheable resources.
+      schema:
+        type: string
+        example: "max-age=60"
+    CacheControlNoStore:
+      description: Caching directives for public, cacheable resources.
+      schema:
+        type: string
+        example: "no-store, no-cache, must-revalidate, proxy-revalidate"
 
   schemas:
     OAuthError:

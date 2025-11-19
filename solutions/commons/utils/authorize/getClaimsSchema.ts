@@ -23,6 +23,7 @@ export const getClaimsSchema = (
   const expectedResponseType = "code";
 
   const validClientScopes = client.scope.split(" ").filter((scope) => {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     return Object.values(Scope).includes(scope as Scope);
   });
 
