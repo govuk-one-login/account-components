@@ -14,11 +14,11 @@ vi.mock(import("../../utils/paths.js"), () => ({
   paths: {
     journeys: {
       "testing-journey": {
-        BEFORE_PASSWORD_ENTERED: {
+        PASSWORD_NOT_PROVIDED: {
           step1: { path: "/testing-journey/step-1" },
           enterPassword: { path: "/testing-journey/enter-password" },
         },
-        AFTER_PASSWORD_ENTERED: {
+        PASSWORD_PROVIDED: {
           confirm: { path: "/testing-journey/confirm" },
         },
       },

@@ -17,8 +17,7 @@ export async function step1PostHandler(
   reply: FastifyReply,
 ) {
   reply.redirect(
-    paths.journeys["testing-journey"].BEFORE_PASSWORD_ENTERED.enterPassword
-      .path,
+    paths.journeys["testing-journey"].PASSWORD_NOT_PROVIDED.enterPassword.path,
   );
   return reply;
 }
@@ -30,7 +29,7 @@ export async function enterPasswordGetHandler(
   assert.ok(reply.render);
   await reply.render("journeys/testing-journey/enterPassword.njk", {
     backLink:
-      paths.journeys["testing-journey"].BEFORE_PASSWORD_ENTERED.step1.path,
+      paths.journeys["testing-journey"].PASSWORD_NOT_PROVIDED.step1.path,
   });
   return reply;
 }
@@ -46,7 +45,7 @@ export async function enterPasswordPostHandler(
   });
 
   reply.redirect(
-    paths.journeys["testing-journey"].AFTER_PASSWORD_ENTERED.confirm.path,
+    paths.journeys["testing-journey"].PASSWORD_PROVIDED.confirm.path,
   );
   return reply;
 }

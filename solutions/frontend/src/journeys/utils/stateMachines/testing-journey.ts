@@ -3,8 +3,8 @@ import { createJourneyStateMachine } from "../index.js";
 import type { MachineContext } from "xstate";
 
 export enum TestingJourneyState {
-  beforePasswordEntered = "BEFORE_PASSWORD_ENTERED", // pragma: allowlist secret
-  afterPasswordEntered = "AFTER_PASSWORD_ENTERED", // pragma: allowlist secret
+  passwordNotProvided = "PASSWORD_NOT_PROVIDED", // pragma: allowlist secret
+  passwordProvided = "PASSWORD_PROVIDED", // pragma: allowlist secret
 }
 
 export const testingJourneyStateMachine = createJourneyStateMachine<
@@ -13,13 +13,13 @@ export const testingJourneyStateMachine = createJourneyStateMachine<
     type: "passwordEntered";
   }
 >(Scope.testingJourney, {
-  initial: TestingJourneyState.beforePasswordEntered,
+  initial: TestingJourneyState.passwordNotProvided,
   states: {
-    [TestingJourneyState.beforePasswordEntered]: {
+    [TestingJourneyState.passwordNotProvided]: {
       on: {
-        passwordEntered: TestingJourneyState.afterPasswordEntered,
+        passwordEntered: TestingJourneyState.passwordProvided,
       },
     },
-    [TestingJourneyState.afterPasswordEntered]: {},
+    [TestingJourneyState.passwordProvided]: {},
   },
 });

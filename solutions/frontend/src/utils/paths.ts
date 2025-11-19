@@ -7,7 +7,7 @@ type PathsMap = Record<string, { path: `/${string}` }>;
 export const paths = {
   journeys: {
     [Scope.testingJourney]: {
-      [TestingJourneyState.beforePasswordEntered]: {
+      [TestingJourneyState.passwordNotProvided]: {
         step1: {
           path: "/testing-journey/step-1",
         },
@@ -15,7 +15,7 @@ export const paths = {
           path: "/testing-journey/enter-password",
         },
       },
-      [TestingJourneyState.afterPasswordEntered]: {
+      [TestingJourneyState.passwordProvided]: {
         confirm: {
           path: "/testing-journey/confirm",
         },
@@ -43,6 +43,6 @@ export const paths = {
 
 export const initialJourneyPaths: Record<Scope, string> = {
   [Scope.testingJourney]:
-    paths.journeys[Scope.testingJourney].BEFORE_PASSWORD_ENTERED.step1.path,
+    paths.journeys[Scope.testingJourney].PASSWORD_NOT_PROVIDED.step1.path,
   [Scope.accountDelete]: paths.journeys[Scope.accountDelete].TODO.TODO.path,
 } as const;
