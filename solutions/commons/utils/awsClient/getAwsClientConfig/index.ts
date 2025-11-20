@@ -5,7 +5,7 @@ import http from "node:http";
 import https from "node:https";
 import assert from "node:assert";
 
-export const getAwsClientConfig = () => {
+export const getAwsClientConfig = (kms = false) => {
   assert.ok(process.env["AWS_REGION"], "AWS_REGION is not set");
 
   return {
@@ -28,9 +28,15 @@ export const getAwsClientConfig = () => {
         process.env["LOCALSTACK_ACCESS_KEY"],
         "LOCALSTACK_ACCESS_KEY is not set",
       );
+      assert.ok(
+        process.env["LOCAL_KMS_ENDPOINT"],
+        "LOCAL_KMS_ENDPOINT is not set",
+      );
 
       return {
-        endpoint: process.env["LOCALSTACK_ENDPOINT"],
+        endpoint: kms
+          ? process.env["LOCAL_KMS_ENDPOINT"]
+          : process.env["LOCALSTACK_ENDPOINT"],
         credentials: {
           accessKeyId: process.env["LOCALSTACK_ACCESS_KEY_ID"],
           secretAccessKey: process.env["LOCALSTACK_ACCESS_KEY"],
