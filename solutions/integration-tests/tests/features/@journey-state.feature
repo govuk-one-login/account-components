@@ -1,6 +1,5 @@
 Feature: Journey state
 
-  @postDeploy
   Scenario: Journey state navigation behaves as expected
     Given I go to the journey initiator
     And I begin a "testing-journey" journey

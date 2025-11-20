@@ -95,16 +95,14 @@ To skip a test in the pre-deployment environment tag the test with `@skipPreDepl
 
 ## Post-deploy
 
-Integration tests can also run in the frontend deployment pipeline once the frontend has been deployed. By default tests will not run in the post-deployment environment. To run a test in the post-deployment pipeline tag it with `@postDeploy`. Currently tests are run against the `build` deployment but can also be configured to run against other deployments e.g. `staging`.
-
-Prefer running tests in GitHub Actions against local servers and only run tests which target actual deployments when it is not possible to test the functionality earlier.
+Integration tests also run in the frontend deployment pipeline once the frontend has been deployed. To skip a test in the post-deployment pipeline tag it with `@skipPostDeploy`. Currently tests are run against the `build` deployment but can also be configured to run against other deployments e.g. `staging`.
 
 ## Test tagging
 
 Tests can be tagged using the following custom tags to alter their behaviour:
 
-- `@postDeploy` - will run in post-deployment environment
 - `@skipPreDeploy` - will not run in pre-deployment environment
+- `@skipPostDeploy` - will not run in post-deployment environment
 - `@skipMobile` - will not run against the mobile viewport
 - `@skipDesktop` - will not run against the desktop viewport
 - `@skipTarget-{target} e.g. @skipTarget-local, @skipTarget-build, @skipTarget-staging` - will not run when the test target matches `{target}`
