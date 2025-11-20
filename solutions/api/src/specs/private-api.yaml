@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components Private API
-  version: 0.0.4
+  version: 0.0.5
   description: |
     OAuth 2.0 provider endpoints, including:
     - POST /token (supports client assertions via private_key_jwt)
