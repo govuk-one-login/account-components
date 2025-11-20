@@ -62,7 +62,9 @@ configure_cli_for_localstack() {
 start_localstack() {
   echo "Starting Localstack"
 
-  localstack start -d
+  docker stop account-components-localstack || true && docker rm account-components-localstack || true
+  docker network create account-components-network || true
+  DOCKER_FLAGS="--network account-components-network --name account-components-localstack" localstack start -d
 
   until aws --endpoint-url=http://localhost:4566 s3 ls > /dev/null 2>&1; do
     echo "⌛ Localstack not ready yet, retrying in 2s"
