@@ -10,6 +10,14 @@
     "header": {
       "productName": "One Login",
       "signOutLink": "Allgofnodi"
+    },
+    "passwordInput": {
+      "show": "Dangos",
+      "hide": "Cuddio",
+      "showFullText": "Dangos cyfrinair",
+      "hideFullText": "Cuddio cyfrinair",
+      "announceShown": "Mae eich cyfrinair wedi'i ddangos",
+      "announceHidden": "Mae eich cyfrinair wedi'i guddio"
     }
   },
   "error": {
@@ -27,13 +35,6 @@
       "header": "Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth",
       "content": {
         "paragraph1": "Rhowch gynnig arall yn nes ymlaen."
-      }
-    },
-    "authorizeError": {
-      "title": "TODO",
-      "header": "TODO",
-      "content": {
-        "paragraph1": "TODO"
       }
     }
   }

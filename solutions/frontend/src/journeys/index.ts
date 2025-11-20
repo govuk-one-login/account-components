@@ -1,13 +1,18 @@
 import type { FastifyInstance } from "fastify";
-import { deleteAccount } from "./deleteAccount/index.js";
+import { testingJourney } from "./testing-journey/index.js";
+import { accountDelete } from "./account-delete/index.js";
+import { onRequest } from "./utils/onRequest.js";
+import { onSend } from "./utils/onSend.js";
 
-export const journeys = function (fastify: FastifyInstance) {
-  fastify.addHook("onRequest", () => {
-    // TODO signed in check e.g.
-    // if (not signed in) {
-    //   redirect elsewhere
-    // }
+export const journeyRoutes = function (fastify: FastifyInstance) {
+  fastify.addHook("onRequest", async (request, reply) => {
+    await onRequest(request, reply);
   });
 
-  fastify.register(deleteAccount);
+  fastify.addHook("onSend", async (request, reply) => {
+    await onSend(request, reply);
+  });
+
+  fastify.register(testingJourney);
+  fastify.register(accountDelete);
 };

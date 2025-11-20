@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { getRedirectToClientRedirectUri, authorizeErrors } from "./index.js";
+import { authorizeErrors } from "./authorizeErrors.js";
+import { getRedirectToClientRedirectUri } from "./getRedirectToClientRedirectUri.js";
 
 describe("getRedirectToClientRedirectUri", () => {
   it("should add code parameter when code is provided", () => {

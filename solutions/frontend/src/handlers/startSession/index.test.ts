@@ -13,7 +13,6 @@ const mockGetClaimsSchema = vi.fn();
 const mockParse = vi.fn();
 const mockSafeParse = vi.fn();
 const mockGetDotPath = vi.fn();
-const mockTempSuccessfulJourney = vi.fn();
 
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
@@ -35,24 +34,40 @@ vi.mock(
 );
 
 // @ts-expect-error
-vi.mock(import("../../../../commons/utils/authorize/index.js"), () => ({
-  getRedirectToClientRedirectUri: mockGetRedirectToClientRedirectUri,
-  authorizeErrors: {
-    failedToDeleteApiSession: {
-      description: "E5004",
-      type: "server_error",
+vi.mock(
+  import("../../../../commons/utils/authorize/authorizeErrors.js"),
+  () => ({
+    authorizeErrors: {
+      failedToDeleteApiSession: {
+        description: "E5004",
+        type: "server_error",
+      },
     },
-  },
-}));
+  }),
+);
+
+vi.mock(
+  import(
+    "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js"
+  ),
+  () => ({
+    getRedirectToClientRedirectUri: mockGetRedirectToClientRedirectUri,
+  }),
+);
 
 vi.mock(import("../../../../commons/utils/getClientRegistry/index.js"), () => ({
   getClientRegistry: mockGetClientRegistry,
 }));
 
+// @ts-expect-error
 vi.mock(
-  import("../../../../api/src/lambda/authorize/utils/getClaimsSchema.js"),
+  import("../../../../commons/utils/authorize/getClaimsSchema.js"),
   () => ({
     getClaimsSchema: mockGetClaimsSchema,
+    Scope: {
+      testingJourney: "testing-journey",
+      accountDelete: "account-delete",
+    },
   }),
 );
 
@@ -68,10 +83,6 @@ vi.mock(import("valibot"), () => ({
   optional: vi.fn(),
 }));
 
-vi.mock(import("./tempSuccessfulJourney.js"), () => ({
-  tempSuccessfulJourney: mockTempSuccessfulJourney,
-}));
-
 const { handler } = await import("./index.js");
 
 describe("startSession handler", () => {
@@ -81,15 +92,13 @@ describe("startSession handler", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockTempSuccessfulJourney.mockResolvedValue(mockReply);
 
     process.env["API_SESSION_COOKIE_DOMAIN"] = "example.com";
-    process.env["AUTHORIZE_ERROR_PAGE_URL"] = "https://example.com/error";
     process.env["API_SESSIONS_TABLE_NAME"] = "test-sessions-table";
 
     mockClient = {
       client_id: "test-client",
-      scope: "account-delete",
+      scope: "testing-journey",
       redirect_uris: ["https://client.com/callback"],
       client_name: "Test Client",
       jwks_uri: "https://client.com/.well-known/jwks.json",
@@ -133,9 +142,7 @@ describe("startSession handler", () => {
 
       await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-      expect(mockReply.redirect).toHaveBeenCalledWith(
-        "https://example.com/error",
-      );
+      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
     });
 
     it("should redirect to error page when redirect_uri is invalid", async () => {
@@ -146,9 +153,7 @@ describe("startSession handler", () => {
 
       await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-      expect(mockReply.redirect).toHaveBeenCalledWith(
-        "https://example.com/error",
-      );
+      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
     });
 
     it("should accept valid query params", async () => {
@@ -169,9 +174,7 @@ describe("startSession handler", () => {
 
       expect(mockRequest.log?.warn).toHaveBeenCalledWith("ClientNotFound");
       expect(mockAddMetric).toHaveBeenCalledWith("ClientNotFound", "Count", 1);
-      expect(mockReply.redirect).toHaveBeenCalledWith(
-        "https://example.com/error",
-      );
+      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
     });
 
     it("should find client in registry", async () => {
@@ -206,9 +209,7 @@ describe("startSession handler", () => {
         domain: "example.com",
         maxAge: 0,
       });
-      expect(mockReply.redirect).toHaveBeenCalledWith(
-        "https://example.com/error",
-      );
+      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
     });
   });
 
@@ -229,9 +230,7 @@ describe("startSession handler", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith(
-        "https://example.com/error",
-      );
+      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
     });
   });
 
@@ -266,12 +265,14 @@ describe("startSession handler", () => {
           client_id: "test-client",
           claims_with_issues: ["client_id"],
         },
-        "InvalidClaims",
+        "InvalidClaimsInApiSession",
       );
-      expect(mockAddMetric).toHaveBeenCalledWith("InvalidClaims", "Count", 1);
-      expect(mockReply.redirect).toHaveBeenCalledWith(
-        "https://example.com/error",
+      expect(mockAddMetric).toHaveBeenCalledWith(
+        "InvalidClaimsInApiSession",
+        "Count",
+        1,
       );
+      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
     });
 
     it("should process valid claims", async () => {
@@ -367,9 +368,7 @@ describe("startSession handler", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith(
-        "https://example.com/error",
-      );
+      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
     });
   });
 
@@ -380,6 +379,7 @@ describe("startSession handler", () => {
         redirect_uri: "https://client.com/callback",
         state: "test-state",
         sub: "user-123",
+        scope: "testing-journey",
       };
 
       mockRequest.cookies = { apisession: "test-session-id" };
@@ -419,9 +419,8 @@ describe("startSession handler", () => {
         domain: "example.com",
         maxAge: 0,
       });
-      expect(mockTempSuccessfulJourney).toHaveBeenCalledWith(
-        mockReply,
-        mockClaims,
+      expect(mockReply.redirect).toHaveBeenCalledWith(
+        "/testing-journey/step-1",
       );
     });
   });
@@ -448,9 +447,7 @@ describe("startSession handler", () => {
         domain: "example.com",
         maxAge: 0,
       });
-      expect(mockReply.redirect).toHaveBeenCalledWith(
-        "https://example.com/error",
-      );
+      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
     });
   });
 
@@ -462,15 +459,6 @@ describe("startSession handler", () => {
       await expect(
         handler(mockRequest as FastifyRequest, mockReply as FastifyReply),
       ).rejects.toThrow("API_SESSION_COOKIE_DOMAIN is not set");
-    });
-
-    it("should throw when AUTHORIZE_ERROR_PAGE_URL is not set", async () => {
-      delete process.env["AUTHORIZE_ERROR_PAGE_URL"];
-      mockRequest.cookies = {};
-
-      await expect(
-        handler(mockRequest as FastifyRequest, mockReply as FastifyReply),
-      ).rejects.toThrow("AUTHORIZE_ERROR_PAGE_URL is not set");
     });
   });
 });

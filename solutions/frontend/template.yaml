@@ -51,7 +51,6 @@ Mappings:
       frontendDomain: manage.dev.account.gov.uk
       LambdaLogLevel: DEBUG
       UseCanary: false
-      authorizeErrorPageUrl: https://manage.dev.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.dev.account.gov.uk
       authorizeEndpointUrl: https://api.manage.dev.account.gov.uk/authorize
     build:
@@ -60,7 +59,6 @@ Mappings:
       frontendDomain: manage.build.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: false
-      authorizeErrorPageUrl: https://manage.build.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.build.account.gov.uk
       authorizeEndpointUrl: https://api.manage.build.account.gov.uk/authorize
     staging:
@@ -69,7 +67,6 @@ Mappings:
       frontendDomain: manage.staging.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: true
-      authorizeErrorPageUrl: https://manage.staging.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.staging.account.gov.uk
       authorizeEndpointUrl: https://api.manage.staging.account.gov.uk/authorize
     integration:
@@ -78,7 +75,6 @@ Mappings:
       frontendDomain: manage.integration.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: true
-      authorizeErrorPageUrl: https://manage.integration.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.integration.account.gov.uk
       authorizeEndpointUrl: https://api.manage.integration.account.gov.uk/authorize
     production:
@@ -87,7 +83,6 @@ Mappings:
       frontendDomain: manage.account.gov.uk
       LambdaLogLevel: INFO
       UseCanary: true
-      authorizeErrorPageUrl: https://manage.account.gov.uk/authorize-error
       apiSessionCookieDomain: manage.account.gov.uk
       authorizeEndpointUrl: https://api.manage.account.gov.uk/authorize
 
@@ -388,12 +383,6 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               rootCookieDomain,
-            ]
-          AUTHORIZE_ERROR_PAGE_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              authorizeErrorPageUrl,
             ]
           API_SESSION_COOKIE_DOMAIN:
             !FindInMap [

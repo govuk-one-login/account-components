@@ -24,12 +24,18 @@
       "description": "Time-to-live in seconds for API session",
       "type": "integer",
       "minimum": 1
+    },
+    "auth_code_ttl": {
+      "description": "Time-to-live in seconds for auth code",
+      "type": "integer",
+      "minimum": 1
     }
   },
   "required": [
     "client_registry",
     "jti_nonce_ttl_in_seconds",
-    "api_session_ttl_in_seconds"
+    "api_session_ttl_in_seconds",
+    "auth_code_ttl"
   ],
   "$defs": {
     "clientEntry": {

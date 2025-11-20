@@ -144,6 +144,18 @@ export const authorizeErrors = {
     description: "E5008",
     type: "server_error",
   },
+  failedToCreateStateMachineActor: {
+    description: "E5009",
+    type: "server_error",
+  },
+  failedToValidateJourneyUrl: {
+    description: "E5010",
+    type: "server_error",
+  },
+  failedToCompleteJourney: {
+    description: "E5011",
+    type: "server_error",
+  },
 } as const satisfies Record<
   string,
   | AuthorizeErrorAccessDenied
@@ -153,22 +165,3 @@ export const authorizeErrors = {
   | AuthorizeErrorServerError
   | AuthorizeErrorInvalidGrant
 >;
-
-export const getRedirectToClientRedirectUri = (
-  redirectUri: string,
-  error?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
-  state?: string,
-  code?: string,
-) => {
-  const url = new URL(redirectUri);
-  if (error) {
-    url.searchParams.set("error", error.type);
-    url.searchParams.set("error_description", error.description);
-  } else if (code) {
-    url.searchParams.set("code", code);
-  }
-  if (state) {
-    url.searchParams.set("state", state);
-  }
-  return url.toString();
-};

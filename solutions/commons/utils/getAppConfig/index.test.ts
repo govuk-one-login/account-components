@@ -16,6 +16,7 @@ const mockConfig = {
   ],
   jti_nonce_ttl_in_seconds: 7200,
   api_session_ttl_in_seconds: 300,
+  auth_code_ttl: 300,
 };
 
 describe("getAppConfig", () => {

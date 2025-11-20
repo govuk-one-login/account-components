@@ -3,14 +3,12 @@ import assert from "node:assert";
 import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
-import { getClaimsSchema } from "../../../../api/src/lambda/authorize/utils/getClaimsSchema.js";
 import * as v from "valibot";
-import {
-  authorizeErrors,
-  getRedirectToClientRedirectUri,
-} from "../../../../commons/utils/authorize/index.js";
+import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
-import { tempSuccessfulJourney } from "./tempSuccessfulJourney.js";
+import { initialJourneyPaths, paths } from "../../utils/paths.js";
+import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
+import { getClaimsSchema } from "../../../../commons/utils/authorize/getClaimsSchema.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -36,12 +34,8 @@ const getUnsetApiSessionCookieArgs = (): Parameters<
 };
 
 const redirectToErrorPage = (reply: FastifyReply) => {
-  assert.ok(
-    process.env["AUTHORIZE_ERROR_PAGE_URL"],
-    "AUTHORIZE_ERROR_PAGE_URL is not set",
-  );
   reply.setCookie(...getUnsetApiSessionCookieArgs());
-  reply.redirect(process.env["AUTHORIZE_ERROR_PAGE_URL"]);
+  reply.redirect(paths.others.authorizeError.path);
 };
 
 const queryParamsSchema = v.object({
@@ -108,9 +102,9 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
               v.getDotPath(issue),
             ),
           },
-          "InvalidClaims",
+          "InvalidClaimsInApiSession",
         );
-        metrics.addMetric("InvalidClaims", MetricUnit.Count, 1);
+        metrics.addMetric("InvalidClaimsInApiSession", MetricUnit.Count, 1);
         redirectToErrorPage(reply);
         return await reply;
       }
@@ -145,7 +139,8 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       request.session.user_id = claims.sub;
 
       reply.setCookie(...getUnsetApiSessionCookieArgs());
-      return await tempSuccessfulJourney(reply, claims);
+      reply.redirect(initialJourneyPaths[claims.scope]);
+      return await reply;
     } catch (error) {
       request.log.error(error, "ApiSessionGetError");
       metrics.addMetric("ApiSessionGetError", MetricUnit.Count, 1);

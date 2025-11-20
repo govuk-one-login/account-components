@@ -2,7 +2,7 @@
   "client_registry": [
     {
       "client_id": "ABCDEF12345678901234567890123456",
-      "scope": "account-delete",
+      "scope": "testing-journey account-delete",
       "redirect_uris": [
         "https://stubs.manage.build.account.gov.uk/auth/callback"
       ],
@@ -11,7 +11,7 @@
     },
     {
       "client_id": "23456789012345678901234567890123",
-      "scope": "account-delete",
+      "scope": "testing-journey account-delete",
       "redirect_uris": [
         "https://stubs.manage.build.account.gov.uk/home/callback"
       ],
@@ -20,5 +20,6 @@
     }
   ],
   "jti_nonce_ttl_in_seconds": 7200,
-  "api_session_ttl_in_seconds": 300
+  "api_session_ttl_in_seconds": 300,
+  "auth_code_ttl": 300
 }

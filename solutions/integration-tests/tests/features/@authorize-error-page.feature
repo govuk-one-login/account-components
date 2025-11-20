@@ -1,6 +1,6 @@
 Feature: Authorize error page
 
-  @postDeploy @failMobile
+  @failMobile
   Scenario: Visit the authorize error page
     Given I go to the "Authorize error" page
     And the page has finished loading

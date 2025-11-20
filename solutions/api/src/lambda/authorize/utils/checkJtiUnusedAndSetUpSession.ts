@@ -8,14 +8,14 @@ import {
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import { TransactionCanceledException } from "@aws-sdk/client-dynamodb";
 import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
-import type { getClaimsSchema } from "./getClaimsSchema.js";
+import type { getClaimsSchema } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
 import type * as v from "valibot";
 import { randomBytes } from "node:crypto";
 import assert from "node:assert";
 import { paths } from "../../../../../frontend/src/utils/paths.js";
 import type { APIGatewayProxyResult } from "aws-lambda";
 import { apiSessionCookieName } from "../../../../../commons/utils/constants.js";
-import { authorizeErrors } from "../../../../../commons/utils/authorize/index.js";
+import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -67,7 +67,7 @@ export const checkJtiUnusedAndSetUpSession = async (
     });
 
     const frontendUrl = new URL(process.env["FRONTEND_URL"]);
-    frontendUrl.pathname = paths.startSession;
+    frontendUrl.pathname = paths.others.startSession.path;
     frontendUrl.searchParams.append("client_id", clientId);
     frontendUrl.searchParams.append("redirect_uri", redirectUri);
     if (state) {
