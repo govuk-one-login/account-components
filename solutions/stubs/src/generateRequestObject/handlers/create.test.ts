@@ -72,6 +72,7 @@ describe("createRequestObjectPost", () => {
         iss: "issuer.example.com",
         user: "default",
         state: "example-state",
+        refresh_token: "true",
       },
     };
 
