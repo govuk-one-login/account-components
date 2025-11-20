@@ -645,6 +645,9 @@ Resources:
       LoggingConfig:
         LogGroup: !Ref JourneyOutcomeLambdaLogGroup
       Handler: index.handler
+      Environment:
+        Variables:
+          JWT_SIGNING_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyAlias}}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
     Metadata:
@@ -658,6 +661,8 @@ Resources:
         Sourcemap: true
         EntryPoints:
           - solutions/api/src/lambda/journeyoutcome/index.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 
   AuthorizeLambdaLogGroup:
     Type: AWS::Logs::LogGroup
