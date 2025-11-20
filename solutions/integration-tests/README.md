@@ -91,6 +91,8 @@ By default the integration tests are run in GitHub Actions (see `.github/workflo
 
 When running in GitHub Actions the tests are run against local servers much like when running the tests locally. The environment variables for these local servers are configured in `.github/workflows/integration-tests.yaml`.
 
+If there are test failures when running in GitHub Actions then outputs for the failed tests (including video recordings) are saved as an artifact against the worfkflow run. The artifact is a zip file called `integration-test-results`.
+
 To skip a test in the pre-deployment environment tag the test with `@skipPreDeploy`.
 
 ## Post-deploy
