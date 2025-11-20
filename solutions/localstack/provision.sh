@@ -223,6 +223,7 @@ list_resources() {
 generate_keys
 install_dependencies
 configure_cli_for_localstack
+create_docker_network
 start_localstack
 start_kms_local
 create_ssm_parameters
