@@ -19,7 +19,7 @@ if (env.PRE_OR_POST_DEPLOY === "pre") {
     reuseExistingServer: true,
     timeout: 300000,
     name: "test-server",
-    gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
+    gracefulShutdown: { signal: "SIGTERM", timeout: 100000 },
     stderr: "pipe",
   });
 }
@@ -32,7 +32,7 @@ if (env.TEST_TARGET === "local") {
       reuseExistingServer: true,
       timeout: 300000,
       name: "all-servers",
-      gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
+      gracefulShutdown: { signal: "SIGTERM", timeout: 100000 },
       stderr: "pipe",
     },
     /*
