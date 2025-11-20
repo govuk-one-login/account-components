@@ -27,9 +27,9 @@ export const initStubs = async function () {
 
   fastify.addHook("onRequest", logRequest);
   fastify.addHook("onRequest", removeTrailingSlash);
-  fastify.addHook("onResponse", (_request, reply) => addDefaultCaching(reply));
+  fastify.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
+  fastify.addHook("onSend", logResponse);
   fastify.addHook("onResponse", () => flushMetrics());
-  fastify.addHook("onResponse", logResponse);
 
   fastify.register(fastifyCookie);
   fastify.register(fastifyFormbody);

@@ -31,7 +31,7 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
 }));
 
 // @ts-expect-error
-vi.mock(import("./index.js"), () => ({
+vi.mock(import("./config.js"), () => ({
   journeys: {
     "test-scope": vi.fn().mockResolvedValue({
       translations: {
@@ -75,7 +75,7 @@ vi.mock(
 );
 
 import { metrics } from "../../../../commons/utils/metrics/index.js";
-import { journeys } from "./index.js";
+import { journeys } from "./config.js";
 import type { Actor, AnyActorLogic, AnyMachineSnapshot } from "xstate";
 import { createActor } from "xstate";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
@@ -98,9 +98,7 @@ describe("onRequest", () => {
       }),
     } as unknown as Actor<AnyActorLogic>;
 
-    mockSession = {
-      regenerate: vi.fn().mockResolvedValue(undefined),
-    } as unknown as FastifySessionObject;
+    mockSession = {} as unknown as FastifySessionObject;
 
     mockRequest = {
       session: mockSession,
@@ -143,8 +141,6 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockSession.regenerate).toHaveBeenCalledWith();
       expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
       expect(result).toBe(mockReply);
     });
@@ -175,8 +171,6 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockSession.regenerate).toHaveBeenCalledWith();
       expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
       expect(result).toBe(mockReply);
     });
@@ -214,8 +208,6 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockSession.regenerate).toHaveBeenCalledWith();
       expect(getRedirectToClientRedirectUri).toHaveBeenCalledWith(
         "http://client-redirect",
         "failed_to_create_state_machine_actor",
@@ -274,8 +266,6 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockSession.regenerate).toHaveBeenCalledWith();
       expect(mockReply.redirect).toHaveBeenCalledWith("http://redirect-uri");
       expect(result).toBe(mockReply);
     });

@@ -1,5 +1,5 @@
 import { Scope } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
-import { createJourneyStateMachine } from "../index.js";
+import { createJourneyStateMachine } from "./index.js";
 
 export enum AcountDeleteJourneyState {
   TODO = "TODO",

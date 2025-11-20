@@ -2,7 +2,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { paths } from "../../utils/paths.js";
 import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
-import { journeys } from "./index.js";
+import { journeys } from "./config.js";
 import type { AnyActor } from "xstate";
 import { createActor } from "xstate";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
@@ -10,11 +10,7 @@ import { getRedirectToClientRedirectUri } from "../../../../commons/utils/author
 import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 import assert from "node:assert";
 
-const redirectToErrorPage = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
-  await request.session.regenerate();
+const redirectToErrorPage = async (reply: FastifyReply) => {
   reply.redirect(paths.others.authorizeError.path);
   return reply;
 };
@@ -26,7 +22,7 @@ export const onRequest = async (
   if (!request.session.claims) {
     request.log.warn("NoClaimsInSession");
     metrics.addMetric("NoClaimsInSession", MetricUnit.Count, 1);
-    return await redirectToErrorPage(request, reply);
+    return await redirectToErrorPage(reply);
   }
 
   const claims = request.session.claims;
@@ -44,7 +40,7 @@ export const onRequest = async (
       "ClientNotFound",
     );
     metrics.addMetric("ClientNotFound", MetricUnit.Count, 1);
-    return await redirectToErrorPage(request, reply);
+    return await redirectToErrorPage(reply);
   }
 
   reply.client = client;
@@ -73,7 +69,6 @@ export const onRequest = async (
   } catch (error) {
     request.log.warn({ error }, "FailedToCreateStateMachineActor");
     metrics.addMetric("FailedToCreateStateMachineActor", MetricUnit.Count, 1);
-    await request.session.regenerate();
     reply.redirect(
       getRedirectToClientRedirectUri(
         claims.redirect_uri,
@@ -123,7 +118,6 @@ export const onRequest = async (
   } catch (error) {
     request.log.warn({ error }, "FailedToValidateJourneyUrl");
     metrics.addMetric("FailedToValidateJourneyUrl", MetricUnit.Count, 1);
-    await request.session.regenerate();
     reply.redirect(
       getRedirectToClientRedirectUri(
         claims.redirect_uri,

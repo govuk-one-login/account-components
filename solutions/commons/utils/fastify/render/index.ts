@@ -27,12 +27,14 @@ export const render = async function (
     env.addFilter("translate", this.request.i18n.t);
   }
   env.addFilter("JSON.stringify", JSON.stringify);
-  env.addGlobal("govukRebrand", true);
-  env.addGlobal("addLanguageParam", addLanguageParam);
-  env.addGlobal("contactUsUrl", contactUsUrl);
   env.addGlobal("cspNonce", this.cspNonce.script);
   env.addGlobal("styleNonce", this.cspNonce.style);
   env.addGlobal("globals", this.globals);
+
+  // Required by templates in external packages
+  env.addGlobal("govukRebrand", true);
+  env.addGlobal("addLanguageParam", addLanguageParam);
+  env.addGlobal("contactUsUrl", contactUsUrl);
 
   const html = nunjucks.render(templatePath, props);
   this.type("text/html").send(html);
