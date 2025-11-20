@@ -197,6 +197,7 @@ const verify = async (
     } else {
       logger.warn("VerifyJwtUnknownError", {
         client_id: client.client_id,
+        error,
       });
       metrics.addMetric("VerifyJwtUnknownError", MetricUnit.Count, 1);
       return new ErrorResponse(

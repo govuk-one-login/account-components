@@ -78,12 +78,6 @@ start_localstack() {
 create_ssm_parameters() {
   echo "Creating SSM parameters"
 
-  # Delete existing parameters
-  aws --endpoint-url=http://localhost:4566 ssm delete-parameter \
-    --name "/components-mocks/MockClientEcPrivateKey" 2>/dev/null || true
-  aws --endpoint-url=http://localhost:4566 ssm delete-parameter \
-    --name "/components-mocks/MockClientEcPublicKey" 2>/dev/null || true
-
   STRING="String"
 
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
@@ -103,23 +97,6 @@ create_ssm_parameters() {
 create_kms_keys() {
   echo "Creating KMS keys"
 
-  # Delete existing alias
-  aws --endpoint-url=http://localhost:4566 kms delete-alias \
-    --alias-name alias/components-core-JARRSAEncryptionKey 2>/dev/null || true
-
-  # Delete existing key
-  EXISTING_KEY_ID=$(aws --endpoint-url=http://localhost:4566 kms list-aliases \
-    --query "Aliases[?AliasName=='alias/components-core-JARRSAEncryptionKey'].TargetKeyId" \
-    --output text 2>/dev/null || true)
-  
-  if [[ -n "$EXISTING_KEY_ID" ]] && [[ "$EXISTING_KEY_ID" != "None" ]]; then
-    aws --endpoint-url=http://localhost:4566 kms disable-key \
-      --key-id "$EXISTING_KEY_ID" 2>/dev/null || true
-    aws --endpoint-url=http://localhost:4566 kms schedule-key-deletion \
-      --key-id "$EXISTING_KEY_ID" \
-      --pending-window-in-days 7 2>/dev/null || true
-  fi
-
   KEY_ID=$(aws --endpoint-url=http://localhost:4566 kms create-key \
     --key-spec RSA_2048 \
     --key-usage ENCRYPT_DECRYPT \
@@ -137,13 +114,6 @@ create_kms_keys() {
 
 create_dynamodb_tables() {
   echo "Creating DynamoDB tables"
-
-  # Delete existing tables
-  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-JourneyOutcome" 2>/dev/null || true
-  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-main-SessionStore" 2>/dev/null || true
-  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-AuthCode" 2>/dev/null || true
-  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-ReplayAttack" 2>/dev/null || true
-  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-ApiSessions" 2>/dev/null || true
 
   # JourneyOutcomeTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
