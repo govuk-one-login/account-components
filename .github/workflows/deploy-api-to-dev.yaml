@@ -76,7 +76,7 @@ jobs:
           aws-region: "eu-west-2"
 
       - name: Install dependencies
-        run: npm ci
+        run: run custom-install
 
       - name: Build API
         run: npm run build:api

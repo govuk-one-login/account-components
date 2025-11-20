@@ -76,10 +76,11 @@ describe("getSessionOptions", () => {
     expect(options.secret).toBe("test-signer");
     expect(options.cookie?.secure).toBe(true);
     expect(options.cookie?.sameSite).toBe("lax");
-    expect(options.cookie?.maxAge).toBe(3600000);
     expect(options.cookie?.httpOnly).toBe(true);
     expect(options.rolling).toBe(false);
     expect(options.saveUninitialized).toBe(false);
+    // @ts-expect-error
+    expect(options.expiresIn).toBe(1800);
   });
 
   it("returns session options with non-secure cookie for local environment", async () => {

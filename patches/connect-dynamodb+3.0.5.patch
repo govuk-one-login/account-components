@@ -1,0 +1,46 @@
+# See https://github.com/ca98am79/connect-dynamodb/pull/103
+# Once this PR is merged we can update connect-dynamodb and
+# remove this patch
+diff --git a/node_modules/connect-dynamodb/lib/connect-dynamodb.js b/node_modules/connect-dynamodb/lib/connect-dynamodb.js
+index fce270c..dafd5cc 100644
+--- a/node_modules/connect-dynamodb/lib/connect-dynamodb.js
++++ b/node_modules/connect-dynamodb/lib/connect-dynamodb.js
+@@ -68,6 +68,20 @@ module.exports = function (connect) {
+     if (this.reapInterval > 0) {
+       this._reap = setInterval(this.reap.bind(this), this.reapInterval);
+     }
++    if (options.expiresIn) {
++      if (!Number.isInteger(options.expiresIn)) {
++        console.warn("`expiresIn` must be an integer. Reverting to default behaviour");
++        this.expiresIn = 0;
++      }
++      else if (options.expiresIn < 0) {
++        console.warn("Negative `expiresIn` values are not supported. Reverting to default behaviour");
++        this.expiresIn = 0;
++      } else {
++        this.expiresIn = options.expiresIn;
++      }
++    } else {
++      this.expiresIn = 0;
++    }    
+   }
+ 
+   /*
+@@ -344,11 +358,15 @@ module.exports = function (connect) {
+    */
+   DynamoDBStore.prototype.getExpiresValue = function (sess) {
+     const now = Math.floor(Date.now() / 1000);
+-    const expires =
++    if (this.expiresIn != 0) {
++      return now + this.expiresIn;
++    } else {
++      const expires =
+       typeof sess.cookie.maxAge === "number"
+         ? now + (sess.cookie.maxAge / 1000)
+         : now + oneDayInSeconds;
+-    return expires;
++      return expires;
++    }
+   };
+ 
+   /**

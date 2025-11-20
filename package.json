@@ -36,6 +36,7 @@
     "i18next-http-middleware": "^3.8.1",
     "jose": "^6.0.10",
     "nunjucks": "^3.2.4",
+    "patch-package": "^8.0.1",
     "valibot": "^1.1.0",
     "xstate": "^5.24.0"
   },
@@ -68,6 +69,7 @@
     "vitest": "^4.0.2"
   },
   "scripts": {
+    "custom-install": "npm ci && npx patch-package",
     "install-brewfile": "cat Brewfile; echo; echo; read -p \"Install/update Brewfile dependencies as shown above (y/N)?\" -n 1 -r; echo; if [ \"$REPLY\" == \"y\" ]; then brew bundle check || brew bundle install; fi",
     "install-git-hooks": "pre-commit install --install-hooks --overwrite",
     "generate-config-types": "json2ts -i solutions/config/schema/config.json -o solutions/config/schema/types.ts",

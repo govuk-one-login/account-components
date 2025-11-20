@@ -78,7 +78,8 @@ export const checkJtiUnusedAndSetUpSession = async (
       statusCode: 302,
       headers: {
         location: frontendUrl.toString(),
-        "Set-Cookie": `${apiSessionCookieName}=${sessionId}; Secure; HttpOnly; SameSite=Strict; Max-Age=${appConfig.api_session_ttl_in_seconds.toString()}; Domain=${
+        // Session cookie by virtue of not having maxAge or expires
+        "Set-Cookie": `${apiSessionCookieName}=${sessionId}; Secure; HttpOnly; SameSite=Strict; Domain=${
           process.env["API_SESSION_COOKIE_DOMAIN"]
         }`,
       },

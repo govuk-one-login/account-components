@@ -21,14 +21,16 @@ export const getSessionOptions = async (): Promise<FastifySessionOptions> => {
 
   return {
     secret: process.env["SESSIONS_SIGNER"],
+    // Session cookie by virtue of not having maxAge
+    // or expires
     cookie: {
       secure: getEnvironment() !== "local",
       sameSite: "lax",
-      maxAge: 3600000, // 1 hour in milliseconds
       httpOnly: true,
     },
     rolling: false,
     saveUninitialized: false,
+    expiresIn: 1800, // 0.5 hours in seconds
     // @ts-expect-error
     store: dynamodbStore,
   };
