@@ -74,7 +74,7 @@ start_localstack() {
 }
 
 start_kms_local() {
-  if [ $(docker ps --filter ancestor=nsmithuk/local-kms -q | wc -l | xargs) -eq "0" ]; then
+  if [[ $(docker ps --filter ancestor=nsmithuk/local-kms -q | wc -l | xargs) -eq "0" ]]; then
     echo "Starting kms local"
     docker run -d -p 4567:8080 nsmithuk/local-kms
   else
