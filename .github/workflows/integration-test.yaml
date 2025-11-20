@@ -59,9 +59,9 @@ jobs:
           MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME=/components-mocks/MockClientEcPrivateKey  
           MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME=/components-mocks/MockClientEcPublicKey  
           JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/components-core-JARRSAEncryptionKey 
-          DEFAULT_AUDIENCE=http://127.0.0.1:6004/authorize
-          ACCESS_TOKEN_ISSUER=http://127.0.0.1:6003
-          AUTHORIZE_URL=http://127.0.0.1:6004/authorize
+          DEFAULT_AUDIENCE=http://localhsot:6004/authorize
+          ACCESS_TOKEN_ISSUER=http://localhost:6003
+          AUTHORIZE_URL=http://localhost:6004/authorize
           AWS_REGION=eu-west-2
           LOCALSTACK_ENDPOINT=http://localhost:4566
           LOCALSTACK_ACCESS_KEY_ID=test
