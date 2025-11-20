@@ -101,7 +101,14 @@
                 <legend>State (optional)</legend>
                 <input type="text" name="state" />
                 <i>Leave blank to auto-generate</i>
-            </fieldset>            
+            </fieldset>
+            <fieldset>
+                <legend>Include refresh_token</legend>
+                <input type="radio" id="include" name="refresh_token" value="true" />
+                <label for="include">true</label>
+                <input type="radio" id="exclude" name="refresh_token" value="false" checked/>
+                <label for="exclude">false</label>
+            </fieldset>
             <input type="submit" value="Generate Request Object">
         </form>
         {% endif %}

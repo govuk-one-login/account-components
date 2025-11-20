@@ -24,28 +24,43 @@ vi.mock(import("../utils/tokenGenerator/index.js"), () => ({
   getScenario: vi.fn(),
 }));
 
-describe("generateRequestObjectPost", () => {
-  let mockRequest: Partial<FastifyRequest>;
+function expectJarInResponse(
+  mockRequest: Partial<FastifyRequest>,
+  mockAccessToken: string,
+  mockScenario: string,
+  mockJwtToken: string,
+  mockReply: Partial<FastifyReply>,
+  mockEncryptedJar: string,
+  generateAccessTokenCalledCount: number,
+) {
+  expect(generateAccessToken).toHaveBeenCalledTimes(
+    generateAccessTokenCalledCount,
+  );
+  expect(getScenario).toHaveBeenCalledExactlyOnceWith({
+    ...(mockRequest.body as object),
+    access_token: mockAccessToken,
+  });
+  expect(generateJwtToken).toHaveBeenCalledExactlyOnceWith(
+    { ...(mockRequest.body as object), access_token: mockAccessToken },
+    mockScenario,
+  );
+  expect(buildJar).toHaveBeenCalledExactlyOnceWith(mockJwtToken);
+  expect(mockReply.send).toHaveBeenCalledExactlyOnceWith({
+    encryptedJar: mockEncryptedJar,
+    jwtPayload: {},
+    jwtHeader: { alg: Algorithms.EC },
+  });
+}
+
+describe("generateRequestObjectPost should process request and return encrypted jar", () => {
   let mockReply: Partial<FastifyReply>;
+  const mockAccessToken = "mock-access-token";
+  const mockScenario = "mock-scenario";
+  const mockJwtToken = "mock-jwt-token";
+  const mockEncryptedJar = "mock-encrypted-jar";
 
   beforeEach(() => {
     vi.clearAllMocks();
-
-    mockRequest = {
-      body: { test: "data" },
-    };
-
-    mockReply = {
-      send: vi.fn().mockReturnThis(),
-    };
-  });
-
-  it("should process request and return encrypted jar", async () => {
-    const mockAccessToken = "mock-access-token";
-    const mockScenario = "mock-scenario";
-    const mockJwtToken = "mock-jwt-token";
-    const mockEncryptedJar = "mock-encrypted-jar";
-
     vi.mocked(generateAccessToken).mockResolvedValue(mockAccessToken);
     vi.mocked(getScenario).mockReturnValue(
       mockScenario as MockRequestObjectScenarios,
@@ -56,26 +71,52 @@ describe("generateRequestObjectPost", () => {
       jwtHeader: { alg: Algorithms.EC },
     });
     vi.mocked(buildJar).mockResolvedValue(mockEncryptedJar);
+    mockReply = {
+      send: vi.fn().mockReturnThis(),
+    };
+  });
+
+  // eslint-disable-next-line vitest/expect-expect
+  it("with a refresh_token claim", async () => {
+    const mockRequest: Partial<FastifyRequest> = {
+      body: { test: "data", refresh_token: "true" },
+    };
 
     await generateRequestObjectPost(
       mockRequest as FastifyRequest,
       mockReply as FastifyReply,
     );
 
-    expect(generateAccessToken).toHaveBeenCalledTimes(2);
-    expect(getScenario).toHaveBeenCalledExactlyOnceWith({
-      ...(mockRequest.body as object),
-      access_token: mockAccessToken,
-    });
-    expect(generateJwtToken).toHaveBeenCalledExactlyOnceWith(
-      { ...(mockRequest.body as object), access_token: mockAccessToken },
+    expectJarInResponse(
+      mockRequest,
+      mockAccessToken,
       mockScenario,
+      mockJwtToken,
+      mockReply,
+      mockEncryptedJar,
+      2,
     );
-    expect(buildJar).toHaveBeenCalledExactlyOnceWith(mockJwtToken);
-    expect(mockReply.send).toHaveBeenCalledExactlyOnceWith({
-      encryptedJar: mockEncryptedJar,
-      jwtPayload: {},
-      jwtHeader: { alg: Algorithms.EC },
-    });
+  });
+
+  // eslint-disable-next-line vitest/expect-expect
+  it("without a refresh_token claim", async () => {
+    const mockRequest: Partial<FastifyRequest> = {
+      body: { test: "data", refresh_token: "false" },
+    };
+
+    await generateRequestObjectPost(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expectJarInResponse(
+      mockRequest,
+      mockAccessToken,
+      mockScenario,
+      mockJwtToken,
+      mockReply,
+      mockEncryptedJar,
+      1,
+    );
   });
 });

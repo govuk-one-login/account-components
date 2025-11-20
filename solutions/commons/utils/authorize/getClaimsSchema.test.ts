@@ -83,6 +83,80 @@ describe("getClaimsSchema", () => {
     expect(result.success).toBe(true);
   });
 
+  it("validates correct claims when refresh_token claim is not included", () => {
+    const schema = getClaimsSchema(mockClient, redirectUri, state);
+    const validClaims = {
+      client_id: "test-client",
+      iss: "test-client",
+      aud: "https://auth.example.com",
+      response_type: "code",
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      iat: Math.floor(Date.now() / 1000) - 10,
+      redirect_uri: redirectUri,
+      scope: "account-delete",
+      state,
+      jti: "unique-jti",
+      access_token: "access-token",
+      sub: "user-123",
+      email: "test@example.com",
+      govuk_signin_journey_id: "journey-123",
+    };
+
+    const result = v.safeParse(schema, validClaims);
+
+    expect(result.success).toBe(true);
+  });
+
+  it("validates correct claims when refresh_token is undefined", () => {
+    const schema = getClaimsSchema(mockClient, redirectUri, state);
+    const validClaims = {
+      client_id: "test-client",
+      iss: "test-client",
+      aud: "https://auth.example.com",
+      response_type: "code",
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      iat: Math.floor(Date.now() / 1000) - 10,
+      redirect_uri: redirectUri,
+      scope: "account-delete",
+      state,
+      jti: "unique-jti",
+      access_token: "access-token",
+      refresh_token: undefined,
+      sub: "user-123",
+      email: "test@example.com",
+      govuk_signin_journey_id: "journey-123",
+    };
+
+    const result = v.safeParse(schema, validClaims);
+
+    expect(result.success).toBe(true);
+  });
+
+  it("validates correct claims when refresh_token is null", () => {
+    const schema = getClaimsSchema(mockClient, redirectUri, state);
+    const validClaims = {
+      client_id: "test-client",
+      iss: "test-client",
+      aud: "https://auth.example.com",
+      response_type: "code",
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      iat: Math.floor(Date.now() / 1000) - 10,
+      redirect_uri: redirectUri,
+      scope: "account-delete",
+      state,
+      jti: "unique-jti",
+      access_token: "access-token",
+      refresh_token: null,
+      sub: "user-123",
+      email: "test@example.com",
+      govuk_signin_journey_id: "journey-123",
+    };
+
+    const result = v.safeParse(schema, validClaims);
+
+    expect(result.success).toBe(true);
+  });
+
   it("validates claims without state when state is undefined", () => {
     const schema = getClaimsSchema(mockClient, redirectUri);
     const validClaims = {

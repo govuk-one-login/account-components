@@ -13,9 +13,12 @@ export async function generateRequestObjectPost(
 ) {
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const body = request.body as RequestBody;
-
   body.access_token = await generateAccessToken();
-  body.refresh_token = await generateAccessToken();
+  if (body.refresh_token === "true") {
+    body.refresh_token = await generateAccessToken();
+  } else {
+    delete body.refresh_token;
+  }
 
   const scenario = getScenario(body);
 

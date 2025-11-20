@@ -24,6 +24,7 @@ const requestBodySchema = v.object({
   iss: v.string(),
   user: v.string(),
   state: v.string(),
+  refresh_token: v.string(),
 });
 
 export async function createRequestObjectGet(
