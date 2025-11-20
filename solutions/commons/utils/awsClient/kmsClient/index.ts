@@ -9,7 +9,7 @@ import { getEnvironment } from "../../getEnvironment/index.js";
 import * as AWSXRay from "aws-xray-sdk";
 
 const createKmsClient = () => {
-  const kmsClient = new KMSClient(getAwsClientConfig());
+  const kmsClient = new KMSClient(getAwsClientConfig(true));
 
   const wrappedClient =
     getEnvironment() === "local"

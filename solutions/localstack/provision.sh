@@ -73,6 +73,23 @@ start_localstack() {
   return 0
 }
 
+start_kms_local() {
+  if [ $(docker ps --filter ancestor=nsmithuk/local-kms -q | wc -l | xargs) -eq "0" ]; then
+    echo "Starting kms local"
+    docker run -d -p 4567:8080 nsmithuk/local-kms
+  else
+    echo "KMS local already running"
+  fi
+
+  until aws --endpoint-url=http://localhost:4567 kms list-keys > /dev/null 2>&1; do
+    echo "⌛ KMS Local not ready yet, retrying in 2s"
+    sleep 2
+  done
+
+  echo "KMS Local is ready"
+  return 0
+}
+
 create_ssm_parameters() {
   echo "Creating SSM parameters"
 
@@ -102,30 +119,30 @@ create_kms_keys() {
   echo "Creating KMS keys"
 
   # Delete existing alias
-  aws --endpoint-url=http://localhost:4566 kms delete-alias \
+  aws --endpoint-url=http://localhost:4567 kms delete-alias \
     --alias-name alias/components-core-JARRSAEncryptionKey 2>/dev/null || true
 
   # Delete existing key
-  EXISTING_KEY_ID=$(aws --endpoint-url=http://localhost:4566 kms list-aliases \
+  EXISTING_KEY_ID=$(aws --endpoint-url=http://localhost:4567 kms list-aliases \
     --query "Aliases[?AliasName=='alias/components-core-JARRSAEncryptionKey'].TargetKeyId" \
     --output text 2>/dev/null || true)
   
   if [[ -n "$EXISTING_KEY_ID" ]] && [[ "$EXISTING_KEY_ID" != "None" ]]; then
-    aws --endpoint-url=http://localhost:4566 kms disable-key \
+    aws --endpoint-url=http://localhost:4567 kms disable-key \
       --key-id "$EXISTING_KEY_ID" 2>/dev/null || true
-    aws --endpoint-url=http://localhost:4566 kms schedule-key-deletion \
+    aws --endpoint-url=http://localhost:4567 kms schedule-key-deletion \
       --key-id "$EXISTING_KEY_ID" \
       --pending-window-in-days 7 2>/dev/null || true
   fi
 
-  KEY_ID=$(aws --endpoint-url=http://localhost:4566 kms create-key \
+  KEY_ID=$(aws --endpoint-url=http://localhost:4567 kms create-key \
     --key-spec RSA_2048 \
     --key-usage ENCRYPT_DECRYPT \
     --origin AWS_KMS \
     --query 'KeyMetadata.KeyId' \
     --output text)
 
-  aws --endpoint-url=http://localhost:4566 kms create-alias \
+  aws --endpoint-url=http://localhost:4567 kms create-alias \
     --alias-name alias/components-core-JARRSAEncryptionKey \
     --target-key-id "$KEY_ID"
 
@@ -218,8 +235,8 @@ list_resources() {
   done
 
   aws --endpoint-url=http://localhost:4566 dynamodb list-tables
-  aws --endpoint-url=http://localhost:4566 kms list-keys
-  aws --endpoint-url=http://localhost:4566 kms list-aliases
+  aws --endpoint-url=http://localhost:4567 kms list-keys
+  aws --endpoint-url=http://localhost:4567 kms list-aliases
   return 0
 }
 
@@ -227,6 +244,7 @@ generate_keys
 install_dependencies
 configure_cli_for_localstack
 start_localstack
+start_kms_local
 create_ssm_parameters
 create_kms_keys
 create_dynamodb_tables
