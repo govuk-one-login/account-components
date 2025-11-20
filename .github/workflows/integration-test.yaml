@@ -40,6 +40,7 @@ jobs:
           ROOT_COOKIE_DOMAIN=localhost
           AWS_REGION=eu-west-2
           LOCALSTACK_ENDPOINT=http://localhost:4566
+          LOCAL_KMS_ENDPOINT=http://localhost:4567
           LOCALSTACK_ACCESS_KEY_ID=test
           LOCALSTACK_ACCESS_KEY=test
           API_SESSION_COOKIE_DOMAIN=localhost    
@@ -64,6 +65,7 @@ jobs:
           AUTHORIZE_URL=http://localhost:6004/authorize
           AWS_REGION=eu-west-2
           LOCALSTACK_ENDPOINT=http://localhost:4566
+          LOCAL_KMS_ENDPOINT=http://localhost:4567
           LOCALSTACK_ACCESS_KEY_ID=test
           LOCALSTACK_ACCESS_KEY=test      
           API_TOKEN_ENDPOINT_URL=http://localhost:6004/token    
@@ -81,6 +83,7 @@ jobs:
               "NODE_ENV": "production",
               "USE_LOCALSTACK": "1",
               "LOCALSTACK_ENDPOINT": "http://account-components-localstack:4566",
+              "LOCAL_KMS_ENDPOINT": "http://account-components-local-kms:8080",
               "LOCALSTACK_ACCESS_KEY_ID": "test",
               "LOCALSTACK_ACCESS_KEY": "test"
             },

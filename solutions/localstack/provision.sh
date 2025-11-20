@@ -59,11 +59,19 @@ configure_cli_for_localstack() {
   return 0
 }
 
+create_docker_network() {
+  echo "Creating Docker network"
+
+  docker network create account-components-network || true
+
+  echo "Docker network created"
+  return 0
+}
+
 start_localstack() {
   echo "Starting Localstack"
 
   docker stop account-components-localstack || true && docker rm account-components-localstack || true
-  docker network create account-components-network || true
   DOCKER_FLAGS="--network account-components-network --name account-components-localstack" localstack start -d
 
   until aws --endpoint-url=http://localhost:4566 s3 ls > /dev/null 2>&1; do
@@ -72,6 +80,23 @@ start_localstack() {
   done
 
   echo "Localstack is ready"
+  return 0
+}
+
+# It is necessary to to use a separate KMS solution rather than relying on Localstack's.
+# Localstack's KMS solution is buggy and does not work consistently across different machines.
+start_kms_local() {
+  echo "Starting KMS Local"
+
+  docker stop account-components-local-kms || true && docker rm account-components-local-kms || true
+  docker run -d -p 4567:8080 --network account-components-network --name account-components-local-kms nsmithuk/local-kms
+
+  until aws --endpoint-url=http://localhost:4567 kms list-keys > /dev/null 2>&1; do
+    echo "⌛ KMS Local not ready yet, retrying in 2s"
+    sleep 2
+  done
+
+  echo "KMS Local is ready"
   return 0
 }
 
@@ -97,14 +122,14 @@ create_ssm_parameters() {
 create_kms_keys() {
   echo "Creating KMS keys"
 
-  KEY_ID=$(aws --endpoint-url=http://localhost:4566 kms create-key \
+  KEY_ID=$(aws --endpoint-url=http://localhost:4567 kms create-key \
     --key-spec RSA_2048 \
     --key-usage ENCRYPT_DECRYPT \
     --origin AWS_KMS \
     --query 'KeyMetadata.KeyId' \
     --output text)
 
-  aws --endpoint-url=http://localhost:4566 kms create-alias \
+  aws --endpoint-url=http://localhost:4567 kms create-alias \
     --alias-name alias/components-core-JARRSAEncryptionKey \
     --target-key-id "$KEY_ID"
 
@@ -190,8 +215,8 @@ list_resources() {
   done
 
   aws --endpoint-url=http://localhost:4566 dynamodb list-tables
-  aws --endpoint-url=http://localhost:4566 kms list-keys
-  aws --endpoint-url=http://localhost:4566 kms list-aliases
+  aws --endpoint-url=http://localhost:4567 kms list-keys
+  aws --endpoint-url=http://localhost:4567 kms list-aliases
   return 0
 }
 
@@ -199,6 +224,7 @@ generate_keys
 install_dependencies
 configure_cli_for_localstack
 start_localstack
+start_kms_local
 create_ssm_parameters
 create_kms_keys
 create_dynamodb_tables

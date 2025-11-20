@@ -201,6 +201,7 @@ Globals:
         LOCALSTACK_ENDPOINT: !Ref AWS::NoValue
         LOCALSTACK_ACCESS_KEY_ID: !Ref AWS::NoValue
         LOCALSTACK_ACCESS_KEY: !Ref AWS::NoValue
+        LOCAL_KMS_ENDPOINT: !Ref AWS::NoValue
         AWS_LAMBDA_EXEC_WRAPPER:
           !If [IsLocal, !Ref AWS::NoValue, "/opt/dynatrace"]
         DT_CONNECTION_AUTH_TOKEN: !Sub

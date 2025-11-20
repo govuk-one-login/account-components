@@ -43,6 +43,7 @@ describe("getAwsClientConfig", () => {
     process.env["AWS_REGION"] = "eu-west-2";
     process.env["USE_LOCALSTACK"] = "true";
     process.env["LOCALSTACK_ENDPOINT"] = "http://localhost:4566";
+    process.env["LOCAL_KMS_ENDPOINT"] = "http://localhost:4567";
     process.env["LOCALSTACK_ACCESS_KEY_ID"] = "test";
     process.env["LOCALSTACK_ACCESS_KEY"] = "test";
 
