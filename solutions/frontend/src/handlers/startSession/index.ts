@@ -97,6 +97,8 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       try {
         const accessTokenExpiry = decodeJwt(claims.access_token).exp ?? 0;
 
+        console.log("MHTEST", accessTokenExpiry);
+
         const sessionExpiry = Math.min(
           Math.max(
             accessTokenExpiry,
@@ -104,6 +106,8 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
           ),
           Math.floor(Date.now() / 1000) + 3600, // Max session length of 2 hours
         );
+
+        console.log("MHTESTsessionExpiry", sessionExpiry);
 
         await dynamoDbClient.update({
           TableName: process.env["SESSIONS_TABLE_NAME"],
@@ -115,6 +119,15 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
             ":expires": sessionExpiry,
           },
         });
+
+        const sessionFromDb = await dynamoDbClient.get({
+          TableName: process.env["SESSIONS_TABLE_NAME"],
+          Key: {
+            id: `${sessionPrefix}${request.session.sessionId}`,
+          },
+          ConsistentRead: true,
+        });
+        console.log("MHTESTsessionFromDb", sessionFromDb);
       } catch (error) {
         request.log.error(error, "SetSessionExpiryError");
         metrics.addMetric("SetSessionExpiryError", MetricUnit.Count, 1);
