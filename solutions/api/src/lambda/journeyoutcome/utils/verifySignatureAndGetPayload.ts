@@ -1,6 +1,10 @@
 import { errorManager } from "./errors.js";
 import type { CryptoKey, JWTVerifyResult, JWTHeaderParameters } from "jose";
-import { JWSSignatureVerificationFailed, JWTInvalid } from "jose/errors";
+import {
+  JWSSignatureVerificationFailed,
+  JWTInvalid,
+  JWTExpired,
+} from "jose/errors";
 import { jwtVerify, decodeJwt } from "jose";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import type { JourneyInfoPayload } from "./validateJourneyOutcomeJwtClaims.js";
@@ -37,6 +41,8 @@ export async function verifySignatureAndGetPayload(
         "AccessTokenSignatureInvalid",
         `Invalid access token signature with jti: ${jti} and kid: ${kid}`,
       );
+    } else if (error instanceof JWTExpired) {
+      errorManager.throwError("InvalidAccessToken", "Token has expired");
     } else {
       throw error;
     }

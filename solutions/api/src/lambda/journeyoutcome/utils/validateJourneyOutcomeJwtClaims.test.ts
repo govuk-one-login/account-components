@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
 import type { JourneyInfoPayload } from "./validateJourneyOutcomeJwtClaims.js";
 
 vi.doMock("./errors.js", () => ({
@@ -18,12 +18,19 @@ describe("validateJourneyOutcomeJwtClaims", () => {
   const validPayload = {
     outcome_id: "12345",
     iss: "https://api.manage.account.gov.uk/token",
-    aud: "https://api.manage.account.gov.uk/journeyinfo",
+    aud: "https://api.manage.account.gov.uk/journeyoutcome",
     iat: nowInSeconds - 10,
     exp: nowInSeconds + 300,
     sub: "user-subject-id",
     jti: "jwt-unique-id",
   };
+
+  beforeAll(() => {
+    process.env["JOURNEY_OUTCOME_ENDPOINT_URL"] =
+      "https://api.manage.account.gov.uk/journeyoutcome";
+    process.env["TOKEN_ENDPOINT_URL"] =
+      "https://api.manage.account.gov.uk/token";
+  });
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -101,7 +108,7 @@ describe("validateJourneyOutcomeJwtClaims", () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "InvalidAccessToken",
-      'Invalid audience. Expected "https://api.manage.account.gov.uk/journeyinfo", got "invalid-audience".',
+      'Invalid audience. Expected "https://api.manage.account.gov.uk/journeyoutcome", got "invalid-audience".',
     );
   });
 
@@ -135,16 +142,6 @@ describe("validateJourneyOutcomeJwtClaims", () => {
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "InvalidAccessToken",
       "iat claim is in the future.",
-    );
-  });
-
-  it("should check calls to throwError if exp is in the past or exactly now", () => {
-    validateJourneyOutcomeJwtClaims({ ...validPayload, exp: nowInSeconds });
-
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(mockErrorManager.throwError).toHaveBeenCalledWith(
-      "InvalidAccessToken",
-      "exp claim is in the past (token has expired).",
     );
   });
 });
