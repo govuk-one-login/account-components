@@ -158,7 +158,7 @@ create_dynamodb_tables() {
     --key-schema \
       AttributeName=id,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST \
-    --global-secondary-indexes '[{"IndexName":"users-sessions","KeySchema":[{"AttributeName":"user_id","KeyType":"HASH"}],"Projection":{"ProjectionType":"KEYS_ONLY"}}]'
+    --global-secondary-indexes '[{"IndexName":"users-sessions","KeySchema":[{"AttributeName":"user_id","KeyType":"HASH"}],"Projection":{"ProjectionType":"KEYS_ONLY"}}]' \
     --time-to-live-specification Enabled=true,AttributeName=expires
     
   # AuthCodeTable
@@ -168,7 +168,7 @@ create_dynamodb_tables() {
       AttributeName=code,AttributeType=S \
     --key-schema \
       AttributeName=code,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST
+    --billing-mode PAY_PER_REQUEST \
     --time-to-live-specification Enabled=true,AttributeName=expiry_time
 
   # ReplayAttackTable
@@ -178,7 +178,7 @@ create_dynamodb_tables() {
       AttributeName=nonce,AttributeType=S \
     --key-schema \
       AttributeName=nonce,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST
+    --billing-mode PAY_PER_REQUEST \
     --time-to-live-specification Enabled=true,AttributeName=expires
 
   # ApiSessionsTable
@@ -188,7 +188,7 @@ create_dynamodb_tables() {
       AttributeName=id,AttributeType=S \
     --key-schema \
       AttributeName=id,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST
+    --billing-mode PAY_PER_REQUEST \
     --time-to-live-specification Enabled=true,AttributeName=expires
 
   echo "Finished creating DynamoDB tables"
