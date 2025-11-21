@@ -20,7 +20,7 @@ cp ../../package.json ./dist/package.json
 cp ../../package-lock.json ./dist/package-lock.json
 cp ../../.npmrc ./dist/.npmrc
 cd dist
-run custom-install --omit=dev
+npm run custom-install-omit-dev
 
 cd ../
 sam build

@@ -26,7 +26,7 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Install dependencies
-        run: run custom-install
+        run: npm run custom-install
 
       - name: Configure frontend environment
         run: |

@@ -14,8 +14,12 @@ import { randomBytes } from "node:crypto";
 import assert from "node:assert";
 import { paths } from "../../../../../frontend/src/utils/paths.js";
 import type { APIGatewayProxyResult } from "aws-lambda";
-import { apiSessionCookieName } from "../../../../../commons/utils/constants.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
+import { serialize } from "cookie";
+import {
+  apiSessionCookieName,
+  getApiSessionCookieOptions,
+} from "../../../../../commons/utils/apiSessionCookie/index.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -78,10 +82,11 @@ export const checkJtiUnusedAndSetUpSession = async (
       statusCode: 302,
       headers: {
         location: frontendUrl.toString(),
-        // Session cookie by virtue of not having maxAge or expires
-        "Set-Cookie": `${apiSessionCookieName}=${sessionId}; Secure; HttpOnly; SameSite=Strict; Domain=${
-          process.env["API_SESSION_COOKIE_DOMAIN"]
-        }`,
+        "Set-Cookie": serialize(
+          apiSessionCookieName,
+          sessionId,
+          getApiSessionCookieOptions(process.env["API_SESSION_COOKIE_DOMAIN"]),
+        ),
       },
       body: "",
     };

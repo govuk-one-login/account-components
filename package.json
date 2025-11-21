@@ -27,6 +27,7 @@
     "@smithy/node-http-handler": "^4.2.1",
     "aws-xray-sdk": "^3.10.3",
     "connect-dynamodb": "^3.0.5",
+    "cookie": "^1.0.2",
     "esbuild": "^0.25.11",
     "express-session": "^1.18.2",
     "fastify": "^5.6.1",
@@ -70,6 +71,7 @@
   },
   "scripts": {
     "custom-install": "npm ci && npx patch-package",
+    "custom-install-omit-dev": "npm ci --omit=dev && npx patch-package",
     "install-brewfile": "cat Brewfile; echo; echo; read -p \"Install/update Brewfile dependencies as shown above (y/N)?\" -n 1 -r; echo; if [ \"$REPLY\" == \"y\" ]; then brew bundle check || brew bundle install; fi",
     "install-git-hooks": "pre-commit install --install-hooks --overwrite",
     "generate-config-types": "json2ts -i solutions/config/schema/config.json -o solutions/config/schema/types.ts",

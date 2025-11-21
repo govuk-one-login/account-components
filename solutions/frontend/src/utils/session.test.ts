@@ -26,7 +26,7 @@ vi.mock(import("express-session"), () => ({
   default: mockSession,
 }));
 
-const { getSessionOptions } = await import("./index.js");
+const { getSessionOptions } = await import("../session.js");
 
 describe("getSessionOptions", () => {
   const originalEnv = process.env;
@@ -107,7 +107,7 @@ describe("getSessionOptions", () => {
     mockConnectDynamoDB.mockReturnValue(mockStoreConstructor);
 
     const { getSessionOptions: freshGetSessionOptions } = await import(
-      "./index.js"
+      "../session.js"
     );
     await freshGetSessionOptions();
 

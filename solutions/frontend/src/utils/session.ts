@@ -1,10 +1,31 @@
 import type { FastifySessionOptions } from "@fastify/session";
-import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.js";
+import { getEnvironment } from "../../../commons/utils/getEnvironment/index.js";
 import assert from "node:assert";
 import ConnectDynamoDB from "connect-dynamodb";
 import session from "express-session";
-import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
+import { getDynamoDbClient } from "../../../commons/utils/awsClient/dynamodbClient/index.js";
 import { ScalarAttributeType } from "@aws-sdk/client-dynamodb";
+import type { FastifyReply, FastifyRequest } from "fastify";
+
+export const sessionCookieName = "session";
+
+const sessionCookieOptions = {
+  secure: getEnvironment() !== "local",
+  sameSite: "lax",
+  httpOnly: true,
+} as const;
+
+export const destroySession = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  await request.session.regenerate();
+
+  reply.setCookie(sessionCookieName, "", {
+    ...sessionCookieOptions,
+    maxAge: 0,
+  });
+};
 
 let dynamodbStore: ConnectDynamoDB.DynamoDBStore | undefined = undefined;
 
@@ -21,13 +42,8 @@ export const getSessionOptions = async (): Promise<FastifySessionOptions> => {
 
   return {
     secret: process.env["SESSIONS_SIGNER"],
-    // Session cookie by virtue of not having maxAge
-    // or expires
-    cookie: {
-      secure: getEnvironment() !== "local",
-      sameSite: "lax",
-      httpOnly: true,
-    },
+    cookieName: sessionCookieName,
+    cookie: sessionCookieOptions,
     rolling: false,
     saveUninitialized: false,
     expiresIn: 1800, // 0.5 hours in seconds

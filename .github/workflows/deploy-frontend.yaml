@@ -82,7 +82,7 @@ jobs:
           aws-region: "eu-west-2"
 
       - name: Install dependencies
-        run: run custom-install
+        run: npm run custom-install
 
       - name: Build frontend
         run: npm run build:frontend

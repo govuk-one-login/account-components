@@ -6,14 +6,10 @@ import { journeys } from "./config.js";
 import type { AnyActor } from "xstate";
 import { createActor } from "xstate";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
-import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
 import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 import assert from "node:assert";
-
-const redirectToErrorPage = async (reply: FastifyReply) => {
-  reply.redirect(paths.others.authorizeError.path);
-  return reply;
-};
+import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
+import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
 
 export const onRequest = async (
   request: FastifyRequest,
@@ -22,7 +18,7 @@ export const onRequest = async (
   if (!request.session.claims) {
     request.log.warn("NoClaimsInSession");
     metrics.addMetric("NoClaimsInSession", MetricUnit.Count, 1);
-    return await redirectToErrorPage(reply);
+    return await redirectToAuthorizeErrorPage(request, reply);
   }
 
   const claims = request.session.claims;
@@ -40,7 +36,7 @@ export const onRequest = async (
       "ClientNotFound",
     );
     metrics.addMetric("ClientNotFound", MetricUnit.Count, 1);
-    return await redirectToErrorPage(reply);
+    return await redirectToAuthorizeErrorPage(request, reply);
   }
 
   reply.client = client;
@@ -69,14 +65,13 @@ export const onRequest = async (
   } catch (error) {
     request.log.warn({ error }, "FailedToCreateStateMachineActor");
     metrics.addMetric("FailedToCreateStateMachineActor", MetricUnit.Count, 1);
-    reply.redirect(
-      getRedirectToClientRedirectUri(
-        claims.redirect_uri,
-        authorizeErrors.failedToCreateStateMachineActor,
-        claims.state,
-      ),
+    return await redirectToClientRedirectUri(
+      request,
+      reply,
+      claims.redirect_uri,
+      authorizeErrors.failedToCreateStateMachineActor,
+      claims.state,
     );
-    return reply;
   }
 
   actor.start();
@@ -118,13 +113,12 @@ export const onRequest = async (
   } catch (error) {
     request.log.warn({ error }, "FailedToValidateJourneyUrl");
     metrics.addMetric("FailedToValidateJourneyUrl", MetricUnit.Count, 1);
-    reply.redirect(
-      getRedirectToClientRedirectUri(
-        claims.redirect_uri,
-        authorizeErrors.failedToValidateJourneyUrl,
-        claims.state,
-      ),
+    return await redirectToClientRedirectUri(
+      request,
+      reply,
+      claims.redirect_uri,
+      authorizeErrors.failedToValidateJourneyUrl,
+      claims.state,
     );
-    return reply;
   }
 };

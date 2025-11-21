@@ -22,7 +22,7 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Install dependencies
-        run: run custom-install
+        run: npm run custom-install
 
       - name: Test
         run: npm run test

@@ -4,10 +4,10 @@ import { randomBytes } from "node:crypto";
 import { getAppConfig } from "../../../../commons/utils/getAppConfig/index.js";
 import type { getClaimsSchema } from "../../../../commons/utils/authorize/getClaimsSchema.js";
 import type * as v from "valibot";
-import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
 import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
+import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -53,29 +53,23 @@ export const completeJourney = async (
       ],
     });
 
-    await request.session.regenerate();
-
-    reply.redirect(
-      getRedirectToClientRedirectUri(
-        claims.redirect_uri,
-        undefined,
-        claims.state,
-        authCode,
-      ),
+    return await redirectToClientRedirectUri(
+      request,
+      reply,
+      claims.redirect_uri,
+      undefined,
+      claims.state,
+      authCode,
     );
-
-    return await reply;
   } catch (error) {
     request.log.warn({ error }, "FailedToCompleteJourney");
     metrics.addMetric("FailedToCompleteJourney", MetricUnit.Count, 1);
-    await request.session.regenerate();
-    reply.redirect(
-      getRedirectToClientRedirectUri(
-        claims.redirect_uri,
-        authorizeErrors.failedToCompleteJourney,
-        claims.state,
-      ),
+    return await redirectToClientRedirectUri(
+      request,
+      reply,
+      claims.redirect_uri,
+      authorizeErrors.failedToCompleteJourney,
+      claims.state,
     );
-    return reply;
   }
 };
