@@ -23,6 +23,8 @@ export const onRequest = async (
 
   const claims = request.session.claims;
 
+  metrics.addDimensions({ client_id: claims.client_id });
+
   const clientRegistry = await getClientRegistry();
   const client = clientRegistry.find(
     (client) => client.client_id === claims.client_id,

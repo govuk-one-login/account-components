@@ -5,26 +5,15 @@ import ConnectDynamoDB from "connect-dynamodb";
 import session from "express-session";
 import { getDynamoDbClient } from "../../../commons/utils/awsClient/dynamodbClient/index.js";
 import { ScalarAttributeType } from "@aws-sdk/client-dynamodb";
-import type { FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyRequest } from "fastify";
 
 export const sessionCookieName = "session";
+export const sessionPrefix = "sess:";
 
-const sessionCookieOptions = {
-  secure: getEnvironment() !== "local",
-  sameSite: "lax",
-  httpOnly: true,
-} as const;
-
-export const destroySession = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-) => {
+export const destroySession = async (request: FastifyRequest) => {
   await request.session.regenerate();
-
-  reply.setCookie(sessionCookieName, "", {
-    ...sessionCookieOptions,
-    maxAge: 0,
-  });
+  // There is no need to manually unset the session cookie here
+  // calling request.session.regenerate does it for us
 };
 
 let dynamodbStore: ConnectDynamoDB.DynamoDBStore | undefined = undefined;
@@ -38,15 +27,19 @@ export const getSessionOptions = async (): Promise<FastifySessionOptions> => {
     client: getDynamoDbClient().client,
     specialKeys: [{ name: "user_id", type: ScalarAttributeType.S }],
     skipThrowMissingSpecialKeys: true,
+    prefix: sessionPrefix,
   });
 
   return {
     secret: process.env["SESSIONS_SIGNER"],
     cookieName: sessionCookieName,
-    cookie: sessionCookieOptions,
+    cookie: {
+      secure: getEnvironment() !== "local",
+      sameSite: "lax",
+      httpOnly: true,
+    },
     rolling: false,
     saveUninitialized: false,
-    expiresIn: 1800, // 0.5 hours in seconds
     // @ts-expect-error
     store: dynamodbStore,
   };

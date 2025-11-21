@@ -50,7 +50,7 @@ jobs:
           aws-region: "eu-west-2"
 
       - name: Install dependencies
-        run: npm run custom-install
+        run: npm ci
 
       - name: Build core
         run: npm run build:core

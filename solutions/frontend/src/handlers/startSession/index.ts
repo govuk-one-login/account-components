@@ -8,6 +8,10 @@ import { initialJourneyPaths } from "../../utils/paths.js";
 import { getClaimsSchema } from "../../../../commons/utils/authorize/getClaimsSchema.js";
 import { destroyApiSession } from "../../utils/apiSession.js";
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
+import { sessionPrefix } from "../../utils/session.js";
+import { decodeJwt } from "jose";
+import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
+import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -48,6 +52,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         Key: {
           id: request.cookies["apisession"],
         },
+        ConsistentRead: true,
       });
 
       if (!apiSession.Item) {
@@ -84,6 +89,43 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       await request.session.regenerate();
       request.session.claims = claims;
       request.session.user_id = claims.sub;
+      await request.session.save();
+
+      /* This is a bit gross as we're manually updating the expiry on
+      the session row. But @fastify/session doesn't provide a way to change
+      the expiry of an individual session so we have to do it manually. */
+      try {
+        const accessTokenExpiry = decodeJwt(claims.access_token).exp ?? 0;
+
+        const sessionExpiry = Math.min(
+          Math.max(
+            accessTokenExpiry,
+            Math.floor(Date.now() / 1000) + 1800, // Min session length of half an hour
+          ),
+          Math.floor(Date.now() / 1000) + 3600, // Max session length of 2 hours
+        );
+
+        await dynamoDbClient.update({
+          TableName: process.env["SESSIONS_TABLE_NAME"],
+          Key: {
+            id: `${sessionPrefix}${request.session.sessionId}`,
+          },
+          UpdateExpression: "SET expires = :expires",
+          ExpressionAttributeValues: {
+            ":expires": sessionExpiry,
+          },
+        });
+      } catch (error) {
+        request.log.error(error, "SetSessionExpiryError");
+        metrics.addMetric("SetSessionExpiryError", MetricUnit.Count, 1);
+        return await redirectToClientRedirectUri(
+          request,
+          reply,
+          claims.redirect_uri,
+          authorizeErrors.setSessionExpiryError,
+          claims.state,
+        );
+      }
 
       await destroyApiSession(request, reply);
       reply.redirect(initialJourneyPaths[claims.scope]);

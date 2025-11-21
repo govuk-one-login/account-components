@@ -33,8 +33,8 @@ export const destroyApiSession = async (
     "API_SESSION_COOKIE_DOMAIN is not set",
   );
 
-  reply.setCookie(apiSessionCookieName, "", {
-    ...getApiSessionCookieOptions(process.env["API_SESSION_COOKIE_DOMAIN"]),
-    maxAge: 0,
-  });
+  reply.clearCookie(
+    apiSessionCookieName,
+    getApiSessionCookieOptions(process.env["API_SESSION_COOKIE_DOMAIN"]),
+  );
 };

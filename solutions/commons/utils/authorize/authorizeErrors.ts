@@ -156,6 +156,10 @@ export const authorizeErrors = {
     description: "E5011",
     type: "server_error",
   },
+  setSessionExpiryError: {
+    description: "E5012",
+    type: "server_error",
+  },
 } as const satisfies Record<
   string,
   | AuthorizeErrorAccessDenied

@@ -25,7 +25,7 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Install dependencies
-        run: npm run custom-install
+        run: npm ci
 
       - name: Run tests and report coverage
         run: npm run test:coverage

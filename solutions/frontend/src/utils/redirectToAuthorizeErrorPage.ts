@@ -8,7 +8,7 @@ export const redirectToAuthorizeErrorPage = async (
   reply: FastifyReply,
 ) => {
   await destroyApiSession(request, reply);
-  await destroySession(request, reply);
+  await destroySession(request);
 
   reply.redirect(paths.others.authorizeError.path);
 

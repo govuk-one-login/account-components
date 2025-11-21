@@ -13,7 +13,7 @@ export const redirectToClientRedirectUri = async (
   code?: string,
 ) => {
   await destroyApiSession(request, reply);
-  await destroySession(request, reply);
+  await destroySession(request);
 
   reply.redirect(
     getRedirectToClientRedirectUri(redirectUri, error, state, code),
