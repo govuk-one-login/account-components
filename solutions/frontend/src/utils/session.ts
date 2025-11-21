@@ -7,7 +7,6 @@ import { getDynamoDbClient } from "../../../commons/utils/awsClient/dynamodbClie
 import { ScalarAttributeType } from "@aws-sdk/client-dynamodb";
 import type { FastifyRequest } from "fastify";
 
-export const sessionCookieName = "session";
 export const sessionPrefix = "sess:";
 
 export const destroySession = async (request: FastifyRequest) => {
@@ -32,7 +31,6 @@ export const getSessionOptions = async (): Promise<FastifySessionOptions> => {
 
   return {
     secret: process.env["SESSIONS_SIGNER"],
-    cookieName: sessionCookieName,
     cookie: {
       secure: getEnvironment() !== "local",
       sameSite: "lax",
