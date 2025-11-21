@@ -572,6 +572,131 @@ Resources:
           !Ref AWS::NoValue,
         ]
 
+  ApiSessionsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-ApiSessions
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      TimeToLiveSpecification:
+        AttributeName: "expiry"
+        Enabled: true
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-api_sessions"
+
+  AuthCodeTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-AuthCode
+      AttributeDefinitions:
+        - AttributeName: "code"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "code"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      TimeToLiveSpecification:
+        AttributeName: "expiry_time"
+        Enabled: true
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-auth_code"
+
+  JourneyOutcomeTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub ${AWS::StackName}-JourneyOutcome
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: outcome_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: outcome_id
+          KeyType: HASH
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-journey_outcome"
+
+  JourneyOutcomeTableArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/JourneyOutcomeTableArn"
+      Type: String
+      Value: !GetAtt JourneyOutcomeTable.Arn
+      Description: ARN of the journey outcome table
+
+  JourneyOutcomeTableNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/JourneyOutcomeTableName"
+      Type: String
+      Value: !Ref JourneyOutcomeTable
+      Description: Name of the journey outcome table
+
+  ApiSessionsTableNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/ApiSessionsTableName"
+      Type: String
+      Value: !Ref ApiSessionsTable
+      Description: Name of the API sessions table
+
+  ApiSessionsTableArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/ApiSessionsTableArn"
+      Type: String
+      Value: !GetAtt ApiSessionsTable.Arn
+      Description: ARN of the API sessions table
+
+  AuthCodeTableArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/AuthCodeTableArn"
+      Type: String
+      Value: !GetAtt AuthCodeTable.Arn
+      Description: ARN of the auth code table
+
+  AuthCodeTableNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/AuthCodeTableName"
+      Type: String
+      Value: !Ref AuthCodeTable
+      Description: Name of the auth code table
+
   JWKSStoreBucketNameParameter:
     Type: AWS::SSM::Parameter
     Properties:

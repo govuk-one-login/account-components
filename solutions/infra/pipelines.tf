@@ -20,7 +20,7 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
-    SlackNotificationType                   = var.environment == "production" ? "All" : "Failures"
+    SlackNotificationType                   = var.environment == "production" ? "All" : (var.environment == "dev" ? "None" : "Failures")
     ProgrammaticPermissionsBoundary         = "True"
     AllowedServiceOne                       = "EC2"
     AllowedServiceTwo                       = "DynamoDB"
@@ -52,7 +52,7 @@ resource "aws_cloudformation_stack" "api_pipeline_stack" {
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
-    SlackNotificationType                   = var.environment == "production" ? "All" : "Failures"
+    SlackNotificationType                   = var.environment == "production" ? "All" : (var.environment == "dev" ? "None" : "Failures")
     ProgrammaticPermissionsBoundary         = "True"
     AllowedServiceOne                       = "AppConfig"
     AllowedServiceTwo                       = "EC2"
@@ -85,7 +85,7 @@ resource "aws_cloudformation_stack" "core_pipeline_stack" {
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
-    SlackNotificationType                   = var.environment == "production" ? "All" : "Failures"
+    SlackNotificationType                   = var.environment == "production" ? "All" : (var.environment == "dev" ? "None" : "Failures")
     ProgrammaticPermissionsBoundary         = "True"
     AllowedServiceOne                       = "EC2"
     AllowedServiceTwo                       = "Lambda"
@@ -115,7 +115,7 @@ resource "aws_cloudformation_stack" "alarms_pipeline_stack" {
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
-    SlackNotificationType                   = var.environment == "production" ? "All" : "Failures"
+    SlackNotificationType                   = var.environment == "production" ? "All" : (var.environment == "dev" ? "None" : "Failures")
   }
 
   capabilities = var.capabilities
@@ -139,7 +139,7 @@ resource "aws_cloudformation_stack" "mocks_pipeline_stack" {
     GitHubRepositoryName             = var.create_build_stacks ? var.repository_name : "none"
     IncludePromotion                 = "No"
     BuildNotificationStackName       = "build-notifications"
-    SlackNotificationType            = "Failures"
+    SlackNotificationType            = var.environment == "production" ? "All" : (var.environment == "dev" ? "None" : "Failures")
     ProgrammaticPermissionsBoundary  = "True"
     AllowedServiceOne                = "AppConfig"
     AllowedServiceTwo                = "SSM"
@@ -175,6 +175,8 @@ resource "aws_cloudformation_stack" "deploy" {
     ProfileName                             = "operational"
     SigningKeyArn                           = var.config_signing_key_arn
     LambdaValidatorArn                      = "none"
+    BuildNotificationStackName              = "build-notifications"
+    SlackNotificationType                   = var.environment == "production" ? "All" : (var.environment == "dev" ? "None" : "Failures")
   }
 
   template_body = file("${path.module}/app_config_pipeline.cf.yaml")
