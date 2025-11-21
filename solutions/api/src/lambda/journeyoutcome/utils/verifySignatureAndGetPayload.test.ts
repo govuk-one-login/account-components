@@ -1,7 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { CryptoKey, JWTPayload, JWTHeaderParameters } from "jose";
 import { Buffer } from "buffer";
-import { JWSSignatureVerificationFailed, JWTInvalid } from "jose/errors";
+import {
+  JWSSignatureVerificationFailed,
+  JWTInvalid,
+  JWTExpired,
+} from "jose/errors";
 
 vi.doMock("jose", () => ({
   jwtVerify: vi.fn(),
@@ -150,6 +154,24 @@ describe("verifySignatureAndGetPayload", () => {
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "InvalidAccessToken",
       `Access token is malformed or invalid`,
+    );
+  });
+
+  it("should throw error for expired token", async () => {
+    const invalidToken = "invalid.format";
+    const verificationError = new JWTExpired("JWT expired", {
+      sub: "123",
+      name: "Test User",
+    });
+
+    mockJwtVerify.mockRejectedValueOnce(verificationError);
+
+    await verifySignatureAndGetPayload(invalidToken, mockKey);
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockErrorManager.throwError).toHaveBeenCalledWith(
+      "InvalidAccessToken",
+      "Token has expired",
     );
   });
 });
