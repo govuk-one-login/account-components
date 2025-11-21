@@ -7,5 +7,3 @@ export const jarKeyEncryptionAlgorithm = "RSA-OAEP-256";
 export const jarContentEncryptionAlgorithm = "A256GCM";
 
 export const jwtSigningAlgorithm = "ES256";
-
-export const apiSessionCookieName = "apisession";

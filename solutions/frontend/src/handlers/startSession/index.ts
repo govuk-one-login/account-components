@@ -1,42 +1,19 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
-import assert from "node:assert";
 import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import * as v from "valibot";
-import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
-import { initialJourneyPaths, paths } from "../../utils/paths.js";
-import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
+import { initialJourneyPaths } from "../../utils/paths.js";
 import { getClaimsSchema } from "../../../../commons/utils/authorize/getClaimsSchema.js";
+import { destroyApiSession } from "../../utils/apiSession.js";
+import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
+import { sessionPrefix } from "../../utils/session.js";
+import { decodeJwt } from "jose";
+import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
+import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 
 const dynamoDbClient = getDynamoDbClient();
-
-const getUnsetApiSessionCookieArgs = (): Parameters<
-  FastifyReply["setCookie"]
-> => {
-  assert.ok(
-    process.env["API_SESSION_COOKIE_DOMAIN"],
-    "API_SESSION_COOKIE_DOMAIN is not set",
-  );
-
-  return [
-    "apisession",
-    "",
-    {
-      httpOnly: true,
-      secure: true,
-      sameSite: "strict",
-      domain: process.env["API_SESSION_COOKIE_DOMAIN"],
-      maxAge: 0,
-    },
-  ] as const;
-};
-
-const redirectToErrorPage = (reply: FastifyReply) => {
-  reply.setCookie(...getUnsetApiSessionCookieArgs());
-  reply.redirect(paths.others.authorizeError.path);
-};
 
 const queryParamsSchema = v.object({
   client_id: v.pipe(v.string(), v.nonEmpty()),
@@ -58,15 +35,13 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
     if (!client) {
       request.log.warn("ClientNotFound");
       metrics.addMetric("ClientNotFound", MetricUnit.Count, 1);
-      redirectToErrorPage(reply);
-      return await reply;
+      return await redirectToAuthorizeErrorPage(request, reply);
     }
 
     if (!request.cookies["apisession"]) {
       request.log.warn("ApiSessionCookieNotSet");
       metrics.addMetric("ApiSessionCookieNotSet", MetricUnit.Count, 1);
-      redirectToErrorPage(reply);
-      return await reply;
+      return await redirectToAuthorizeErrorPage(request, reply);
     }
 
     let claims: v.InferOutput<ReturnType<typeof getClaimsSchema>>;
@@ -77,13 +52,13 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         Key: {
           id: request.cookies["apisession"],
         },
+        ConsistentRead: true,
       });
 
       if (!apiSession.Item) {
         request.log.warn("ApiSessionNotFound");
         metrics.addMetric("ApiSessionNotFound", MetricUnit.Count, 1);
-        redirectToErrorPage(reply);
-        return await reply;
+        return await redirectToAuthorizeErrorPage(request, reply);
       }
 
       const claimsResult = v.safeParse(
@@ -105,52 +80,61 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
           "InvalidClaimsInApiSession",
         );
         metrics.addMetric("InvalidClaimsInApiSession", MetricUnit.Count, 1);
-        redirectToErrorPage(reply);
-        return await reply;
+        return await redirectToAuthorizeErrorPage(request, reply);
       }
 
       claims = claimsResult.output;
       metrics.addDimensions({ client_id: claims.client_id });
 
-      try {
-        await dynamoDbClient.delete({
-          TableName: process.env["API_SESSIONS_TABLE_NAME"],
-          Key: {
-            id: request.cookies["apisession"],
-          },
-        });
-      } catch (error) {
-        request.log.error(error, "ApiSessionDeleteError");
-        metrics.addMetric("ApiSessionDeleteError", MetricUnit.Count, 1);
-
-        reply.setCookie(...getUnsetApiSessionCookieArgs());
-        reply.redirect(
-          getRedirectToClientRedirectUri(
-            claims.redirect_uri,
-            authorizeErrors.failedToDeleteApiSession,
-            claims.state,
-          ),
-        );
-        return await reply;
-      }
-
       await request.session.regenerate();
       request.session.claims = claims;
       request.session.user_id = claims.sub;
+      await request.session.save();
 
-      reply.setCookie(...getUnsetApiSessionCookieArgs());
+      try {
+        const accessTokenExpiry = decodeJwt(claims.access_token).exp ?? 0;
+
+        const sessionExpiry = Math.min(
+          Math.max(
+            accessTokenExpiry,
+            Math.floor(Date.now() / 1000) + 1800, // Min session length of half an hour
+          ),
+          Math.floor(Date.now() / 1000) + 7200, // Max session length of 2 hours
+        );
+
+        await dynamoDbClient.update({
+          TableName: process.env["SESSIONS_TABLE_NAME"],
+          Key: {
+            id: `${sessionPrefix}${request.session.sessionId}`,
+          },
+          UpdateExpression: "SET custom_expires = :custom_expires",
+          ExpressionAttributeValues: {
+            ":custom_expires": sessionExpiry,
+          },
+        });
+      } catch (error) {
+        request.log.error(error, "SetSessionExpiryError");
+        metrics.addMetric("SetSessionExpiryError", MetricUnit.Count, 1);
+        return await redirectToClientRedirectUri(
+          request,
+          reply,
+          claims.redirect_uri,
+          authorizeErrors.setSessionExpiryError,
+          claims.state,
+        );
+      }
+
+      await destroyApiSession(request, reply);
       reply.redirect(initialJourneyPaths[claims.scope]);
       return await reply;
     } catch (error) {
       request.log.error(error, "ApiSessionGetError");
       metrics.addMetric("ApiSessionGetError", MetricUnit.Count, 1);
-      redirectToErrorPage(reply);
-      return await reply;
+      return await redirectToAuthorizeErrorPage(request, reply);
     }
   } catch (error) {
     request.log.error(error, "StartSessionError");
     metrics.addMetric("StartSessionError", MetricUnit.Count, 1);
-    redirectToErrorPage(reply);
-    return reply;
+    return await redirectToAuthorizeErrorPage(request, reply);
   }
 }

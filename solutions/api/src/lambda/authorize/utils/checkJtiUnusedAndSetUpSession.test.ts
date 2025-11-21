@@ -115,7 +115,6 @@ describe("checkJtiUnusedAndSetUpSession", () => {
     expect(response.headers?.["Set-Cookie"]).toContain(
       "Secure; HttpOnly; SameSite=Strict",
     );
-    expect(response.headers?.["Set-Cookie"]).toContain("Max-Age=1800");
     expect(response.headers?.["Set-Cookie"]).toContain("Domain=example.com");
 
     expect(mockTransactWrite).toHaveBeenCalledWith({

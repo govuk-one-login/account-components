@@ -256,7 +256,7 @@ Resources:
         - AttributeName: "id"
           KeyType: "HASH"
       TimeToLiveSpecification:
-        AttributeName: "expires"
+        AttributeName: "custom_expires"
         Enabled: true
       BillingMode: PAY_PER_REQUEST
       ContributorInsightsSpecification:
