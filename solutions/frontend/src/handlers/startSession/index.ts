@@ -91,43 +91,27 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       request.session.user_id = claims.sub;
       await request.session.save();
 
-      /* This is a bit gross as we're manually updating the expiry on
-      the session row. But @fastify/session doesn't provide a way to change
-      the expiry of an individual session so we have to do it manually. */
       try {
         const accessTokenExpiry = decodeJwt(claims.access_token).exp ?? 0;
-
-        console.log("MHTEST", accessTokenExpiry);
 
         const sessionExpiry = Math.min(
           Math.max(
             accessTokenExpiry,
             Math.floor(Date.now() / 1000) + 1800, // Min session length of half an hour
           ),
-          Math.floor(Date.now() / 1000) + 3600, // Max session length of 2 hours
+          Math.floor(Date.now() / 1000) + 7200, // Max session length of 2 hours
         );
-
-        console.log("MHTESTsessionExpiry", sessionExpiry);
 
         await dynamoDbClient.update({
           TableName: process.env["SESSIONS_TABLE_NAME"],
           Key: {
             id: `${sessionPrefix}${request.session.sessionId}`,
           },
-          UpdateExpression: "SET expires = :expires",
+          UpdateExpression: "SET custom_expires = :custom_expires",
           ExpressionAttributeValues: {
-            ":expires": sessionExpiry,
+            ":custom_expires": sessionExpiry,
           },
         });
-
-        const sessionFromDb = await dynamoDbClient.get({
-          TableName: process.env["SESSIONS_TABLE_NAME"],
-          Key: {
-            id: `${sessionPrefix}${request.session.sessionId}`,
-          },
-          ConsistentRead: true,
-        });
-        console.log("MHTESTsessionFromDb", sessionFromDb);
       } catch (error) {
         request.log.error(error, "SetSessionExpiryError");
         metrics.addMetric("SetSessionExpiryError", MetricUnit.Count, 1);
