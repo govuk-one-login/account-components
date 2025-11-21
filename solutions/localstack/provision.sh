@@ -142,7 +142,7 @@ create_dynamodb_tables() {
 
   # JourneyOutcomeTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-api-JourneyOutcome" \
+    --table-name "components-core-JourneyOutcome" \
     --attribute-definitions \
       AttributeName=outcome_id,AttributeType=S \
     --key-schema \
@@ -159,15 +159,17 @@ create_dynamodb_tables() {
       AttributeName=id,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST \
     --global-secondary-indexes '[{"IndexName":"users-sessions","KeySchema":[{"AttributeName":"user_id","KeyType":"HASH"}],"Projection":{"ProjectionType":"KEYS_ONLY"}}]'
-
+    --time-to-live-specification Enabled=true,AttributeName=expires
+    
   # AuthCodeTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-api-AuthCode" \
+    --table-name "components-core-AuthCode" \
     --attribute-definitions \
       AttributeName=code,AttributeType=S \
     --key-schema \
       AttributeName=code,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
+    --time-to-live-specification Enabled=true,AttributeName=expiry_time
 
   # ReplayAttackTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
@@ -177,15 +179,17 @@ create_dynamodb_tables() {
     --key-schema \
       AttributeName=nonce,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
+    --time-to-live-specification Enabled=true,AttributeName=expires
 
   # ApiSessionsTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-api-ApiSessions" \
+    --table-name "components-core-ApiSessions" \
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
     --key-schema \
       AttributeName=id,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
+    --time-to-live-specification Enabled=true,AttributeName=expires
 
   echo "Finished creating DynamoDB tables"
   return 0
