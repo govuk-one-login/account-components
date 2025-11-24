@@ -44,10 +44,10 @@ jobs:
           LOCALSTACK_ACCESS_KEY_ID=test
           LOCALSTACK_ACCESS_KEY=test
           API_SESSION_COOKIE_DOMAIN=localhost    
-          API_SESSIONS_TABLE_NAME=components-api-ApiSessions
+          API_SESSIONS_TABLE_NAME=components-core-ApiSessions
           AUTHORIZE_ENDPOINT_URL=http://localhost:6004/authorize
-          AUTH_CODE_TABLE_NAME=components-api-AuthCode
-          JOURNEY_OUTCOME_TABLE_NAME=components-api-JourneyOutcome          
+          AUTH_CODE_TABLE_NAME=components-core-AuthCode
+          JOURNEY_OUTCOME_TABLE_NAME=components-core-JourneyOutcome          
           EOF
 
       - name: Configure stubs environment
@@ -92,7 +92,7 @@ jobs:
               "JAR_RSA_ENCRYPTION_KEY_ALIAS": "alias/components-core-JARRSAEncryptionKey",
               "AUTHORIZE_ENDPOINT_URL": "http://localhost:6004/authorize",
               "REPLAY_ATTACK_TABLE_NAME": "components-api-ReplayAttack",
-              "API_SESSIONS_TABLE_NAME": "components-api-ApiSessions",
+              "API_SESSIONS_TABLE_NAME": "components-core-ApiSessions",
               "API_SESSION_COOKIE_DOMAIN": "localhost",
               "FRONTEND_URL": "http://localhost:6002"
             }          

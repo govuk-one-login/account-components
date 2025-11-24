@@ -72,7 +72,7 @@ start_localstack() {
   echo "Starting Localstack"
 
   docker stop account-components-localstack || true && docker rm account-components-localstack || true
-  DOCKER_FLAGS="--network account-components-network --name account-components-localstack" localstack start -d
+  LOCALSTACK_DYNAMODB_REMOVE_EXPIRED_ITEMS=1 DOCKER_FLAGS="--network account-components-network --name account-components-localstack" localstack start -d
 
   until aws --endpoint-url=http://localhost:4566 s3 ls > /dev/null 2>&1; do
     echo "⌛ Localstack not ready yet, retrying in 2s"
@@ -142,7 +142,7 @@ create_dynamodb_tables() {
 
   # JourneyOutcomeTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-api-JourneyOutcome" \
+    --table-name "components-core-JourneyOutcome" \
     --attribute-definitions \
       AttributeName=outcome_id,AttributeType=S \
     --key-schema \
@@ -160,14 +160,22 @@ create_dynamodb_tables() {
     --billing-mode PAY_PER_REQUEST \
     --global-secondary-indexes '[{"IndexName":"users-sessions","KeySchema":[{"AttributeName":"user_id","KeyType":"HASH"}],"Projection":{"ProjectionType":"KEYS_ONLY"}}]'
 
+  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
+    --table-name "components-main-SessionStore" \
+    --time-to-live-specification "Enabled=true,AttributeName=expires"    
+    
   # AuthCodeTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-api-AuthCode" \
+    --table-name "components-core-AuthCode" \
     --attribute-definitions \
       AttributeName=code,AttributeType=S \
     --key-schema \
       AttributeName=code,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
+
+  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
+    --table-name "components-core-AuthCode" \
+    --time-to-live-specification "Enabled=true,AttributeName=expiry_time"
 
   # ReplayAttackTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
@@ -178,14 +186,22 @@ create_dynamodb_tables() {
       AttributeName=nonce,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
+  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
+    --table-name "components-api-ReplayAttack" \
+    --time-to-live-specification "Enabled=true,AttributeName=expires"      
+
   # ApiSessionsTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-api-ApiSessions" \
+    --table-name "components-core-ApiSessions" \
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
     --key-schema \
       AttributeName=id,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
+
+  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
+    --table-name "components-core-ApiSessions" \
+    --time-to-live-specification "Enabled=true,AttributeName=expires"      
 
   echo "Finished creating DynamoDB tables"
   return 0
