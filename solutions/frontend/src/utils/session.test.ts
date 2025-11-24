@@ -1,121 +1,97 @@
 import { expect, it, describe, vi, beforeEach, afterEach } from "vitest";
-import { ScalarAttributeType } from "@aws-sdk/client-dynamodb";
+import type { FastifyRequest } from "fastify";
+import { DynamoDbSessionStore } from "./dynamoDbSessionStore.js";
 
 const mockGetEnvironment = vi.fn();
-const mockGetDynamoDbClient = vi.fn();
-const mockConnectDynamoDB = vi.fn();
-const mockSession = {};
 
-vi.mock(import("../../../../commons/utils/getEnvironment/index.js"), () => ({
+vi.mock(import("../../../commons/utils/getEnvironment/index.js"), () => ({
   getEnvironment: mockGetEnvironment,
 }));
 
-vi.mock(
-  import("../../../../commons/utils/awsClient/dynamodbClient/index.js"),
-  () => ({
-    getDynamoDbClient: mockGetDynamoDbClient,
-  }),
-);
-
-vi.mock(import("connect-dynamodb"), () => ({
-  default: mockConnectDynamoDB,
+vi.mock(import("./dynamoDbSessionStore.js"), () => ({
+  DynamoDbSessionStore: vi.fn(),
 }));
 
-// @ts-expect-error
-vi.mock(import("express-session"), () => ({
-  default: mockSession,
-}));
+const { getSessionOptions, destroySession } = await import("./session.js");
 
-const { getSessionOptions } = await import("../session.js");
-
-describe("getSessionOptions", () => {
+describe("session utils", () => {
   const originalEnv = process.env;
 
   beforeEach(() => {
     process.env = { ...originalEnv };
-
-    mockGetDynamoDbClient.mockReturnValue({
-      client: {},
-    });
-
-    const mockStore = vi.fn().mockImplementation(function () {
-      return {};
-    });
-    mockConnectDynamoDB.mockReturnValue(mockStore);
   });
 
   afterEach(() => {
     process.env = originalEnv;
     vi.clearAllMocks();
-    vi.resetModules();
   });
 
-  it("throws when SESSIONS_SIGNER is missing", async () => {
-    delete process.env["SESSIONS_SIGNER"];
-    process.env["SESSIONS_TABLE_NAME"] = "test-table";
+  describe("destroySession", () => {
+    it("calls session.regenerate on the request", async () => {
+      const mockRegenerate = vi.fn().mockResolvedValue(undefined);
+      const mockRequest = {
+        session: {
+          regenerate: mockRegenerate,
+        },
+      } as unknown as FastifyRequest;
 
-    // eslint-disable-next-line vitest/require-to-throw-message
-    await expect(getSessionOptions()).rejects.toThrow();
-  });
+      await destroySession(mockRequest);
 
-  it("throws when SESSIONS_TABLE_NAME is missing", async () => {
-    process.env["SESSIONS_SIGNER"] = "test-signer";
-    delete process.env["SESSIONS_TABLE_NAME"];
-
-    // eslint-disable-next-line vitest/require-to-throw-message
-    await expect(getSessionOptions()).rejects.toThrow();
-  });
-
-  it("returns session options with secure cookie for non-local environment", async () => {
-    process.env["SESSIONS_SIGNER"] = "test-signer";
-    process.env["SESSIONS_TABLE_NAME"] = "test-table";
-    mockGetEnvironment.mockReturnValue("production");
-
-    const options = await getSessionOptions();
-
-    expect(options.secret).toBe("test-signer");
-    expect(options.cookie?.secure).toBe(true);
-    expect(options.cookie?.sameSite).toBe("lax");
-    expect(options.cookie?.httpOnly).toBe(true);
-    expect(options.rolling).toBe(false);
-    expect(options.saveUninitialized).toBe(false);
-    // @ts-expect-error
-    expect(options.expiresIn).toBe(1800);
-  });
-
-  it("returns session options with non-secure cookie for local environment", async () => {
-    process.env["SESSIONS_SIGNER"] = "test-signer";
-    process.env["SESSIONS_TABLE_NAME"] = "test-table";
-    mockGetEnvironment.mockReturnValue("local");
-
-    const options = await getSessionOptions();
-
-    expect(options.cookie?.secure).toBe(false);
-  });
-
-  it("creates DynamoDB store with correct configuration", async () => {
-    process.env["SESSIONS_SIGNER"] = "test-signer";
-    process.env["SESSIONS_TABLE_NAME"] = "test-table";
-    mockGetEnvironment.mockReturnValue("production");
-
-    const mockClient = {};
-    const mockStoreConstructor = vi.fn();
-
-    mockGetDynamoDbClient.mockReturnValue({
-      client: mockClient,
+      expect(mockRegenerate).toHaveBeenCalledTimes(1);
     });
-    mockConnectDynamoDB.mockReturnValue(mockStoreConstructor);
+  });
 
-    const { getSessionOptions: freshGetSessionOptions } = await import(
-      "../session.js"
-    );
-    await freshGetSessionOptions();
+  describe("getSessionOptions", () => {
+    it("throws when SESSIONS_SIGNER is missing", async () => {
+      delete process.env["SESSIONS_SIGNER"];
+      process.env["SESSIONS_TABLE_NAME"] = "test-table";
 
-    expect(mockStoreConstructor).toHaveBeenCalledWith({
-      table: "test-table",
-      client: mockClient,
-      specialKeys: [{ name: "user_id", type: ScalarAttributeType.S }],
-      skipThrowMissingSpecialKeys: true,
+      // eslint-disable-next-line vitest/require-to-throw-message
+      await expect(getSessionOptions()).rejects.toThrow();
+    });
+
+    it("throws when SESSIONS_TABLE_NAME is missing", async () => {
+      process.env["SESSIONS_SIGNER"] = "test-signer";
+      delete process.env["SESSIONS_TABLE_NAME"];
+
+      // eslint-disable-next-line vitest/require-to-throw-message
+      await expect(getSessionOptions()).rejects.toThrow();
+    });
+
+    it("returns session options with secure cookie for non-local environment", async () => {
+      process.env["SESSIONS_SIGNER"] = "test-signer";
+      process.env["SESSIONS_TABLE_NAME"] = "test-table";
+      mockGetEnvironment.mockReturnValue("production");
+
+      const options = await getSessionOptions();
+
+      expect(options.secret).toBe("test-signer");
+      expect(options.cookie?.secure).toBe(true);
+      expect(options.cookie?.sameSite).toBe("lax");
+      expect(options.cookie?.httpOnly).toBe(true);
+      expect(options.rolling).toBe(false);
+      expect(options.saveUninitialized).toBe(false);
+      expect(options.store).toBeDefined();
+    });
+
+    it("returns session options with non-secure cookie for local environment", async () => {
+      process.env["SESSIONS_SIGNER"] = "test-signer";
+      process.env["SESSIONS_TABLE_NAME"] = "test-table";
+      mockGetEnvironment.mockReturnValue("local");
+
+      const options = await getSessionOptions();
+
+      expect(options.cookie?.secure).toBe(false);
+    });
+
+    it("creates DynamoDB store with table name", async () => {
+      process.env["SESSIONS_SIGNER"] = "test-signer";
+      process.env["SESSIONS_TABLE_NAME"] = "test-table";
+      mockGetEnvironment.mockReturnValue("production");
+
+      const options = await getSessionOptions();
+
+      expect(options.store).toBeInstanceOf(DynamoDbSessionStore);
     });
   });
 });

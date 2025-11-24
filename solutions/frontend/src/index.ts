@@ -134,6 +134,16 @@ export const initFrontend = async function () {
     );
   });
 
+  fastify.get(
+    paths.others.authorizeError.path,
+    async function (request, reply) {
+      return (await import("./handlers/authorizeError/index.js")).handler(
+        request,
+        reply,
+      );
+    },
+  );
+
   fastify.register(fastifyFormbody);
   fastify.register(fastifyHelmet, {
     enableCSPNonces: true,
@@ -185,27 +195,23 @@ export const initFrontend = async function () {
     referrerPolicy: false,
     permittedCrossDomainPolicies: false,
   });
-  fastify.register(fastifySession, await getSessionOptions());
-  fastify.register(csrfProtection);
 
-  fastify.get(
-    paths.others.authorizeError.path,
-    async function (request, reply) {
-      return (await import("./handlers/authorizeError/index.js")).handler(
-        request,
-        reply,
-      );
-    },
-  );
+  fastify.register(async (fastify) => {
+    fastify.register(fastifySession, await getSessionOptions());
+    fastify.register(csrfProtection);
 
-  fastify.get(paths.others.startSession.path, async function (request, reply) {
-    return (await import("./handlers/startSession/index.js")).handler(
-      request,
-      reply,
+    fastify.get(
+      paths.others.startSession.path,
+      async function (request, reply) {
+        return (await import("./handlers/startSession/index.js")).handler(
+          request,
+          reply,
+        );
+      },
     );
-  });
 
-  fastify.register(journeyRoutes);
+    fastify.register(journeyRoutes);
+  });
 
   return fastify;
 };

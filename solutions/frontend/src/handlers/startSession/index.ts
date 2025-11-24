@@ -8,10 +8,7 @@ import { initialJourneyPaths } from "../../utils/paths.js";
 import { getClaimsSchema } from "../../../../commons/utils/authorize/getClaimsSchema.js";
 import { destroyApiSession } from "../../utils/apiSession.js";
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
-import { sessionPrefix } from "../../utils/session.js";
 import { decodeJwt } from "jose";
-import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
-import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -87,42 +84,20 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       metrics.addDimensions({ client_id: claims.client_id });
 
       await request.session.regenerate();
+
+      const accessTokenExpiry = decodeJwt(claims.access_token).exp ?? 0;
+
+      const sessionExpiry = Math.min(
+        Math.max(
+          accessTokenExpiry,
+          Math.floor(Date.now() / 1000) + 1800, // Min session length of half an hour
+        ),
+        Math.floor(Date.now() / 1000) + 7200, // Max session length of 2 hours
+      );
+
       request.session.claims = claims;
       request.session.user_id = claims.sub;
-      await request.session.save();
-
-      try {
-        const accessTokenExpiry = decodeJwt(claims.access_token).exp ?? 0;
-
-        const sessionExpiry = Math.min(
-          Math.max(
-            accessTokenExpiry,
-            Math.floor(Date.now() / 1000) + 1800, // Min session length of half an hour
-          ),
-          Math.floor(Date.now() / 1000) + 7200, // Max session length of 2 hours
-        );
-
-        await dynamoDbClient.update({
-          TableName: process.env["SESSIONS_TABLE_NAME"],
-          Key: {
-            id: `${sessionPrefix}${request.session.sessionId}`,
-          },
-          UpdateExpression: "SET custom_expires = :custom_expires",
-          ExpressionAttributeValues: {
-            ":custom_expires": sessionExpiry,
-          },
-        });
-      } catch (error) {
-        request.log.error(error, "SetSessionExpiryError");
-        metrics.addMetric("SetSessionExpiryError", MetricUnit.Count, 1);
-        return await redirectToClientRedirectUri(
-          request,
-          reply,
-          claims.redirect_uri,
-          authorizeErrors.setSessionExpiryError,
-          claims.state,
-        );
-      }
+      request.session.expires = sessionExpiry;
 
       await destroyApiSession(request, reply);
       reply.redirect(initialJourneyPaths[claims.scope]);

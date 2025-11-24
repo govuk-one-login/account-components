@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components OAuth Provider Public API
-  version: 0.0.10
+  version: 0.0.9
   description: |
     OAuth 2.0 provider endpoints, including:
     - GET /authorize
@@ -137,8 +137,6 @@ paths:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5010&state=aRandomString
                 failed_to_complete_journey:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5011&state=aRandomString
-                set_session_expiry_error:
-                  value: https://signin.account.gov.uk/callbacks/account-deletion?error=server_error&error_description=E5012&state=aRandomString
 
 components:
   parameters:

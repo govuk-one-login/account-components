@@ -6,6 +6,14 @@ import type {
   Claims,
   Scope,
 } from "../../../../commons/utils/authorize/getClaimsSchema.js";
+import { metrics } from "../../../../commons/utils/metrics/index.js";
+import { journeys } from "./config.js";
+import type { Actor, AnyActorLogic, AnyMachineSnapshot } from "xstate";
+import { createActor } from "xstate";
+import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
+import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
+import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
+import type { ClientEntry } from "../../../../config/schema/types.js";
 
 // @ts-expect-error
 vi.mock(import("../../utils/paths.js"), () => ({
@@ -27,6 +35,7 @@ vi.mock(import("../../utils/paths.js"), () => ({
 vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
   metrics: {
     addMetric: vi.fn(),
+    addDimensions: vi.fn(),
   },
 }));
 
@@ -52,16 +61,13 @@ vi.mock(import("../../../../commons/utils/getClientRegistry/index.js"), () => ({
   getClientRegistry: vi.fn(),
 }));
 
-vi.mock(
-  import(
-    "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js"
-  ),
-  () => ({
-    getRedirectToClientRedirectUri: vi
-      .fn()
-      .mockReturnValue("http://redirect-uri"),
-  }),
-);
+vi.mock(import("../../utils/redirectToClientRedirectUri.js"), () => ({
+  redirectToClientRedirectUri: vi.fn().mockResolvedValue({}),
+}));
+
+vi.mock(import("../../utils/redirectToAuthorizeErrorPage.js"), () => ({
+  redirectToAuthorizeErrorPage: vi.fn().mockResolvedValue({}),
+}));
 
 // @ts-expect-error
 vi.mock(
@@ -73,14 +79,6 @@ vi.mock(
     },
   }),
 );
-
-import { metrics } from "../../../../commons/utils/metrics/index.js";
-import { journeys } from "./config.js";
-import type { Actor, AnyActorLogic, AnyMachineSnapshot } from "xstate";
-import { createActor } from "xstate";
-import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
-import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
-import type { ClientEntry } from "../../../../config/schema/types.js";
 
 describe("onRequest", () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -128,11 +126,7 @@ describe("onRequest", () => {
 
   describe("when session has no claims", () => {
     it("should redirect to error page and log warning", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
-      const result = await onRequest(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-      );
+      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
       expect(mockRequest.log?.warn).toHaveBeenCalledWith("NoClaimsInSession");
       // eslint-disable-next-line @typescript-eslint/unbound-method
@@ -141,8 +135,10 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
-      expect(result).toBe(mockReply);
+      expect(redirectToAuthorizeErrorPage).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
     });
   });
 
@@ -155,11 +151,7 @@ describe("onRequest", () => {
     });
 
     it("should redirect to error page and log warning", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
-      const result = await onRequest(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-      );
+      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
       expect(mockRequest.log?.warn).toHaveBeenCalledWith(
         { client_id: "non-existent-client" },
@@ -171,8 +163,10 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
-      expect(result).toBe(mockReply);
+      expect(redirectToAuthorizeErrorPage).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
     });
   });
 
@@ -191,11 +185,7 @@ describe("onRequest", () => {
     });
 
     it("should redirect to client redirect URI with error", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
-      const result = await onRequest(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-      );
+      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
       expect(mockRequest.log?.warn).toHaveBeenCalledWith(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -208,13 +198,13 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      expect(getRedirectToClientRedirectUri).toHaveBeenCalledWith(
+      expect(redirectToClientRedirectUri).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
         "http://client-redirect",
         "failed_to_create_state_machine_actor",
         "test-state",
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith("http://redirect-uri");
-      expect(result).toBe(mockReply);
     });
   });
 
@@ -235,25 +225,16 @@ describe("onRequest", () => {
     });
 
     it("should redirect to correct path when URL doesn't match", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
-      const result = await onRequest(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-      );
+      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
       expect(mockReply.redirect).toHaveBeenCalledWith("/test-path");
-      expect(result).toBe(mockReply);
     });
 
     it("should handle missing currentUrl", async () => {
       // @ts-expect-error
       mockReply.globals.currentUrl = undefined;
 
-      // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
-      const result = await onRequest(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-      );
+      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
       expect(mockRequest.log?.warn).toHaveBeenCalledWith(
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -266,8 +247,13 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith("http://redirect-uri");
-      expect(result).toBe(mockReply);
+      expect(redirectToClientRedirectUri).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+        "http://client-redirect",
+        "failed_to_validate_journey_url",
+        "test-state",
+      );
     });
   });
 
@@ -282,6 +268,10 @@ describe("onRequest", () => {
     it("should set up journey state and add translations", async () => {
       await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(metrics.addDimensions).toHaveBeenCalledWith({
+        client_id: "test-client-id",
+      });
       expect(mockReply.client).toStrictEqual({ client_id: "test-client-id" });
       expect(journeys["test-scope" as Scope]).toHaveBeenCalledWith();
       // eslint-disable-next-line @typescript-eslint/unbound-method

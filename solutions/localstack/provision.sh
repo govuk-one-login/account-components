@@ -154,11 +154,9 @@ create_dynamodb_tables() {
     --table-name "components-main-SessionStore" \
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
-      AttributeName=user_id,AttributeType=S \
     --key-schema \
       AttributeName=id,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST \
-    --global-secondary-indexes '[{"IndexName":"users-sessions","KeySchema":[{"AttributeName":"user_id","KeyType":"HASH"}],"Projection":{"ProjectionType":"KEYS_ONLY"}}]'
+    --billing-mode PAY_PER_REQUEST
 
   # AuthCodeTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \

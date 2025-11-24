@@ -250,26 +250,17 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "id"
           AttributeType: "S"
-        - AttributeName: "user_id"
-          AttributeType: "S"
       KeySchema:
         - AttributeName: "id"
           KeyType: "HASH"
       TimeToLiveSpecification:
-        AttributeName: "custom_expires"
+        AttributeName: "expires"
         Enabled: true
       BillingMode: PAY_PER_REQUEST
       ContributorInsightsSpecification:
         Enabled: true
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: false
-      GlobalSecondaryIndexes:
-        - IndexName: "users-sessions"
-          KeySchema:
-            - AttributeName: "user_id"
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: KEYS_ONLY
       SSESpecification:
         KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
         SSEEnabled: true
