@@ -1,1 +1,20 @@
-{}
+{
+  "introduction": {
+    "pageTitle": "TODO introduction",
+    "heading": "TODO introduction",
+    "buttonLabel": "TODO continue"
+  },
+  "resendEmailVerificationCode": {
+    "pageTitle": "TODO resendEmailVerificationCode",
+    "heading": "TODO resendEmailVerificationCode",
+    "buttonLabel": "TODO resend",
+    "verifyCodeLinkText": "TODO verifyCode"
+  },
+  "verifyEmailAddress": {
+    "pageTitle": "TODO verifyEmailAddress",
+    "heading": "TODO verifyEmailAddress",
+    "codeInputLabel": "TODO code",
+    "buttonLabel": "TODO verify",
+    "resendCodeLinkText": "TODO resendCode"
+  }
+}

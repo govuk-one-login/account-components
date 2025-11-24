@@ -18,9 +18,10 @@ interface AuthorizeErrorServerError {
   description: `E5${number}`;
   type: "server_error";
 }
-interface AuthorizeErrorInvalidGrant {
+
+interface AuthorizeErrorUserAction {
   description: `E6${number}`;
-  type: "invalid_grant";
+  type: "user_action";
 }
 
 export const authorizeErrors = {
@@ -156,6 +157,10 @@ export const authorizeErrors = {
     description: "E5011",
     type: "server_error",
   },
+  cancelledByUser: {
+    description: "E6001",
+    type: "user_action",
+  },
 } as const satisfies Record<
   string,
   | AuthorizeErrorAccessDenied
@@ -163,5 +168,5 @@ export const authorizeErrors = {
   | AuthorizeErrorInvalidScope
   | AuthorizeErrorUnauthorizedClient
   | AuthorizeErrorServerError
-  | AuthorizeErrorInvalidGrant
+  | AuthorizeErrorUserAction
 >;
