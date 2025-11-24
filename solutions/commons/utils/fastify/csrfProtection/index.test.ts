@@ -96,7 +96,9 @@ describe("csrfProtection", () => {
     const preHandler = hookCall![1] as (
       req: FastifyRequest,
       reply: FastifyReply,
-      done: () => void,
+      // Accept any callable (e.g., vitest mock) for the done callback in tests
+      // to avoid overly strict typing during unit testing.
+      done: unknown,
     ) => void;
 
     // @ts-expect-error
@@ -115,7 +117,7 @@ describe("csrfProtection", () => {
     const preHandler = hookCall![1] as (
       req: FastifyRequest,
       reply: FastifyReply,
-      done: () => void,
+      done: unknown,
     ) => void;
 
     // @ts-expect-error
@@ -134,7 +136,7 @@ describe("csrfProtection", () => {
     const preHandler = hookCall![1] as (
       req: FastifyRequest,
       reply: FastifyReply,
-      done: () => void,
+      done: unknown,
     ) => void;
 
     // @ts-expect-error
@@ -153,7 +155,7 @@ describe("csrfProtection", () => {
     const preHandler = hookCall![1] as (
       req: FastifyRequest,
       reply: FastifyReply,
-      done: () => void,
+      done: unknown,
     ) => void;
 
     // @ts-expect-error
@@ -175,7 +177,7 @@ describe("csrfProtection", () => {
     const preHandler = hookCall![1] as (
       req: FastifyRequest,
       reply: FastifyReply,
-      done: () => void,
+      done: unknown,
     ) => void;
 
     // @ts-expect-error
@@ -197,7 +199,7 @@ describe("csrfProtection", () => {
     const preHandler = hookCall![1] as (
       req: FastifyRequest,
       reply: FastifyReply,
-      done: () => void,
+      done: unknown,
     ) => void;
 
     // @ts-expect-error
