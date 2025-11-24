@@ -19,11 +19,6 @@ interface AuthorizeErrorServerError {
   type: "server_error";
 }
 
-interface AuthorizeErrorUserAction {
-  description: `E6${number}`;
-  type: "user_action";
-}
-
 export const authorizeErrors = {
   accountDeleteUserAborted: {
     description: "E1001",
@@ -157,10 +152,6 @@ export const authorizeErrors = {
     description: "E5011",
     type: "server_error",
   },
-  cancelledByUser: {
-    description: "E6001",
-    type: "user_action",
-  },
 } as const satisfies Record<
   string,
   | AuthorizeErrorAccessDenied
@@ -168,5 +159,4 @@ export const authorizeErrors = {
   | AuthorizeErrorInvalidScope
   | AuthorizeErrorUnauthorizedClient
   | AuthorizeErrorServerError
-  | AuthorizeErrorUserAction
 >;
