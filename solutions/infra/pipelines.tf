@@ -175,8 +175,6 @@ resource "aws_cloudformation_stack" "deploy" {
     ProfileName                             = "operational"
     SigningKeyArn                           = var.config_signing_key_arn
     LambdaValidatorArn                      = "none"
-    BuildNotificationStackName              = "build-notifications"
-    SlackNotificationType                   = var.environment == "production" ? "All" : (var.environment == "dev" ? "None" : "Failures")
   }
 
   template_body = file("${path.module}/app_config_pipeline.cf.yaml")
