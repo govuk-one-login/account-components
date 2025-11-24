@@ -52,7 +52,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         ConsistentRead: true,
       });
 
-      if (!apiSession.Item) {
+      if (!apiSession.Item || apiSession.Item["expires"] < Date.now()) {
         request.log.warn("ApiSessionNotFound");
         metrics.addMetric("ApiSessionNotFound", MetricUnit.Count, 1);
         return await redirectToAuthorizeErrorPage(request, reply);

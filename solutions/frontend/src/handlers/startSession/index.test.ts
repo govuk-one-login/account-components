@@ -246,6 +246,29 @@ describe("startSession handler", () => {
         mockReply,
       );
     });
+
+    it("should redirect to error page when API session has expired", async () => {
+      mockRequest.cookies = { apisession: "test-session-id" };
+      mockGet.mockResolvedValue({
+        Item: {
+          claims: {},
+          expires: Date.now() - 1000, // Expired 1 second ago
+        },
+      });
+
+      await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockRequest.log?.warn).toHaveBeenCalledWith("ApiSessionNotFound");
+      expect(mockAddMetric).toHaveBeenCalledWith(
+        "ApiSessionNotFound",
+        "Count",
+        1,
+      );
+      expect(mockRedirectToAuthorizeErrorPage).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
+    });
   });
 
   describe("claims validation", () => {
@@ -259,7 +282,10 @@ describe("startSession handler", () => {
 
       mockRequest.cookies = { apisession: "test-session-id" };
       mockGet.mockResolvedValue({
-        Item: { claims: mockClaims },
+        Item: {
+          claims: mockClaims,
+          expires: Date.now() + 60000, // Valid for 1 minute
+        },
       });
 
       mockSafeParse.mockReturnValue({
@@ -304,7 +330,10 @@ describe("startSession handler", () => {
 
       mockRequest.cookies = { apisession: "test-session-id" };
       mockGet.mockResolvedValue({
-        Item: { claims: mockClaims },
+        Item: {
+          claims: mockClaims,
+          expires: Date.now() + 60000, // Valid for 1 minute
+        },
       });
 
       mockSafeParse.mockReturnValue({
@@ -361,7 +390,10 @@ describe("startSession handler", () => {
 
       mockRequest.cookies = { apisession: "test-session-id" };
       mockGet.mockResolvedValue({
-        Item: { claims: mockClaims },
+        Item: {
+          claims: mockClaims,
+          expires: Date.now() + 60000, // Valid for 1 minute
+        },
       });
 
       mockSafeParse.mockReturnValue({
@@ -436,7 +468,12 @@ describe("startSession handler", () => {
       mockDecodeJwt.mockReturnValue({ exp: shortExpiry });
 
       mockRequest.cookies = { apisession: "test-session-id" };
-      mockGet.mockResolvedValue({ Item: { claims: mockClaims } });
+      mockGet.mockResolvedValue({
+        Item: {
+          claims: mockClaims,
+          expires: Date.now() + 60000, // Valid for 1 minute
+        },
+      });
       mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
 
       await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
@@ -459,7 +496,12 @@ describe("startSession handler", () => {
       mockDecodeJwt.mockReturnValue({ exp: longExpiry });
 
       mockRequest.cookies = { apisession: "test-session-id" };
-      mockGet.mockResolvedValue({ Item: { claims: mockClaims } });
+      mockGet.mockResolvedValue({
+        Item: {
+          claims: mockClaims,
+          expires: Date.now() + 60000, // Valid for 1 minute
+        },
+      });
       mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
 
       await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
@@ -482,7 +524,12 @@ describe("startSession handler", () => {
       mockDecodeJwt.mockReturnValue({ exp: validExpiry });
 
       mockRequest.cookies = { apisession: "test-session-id" };
-      mockGet.mockResolvedValue({ Item: { claims: mockClaims } });
+      mockGet.mockResolvedValue({
+        Item: {
+          claims: mockClaims,
+          expires: Date.now() + 60000, // Valid for 1 minute
+        },
+      });
       mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
 
       await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
