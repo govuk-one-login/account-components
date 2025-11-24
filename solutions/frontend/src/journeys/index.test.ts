@@ -7,8 +7,12 @@ import { testingJourney } from "./testing-journey/index.js";
 import { onRequest } from "./utils/onRequest.js";
 import { onSend } from "./utils/onSend.js";
 
-vi.mock(import("./utils/onRequest.js"));
-vi.mock(import("./utils/onSend.js"));
+vi.mock(import("./utils/onRequest.js"), () => ({
+  onRequest: vi.fn(),
+}));
+vi.mock(import("./utils/onSend.js"), () => ({
+  onSend: vi.fn(),
+}));
 
 describe("journeyRoutes plugin", () => {
   let mockFastify: FastifyInstance;

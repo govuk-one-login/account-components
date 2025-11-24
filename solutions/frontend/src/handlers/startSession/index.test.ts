@@ -1,18 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { FastifyRequest, FastifyReply, FastifyBaseLogger } from "fastify";
 import type { FastifySessionObject } from "@fastify/session";
 import type { ClientEntry } from "../../../../config/schema/types.js";
 
 const mockGet = vi.fn();
-const mockDelete = vi.fn();
 const mockAddMetric = vi.fn();
 const mockAddDimensions = vi.fn();
-const mockGetRedirectToClientRedirectUri = vi.fn();
 const mockGetClientRegistry = vi.fn();
 const mockGetClaimsSchema = vi.fn();
 const mockParse = vi.fn();
 const mockSafeParse = vi.fn();
 const mockGetDotPath = vi.fn();
+const mockDestroyApiSession = vi.fn();
+const mockRedirectToAuthorizeErrorPage = vi.fn();
+const mockDecodeJwt = vi.fn();
 
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
@@ -28,32 +29,28 @@ vi.mock(
   () => ({
     getDynamoDbClient: () => ({
       get: mockGet,
-      delete: mockDelete,
     }),
   }),
 );
 
-// @ts-expect-error
-vi.mock(
-  import("../../../../commons/utils/authorize/authorizeErrors.js"),
-  () => ({
-    authorizeErrors: {
-      failedToDeleteApiSession: {
-        description: "E5004",
-        type: "server_error",
-      },
-    },
-  }),
-);
+vi.mock(import("../../utils/apiSession.js"), () => ({
+  destroyApiSession: mockDestroyApiSession,
+}));
 
-vi.mock(
-  import(
-    "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js"
-  ),
-  () => ({
-    getRedirectToClientRedirectUri: mockGetRedirectToClientRedirectUri,
-  }),
-);
+vi.mock(import("../../utils/redirectToAuthorizeErrorPage.js"), () => ({
+  redirectToAuthorizeErrorPage: mockRedirectToAuthorizeErrorPage,
+}));
+
+vi.mock(import("../../utils/paths.js"), () => ({
+  initialJourneyPaths: {
+    "testing-journey": "/testing-journey/step-1",
+    "account-delete": "/account-delete/step-1",
+  },
+}));
+
+vi.mock(import("jose"), () => ({
+  decodeJwt: mockDecodeJwt,
+}));
 
 vi.mock(import("../../../../commons/utils/getClientRegistry/index.js"), () => ({
   getClientRegistry: mockGetClientRegistry,
@@ -92,9 +89,11 @@ describe("startSession handler", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2024-01-01T12:00:00Z"));
 
-    process.env["API_SESSION_COOKIE_DOMAIN"] = "example.com";
     process.env["API_SESSIONS_TABLE_NAME"] = "test-sessions-table";
+    process.env["SESSIONS_TABLE_NAME"] = "test-sessions-table";
 
     mockClient = {
       client_id: "test-client",
@@ -121,19 +120,25 @@ describe("startSession handler", () => {
       } as unknown as FastifyBaseLogger,
       session: {
         regenerate: vi.fn(),
+        sessionId: "test-session-id",
       } as unknown as FastifySessionObject,
     };
 
     mockReply = {
-      setCookie: vi.fn().mockReturnThis(),
       redirect: vi.fn().mockReturnThis(),
     };
 
     mockGetClientRegistry.mockResolvedValue([mockClient]);
     mockGetClaimsSchema.mockReturnValue({});
-    mockGetRedirectToClientRedirectUri.mockReturnValue(
-      "https://client.com/callback?error=test",
-    );
+    mockDestroyApiSession.mockResolvedValue(undefined);
+    mockRedirectToAuthorizeErrorPage.mockResolvedValue(undefined);
+    mockDecodeJwt.mockReturnValue({
+      exp: Math.floor(Date.now() / 1000) + 3600,
+    });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe("query params validation", () => {
@@ -142,7 +147,10 @@ describe("startSession handler", () => {
 
       await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockRedirectToAuthorizeErrorPage).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
     });
 
     it("should redirect to error page when redirect_uri is invalid", async () => {
@@ -153,7 +161,10 @@ describe("startSession handler", () => {
 
       await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockRedirectToAuthorizeErrorPage).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
     });
 
     it("should accept valid query params", async () => {
@@ -174,7 +185,10 @@ describe("startSession handler", () => {
 
       expect(mockRequest.log?.warn).toHaveBeenCalledWith("ClientNotFound");
       expect(mockAddMetric).toHaveBeenCalledWith("ClientNotFound", "Count", 1);
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockRedirectToAuthorizeErrorPage).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
     });
 
     it("should find client in registry", async () => {
@@ -202,14 +216,10 @@ describe("startSession handler", () => {
         "Count",
         1,
       );
-      expect(mockReply.setCookie).toHaveBeenCalledWith("apisession", "", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        domain: "example.com",
-        maxAge: 0,
-      });
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockRedirectToAuthorizeErrorPage).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
     });
   });
 
@@ -223,6 +233,7 @@ describe("startSession handler", () => {
       expect(mockGet).toHaveBeenCalledWith({
         TableName: "test-sessions-table",
         Key: { id: "test-session-id" },
+        ConsistentRead: true,
       });
       expect(mockRequest.log?.warn).toHaveBeenCalledWith("ApiSessionNotFound");
       expect(mockAddMetric).toHaveBeenCalledWith(
@@ -230,7 +241,33 @@ describe("startSession handler", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockRedirectToAuthorizeErrorPage).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
+    });
+
+    it("should redirect to error page when API session has expired", async () => {
+      mockRequest.cookies = { apisession: "test-session-id" };
+      mockGet.mockResolvedValue({
+        Item: {
+          claims: {},
+          expires: (Date.now() - 1000) / 1000, // Expired 1 second ago
+        },
+      });
+
+      await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockRequest.log?.warn).toHaveBeenCalledWith("ApiSessionNotFound");
+      expect(mockAddMetric).toHaveBeenCalledWith(
+        "ApiSessionNotFound",
+        "Count",
+        1,
+      );
+      expect(mockRedirectToAuthorizeErrorPage).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
     });
   });
 
@@ -245,7 +282,10 @@ describe("startSession handler", () => {
 
       mockRequest.cookies = { apisession: "test-session-id" };
       mockGet.mockResolvedValue({
-        Item: { claims: mockClaims },
+        Item: {
+          claims: mockClaims,
+          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
+        },
       });
 
       mockSafeParse.mockReturnValue({
@@ -272,7 +312,10 @@ describe("startSession handler", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockRedirectToAuthorizeErrorPage).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
     });
 
     it("should process valid claims", async () => {
@@ -281,13 +324,17 @@ describe("startSession handler", () => {
         redirect_uri: "https://client.com/callback",
         state: "test-state",
         sub: "user-123",
+        scope: "testing-journey",
+        access_token: "mock.jwt.token",
       };
 
       mockRequest.cookies = { apisession: "test-session-id" };
       mockGet.mockResolvedValue({
-        Item: { claims: mockClaims },
+        Item: {
+          claims: mockClaims,
+          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
+        },
       });
-      mockDelete.mockResolvedValue({});
 
       mockSafeParse.mockReturnValue({
         success: true,
@@ -307,51 +354,6 @@ describe("startSession handler", () => {
     });
   });
 
-  describe("when API session delete fails", () => {
-    it("should redirect to client with error", async () => {
-      const mockClaims = {
-        client_id: "test-client",
-        redirect_uri: "https://client.com/callback",
-        state: "test-state",
-        sub: "user-123",
-      };
-
-      mockRequest.cookies = { apisession: "test-session-id" };
-      mockGet.mockResolvedValue({
-        Item: { claims: mockClaims },
-      });
-      mockDelete.mockRejectedValue(new Error("Delete failed"));
-
-      mockSafeParse.mockReturnValue({
-        success: true,
-        output: mockClaims,
-      });
-
-      await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
-
-      expect(mockRequest.log?.error).toHaveBeenCalledWith(
-        expect.any(Error),
-        "ApiSessionDeleteError",
-      );
-      expect(mockAddMetric).toHaveBeenCalledWith(
-        "ApiSessionDeleteError",
-        "Count",
-        1,
-      );
-      expect(mockAddDimensions).toHaveBeenCalledWith({
-        client_id: "test-client",
-      });
-      expect(mockGetRedirectToClientRedirectUri).toHaveBeenCalledWith(
-        "https://client.com/callback",
-        { type: "server_error", description: "E5004" },
-        "test-state",
-      );
-      expect(mockReply.redirect).toHaveBeenCalledWith(
-        "https://client.com/callback?error=test",
-      );
-    });
-  });
-
   describe("when API session get fails", () => {
     it("should redirect to error page and log error", async () => {
       mockRequest.cookies = { apisession: "test-session-id" };
@@ -368,25 +370,31 @@ describe("startSession handler", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockRedirectToAuthorizeErrorPage).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
     });
   });
 
   describe("when session processing succeeds", () => {
-    it("should regenerate session and redirect", async () => {
+    it("should regenerate session, set expiry and redirect", async () => {
       const mockClaims = {
         client_id: "test-client",
         redirect_uri: "https://client.com/callback",
         state: "test-state",
         sub: "user-123",
         scope: "testing-journey",
+        access_token: "mock.jwt.token",
       };
 
       mockRequest.cookies = { apisession: "test-session-id" };
       mockGet.mockResolvedValue({
-        Item: { claims: mockClaims },
+        Item: {
+          claims: mockClaims,
+          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
+        },
       });
-      mockDelete.mockResolvedValue({});
 
       mockSafeParse.mockReturnValue({
         success: true,
@@ -398,10 +406,7 @@ describe("startSession handler", () => {
       expect(mockGet).toHaveBeenCalledWith({
         TableName: "test-sessions-table",
         Key: { id: "test-session-id" },
-      });
-      expect(mockDelete).toHaveBeenCalledWith({
-        TableName: "test-sessions-table",
-        Key: { id: "test-session-id" },
+        ConsistentRead: true,
       });
       expect(mockAddDimensions).toHaveBeenCalledWith({
         client_id: "test-client",
@@ -411,14 +416,14 @@ describe("startSession handler", () => {
       expect(mockRequest.session).toMatchObject({
         claims: mockClaims,
         user_id: "user-123",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        expires: expect.any(Number),
       });
-      expect(mockReply.setCookie).toHaveBeenCalledWith("apisession", "", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        domain: "example.com",
-        maxAge: 0,
-      });
+      expect(mockDecodeJwt).toHaveBeenCalledWith("mock.jwt.token");
+      expect(mockDestroyApiSession).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
       expect(mockReply.redirect).toHaveBeenCalledWith(
         "/testing-journey/step-1",
       );
@@ -440,25 +445,96 @@ describe("startSession handler", () => {
         "Count",
         1,
       );
-      expect(mockReply.setCookie).toHaveBeenCalledWith("apisession", "", {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        domain: "example.com",
-        maxAge: 0,
-      });
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockRedirectToAuthorizeErrorPage).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
     });
   });
 
-  describe("environment variable validation", () => {
-    it("should throw when API_SESSION_COOKIE_DOMAIN is not set", async () => {
-      delete process.env["API_SESSION_COOKIE_DOMAIN"];
-      mockRequest.cookies = {};
+  describe("session expiry calculation", () => {
+    it("should use minimum session length when access token expires soon", async () => {
+      const mockClaims = {
+        client_id: "test-client",
+        redirect_uri: "https://client.com/callback",
+        state: "test-state",
+        sub: "user-123",
+        scope: "testing-journey",
+        access_token: "mock.jwt.token",
+      };
 
-      await expect(
-        handler(mockRequest as FastifyRequest, mockReply as FastifyReply),
-      ).rejects.toThrow("API_SESSION_COOKIE_DOMAIN is not set");
+      const now = Math.floor(Date.now() / 1000);
+      const shortExpiry = now + 300;
+      mockDecodeJwt.mockReturnValue({ exp: shortExpiry });
+
+      mockRequest.cookies = { apisession: "test-session-id" };
+      mockGet.mockResolvedValue({
+        Item: {
+          claims: mockClaims,
+          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
+        },
+      });
+      mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
+
+      await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockRequest.session?.expires).toBe(1704112200);
+    });
+
+    it("should cap session length at maximum when access token expires far in future", async () => {
+      const mockClaims = {
+        client_id: "test-client",
+        redirect_uri: "https://client.com/callback",
+        state: "test-state",
+        sub: "user-123",
+        scope: "testing-journey",
+        access_token: "mock.jwt.token",
+      };
+
+      const now = Math.floor(Date.now() / 1000);
+      const longExpiry = now + 10800;
+      mockDecodeJwt.mockReturnValue({ exp: longExpiry });
+
+      mockRequest.cookies = { apisession: "test-session-id" };
+      mockGet.mockResolvedValue({
+        Item: {
+          claims: mockClaims,
+          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
+        },
+      });
+      mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
+
+      await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockRequest.session?.expires).toBe(1704117600);
+    });
+
+    it("should use access token expiry when within valid range", async () => {
+      const mockClaims = {
+        client_id: "test-client",
+        redirect_uri: "https://client.com/callback",
+        state: "test-state",
+        sub: "user-123",
+        scope: "testing-journey",
+        access_token: "mock.jwt.token",
+      };
+
+      const now = Math.floor(Date.now() / 1000);
+      const validExpiry = now + 3600;
+      mockDecodeJwt.mockReturnValue({ exp: validExpiry });
+
+      mockRequest.cookies = { apisession: "test-session-id" };
+      mockGet.mockResolvedValue({
+        Item: {
+          claims: mockClaims,
+          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
+        },
+      });
+      mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
+
+      await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockRequest.session?.expires).toBe(1704114000);
     });
   });
 });

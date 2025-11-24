@@ -154,11 +154,9 @@ create_dynamodb_tables() {
     --table-name "components-main-SessionStore" \
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
-      AttributeName=user_id,AttributeType=S \
     --key-schema \
       AttributeName=id,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST \
-    --global-secondary-indexes '[{"IndexName":"users-sessions","KeySchema":[{"AttributeName":"user_id","KeyType":"HASH"}],"Projection":{"ProjectionType":"KEYS_ONLY"}}]'
+    --billing-mode PAY_PER_REQUEST
 
   aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
     --table-name "components-main-SessionStore" \
@@ -175,7 +173,7 @@ create_dynamodb_tables() {
 
   aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
     --table-name "components-core-AuthCode" \
-    --time-to-live-specification "Enabled=true,AttributeName=expiry_time"
+    --time-to-live-specification "Enabled=true,AttributeName=expires"
 
   # ReplayAttackTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
