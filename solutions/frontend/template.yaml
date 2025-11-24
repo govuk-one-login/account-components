@@ -29,9 +29,6 @@ Parameters:
   CoreStackName:
     Type: String
     Default: "components-core"
-  ApiStackName:
-    Type: String
-    Default: "components-api"
   LambdaDeploymentPreference:
     Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
     Type: String
@@ -381,9 +378,9 @@ Resources:
               !Ref Environment,
               apiSessionCookieDomain,
             ]
-          API_SESSIONS_TABLE_NAME: !Sub "{{resolve:ssm:/${ApiStackName}/ApiSessionsTableName}}"
-          AUTH_CODE_TABLE_NAME: !Sub "{{resolve:ssm:/${ApiStackName}/AuthCodeTableName}}"
-          JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${ApiStackName}/JourneyOutcomeTableName}}"
+          API_SESSIONS_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/ApiSessionsTableName}}"
+          AUTH_CODE_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableName}}"
+          JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableName}}"
           AUTHORIZE_ENDPOINT_URL:
             !FindInMap [
               EnvironmentConfiguration,
@@ -406,13 +403,13 @@ Resources:
               Action:
                 - dynamodb:DeleteItem
                 - dynamodb:GetItem
-              Resource: !Sub "{{resolve:ssm:/${ApiStackName}/ApiSessionsTableArn}}"
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/ApiSessionsTableArn}}"
             - Effect: Allow
               Action:
                 - dynamodb:PutItem
               Resource:
-                - !Sub "{{resolve:ssm:/${ApiStackName}/AuthCodeTableArn}}"
-                - !Sub "{{resolve:ssm:/${ApiStackName}/JourneyOutcomeTableArn}}"
+                - !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableArn}}"
+                - !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableArn}}"
             - Effect: Allow
               Action:
                 - kms:Decrypt
