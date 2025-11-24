@@ -173,7 +173,7 @@ create_dynamodb_tables() {
 
   aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
     --table-name "components-core-AuthCode" \
-    --time-to-live-specification "Enabled=true,AttributeName=expiry_time"
+    --time-to-live-specification "Enabled=true,AttributeName=expires"
 
   # ReplayAttackTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \

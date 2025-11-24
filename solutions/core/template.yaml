@@ -590,7 +590,7 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: false
       TimeToLiveSpecification:
-        AttributeName: "expiry"
+        AttributeName: "expires"
         Enabled: true
       SSESpecification:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
@@ -619,7 +619,7 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: false
       TimeToLiveSpecification:
-        AttributeName: "expiry_time"
+        AttributeName: "expires"
         Enabled: true
       SSESpecification:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn

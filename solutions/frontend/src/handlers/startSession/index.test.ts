@@ -252,7 +252,7 @@ describe("startSession handler", () => {
       mockGet.mockResolvedValue({
         Item: {
           claims: {},
-          expires: Date.now() - 1000, // Expired 1 second ago
+          expires: (Date.now() - 1000) / 1000, // Expired 1 second ago
         },
       });
 
@@ -284,7 +284,7 @@ describe("startSession handler", () => {
       mockGet.mockResolvedValue({
         Item: {
           claims: mockClaims,
-          expires: Date.now() + 60000, // Valid for 1 minute
+          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
         },
       });
 
@@ -332,7 +332,7 @@ describe("startSession handler", () => {
       mockGet.mockResolvedValue({
         Item: {
           claims: mockClaims,
-          expires: Date.now() + 60000, // Valid for 1 minute
+          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
         },
       });
 
@@ -392,7 +392,7 @@ describe("startSession handler", () => {
       mockGet.mockResolvedValue({
         Item: {
           claims: mockClaims,
-          expires: Date.now() + 60000, // Valid for 1 minute
+          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
         },
       });
 
@@ -471,7 +471,7 @@ describe("startSession handler", () => {
       mockGet.mockResolvedValue({
         Item: {
           claims: mockClaims,
-          expires: Date.now() + 60000, // Valid for 1 minute
+          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
         },
       });
       mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
@@ -499,7 +499,7 @@ describe("startSession handler", () => {
       mockGet.mockResolvedValue({
         Item: {
           claims: mockClaims,
-          expires: Date.now() + 60000, // Valid for 1 minute
+          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
         },
       });
       mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
@@ -527,7 +527,7 @@ describe("startSession handler", () => {
       mockGet.mockResolvedValue({
         Item: {
           claims: mockClaims,
-          expires: Date.now() + 60000, // Valid for 1 minute
+          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
         },
       });
       mockSafeParse.mockReturnValue({ success: true, output: mockClaims });

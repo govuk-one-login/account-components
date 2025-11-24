@@ -45,8 +45,7 @@ export const completeJourney = async (
               client_id: claims.client_id,
               sub: claims.sub,
               redirect_uri: claims.redirect_uri,
-              expiry_time:
-                Math.floor(Date.now() / 1000) + appConfig.auth_code_ttl,
+              expires: Math.floor(Date.now() / 1000) + appConfig.auth_code_ttl,
             },
           },
         },

@@ -128,7 +128,7 @@ describe("completeJourney", () => {
               sub: mockClaims.sub,
               redirect_uri: mockClaims.redirect_uri,
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              expiry_time: expect.any(Number),
+              expires: expect.any(Number),
             },
           },
         },
@@ -256,7 +256,7 @@ describe("completeJourney", () => {
             Put: expect.objectContaining({
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               Item: expect.objectContaining({
-                expiry_time: 1640995800,
+                expires: 1640995800,
               }),
             }),
           }),
