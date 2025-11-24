@@ -99,6 +99,8 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      - dependency-name: "rolldown"
 
   - package-ecosystem: docker
     directory: "/solutions/integration-tests"

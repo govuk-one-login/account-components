@@ -14,10 +14,26 @@ export default defineConfig(
     fileURLToPath(new URL(".gitignore", import.meta.url)),
     "Imported .gitignore patterns",
   ),
+  // Do not lint the ESLint config itself
+  { ignores: ["eslint.config.*"] },
+  // Ensure JS files (including .mjs) use the default JS parser, not @typescript-eslint
   {
+    files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
+    languageOptions: {
+      parser: null,
+      parserOptions: {
+        projectService: false,
+      },
+    },
+  },
+  // Enable TypeScript project service only for TS files
+  {
+    files: ["**/*.ts", "**/*.tsx"],
     languageOptions: {
       parserOptions: {
         projectService: true,
+        // Allow non-project files (e.g., tests/tools) to still be type-aware
+        allowDefaultProject: true,
       },
     },
   },
