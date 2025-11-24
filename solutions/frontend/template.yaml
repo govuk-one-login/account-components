@@ -247,8 +247,6 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "id"
           AttributeType: "S"
-        - AttributeName: "user_id"
-          AttributeType: "S"
       KeySchema:
         - AttributeName: "id"
           KeyType: "HASH"
@@ -260,13 +258,6 @@ Resources:
         Enabled: true
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: false
-      GlobalSecondaryIndexes:
-        - IndexName: "users-sessions"
-          KeySchema:
-            - AttributeName: "user_id"
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: KEYS_ONLY
       SSESpecification:
         KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
         SSEEnabled: true

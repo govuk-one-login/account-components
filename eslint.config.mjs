@@ -28,12 +28,10 @@ export default defineConfig(
   },
   // Enable TypeScript project service only for TS files
   {
-    files: ["**/*.ts", "**/*.tsx"],
+    files: ["**/*.ts"],
     languageOptions: {
       parserOptions: {
         projectService: true,
-        // Allow non-project files (e.g., tests/tools) to still be type-aware
-        allowDefaultProject: true,
       },
     },
   },

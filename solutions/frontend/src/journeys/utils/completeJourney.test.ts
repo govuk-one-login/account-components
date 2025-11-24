@@ -10,7 +10,7 @@ import type * as v from "valibot";
 const mockTransactWrite = vi.fn();
 const mockRandomBytes = vi.fn();
 const mockGetAppConfig = vi.fn();
-const mockGetRedirectToClientRedirectUri = vi.fn();
+const mockRedirectToClientRedirectUri = vi.fn();
 const mockAddMetric = vi.fn();
 
 // @ts-expect-error
@@ -31,14 +31,9 @@ vi.mock(import("../../../../commons/utils/getAppConfig/index.js"), () => ({
   getAppConfig: mockGetAppConfig,
 }));
 
-vi.mock(
-  import(
-    "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js"
-  ),
-  () => ({
-    getRedirectToClientRedirectUri: mockGetRedirectToClientRedirectUri,
-  }),
-);
+vi.mock(import("../../utils/redirectToClientRedirectUri.js"), () => ({
+  redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
+}));
 
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
@@ -69,12 +64,9 @@ describe("completeJourney", () => {
 
     mockRequest = {
       log: { warn: vi.fn() },
-      session: { regenerate: vi.fn().mockResolvedValue(undefined) },
     } as unknown as FastifyRequest;
 
-    mockReply = {
-      redirect: vi.fn().mockReturnThis(),
-    } as unknown as FastifyReply;
+    mockReply = {} as unknown as FastifyReply;
 
     mockClaims = {
       scope: "testing-journey",
@@ -94,15 +86,13 @@ describe("completeJourney", () => {
     const mockAuthCode = "mock-auth-code-hex";
     const mockOutcomeId = "mock-outcome-id-hex";
     const mockAppConfig = { auth_code_ttl: 300 };
-    const mockRedirectUrl =
-      "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
 
     mockRandomBytes
       .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
       .mockReturnValueOnce({ toString: vi.fn(() => mockOutcomeId) });
     mockGetAppConfig.mockResolvedValue(mockAppConfig);
     mockTransactWrite.mockResolvedValue({});
-    mockGetRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
+    mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
 
     const module = await import("./completeJourney.js");
     const result = await module.completeJourney(
@@ -138,36 +128,32 @@ describe("completeJourney", () => {
               sub: mockClaims.sub,
               redirect_uri: mockClaims.redirect_uri,
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              expiry_time: expect.any(Number),
+              expires: expect.any(Number),
             },
           },
         },
       ],
     });
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(mockRequest.session.regenerate).toHaveBeenCalledWith();
-    expect(mockGetRedirectToClientRedirectUri).toHaveBeenCalledWith(
+    expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
+      mockRequest,
+      mockReply,
       mockClaims.redirect_uri,
       undefined,
       mockClaims.state,
       mockAuthCode,
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(mockReply.redirect).toHaveBeenCalledWith(mockRedirectUrl);
     expect(result).toBe(mockReply);
   });
 
   it("handles DynamoDB transaction failure and redirects with error", async () => {
     const mockError = new Error("DynamoDB error");
-    const mockErrorRedirectUrl =
-      "https://example.com/callback?error=server_error&state=test-state";
 
     mockRandomBytes
       .mockReturnValueOnce({ toString: vi.fn(() => "auth-code") })
       .mockReturnValueOnce({ toString: vi.fn(() => "outcome-id") });
     mockGetAppConfig.mockResolvedValue({ auth_code_ttl: 300 });
     mockTransactWrite.mockRejectedValue(mockError);
-    mockGetRedirectToClientRedirectUri.mockReturnValue(mockErrorRedirectUrl);
+    mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
 
     const module = await import("./completeJourney.js");
     const result = await module.completeJourney(
@@ -186,9 +172,9 @@ describe("completeJourney", () => {
       MetricUnit.Count,
       1,
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(mockRequest.session.regenerate).toHaveBeenCalledWith();
-    expect(mockGetRedirectToClientRedirectUri).toHaveBeenCalledWith(
+    expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
+      mockRequest,
+      mockReply,
       mockClaims.redirect_uri,
       expect.objectContaining({
         error: "server_error",
@@ -196,21 +182,17 @@ describe("completeJourney", () => {
       }),
       mockClaims.state,
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(mockReply.redirect).toHaveBeenCalledWith(mockErrorRedirectUrl);
     expect(result).toBe(mockReply);
   });
 
   it("handles getAppConfig failure and redirects with error", async () => {
     const mockError = new Error("Config error");
-    const mockErrorRedirectUrl =
-      "https://example.com/callback?error=server_error&state=test-state";
 
     mockRandomBytes
       .mockReturnValueOnce({ toString: vi.fn(() => "auth-code") })
       .mockReturnValueOnce({ toString: vi.fn(() => "outcome-id") });
     mockGetAppConfig.mockRejectedValue(mockError);
-    mockGetRedirectToClientRedirectUri.mockReturnValue(mockErrorRedirectUrl);
+    mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
 
     const module = await import("./completeJourney.js");
     const result = await module.completeJourney(
@@ -229,10 +211,16 @@ describe("completeJourney", () => {
       MetricUnit.Count,
       1,
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(mockRequest.session.regenerate).toHaveBeenCalledWith();
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(mockReply.redirect).toHaveBeenCalledWith(mockErrorRedirectUrl);
+    expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
+      mockRequest,
+      mockReply,
+      mockClaims.redirect_uri,
+      expect.objectContaining({
+        error: "server_error",
+        error_description: "E5001",
+      }),
+      mockClaims.state,
+    );
     expect(result).toBe(mockReply);
   });
 
@@ -241,7 +229,6 @@ describe("completeJourney", () => {
     const mockOutcomeId = "outcome-id";
     const mockAppConfig = { auth_code_ttl: 600 };
     const mockNow = 1640995200000;
-    const expectedExpiryTime = Math.floor(mockNow / 1000) + 600;
 
     const dateNowSpy = vi.spyOn(Date, "now");
     dateNowSpy.mockReturnValue(mockNow);
@@ -250,9 +237,7 @@ describe("completeJourney", () => {
       .mockReturnValueOnce({ toString: vi.fn(() => mockOutcomeId) });
     mockGetAppConfig.mockResolvedValue(mockAppConfig);
     mockTransactWrite.mockResolvedValue({});
-    mockGetRedirectToClientRedirectUri.mockReturnValue(
-      "https://example.com/callback",
-    );
+    mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
 
     const module = await import("./completeJourney.js");
     await module.completeJourney(
@@ -271,12 +256,14 @@ describe("completeJourney", () => {
             Put: expect.objectContaining({
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               Item: expect.objectContaining({
-                expiry_time: expectedExpiryTime,
+                expires: 1640995800,
               }),
             }),
           }),
         ]),
       }),
     );
+
+    dateNowSpy.mockRestore();
   });
 });

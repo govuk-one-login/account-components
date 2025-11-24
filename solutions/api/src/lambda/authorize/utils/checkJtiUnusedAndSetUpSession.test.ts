@@ -109,13 +109,9 @@ describe("checkJtiUnusedAndSetUpSession", () => {
     expect(response.headers?.["location"]).toBe(
       "https://frontend.example.com/start-session?client_id=test-client-id&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&state=test-state",
     );
-    expect(response.headers?.["Set-Cookie"]).toContain(
-      "apisession=abcdef123456789012345678",
+    expect(response.headers?.["Set-Cookie"]).toBe(
+      "apisession=abcdef123456789012345678; Domain=example.com; HttpOnly; SameSite=Strict",
     );
-    expect(response.headers?.["Set-Cookie"]).toContain(
-      "Secure; HttpOnly; SameSite=Strict",
-    );
-    expect(response.headers?.["Set-Cookie"]).toContain("Max-Age=1800");
     expect(response.headers?.["Set-Cookie"]).toContain("Domain=example.com");
 
     expect(mockTransactWrite).toHaveBeenCalledWith({
@@ -413,7 +409,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
     );
   });
 
-  it("returns ErrorResponse when required environment variables are missing", async () => {
+  it("returns ErrorResponse when API_SESSION_COOKIE_DOMAIN is missing", async () => {
     const originalDomain = process.env["API_SESSION_COOKIE_DOMAIN"];
     delete process.env["API_SESSION_COOKIE_DOMAIN"];
 
@@ -434,7 +430,77 @@ describe("checkJtiUnusedAndSetUpSession", () => {
     expect(response.errorResponse.headers?.["location"]).toContain(
       "error_description=E5001",
     );
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      "FailedToCheckJtiUnusedAndSetUpSession",
+      expect.objectContaining({
+        client_id: mockClientId,
+        jti: mockClaims.jti,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        error: expect.any(Error),
+      }),
+    );
 
     process.env["API_SESSION_COOKIE_DOMAIN"] = originalDomain;
+  });
+
+  it("returns ErrorResponse when FRONTEND_URL is missing", async () => {
+    const originalUrl = process.env["FRONTEND_URL"];
+    delete process.env["FRONTEND_URL"];
+
+    const result = await checkJtiUnusedAndSetUpSession(
+      mockClaims,
+      mockClientId,
+      mockRedirectUri,
+      mockState,
+    );
+
+    expect(result).toBeInstanceOf(ErrorResponse);
+
+    const response = result as Exclude<typeof result, APIGatewayProxyResult>;
+
+    expect(response.errorResponse.headers?.["location"]).toContain(
+      "error=server_error",
+    );
+    expect(response.errorResponse.headers?.["location"]).toContain(
+      "error_description=E5001",
+    );
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      "FailedToCheckJtiUnusedAndSetUpSession",
+      expect.objectContaining({
+        client_id: mockClientId,
+        jti: mockClaims.jti,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        error: expect.any(Error),
+      }),
+    );
+
+    process.env["FRONTEND_URL"] = originalUrl;
+  });
+
+  it("handles getAppConfig failure", async () => {
+    const configError = new Error("Failed to get app config");
+    mockGetAppConfig.mockRejectedValue(configError);
+
+    const result = await checkJtiUnusedAndSetUpSession(
+      mockClaims,
+      mockClientId,
+      mockRedirectUri,
+      mockState,
+    );
+
+    expect(result).toBeInstanceOf(ErrorResponse);
+    expect(mockLogger.warn).toHaveBeenCalledWith(
+      "FailedToCheckJtiUnusedAndSetUpSession",
+      {
+        client_id: mockClientId,
+        jti: mockClaims.jti,
+        error: configError,
+      },
+    );
+    expect(mockMetrics.addMetric).toHaveBeenCalledWith(
+      "FailedToCheckJtiUnusedAndSetUpSession",
+      MetricUnit.Count,
+      1,
+    );
   });
 });
