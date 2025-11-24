@@ -18,10 +18,6 @@ interface AuthorizeErrorServerError {
   description: `E5${number}`;
   type: "server_error";
 }
-interface AuthorizeErrorInvalidGrant {
-  description: `E6${number}`;
-  type: "invalid_grant";
-}
 
 export const authorizeErrors = {
   accountDeleteUserAborted: {
@@ -163,5 +159,4 @@ export const authorizeErrors = {
   | AuthorizeErrorInvalidScope
   | AuthorizeErrorUnauthorizedClient
   | AuthorizeErrorServerError
-  | AuthorizeErrorInvalidGrant
 >;

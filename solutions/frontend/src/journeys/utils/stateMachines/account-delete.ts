@@ -1,16 +1,25 @@
+import type { MachineContext } from "xstate";
 import { Scope } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
 import { createJourneyStateMachine } from "./index.js";
 
 export enum AcountDeleteJourneyState {
-  TODO = "TODO",
+  emailNotVerified = "EMAIL_NOT_VERIFIED",
+  emailVerified = "EMAIL_VERIFIED",
 }
 
-export const accountDeleteStateMachine = createJourneyStateMachine(
-  Scope.accountDelete,
+export const accountDeleteStateMachine = createJourneyStateMachine<
+  MachineContext,
   {
-    initial: AcountDeleteJourneyState.TODO,
-    states: {
-      [AcountDeleteJourneyState.TODO]: {},
+    type: "emailVerified";
+  }
+>(Scope.accountDelete, {
+  initial: AcountDeleteJourneyState.emailNotVerified,
+  states: {
+    [AcountDeleteJourneyState.emailNotVerified]: {
+      on: {
+        emailVerified: AcountDeleteJourneyState.emailVerified,
+      },
     },
+    [AcountDeleteJourneyState.emailVerified]: {},
   },
-);
+});
