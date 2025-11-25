@@ -19,6 +19,12 @@ const tokenErrors: Record<string, ErrorType> = {
     description: "internal_server_error",
     statusCode: 500,
   },
+  invalidCode: {
+    code: "E4003",
+    description: "invalid_grant",
+    statusCode: 400,
+    metric: "InvalidAuthCode",
+  },
 };
 
 export type TokenAppError = AppError<keyof typeof tokenErrors>;

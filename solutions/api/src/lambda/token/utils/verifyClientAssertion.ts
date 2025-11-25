@@ -5,7 +5,7 @@ import { errorManager } from "./errors.js";
 
 export const verifyClientAssertion = async (
   clientAssertion: string,
-): Promise<JWTPayload> => {
+): Promise<JWTPayload & { redirect_uri?: string }> => {
   const clientRegistry = await getClientRegistry();
   const decodedJwt = decodeJwt(clientAssertion);
   const iss = decodedJwt.iss;

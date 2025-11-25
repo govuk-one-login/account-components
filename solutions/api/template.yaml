@@ -618,8 +618,24 @@ Resources:
       LoggingConfig:
         LogGroup: !Ref TokenLambdaLogGroup
       Handler: index.handler
+      Environment:
+        Variables:
+          AUTH_TABLE_NAME: !Ref AuthCodeTable
+          REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:Query
+              Resource:
+                - !GetAtt AuthCodeTable.Arn
+                - !GetAtt ReplayAttackTable.Arn
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -629,6 +645,8 @@ Resources:
           - .js=.mjs
         Target: "es2022"
         Sourcemap: true
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:
           - solutions/api/src/lambda/token/index.ts
 
