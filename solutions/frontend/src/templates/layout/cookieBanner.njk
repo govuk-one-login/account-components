@@ -1,3 +1,5 @@
+{% from "govuk/components/cookie-banner/macro.njk" import govukCookieBanner %}
+
 {% set html %}
   <p class="govuk-body">{{ 'FECTranslations.cookieBanner.body1' | translate }}</p>
   <p class="govuk-body">{{ 'FECTranslations.cookieBanner.body2' | translate }}</p>
@@ -41,7 +43,7 @@
           },
           {
               text: 'FECTranslations.cookieBanner.viewCookies' | translate,
-              href: authFrontEndUrl + "/cookies"
+              href: globals.authFrontEndUrl + "/cookies"
           }
       ]
       },
