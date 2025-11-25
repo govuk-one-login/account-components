@@ -1,5 +1,6 @@
 import type { JWTPayload } from "jose";
 import { errorManager } from "../utils/errors.js";
+import assert from "node:assert";
 
 export interface JourneyInfoPayload extends JWTPayload {
   outcome_id?: string;
@@ -12,6 +13,9 @@ export function validateJourneyOutcomeJwtClaims(
   const expectedIssuer = process.env["TOKEN_ENDPOINT_URL"];
   const expectedAudience = process.env["JOURNEY_OUTCOME_ENDPOINT_URL"];
 
+  assert(expectedIssuer, "expectedIssuer not set");
+
+  assert(expectedAudience, "expectedAudience not set");
   const requiredClaims = [
     "outcome_id",
     "iss",
@@ -43,15 +47,14 @@ export function validateJourneyOutcomeJwtClaims(
   if (payload.iss !== expectedIssuer) {
     errorManager.throwError(
       "InvalidAccessToken",
-      // eslint seems confused as to whether "expectedIssuer" actually exists here
-      `Invalid issuer. Expected "${expectedIssuer ?? "undefined"}", got "${payload.iss?.toString() ?? "undefined"}".`,
+      `Invalid issuer. Expected "${expectedIssuer}", got "${payload.iss?.toString() ?? "undefined"}".`,
     );
   }
 
   if (payload.aud !== expectedAudience) {
     errorManager.throwError(
       "InvalidAccessToken",
-      `Invalid audience. Expected "${expectedAudience ?? "undefined"}", got "${payload.aud?.toString() ?? "undefined"}".`,
+      `Invalid audience. Expected "${expectedAudience}", got "${payload.aud?.toString() ?? "undefined"}".`,
     );
   }
 
