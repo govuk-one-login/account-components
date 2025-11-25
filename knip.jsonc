@@ -26,6 +26,7 @@
         "read",
         "sam",
         "sleep",
+        "awk",
       ],
       "ignoreDependencies": [
         "csso-cli",
