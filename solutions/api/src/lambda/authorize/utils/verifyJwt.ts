@@ -24,8 +24,8 @@ import {
 } from "jose/errors";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
-import { getClaimsSchema } from "./getClaimsSchema.js";
-import { authorizeErrors } from "../../../../../commons/utils/authorize/index.js";
+import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
+import { getClaimsSchema } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
 
 const verify = async (
   signedJwt: string,
@@ -197,6 +197,7 @@ const verify = async (
     } else {
       logger.warn("VerifyJwtUnknownError", {
         client_id: client.client_id,
+        error,
       });
       metrics.addMetric("VerifyJwtUnknownError", MetricUnit.Count, 1);
       return new ErrorResponse(

@@ -1,0 +1,16 @@
+{% extends "templates/layout/base-page.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set pageTitleName = 'journey:resendEmailVerificationCode.pageTitle' | translate %}
+
+{% block pageContent %}
+  <h1 class="govuk-heading-l">{{ 'journey:resendEmailVerificationCode.heading' | translate }}</h1>
+  <form method="post">
+    <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
+    {{ govukButton({
+      text: 'journey:resendEmailVerificationCode.buttonLabel' | translate,
+      preventDoubleClick: true
+    }) }}
+  </form>
+  <p class="govuk-body"><a href="{{ verifyCodeLinkUrl }}" class="govuk-link govuk-link--no-visited-state">{{ 'journey:resendEmailVerificationCode.verifyCodeLinkText' | translate }}</a></p>
+{% endblock %}

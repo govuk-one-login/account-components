@@ -1,0 +1,16 @@
+{% extends "templates/layout/base-page.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set pageTitleName = 'journey:step1.pageTitle' | translate %}
+
+{% block pageContent %}
+  <h1 class="govuk-heading-l">{{ 'journey:step1.heading' | translate }}</h1>
+  <p class="govuk-body">{{ 'journey:step1.paragraph' | translate }}</p>
+  <form method="post">
+    <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
+    {{ govukButton({
+      text: 'journey:step1.buttonLabel' | translate,
+      preventDoubleClick: true
+    }) }}
+  </form>
+{% endblock %}

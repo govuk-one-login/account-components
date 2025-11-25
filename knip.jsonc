@@ -14,6 +14,8 @@
         "solutions/core/src/lambda/jwks-creator.ts",
         "solutions/api/src/lambda/authorize/index.ts",
         "solutions/api/src/lambda/healthcheck.ts",
+        "solutions/api/src/lambda/token/index.ts",
+        "solutions/api/src/lambda/journeyoutcome/index.ts",
       ],
       "ignoreBinaries": [
         "zizmor",

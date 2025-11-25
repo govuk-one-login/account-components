@@ -43,12 +43,11 @@ jobs:
           LOCAL_KMS_ENDPOINT=http://localhost:4567
           LOCALSTACK_ACCESS_KEY_ID=test
           LOCALSTACK_ACCESS_KEY=test
-          AUTHORIZE_ERROR_PAGE_URL=http://localhost:6002/authorize-error 
           API_SESSION_COOKIE_DOMAIN=localhost    
-          API_SESSIONS_TABLE_NAME=components-api-ApiSessions
+          API_SESSIONS_TABLE_NAME=components-core-ApiSessions
           AUTHORIZE_ENDPOINT_URL=http://localhost:6004/authorize
-          AUTH_CODE_TABLE_NAME=components-api-AuthCode
-          JOURNEY_OUTCOME_TABLE_NAME=components-api-JourneyOutcome          
+          AUTH_CODE_TABLE_NAME=components-core-AuthCode
+          JOURNEY_OUTCOME_TABLE_NAME=components-core-JourneyOutcome          
           EOF
 
       - name: Configure stubs environment
@@ -61,9 +60,9 @@ jobs:
           MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME=/components-mocks/MockClientEcPrivateKey  
           MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME=/components-mocks/MockClientEcPublicKey  
           JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/components-core-JARRSAEncryptionKey 
-          DEFAULT_AUDIENCE=http://127.0.0.1:6004/authorize
-          ACCESS_TOKEN_ISSUER=http://127.0.0.1:6003
-          AUTHORIZE_URL=http://127.0.0.1:6004/authorize
+          DEFAULT_AUDIENCE=http://localhost:6004/authorize
+          ACCESS_TOKEN_ISSUER=http://localhost:6003
+          AUTHORIZE_URL=http://localhost:6004/authorize
           AWS_REGION=eu-west-2
           LOCALSTACK_ENDPOINT=http://localhost:4566
           LOCAL_KMS_ENDPOINT=http://localhost:4567
@@ -83,8 +82,8 @@ jobs:
               "ENVIRONMENT": "local",
               "NODE_ENV": "production",
               "USE_LOCALSTACK": "1",
-              "LOCALSTACK_ENDPOINT": "http://host.docker.internal:4566",
-              "LOCAL_KMS_ENDPOINT": "http://host.docker.internal:4567",
+              "LOCALSTACK_ENDPOINT": "http://account-components-localstack:4566",
+              "LOCAL_KMS_ENDPOINT": "http://account-components-local-kms:8080",
               "LOCALSTACK_ACCESS_KEY_ID": "test",
               "LOCALSTACK_ACCESS_KEY": "test"
             },
@@ -93,7 +92,7 @@ jobs:
               "JAR_RSA_ENCRYPTION_KEY_ALIAS": "alias/components-core-JARRSAEncryptionKey",
               "AUTHORIZE_ENDPOINT_URL": "http://localhost:6004/authorize",
               "REPLAY_ATTACK_TABLE_NAME": "components-api-ReplayAttack",
-              "API_SESSIONS_TABLE_NAME": "components-api-ApiSessions",
+              "API_SESSIONS_TABLE_NAME": "components-core-ApiSessions",
               "API_SESSION_COOKIE_DOMAIN": "localhost",
               "FRONTEND_URL": "http://localhost:6002"
             }          
@@ -110,3 +109,11 @@ jobs:
           echo "PRE_OR_POST_DEPLOY=pre" >> .env
           echo "PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:3000/" >> .env
           npm run test
+
+      - name: Upload test results artifact
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        if: always()
+        with:
+          name: integration-test-results
+          path: solutions/integration-tests/test-results/
+          retention-days: 7

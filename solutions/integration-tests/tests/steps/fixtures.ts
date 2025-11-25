@@ -13,7 +13,8 @@ export const test = base.extend<{
           $tags.includes(`@skipTarget-${env.TEST_TARGET}`) ||
           ($tags.includes(`@skipPreDeploy`) &&
             env.PRE_OR_POST_DEPLOY == "pre") ||
-          (env.PRE_OR_POST_DEPLOY === "post" && !$tags.includes("@postDeploy")),
+          ($tags.includes(`@skipPostDeploy`) &&
+            env.PRE_OR_POST_DEPLOY == "post"),
       );
 
       await use(undefined);

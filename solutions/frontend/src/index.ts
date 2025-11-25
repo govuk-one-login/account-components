@@ -8,10 +8,10 @@ import { render } from "../../commons/utils/fastify/render/index.js";
 import fastifyFormbody from "@fastify/formbody";
 import fastifyHelmet from "@fastify/helmet";
 import fastifySession from "@fastify/session";
-import { journeys } from "./journeys/index.js";
+import { journeyRoutes } from "./journeys/index.js";
 import en from "./translations/en.json" with { type: "json" };
 import cy from "./translations/cy.json" with { type: "json" };
-import { getSessionOptions } from "./utils/getSessionOptions/index.js";
+import { getSessionOptions } from "./utils/session.js";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import { oneYearInSeconds } from "../../commons/utils/constants.js";
@@ -19,7 +19,10 @@ import staticHash from "./utils/static-hash.json" with { type: "json" };
 import { csrfProtection } from "../../commons/utils/fastify/csrfProtection/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 import i18next from "i18next";
-import { plugin as i18nextMiddlewarePlugin } from "i18next-http-middleware";
+import {
+  plugin as i18nextMiddlewarePlugin,
+  handle as i18nextMiddlewareHandle,
+} from "i18next-http-middleware";
 import { getCurrentUrl } from "../../commons/utils/fastify/getCurrentUrl/index.js";
 import {
   configureI18n,
@@ -31,6 +34,7 @@ import {
 } from "@govuk-one-login/frontend-ui";
 import { paths } from "./utils/paths.js";
 import { flushMetrics } from "../../commons/utils/fastify/flushMetrics/index.js";
+import { getEnvironment } from "../../commons/utils/getEnvironment/index.js";
 
 await configureI18n({
   [Lang.English]: {
@@ -53,19 +57,20 @@ export const initFrontend = async function () {
   fastify.addHook("onRequest", logRequest);
   fastify.addHook("onRequest", removeTrailingSlash);
   fastify.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
-  fastify.addHook("onSend", () => flushMetrics());
-  fastify.addHook("onResponse", logResponse);
+  fastify.addHook("onSend", logResponse);
+  fastify.addHook("onResponse", () => flushMetrics());
 
   fastify.register(fastifyCookie);
   fastify.register(i18nextMiddlewarePlugin, { i18next });
-  fastify.decorateReply("globals", {
-    getter() {
-      return {
-        staticHash: staticHash.hash,
-        currentUrl: getCurrentUrl(this.request),
-        htmlLang: this.request.i18n.language,
-      };
-    },
+  // @ts-expect-error
+  fastify.addHook("onRequest", i18nextMiddlewareHandle(i18next));
+  fastify.addHook("onRequest", async (request, reply) => {
+    reply.globals = {
+      ...reply.globals,
+      staticHash: staticHash.hash,
+      currentUrl: getCurrentUrl(request),
+      htmlLang: request.i18n.language,
+    };
   });
   fastify.decorateReply("render", render);
 
@@ -129,6 +134,16 @@ export const initFrontend = async function () {
     );
   });
 
+  fastify.get(
+    paths.others.authorizeError.path,
+    async function (request, reply) {
+      return (await import("./handlers/authorizeError/index.js")).handler(
+        request,
+        reply,
+      );
+    },
+  );
+
   fastify.register(fastifyFormbody);
   fastify.register(fastifyHelmet, {
     enableCSPNonces: true,
@@ -160,7 +175,10 @@ export const initFrontend = async function () {
           "https://*.ruxit.com",
           "https://*.dynatrace.com",
         ],
-        formAction: ["'self'", "https://*.account.gov.uk"],
+        formAction:
+          getEnvironment() === "local"
+            ? ["'self'", "http://localhost:*"]
+            : ["'self'", "https://*.account.gov.uk"],
       },
     },
     dnsPrefetchControl: {
@@ -177,24 +195,23 @@ export const initFrontend = async function () {
     referrerPolicy: false,
     permittedCrossDomainPolicies: false,
   });
-  fastify.register(fastifySession, await getSessionOptions());
-  fastify.register(csrfProtection);
 
-  fastify.get(paths.authorizeError, async function (request, reply) {
-    return (await import("./handlers/authorizeError/index.js")).handler(
-      request,
-      reply,
+  fastify.register(async (fastify) => {
+    fastify.register(fastifySession, await getSessionOptions());
+    fastify.register(csrfProtection);
+
+    fastify.get(
+      paths.others.startSession.path,
+      async function (request, reply) {
+        return (await import("./handlers/startSession/index.js")).handler(
+          request,
+          reply,
+        );
+      },
     );
-  });
 
-  fastify.get(paths.startSession, async function (request, reply) {
-    return (await import("./handlers/startSession/index.js")).handler(
-      request,
-      reply,
-    );
+    fastify.register(journeyRoutes);
   });
-
-  fastify.register(journeys);
 
   return fastify;
 };

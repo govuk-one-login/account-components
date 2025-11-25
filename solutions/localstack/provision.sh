@@ -59,10 +59,20 @@ configure_cli_for_localstack() {
   return 0
 }
 
+create_docker_network() {
+  echo "Creating Docker network"
+
+  docker network create account-components-network || true
+
+  echo "Docker network created"
+  return 0
+}
+
 start_localstack() {
   echo "Starting Localstack"
 
-  localstack start -d
+  docker stop account-components-localstack || true && docker rm account-components-localstack || true
+  LOCALSTACK_DYNAMODB_REMOVE_EXPIRED_ITEMS=1 DOCKER_FLAGS="--network account-components-network --name account-components-localstack" localstack start -d
 
   until aws --endpoint-url=http://localhost:4566 s3 ls > /dev/null 2>&1; do
     echo "⌛ Localstack not ready yet, retrying in 2s"
@@ -73,13 +83,13 @@ start_localstack() {
   return 0
 }
 
+# It is necessary to to use a separate KMS solution rather than relying on Localstack's.
+# Localstack's KMS solution is buggy and does not work consistently across different machines.
 start_kms_local() {
-  if [[ $(docker ps --filter ancestor=nsmithuk/local-kms -q | wc -l | xargs) -eq "0" ]]; then
-    echo "Starting kms local"
-    docker run -d -p 4567:8080 nsmithuk/local-kms
-  else
-    echo "KMS local already running"
-  fi
+  echo "Starting KMS Local"
+
+  docker stop account-components-local-kms || true && docker rm account-components-local-kms || true
+  docker run -d -p 4567:8080 --network account-components-network --name account-components-local-kms nsmithuk/local-kms
 
   until aws --endpoint-url=http://localhost:4567 kms list-keys > /dev/null 2>&1; do
     echo "⌛ KMS Local not ready yet, retrying in 2s"
@@ -92,12 +102,6 @@ start_kms_local() {
 
 create_ssm_parameters() {
   echo "Creating SSM parameters"
-
-  # Delete existing parameters
-  aws --endpoint-url=http://localhost:4566 ssm delete-parameter \
-    --name "/components-mocks/MockClientEcPrivateKey" 2>/dev/null || true
-  aws --endpoint-url=http://localhost:4566 ssm delete-parameter \
-    --name "/components-mocks/MockClientEcPublicKey" 2>/dev/null || true
 
   STRING="String"
 
@@ -118,23 +122,6 @@ create_ssm_parameters() {
 create_kms_keys() {
   echo "Creating KMS keys"
 
-  # Delete existing alias
-  aws --endpoint-url=http://localhost:4567 kms delete-alias \
-    --alias-name alias/components-core-JARRSAEncryptionKey 2>/dev/null || true
-
-  # Delete existing key
-  EXISTING_KEY_ID=$(aws --endpoint-url=http://localhost:4567 kms list-aliases \
-    --query "Aliases[?AliasName=='alias/components-core-JARRSAEncryptionKey'].TargetKeyId" \
-    --output text 2>/dev/null || true)
-  
-  if [[ -n "$EXISTING_KEY_ID" ]] && [[ "$EXISTING_KEY_ID" != "None" ]]; then
-    aws --endpoint-url=http://localhost:4567 kms disable-key \
-      --key-id "$EXISTING_KEY_ID" 2>/dev/null || true
-    aws --endpoint-url=http://localhost:4567 kms schedule-key-deletion \
-      --key-id "$EXISTING_KEY_ID" \
-      --pending-window-in-days 7 2>/dev/null || true
-  fi
-
   KEY_ID=$(aws --endpoint-url=http://localhost:4567 kms create-key \
     --key-spec RSA_2048 \
     --key-usage ENCRYPT_DECRYPT \
@@ -153,16 +140,9 @@ create_kms_keys() {
 create_dynamodb_tables() {
   echo "Creating DynamoDB tables"
 
-  # Delete existing tables
-  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-JourneyOutcome" 2>/dev/null || true
-  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-main-SessionStore" 2>/dev/null || true
-  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-AuthCode" 2>/dev/null || true
-  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-ReplayAttack" 2>/dev/null || true
-  aws --endpoint-url=http://localhost:4566 dynamodb delete-table --table-name "components-api-ApiSessions" 2>/dev/null || true
-
   # JourneyOutcomeTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-api-JourneyOutcome" \
+    --table-name "components-core-JourneyOutcome" \
     --attribute-definitions \
       AttributeName=outcome_id,AttributeType=S \
     --key-schema \
@@ -174,20 +154,26 @@ create_dynamodb_tables() {
     --table-name "components-main-SessionStore" \
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
-      AttributeName=user_id,AttributeType=S \
     --key-schema \
       AttributeName=id,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST \
-    --global-secondary-indexes '[{"IndexName":"users-sessions","KeySchema":[{"AttributeName":"user_id","KeyType":"HASH"}],"Projection":{"ProjectionType":"KEYS_ONLY"}}]'
+    --billing-mode PAY_PER_REQUEST
 
+  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
+    --table-name "components-main-SessionStore" \
+    --time-to-live-specification "Enabled=true,AttributeName=expires"    
+    
   # AuthCodeTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-api-AuthCode" \
+    --table-name "components-core-AuthCode" \
     --attribute-definitions \
       AttributeName=code,AttributeType=S \
     --key-schema \
       AttributeName=code,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
+
+  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
+    --table-name "components-core-AuthCode" \
+    --time-to-live-specification "Enabled=true,AttributeName=expires"
 
   # ReplayAttackTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
@@ -198,14 +184,22 @@ create_dynamodb_tables() {
       AttributeName=nonce,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
+  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
+    --table-name "components-api-ReplayAttack" \
+    --time-to-live-specification "Enabled=true,AttributeName=expires"      
+
   # ApiSessionsTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-api-ApiSessions" \
+    --table-name "components-core-ApiSessions" \
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
     --key-schema \
       AttributeName=id,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
+
+  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
+    --table-name "components-core-ApiSessions" \
+    --time-to-live-specification "Enabled=true,AttributeName=expires"      
 
   echo "Finished creating DynamoDB tables"
   return 0
@@ -243,6 +237,7 @@ list_resources() {
 generate_keys
 install_dependencies
 configure_cli_for_localstack
+create_docker_network
 start_localstack
 start_kms_local
 create_ssm_parameters

@@ -28,8 +28,8 @@ export const initStubs = async function () {
   fastify.addHook("onRequest", logRequest);
   fastify.addHook("onRequest", removeTrailingSlash);
   fastify.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
-  fastify.addHook("onSend", () => flushMetrics());
-  fastify.addHook("onResponse", logResponse);
+  fastify.addHook("onSend", logResponse);
+  fastify.addHook("onResponse", () => flushMetrics());
 
   fastify.register(fastifyCookie);
   fastify.register(fastifyFormbody);
@@ -60,13 +60,12 @@ export const initStubs = async function () {
     permittedCrossDomainPolicies: false,
   });
 
-  fastify.decorateReply("globals", {
-    getter() {
-      return {
-        staticHash: staticHash.hash,
-        currentUrl: getCurrentUrl(this.request),
-      };
-    },
+  fastify.addHook("onRequest", async (request, reply) => {
+    reply.globals = {
+      ...reply.globals,
+      staticHash: staticHash.hash,
+      currentUrl: getCurrentUrl(request),
+    };
   });
   fastify.decorateReply("render", render);
 

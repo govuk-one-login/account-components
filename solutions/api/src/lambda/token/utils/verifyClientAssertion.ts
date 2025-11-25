@@ -2,6 +2,7 @@ import type { JWTPayload } from "jose";
 import { jwtVerify, decodeJwt, createRemoteJWKSet } from "jose";
 import { getClientRegistry } from "../../../../../commons/utils/getClientRegistry/index.js";
 import { errorManager } from "./errors.js";
+import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 
 export const verifyClientAssertion = async (
   clientAssertion: string,
@@ -32,7 +33,9 @@ export const verifyClientAssertion = async (
   try {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const JWKS = createRemoteJWKSet(new URL(client!.jwks_uri));
-    const { payload } = await jwtVerify(clientAssertion, JWKS);
+    const { payload } = await jwtVerify(clientAssertion, JWKS, {
+      algorithms: [jwtSigningAlgorithm],
+    });
 
     return payload;
   } catch (e) {

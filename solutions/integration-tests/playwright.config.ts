@@ -21,6 +21,7 @@ if (env.PRE_OR_POST_DEPLOY === "pre") {
     name: "test-server",
     gracefulShutdown: { signal: "SIGTERM", timeout: 100000 },
     stderr: "pipe",
+    stdout: "pipe",
   });
 }
 
@@ -32,8 +33,9 @@ if (env.TEST_TARGET === "local") {
       reuseExistingServer: true,
       timeout: 300000,
       name: "all-servers",
-      gracefulShutdown: { signal: "SIGTERM", timeout: 100000 },
+      gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
       stderr: "pipe",
+      stdout: "pipe",
     },
     /*
     These are needed to check the stubs and API servers are running.
@@ -50,6 +52,7 @@ if (env.TEST_TARGET === "local") {
       name: "stubs-server-healthcheck",
       gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
       stderr: "pipe",
+      stdout: "pipe",
     },
     {
       command: "sleep 310",
@@ -59,6 +62,7 @@ if (env.TEST_TARGET === "local") {
       name: "api-server-healthcheck",
       gracefulShutdown: { signal: "SIGTERM", timeout: 30000 },
       stderr: "pipe",
+      stdout: "pipe",
     },
   );
 }
@@ -67,6 +71,7 @@ if (env.TEST_TARGET === "local") {
 export default defineConfig({
   testDir,
   forbidOnly: !env.HUMAN_IN_THE_LOOP,
+  preserveOutput: "failures-only",
   workers: "50%",
   snapshotPathTemplate: `./${env.UPDATE_SNAPSHOTS ? "snapshots-updated" : "snapshots"}/{projectName}/{testFilePath}/{arg}{ext}`,
   reporter: env.TEST_REPORT_DIR
@@ -80,6 +85,7 @@ export default defineConfig({
   webServer: webServers,
   use: {
     baseURL: getBaseUrl(),
+    video: "retain-on-failure",
   },
   projects: [
     {

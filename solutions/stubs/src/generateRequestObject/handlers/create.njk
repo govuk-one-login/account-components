@@ -18,12 +18,14 @@
                 padding: 5px;
                 margin-top: 5px;
             }
-            input[type="submit"] {
+            input[type="submit"], .button {
                 padding: 10px 20px;
                 background-color: #4CAF50;
                 color: white;
                 border: none;
                 cursor: pointer;
+                text-decoration: none;
+                font-size: 14px;
             }
             pre {
                 white-space: pre-wrap;
@@ -111,8 +113,8 @@
         </form>
         {% endif %}
         {% if authorizeUrl %}
-            <a href="{{ authorizeUrl }}"><input type="submit" value="Start AMC Journey"></a>
-            <a href="/"><input type="submit" value="Reset"></a>
+            <a href="{{ authorizeUrl }}" class="button">Start AMC Journey</a>
+            <a href="/" class="button">Reset</a>
             <h2>Options Chosen</h2>
             <pre>{{ originalRequest | dump(2) | safe }}</pre>
             <h2>JWT Request Object</h2>

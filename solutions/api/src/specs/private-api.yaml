@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components Private API
-  version: 0.0.4
+  version: 0.0.5
   description: |
     OAuth 2.0 provider endpoints, including:
     - POST /token (supports client assertions via private_key_jwt)
@@ -188,7 +188,7 @@ paths:
                     response_types_supported: [code]
                     token_endpoint_auth_methods_supported: [private_key_jwt]
                     token_endpoint_auth_signing_alg_values_supported: [ES256]
-                    scopes_supported: [account-delete]
+                    scopes_supported: [testing-journey, account-delete]
                     grant_types_supported: [authorization_code]
 
 components:

@@ -706,7 +706,7 @@ Resources:
             ]
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
           REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
-          API_SESSIONS_TABLE_NAME: !Ref ApiSessionsTable
+          API_SESSIONS_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/ApiSessionsTableName}}"
           API_SESSION_COOKIE_DOMAIN:
             !FindInMap [
               EnvironmentConfiguration,
@@ -733,7 +733,7 @@ Resources:
                 - dynamodb:PutItem
               Resource:
                 - !GetAtt ReplayAttackTable.Arn
-                - !GetAtt ApiSessionsTable.Arn
+                - !Sub "{{resolve:ssm:/${CoreStackName}/ApiSessionsTableArn}}"
             - Effect: Allow
               Action:
                 - kms:Decrypt
@@ -821,128 +821,3 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-replay_attack"
-
-  JourneyOutcomeTable:
-    Type: AWS::DynamoDB::Table
-    Properties:
-      TableName: !Sub ${AWS::StackName}-JourneyOutcome
-      BillingMode: PAY_PER_REQUEST
-      AttributeDefinitions:
-        - AttributeName: outcome_id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: outcome_id
-          KeyType: HASH
-      SSESpecification:
-        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
-        SSEEnabled: true
-        SSEType: KMS
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-journey_outcome"
-
-  AuthCodeTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
-    Properties:
-      TableName: !Sub ${AWS::StackName}-AuthCode
-      AttributeDefinitions:
-        - AttributeName: "code"
-          AttributeType: "S"
-      KeySchema:
-        - AttributeName: "code"
-          KeyType: "HASH"
-      BillingMode: PAY_PER_REQUEST
-      ContributorInsightsSpecification:
-        Enabled: true
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: false
-      TimeToLiveSpecification:
-        AttributeName: "expiry_time"
-        Enabled: true
-      SSESpecification:
-        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
-        SSEEnabled: true
-        SSEType: KMS
-      TableClass: STANDARD
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-auth_code"
-
-  ApiSessionsTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
-    Properties:
-      TableName: !Sub ${AWS::StackName}-ApiSessions
-      AttributeDefinitions:
-        - AttributeName: "id"
-          AttributeType: "S"
-      KeySchema:
-        - AttributeName: "id"
-          KeyType: "HASH"
-      BillingMode: PAY_PER_REQUEST
-      ContributorInsightsSpecification:
-        Enabled: true
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: false
-      TimeToLiveSpecification:
-        AttributeName: "expiry"
-        Enabled: true
-      SSESpecification:
-        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
-        SSEEnabled: true
-        SSEType: KMS
-      TableClass: STANDARD
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-api_sessions"
-
-  ApiSessionsTableArnParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub "/${AWS::StackName}/ApiSessionsTableArn"
-      Type: String
-      Value: !GetAtt ApiSessionsTable.Arn
-      Description: ARN of the API sessions table
-
-  ApiSessionsTableNameParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub "/${AWS::StackName}/ApiSessionsTableName"
-      Type: String
-      Value: !Ref ApiSessionsTable
-      Description: Name of the API sessions table
-
-  AuthCodeTableArnParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub "/${AWS::StackName}/AuthCodeTableArn"
-      Type: String
-      Value: !GetAtt AuthCodeTable.Arn
-      Description: ARN of the auth code table
-
-  AuthCodeTableNameParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub "/${AWS::StackName}/AuthCodeTableName"
-      Type: String
-      Value: !Ref AuthCodeTable
-      Description: Name of the auth code table
-
-  JourneyOutcomeTableArnParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub "/${AWS::StackName}/JourneyOutcomeTableArn"
-      Type: String
-      Value: !GetAtt JourneyOutcomeTable.Arn
-      Description: ARN of the journey outcome table
-
-  JourneyOutcomeTableNameParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub "/${AWS::StackName}/JourneyOutcomeTableName"
-      Type: String
-      Value: !Ref JourneyOutcomeTable
-      Description: Name of the journey outcome table
