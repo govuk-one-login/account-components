@@ -59,7 +59,7 @@
     "json-schema-to-typescript": "^15.0.4",
     "knip": "^5.70.1",
     "prettier": "^3.6.2",
-    "rolldown": "1.0.0-beta.50",
+    "rolldown": "1.0.0-beta.51",
     "sass": "^1.94.2",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.47.0",
