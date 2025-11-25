@@ -24,6 +24,7 @@ declare module "fastify" {
       csrfToken?: string;
       currentUrl?: URL;
       htmlLang?: string | undefined;
+      authFrontEndUrl?: string | undefined;
     };
     journeyStates?: {
       [Scope.testingJourney]?: Actor<typeof testingJourneyStateMachine>;

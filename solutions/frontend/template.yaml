@@ -50,6 +50,7 @@ Mappings:
       UseCanary: false
       apiSessionCookieDomain: manage.dev.account.gov.uk
       authorizeEndpointUrl: https://api.manage.dev.account.gov.uk/authorize
+      authFrontendUrl: https://signin.dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
@@ -58,6 +59,7 @@ Mappings:
       UseCanary: false
       apiSessionCookieDomain: manage.build.account.gov.uk
       authorizeEndpointUrl: https://api.manage.build.account.gov.uk/authorize
+      authFrontendUrl: https://signin.build.account.gov.uk
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
@@ -66,6 +68,7 @@ Mappings:
       UseCanary: true
       apiSessionCookieDomain: manage.staging.account.gov.uk
       authorizeEndpointUrl: https://api.manage.staging.account.gov.uk/authorize
+      authFrontendUrl: https://signin.staging.account.gov.uk
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
@@ -74,6 +77,7 @@ Mappings:
       UseCanary: true
       apiSessionCookieDomain: manage.integration.account.gov.uk
       authorizeEndpointUrl: https://api.manage.integration.account.gov.uk/authorize
+      authFrontendUrl: https://signin.integration.account.gov.uk
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
@@ -82,6 +86,7 @@ Mappings:
       UseCanary: true
       apiSessionCookieDomain: manage.account.gov.uk
       authorizeEndpointUrl: https://api.manage.account.gov.uk/authorize
+      authFrontendUrl: https://signin.account.gov.uk
 
 Conditions:
   UseCodeSigning:
@@ -386,6 +391,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               authorizeEndpointUrl,
+            ]
+          AUTH_FRONTEND_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              authFrontendUrl,
             ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess

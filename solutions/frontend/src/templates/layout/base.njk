@@ -1,6 +1,5 @@
 {% extends "govuk/template.njk" %}
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
-{% from "govuk/components/cookie-banner/macro.njk" import govukCookieBanner %}
 {% from "frontend-ui/build/components/footer/macro.njk" import frontendUiFooter %}
 {% from "frontend-ui/build/components/language-select/macro.njk" import frontendUiLanguageSelect %}
 {%- set headerClasses -%}
@@ -20,7 +19,7 @@
 {%- endblock %}
 
 {% block bodyStart %}
-  {% include 'templates/layout/banner.njk' %}
+  {% include 'templates/layout/cookieBanner.njk' %}
 {% endblock %}
 
 {% block head %}
@@ -46,7 +45,7 @@
   <div class="govuk-width-container {{ containerClasses }}">
     {% if isProd %}
       {% set bannerHtml %}
-        {{ 'FECTranslations.phaseBanner.text' | translate }} <a href='{{ authFrontEndUrl + "/contact-us-questions?theme=suggestions_feedback" }}' class="govuk-link" rel="noreferrer noopener" target="_blank">{{ 'FECTranslations.phaseBanner.link' | translate | replace(".","") }}</a>.
+        {{ 'FECTranslations.phaseBanner.text' | translate }} <a href='{{ globals.authFrontEndUrl + "/contact-us-questions?theme=suggestions_feedback" }}' class="govuk-link" rel="noreferrer noopener" target="_blank">{{ 'FECTranslations.phaseBanner.link' | translate | replace(".","") }}</a>.
       {% endset %}
       {{ govukPhaseBanner({
           tag: {
