@@ -12,10 +12,10 @@ const mockVerifyClientAssertion = vi.mocked(
   await import("./utils/verifyClientAssertion.js"),
 ).verifyClientAssertion;
 
-vi.mock(import("./utils/hasJtiBeenUsed.js"));
+vi.mock(import("./utils/verifyJti.js"));
 const mockHasJtiBeenUsed = vi.mocked(
-  await import("./utils/hasJtiBeenUsed.js"),
-).hasJtiBeenUsed;
+  await import("./utils/verifyJti.js"),
+).verifyJti;
 
 vi.mock(import("./utils/getAuthRequest.js"));
 const mockGetAuthRequest = vi.mocked(
@@ -35,7 +35,7 @@ describe("token handler", () => {
     mockGetAuthRequest.mockResolvedValue({
       redirect_uri: "https://example.com/callback",
     } as any as Awaited<ReturnType<typeof mockGetAuthRequest>>);
-    mockHasJtiBeenUsed.mockResolvedValue(false);
+    mockHasJtiBeenUsed.mockResolvedValue();
 
     const result = await handler(
       {
@@ -110,7 +110,7 @@ describe("token handler", () => {
   });
 
   it("returns an error when jti has been used before", async () => {
-    mockHasJtiBeenUsed.mockResolvedValue(true);
+    mockHasJtiBeenUsed.mockResolvedValue();
 
     const result = await handler(
       {

@@ -7,7 +7,7 @@ import type { TokenRequest } from "./utils/assertTokenRequest.js";
 import { assertTokenRequest } from "./utils/assertTokenRequest.js";
 import * as querystring from "node:querystring";
 import { getAuthRequest } from "./utils/getAuthRequest.js";
-import { hasJtiBeenUsed } from "./utils/hasJtiBeenUsed.js";
+import { verifyJti } from "./utils/verifyJti.js";
 
 export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
   async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -30,18 +30,7 @@ export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
         );
       }
 
-      const { jti } = assertion;
-      if (typeof jti !== "string") {
-        errorManager.throwError(
-          "invalidClientAssertion",
-          "Missing jti in client assertion",
-        );
-      } else if (await hasJtiBeenUsed(jti)) {
-        errorManager.throwError(
-          "invalidClientAssertion",
-          `Replay attack detected for jti: ${jti}`,
-        );
-      }
+      await verifyJti(assertion.jti);
 
       return {
         statusCode: 200,

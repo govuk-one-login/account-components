@@ -620,7 +620,7 @@ Resources:
       Handler: index.handler
       Environment:
         Variables:
-          AUTH_TABLE_NAME: !Ref AuthCodeTable
+          AUTH_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableName}}"
           REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
@@ -630,8 +630,8 @@ Resources:
                 - dynamodb:GetItem
                 - dynamodb:Query
               Resource:
-                - !GetAtt AuthCodeTable.Arn
                 - !GetAtt ReplayAttackTable.Arn
+                - !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableArn}}"
             - Effect: Allow
               Action:
                 - kms:Decrypt

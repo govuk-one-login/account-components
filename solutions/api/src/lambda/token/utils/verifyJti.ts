@@ -2,7 +2,8 @@ import assert from "node:assert";
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import { errorManager } from "./errors.js";
 
-export const hasJtiBeenUsed = async (jti: string): Promise<boolean> => {
+export const verifyJti = async (jti: string | undefined) => {
+  let item;
   const dynamoDbClient = getDynamoDbClient();
   assert.ok(
     process.env["REPLAY_ATTACK_TABLE_NAME"],
@@ -10,12 +11,16 @@ export const hasJtiBeenUsed = async (jti: string): Promise<boolean> => {
   );
   const tableName = process.env["REPLAY_ATTACK_TABLE_NAME"];
 
+  if (!jti) {
+    errorManager.throwError("invalidRequest", "jti is missing");
+    return;
+  }
+
   try {
-    const { Item } = await dynamoDbClient.get({
+    ({ Item: item } = await dynamoDbClient.get({
       TableName: tableName,
       Key: { nonce: jti },
-    });
-    return !!Item;
+    }));
   } catch {
     errorManager.throwError(
       "serverError",
@@ -23,5 +28,7 @@ export const hasJtiBeenUsed = async (jti: string): Promise<boolean> => {
     );
   }
 
-  return true;
+  if (!item) {
+    errorManager.throwError("invalidRequest", `jti not found: ${jti}`);
+  }
 };
