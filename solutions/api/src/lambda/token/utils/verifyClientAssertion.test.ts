@@ -87,4 +87,27 @@ describe("verifyClientAssertion", () => {
       "JWT verification failed",
     );
   });
+
+  it("should raise an error if the iat is in the future", async () => {
+    const futureIat = Math.floor(Date.now() / 1000) + 10 * 60; // 10 minutes in the future
+    mockDecodeJwt.mockReturnValue({
+      ...mockDecodedJwt,
+      iat: futureIat,
+    });
+
+    await expect(verifyClientAssertion(mockClientAssertion)).rejects.toThrow(
+      "Client assertion iat is in the future",
+    );
+  });
+
+  it("should raise an error if the aud does not include the token endpoint URL", async () => {
+    mockDecodeJwt.mockReturnValue({
+      ...mockDecodedJwt,
+      aud: "https://invalid-audience.com",
+    });
+
+    await expect(verifyClientAssertion(mockClientAssertion)).rejects.toThrow(
+      "Invalid aud in client assertion: https://invalid-audience.com",
+    );
+  });
 });
