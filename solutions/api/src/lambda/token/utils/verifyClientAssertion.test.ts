@@ -1,5 +1,5 @@
 import { verifyClientAssertion } from "./verifyClientAssertion.js";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as jose from "jose";
 import { getClientRegistry } from "../../../../../commons/utils/getClientRegistry/index.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
@@ -11,6 +11,8 @@ const mockGetClientRegistry = vi.mocked(getClientRegistry);
 const mockDecodeJwt = vi.mocked(jose.decodeJwt);
 const mockJwtVerify = vi.mocked(jose.jwtVerify);
 const mockCreateRemoteJWKSet = vi.mocked(jose.createRemoteJWKSet);
+
+const ORIGINAL_ENV = { ...process.env };
 
 describe("verifyClientAssertion", () => {
   const mockClientAssertion = "mock.jwt.token";
@@ -32,6 +34,7 @@ describe("verifyClientAssertion", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env["TOKEN_ENDPOINT_URL"] = "https://example.com/token";
     mockGetClientRegistry.mockResolvedValue(mockClientRegistry);
     mockDecodeJwt.mockReturnValue(mockDecodedJwt);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -40,6 +43,10 @@ describe("verifyClientAssertion", () => {
     } as any);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockCreateRemoteJWKSet.mockReturnValue(vi.fn() as any);
+  });
+
+  afterEach(() => {
+    process.env = { ...ORIGINAL_ENV };
   });
 
   it("should successfully verify client assertion", async () => {
