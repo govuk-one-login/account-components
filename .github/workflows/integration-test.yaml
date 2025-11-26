@@ -28,10 +28,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check LocalStack CLI version
-        # This will fail the step if the command is not found, which is a better test.
-        run: localstack --version
-
       - name: Install LocalStack CLIs
         uses: LocalStack/setup-localstack@9392b05ddb345894c2e86305fc426566e738c1db
         with:
