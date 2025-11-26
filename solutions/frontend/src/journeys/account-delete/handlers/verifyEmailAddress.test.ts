@@ -73,6 +73,8 @@ describe("verifyEmailAddress handlers", () => {
   describe("verifyEmailAddressPostHandler", () => {
     it("should send emailVerified event and redirect when valid code provided", async () => {
       mockRequest.body = { code: "123456" };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
 
       const result = await verifyEmailAddressPostHandler(
         mockRequest as FastifyRequest,
@@ -91,6 +93,14 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should render error when no code provided", async () => {
       mockRequest.body = {};
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = {
+        t: vi
+          .fn()
+          .mockReturnValue(
+            'Invalid key: Expected "code" but received undefined',
+          ),
+      } as any;
 
       const result = await verifyEmailAddressPostHandler(
         mockRequest as FastifyRequest,
@@ -104,14 +114,14 @@ describe("verifyEmailAddress handlers", () => {
           errors: expect.objectContaining({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             code: expect.objectContaining({
-              text: "TODO invalidRequestBody",
+              text: 'Invalid key: Expected "code" but received undefined',
               href: "#code",
             }),
           }),
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
-              text: "TODO invalidRequestBody",
+              text: 'Invalid key: Expected "code" but received undefined',
               href: "#code",
             }),
           ]),
@@ -123,6 +133,10 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should render error when code is not 6 characters", async () => {
       mockRequest.body = { code: "123" };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = {
+        t: vi.fn().mockReturnValue("Code must be 6 characters"),
+      } as any;
 
       const result = await verifyEmailAddressPostHandler(
         mockRequest as FastifyRequest,
@@ -136,14 +150,14 @@ describe("verifyEmailAddress handlers", () => {
           errors: expect.objectContaining({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             code: expect.objectContaining({
-              text: "TODO mustBe6Chars",
+              text: "Code must be 6 characters",
               href: "#code",
             }),
           }),
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
-              text: "TODO mustBe6Chars",
+              text: "Code must be 6 characters",
               href: "#code",
             }),
           ]),
@@ -155,6 +169,10 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should render error when code contains non-digits", async () => {
       mockRequest.body = { code: "12345a" };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = {
+        t: vi.fn().mockReturnValue("Code must contain only digits"),
+      } as any;
 
       const result = await verifyEmailAddressPostHandler(
         mockRequest as FastifyRequest,
@@ -168,14 +186,14 @@ describe("verifyEmailAddress handlers", () => {
           errors: expect.objectContaining({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             code: expect.objectContaining({
-              text: "TODO mustBeAllDigits",
+              text: "Code must contain only digits",
               href: "#code",
             }),
           }),
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
-              text: "TODO mustBeAllDigits",
+              text: "Code must contain only digits",
               href: "#code",
             }),
           ]),
@@ -187,6 +205,12 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should render error when code is not a string", async () => {
       mockRequest.body = { code: 123456 };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = {
+        t: vi
+          .fn()
+          .mockReturnValue("Invalid type: Expected string but received 123456"),
+      } as any;
 
       const result = await verifyEmailAddressPostHandler(
         mockRequest as FastifyRequest,
@@ -200,14 +224,14 @@ describe("verifyEmailAddress handlers", () => {
           errors: expect.objectContaining({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             code: expect.objectContaining({
-              text: "TODO mustBeAString",
+              text: "Invalid type: Expected string but received 123456",
               href: "#code",
             }),
           }),
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
-              text: "TODO mustBeAString",
+              text: "Invalid type: Expected string but received 123456",
               href: "#code",
             }),
           ]),
@@ -219,6 +243,10 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should render error when code is empty string", async () => {
       mockRequest.body = { code: "" };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = {
+        t: vi.fn().mockReturnValue("Code cannot be empty"),
+      } as any;
 
       const result = await verifyEmailAddressPostHandler(
         mockRequest as FastifyRequest,
@@ -232,14 +260,14 @@ describe("verifyEmailAddress handlers", () => {
           errors: expect.objectContaining({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             code: expect.objectContaining({
-              text: "TODO mustNotBeEmpty",
+              text: "Code cannot be empty",
               href: "#code",
             }),
           }),
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
-              text: "TODO mustNotBeEmpty",
+              text: "Code cannot be empty",
               href: "#code",
             }),
           ]),
@@ -251,6 +279,14 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should render error when request body is not an object", async () => {
       mockRequest.body = "invalid";
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = {
+        t: vi
+          .fn()
+          .mockReturnValue(
+            'Invalid type: Expected Object but received "invalid"',
+          ),
+      } as any;
 
       const result = await verifyEmailAddressPostHandler(
         mockRequest as FastifyRequest,
@@ -264,14 +300,14 @@ describe("verifyEmailAddress handlers", () => {
           errors: expect.objectContaining({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             "": expect.objectContaining({
-              text: "TODO invalidRequestBody",
+              text: 'Invalid type: Expected Object but received "invalid"',
               href: "#",
             }),
           }),
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
-              text: "TODO invalidRequestBody",
+              text: 'Invalid type: Expected Object but received "invalid"',
               href: "#",
             }),
           ]),
