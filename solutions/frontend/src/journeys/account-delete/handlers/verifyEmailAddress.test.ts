@@ -71,7 +71,9 @@ describe("verifyEmailAddress handlers", () => {
   });
 
   describe("verifyEmailAddressPostHandler", () => {
-    it("should send emailVerified event and redirect to TODO page", async () => {
+    it("should send emailVerified event and redirect when valid code provided", async () => {
+      mockRequest.body = { code: "123456" };
+
       const result = await verifyEmailAddressPostHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
@@ -84,6 +86,134 @@ describe("verifyEmailAddress handlers", () => {
         type: "emailVerified",
       });
       expect(mockReply.redirect).toHaveBeenCalledWith("/delete-account/TODO");
+      expect(result).toBe(mockReply);
+    });
+
+    it("should render error when no code provided", async () => {
+      mockRequest.body = {};
+
+      const result = await verifyEmailAddressPostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockReply.render).toHaveBeenCalledWith(
+        "journeys/account-delete/templates/verifyEmailAddress.njk",
+        expect.objectContaining({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errors: expect.objectContaining({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            code: expect.objectContaining({
+              text: "TODO mustBeAString",
+              href: "#code",
+            }),
+          }),
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errorList: expect.arrayContaining([
+            expect.objectContaining({
+              text: "TODO mustBeAString",
+              href: "#code",
+            }),
+          ]),
+          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+        }),
+      );
+      expect(result).toBe(mockReply);
+    });
+
+    it("should render error when code is not 6 characters", async () => {
+      mockRequest.body = { code: "123" };
+
+      const result = await verifyEmailAddressPostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockReply.render).toHaveBeenCalledWith(
+        "journeys/account-delete/templates/verifyEmailAddress.njk",
+        expect.objectContaining({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errors: expect.objectContaining({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            code: expect.objectContaining({
+              text: "TODO mustBe6Chars",
+              href: "#code",
+            }),
+          }),
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errorList: expect.arrayContaining([
+            expect.objectContaining({
+              text: "TODO mustBe6Chars",
+              href: "#code",
+            }),
+          ]),
+          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+        }),
+      );
+      expect(result).toBe(mockReply);
+    });
+
+    it("should render error when code contains non-digits", async () => {
+      mockRequest.body = { code: "12345a" };
+
+      const result = await verifyEmailAddressPostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockReply.render).toHaveBeenCalledWith(
+        "journeys/account-delete/templates/verifyEmailAddress.njk",
+        expect.objectContaining({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errors: expect.objectContaining({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            code: expect.objectContaining({
+              text: "TODO mustBeAllDigits",
+              href: "#code",
+            }),
+          }),
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errorList: expect.arrayContaining([
+            expect.objectContaining({
+              text: "TODO mustBeAllDigits",
+              href: "#code",
+            }),
+          ]),
+          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+        }),
+      );
+      expect(result).toBe(mockReply);
+    });
+
+    it("should render error when code is not a string", async () => {
+      mockRequest.body = { code: 123456 };
+
+      const result = await verifyEmailAddressPostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockReply.render).toHaveBeenCalledWith(
+        "journeys/account-delete/templates/verifyEmailAddress.njk",
+        expect.objectContaining({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errors: expect.objectContaining({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            code: expect.objectContaining({
+              text: "TODO mustBeAString",
+              href: "#code",
+            }),
+          }),
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errorList: expect.arrayContaining([
+            expect.objectContaining({
+              text: "TODO mustBeAString",
+              href: "#code",
+            }),
+          ]),
+          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+        }),
+      );
       expect(result).toBe(mockReply);
     });
 
