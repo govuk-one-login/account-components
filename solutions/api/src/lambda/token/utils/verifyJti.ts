@@ -4,8 +4,6 @@ import { errorManager } from "./errors.js";
 import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 
 export const verifyJti = async (jti: string | undefined) => {
-  let item;
-
   const appConfig = await getAppConfig();
   const dynamoDbClient = getDynamoDbClient();
 
@@ -21,30 +19,28 @@ export const verifyJti = async (jti: string | undefined) => {
   }
 
   try {
-    ({ Item: item } = await dynamoDbClient.get({
+    await dynamoDbClient.put({
       TableName: tableName,
-      Key: { nonce: jti },
-      ConsistentRead: true,
-    }));
-  } catch {
+      Item: {
+        nonce: jti,
+        expires:
+          Math.floor(Date.now() / 1000) + appConfig.jti_nonce_ttl_in_seconds,
+      },
+      ConditionExpression: "attribute_not_exists(nonce)",
+    });
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.name === "ConditionalCheckFailedException"
+    ) {
+      errorManager.throwError("invalidRequest", `jti found: ${jti}`);
+      return;
+    }
+
     errorManager.throwError(
       "serverError",
       "Error checking replay attack table",
     );
     return;
   }
-
-  if (item) {
-    errorManager.throwError("invalidRequest", `jti found: ${jti}`);
-    return;
-  }
-
-  await dynamoDbClient.put({
-    TableName: tableName,
-    Item: {
-      nonce: jti,
-      expires:
-        Math.floor(Date.now() / 1000) + appConfig.jti_nonce_ttl_in_seconds,
-    },
-  });
 };

@@ -36,42 +36,23 @@ describe("verifyJti", () => {
     await expect(verifyJti(undefined)).rejects.toThrow("jti is missing");
   });
 
-  it("throws error when jti found in table", async () => {
-    mockGet.mockResolvedValueOnce({ Item: "nonce-2" });
-
-    await expect(verifyJti("nonce-2")).rejects.toThrow("jti found: nonce-2");
-    expect(mockPut).not.toHaveBeenCalled();
-  });
-
   it("resolves when jti does not exist in table", async () => {
-    mockGet.mockResolvedValueOnce({ Item: undefined });
+    mockPut.mockResolvedValueOnce({});
 
     await expect(verifyJti("nonce-3")).resolves.toBeUndefined();
     expect(getDynamoDbClient).toHaveBeenCalledTimes(1);
-    expect(mockGet).toHaveBeenCalledWith({
-      TableName: "replay-table",
-      Key: { nonce: "nonce-3" },
-      ConsistentRead: true,
-    });
   });
 
-  it("stores jti in table after verification", async () => {
-    mockGet.mockResolvedValueOnce({ Item: undefined });
+  it("throws error when jti already exists in table", async () => {
+    const error = new Error("ConditionalCheckFailedException");
+    error.name = "ConditionalCheckFailedException";
+    mockPut.mockRejectedValueOnce(error);
 
-    await verifyJti("nonce-4");
-
-    expect(mockPut).toHaveBeenCalledWith(
-      expect.objectContaining<Record<string, unknown>>({
-        TableName: "replay-table",
-        Item: expect.objectContaining<{ nonce: string }>({
-          nonce: "nonce-4",
-        }),
-      }),
-    );
+    await expect(verifyJti("nonce-4")).rejects.toThrow("jti found: nonce-4");
   });
 
   it("throws error when dynamo lookup fails", async () => {
-    mockGet.mockRejectedValueOnce(new Error("boom"));
+    mockPut.mockRejectedValueOnce(new Error("boom"));
 
     await expect(verifyJti("nonce-4")).rejects.toThrow(
       "Error checking replay attack table",
