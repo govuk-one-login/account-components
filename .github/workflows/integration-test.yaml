@@ -37,6 +37,10 @@ jobs:
         with:
           skip-startup: "true"
 
+      - name: Check LocalStack CLI version
+        # This will fail the step if the command is not found, which is a better test.
+        run: localstack --version
+
       - name: Configure frontend environment
         run: |
           cd solutions/frontend
