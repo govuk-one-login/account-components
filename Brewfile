@@ -1,5 +1,6 @@
 tap "sourcemeta/apps"
 
+brew "awscli"
 brew "aws-sam-cli"
 brew "cfn-lint"
 brew "tflint"

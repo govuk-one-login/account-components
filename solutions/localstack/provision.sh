@@ -21,33 +21,6 @@ generate_keys() {
   return 0
 }
 
-install_dependencies() { 
-  echo "Starting to install dependencies"
- 
-  if ! command -v localstack >/dev/null 2>&1; then
-    echo "Installing Localstack"
-
-    if command -v brew >/dev/null 2>&1; then
-      brew install localstack || true
-    else
-      pip3 install --quiet localstack || true
-    fi
-  fi
-  
-  if ! command -v aws >/dev/null 2>&1; then
-    echo "Installing AWS CLI"
-
-    if command -v brew >/dev/null 2>&1; then
-      brew install awscli || true
-    else
-      pip3 install --quiet awscli || true
-    fi
-  fi
-  
-  echo "Finished installing dependencies"
-  return 0
-}
-
 configure_cli_for_localstack() {
   echo "Starting to configure AWS CLI for Localstack"
 
@@ -235,7 +208,6 @@ list_resources() {
 }
 
 generate_keys
-install_dependencies
 configure_cli_for_localstack
 create_docker_network
 start_localstack

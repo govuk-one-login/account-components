@@ -28,6 +28,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Necessary to prevent localstack errors
+      - name: Upgrade click
+        run: pip3 install --upgrade click
+
+      - name: Install LocalStack CLIs
+        uses: LocalStack/setup-localstack@9392b05ddb345894c2e86305fc426566e738c1db
+        with:
+          skip-startup: "true"
+
       - name: Configure frontend environment
         run: |
           cd solutions/frontend
