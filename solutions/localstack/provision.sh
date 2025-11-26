@@ -106,6 +106,18 @@ create_kms_keys() {
     --alias-name alias/components-core-JARRSAEncryptionKey \
     --target-key-id "$KEY_ID"
 
+  JWT_SIGNING_KEY_ID=$(aws --endpoint-url=http://localhost:4567 kms create-key \
+    --key-spec ECC_NIST_P256 \
+    --key-usage SIGN_VERIFY \
+    --origin AWS_KMS \
+    --description "JWT Signing Key" \
+    --query 'KeyMetadata.KeyId' \
+    --output text)
+
+  aws --endpoint-url=http://localhost:4567 kms create-alias \
+    --alias-name alias/components-core/JWTSigningKey \
+    --target-key-id "$JWT_SIGNING_KEY_ID"
+
   echo "Finished creating KMS keys"
   return 0
 }
