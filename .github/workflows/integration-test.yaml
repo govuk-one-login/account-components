@@ -28,6 +28,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Necessary to prevent localstack errors
+      - name: Upgrade click
+        run: pip3 install --upgrade click
+
+      - name: Install LocalStack CLIs
+        uses: LocalStack/setup-localstack@9392b05ddb345894c2e86305fc426566e738c1db
+        with:
+          skip-startup: "true"
+
       - name: Configure frontend environment
         run: |
           cd solutions/frontend
@@ -47,7 +56,8 @@ jobs:
           API_SESSIONS_TABLE_NAME=components-core-ApiSessions
           AUTHORIZE_ENDPOINT_URL=http://localhost:6004/authorize
           AUTH_CODE_TABLE_NAME=components-core-AuthCode
-          JOURNEY_OUTCOME_TABLE_NAME=components-core-JourneyOutcome          
+          JOURNEY_OUTCOME_TABLE_NAME=components-core-JourneyOutcome    
+          AUTH_FRONTEND_URL=https://signin.account.gov.uk
           EOF
 
       - name: Configure stubs environment
@@ -100,6 +110,11 @@ jobs:
               "AUTH_TABLE_NAME": "components-core-AuthCode",
               "REPLAY_ATTACK_TABLE_NAME": "components-api-ReplayAttack",
               "TOKEN_ENDPOINT_URL": "http://localhost:6004/token"
+            },
+            "JourneyOutcomeLambda": {
+              "JWT_SIGNING_KEY_ALIAS": "alias/components-core-JWTSigningKey",
+              "TOKEN_ENDPOINT_URL": "http://localhost:6004/token",
+              "JOURNEY_OUTCOME_ENDPOINT_URL": "http://localhost:6004/journeyoutcome"
             }
           }
           EOF

@@ -21,33 +21,6 @@ generate_keys() {
   return 0
 }
 
-install_dependencies() { 
-  echo "Starting to install dependencies"
- 
-  if ! command -v localstack >/dev/null 2>&1; then
-    echo "Installing Localstack"
-
-    if command -v brew >/dev/null 2>&1; then
-      brew install localstack || true
-    else
-      pip3 install --quiet localstack || true
-    fi
-  fi
-  
-  if ! command -v aws >/dev/null 2>&1; then
-    echo "Installing AWS CLI"
-
-    if command -v brew >/dev/null 2>&1; then
-      brew install awscli || true
-    else
-      pip3 install --quiet awscli || true
-    fi
-  fi
-  
-  echo "Finished installing dependencies"
-  return 0
-}
-
 configure_cli_for_localstack() {
   echo "Starting to configure AWS CLI for Localstack"
 
@@ -132,6 +105,18 @@ create_kms_keys() {
   aws --endpoint-url=http://localhost:4567 kms create-alias \
     --alias-name alias/components-core-JARRSAEncryptionKey \
     --target-key-id "$KEY_ID"
+
+  JWT_SIGNING_KEY_ID=$(aws --endpoint-url=http://localhost:4567 kms create-key \
+    --key-spec ECC_NIST_P256 \
+    --key-usage SIGN_VERIFY \
+    --origin AWS_KMS \
+    --description "JWT Signing Key" \
+    --query 'KeyMetadata.KeyId' \
+    --output text)
+
+  aws --endpoint-url=http://localhost:4567 kms create-alias \
+    --alias-name alias/components-core/JWTSigningKey \
+    --target-key-id "$JWT_SIGNING_KEY_ID"
 
   echo "Finished creating KMS keys"
   return 0
@@ -235,7 +220,6 @@ list_resources() {
 }
 
 generate_keys
-install_dependencies
 configure_cli_for_localstack
 create_docker_network
 start_localstack

@@ -64,12 +64,14 @@ export const initFrontend = async function () {
   fastify.register(i18nextMiddlewarePlugin, { i18next });
   // @ts-expect-error
   fastify.addHook("onRequest", i18nextMiddlewareHandle(i18next));
+
   fastify.addHook("onRequest", async (request, reply) => {
     reply.globals = {
       ...reply.globals,
       staticHash: staticHash.hash,
       currentUrl: getCurrentUrl(request),
       htmlLang: request.i18n.language,
+      authFrontEndUrl: process.env["AUTH_FRONTEND_URL"],
     };
   });
   fastify.decorateReply("render", render);
