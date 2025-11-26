@@ -25,6 +25,8 @@ describe("verifyClientAssertion", () => {
   ];
   const mockDecodedJwt = {
     iss: "test-client-id",
+    iat: Math.floor(Date.now() / 1000) - 60,
+    aud: "https://example.com/token",
   };
   const mockPayload = { sub: "test-subject", iss: "test-client-id" };
 
@@ -60,7 +62,10 @@ describe("verifyClientAssertion", () => {
   });
 
   it("should throw error when client is not found in registry", async () => {
-    mockDecodeJwt.mockReturnValue({ iss: "unknown-client-id" });
+    mockDecodeJwt.mockReturnValue({
+      ...mockDecodedJwt,
+      iss: "unknown-client-id",
+    });
 
     await expect(verifyClientAssertion(mockClientAssertion)).rejects.toThrow(
       "Client unknown-client-id not found for client assertion",

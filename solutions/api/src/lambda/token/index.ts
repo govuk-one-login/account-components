@@ -21,20 +21,13 @@ export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
 
       const assertion = await verifyClientAssertion(request.client_assertion);
 
-      const auth = await getAuthRequest(request.code);
-
-      if (auth?.redirect_uri !== assertion.redirect_uri) {
-        errorManager.throwError(
-          "invalidCode",
-          `Redirect URI mismatch for code: ${request.code}`,
-        );
-      }
+      await getAuthRequest(request.code, assertion.redirect_uri);
 
       await verifyJti(assertion.jti);
 
       return {
         statusCode: 200,
-        body: "hello world",
+        body: JSON.stringify({ hello: "world" }),
       };
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions

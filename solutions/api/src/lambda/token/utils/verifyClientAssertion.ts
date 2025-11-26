@@ -9,12 +9,33 @@ export const verifyClientAssertion = async (
 ): Promise<JWTPayload & { redirect_uri?: string }> => {
   const clientRegistry = await getClientRegistry();
   const decodedJwt = decodeJwt(clientAssertion);
-  const iss = decodedJwt.iss;
+  const { iss, iat, aud } = decodedJwt;
 
   if (!iss) {
     errorManager.throwError(
       "invalidClientAssertion",
       "Missing iss in client assertion",
+    );
+  }
+
+  if (!iat) {
+    return errorManager.throwError(
+      "invalidClientAssertion",
+      "Missing iat in client assertion",
+    );
+  }
+
+  if (iat * 1000 > Date.now() + 5 * 60 * 1000) {
+    errorManager.throwError(
+      "invalidClientAssertion",
+      "Client assertion iat is in the future",
+    );
+  }
+
+  if (!aud) {
+    return errorManager.throwError(
+      "invalidClientAssertion",
+      "Missing aud in client assertion",
     );
   }
 

@@ -628,10 +628,13 @@ Resources:
             - Effect: Allow
               Action:
                 - dynamodb:GetItem
-                - dynamodb:Query
+                - dynamodb:PutItem
               Resource:
                 - !GetAtt ReplayAttackTable.Arn
-                - !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableArn}}"
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableArn}}"
             - Effect: Allow
               Action:
                 - kms:Decrypt

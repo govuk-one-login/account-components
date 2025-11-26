@@ -3,7 +3,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { verifyJti } from "./verifyJti.js";
 
 const mockGet = vi.fn();
-const getDynamoDbClient = vi.fn(() => ({ get: mockGet }));
+const mockPut = vi.fn();
+const getDynamoDbClient = vi.fn(() => ({ get: mockGet, put: mockPut }));
 
 vi.mock(
   import("../../../../../commons/utils/awsClient/dynamodbClient/index.js"),
@@ -35,23 +36,38 @@ describe("verifyJti", () => {
     await expect(verifyJti(undefined)).rejects.toThrow("jti is missing");
   });
 
-  it("throws error when jti not found in table", async () => {
-    mockGet.mockResolvedValueOnce({ Item: undefined });
+  it("throws error when jti found in table", async () => {
+    mockGet.mockResolvedValueOnce({ Item: "nonce-2" });
 
-    await expect(verifyJti("nonce-2")).rejects.toThrow(
-      "jti not found: nonce-2",
-    );
+    await expect(verifyJti("nonce-2")).rejects.toThrow("jti found: nonce-2");
+    expect(mockPut).not.toHaveBeenCalled();
   });
 
-  it("resolves when jti exists in table", async () => {
-    mockGet.mockResolvedValueOnce({ Item: { nonce: "nonce-3" } });
+  it("resolves when jti does not exist in table", async () => {
+    mockGet.mockResolvedValueOnce({ Item: undefined });
 
     await expect(verifyJti("nonce-3")).resolves.toBeUndefined();
     expect(getDynamoDbClient).toHaveBeenCalledTimes(1);
     expect(mockGet).toHaveBeenCalledWith({
       TableName: "replay-table",
       Key: { nonce: "nonce-3" },
+      ConsistentRead: true,
     });
+  });
+
+  it("stores jti in table after verification", async () => {
+    mockGet.mockResolvedValueOnce({ Item: undefined });
+
+    await verifyJti("nonce-4");
+
+    expect(mockPut).toHaveBeenCalledWith(
+      expect.objectContaining<Record<string, unknown>>({
+        TableName: "replay-table",
+        Item: expect.objectContaining<{ nonce: string }>({
+          nonce: "nonce-4",
+        }),
+      }),
+    );
   });
 
   it("throws error when dynamo lookup fails", async () => {

@@ -53,7 +53,7 @@ describe("token handler", () => {
 
     expect(result).toStrictEqual({
       statusCode: 200,
-      body: "hello world",
+      body: '{"hello":"world"}',
     });
   });
 

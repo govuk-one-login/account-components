@@ -13,8 +13,6 @@ const mockedDynamoDbClient = vi.mocked(
   ),
 ).getDynamoDbClient;
 
-vi.mock(import("./errors.js"));
-
 describe("getAuthRequest", () => {
   const ORIGINAL_ENV = process.env;
 
@@ -33,9 +31,9 @@ describe("getAuthRequest", () => {
   it("throws when AUTH_TABLE_NAME is not configured", async () => {
     delete process.env["AUTH_TABLE_NAME"];
 
-    await expect(getAuthRequest("code-1")).rejects.toThrow(
-      "AUTH_TABLE_NAME is not configured",
-    );
+    await expect(
+      getAuthRequest("code-1", "https://example.com/callback"),
+    ).rejects.toThrow("AUTH_TABLE_NAME is not configured");
   });
 
   it("returns the parsed auth request when data is valid", async () => {
@@ -45,16 +43,54 @@ describe("getAuthRequest", () => {
       client_id: "client-abc",
       sub: "user-xyz",
       redirect_uri: "https://example.com/callback",
-      scope: "openid profile",
-      expiry_time: 1_717_171_717,
+      expires: Date.now() / 1000 + 600,
     };
     mockGet.mockResolvedValueOnce({ Item: item });
 
-    await expect(getAuthRequest("valid-code")).resolves.toStrictEqual(item);
+    await expect(
+      getAuthRequest("valid-code", "https://example.com/callback"),
+    ).resolves.toStrictEqual(item);
 
     expect(mockGet).toHaveBeenCalledWith({
       TableName: "auth-table",
       Key: { code: "valid-code" },
+      ConsistentRead: true,
     });
+  });
+
+  it("throws an error when redirect_uri doesn't match assertion", async () => {
+    const item = {
+      code: "valid-code",
+      outcome_id: "outcome-123",
+      client_id: "client-abc",
+      sub: "user-xyz",
+      redirect_uri: "https://example.com/other-callback",
+      expires: Date.now() / 1000 + 600,
+    };
+    mockGet.mockResolvedValueOnce({ Item: item });
+
+    await expect(async () => {
+      await getAuthRequest("valid-code", "https://example.com/callback");
+    }).rejects.toThrow(
+      "Auth request data is invalid for code: valid-code, auth request redirect=https://example.com/other-callback, client assertion redirect=https://example.com/callback",
+    );
+  });
+
+  it("throws an error when token is expired", async () => {
+    const item = {
+      code: "valid-code",
+      outcome_id: "outcome-123",
+      client_id: "client-abc",
+      sub: "user-xyz",
+      redirect_uri: "https://example.com/callback",
+      expires: Date.now() / 1000 - 10,
+    };
+    mockGet.mockResolvedValueOnce({ Item: item });
+
+    await expect(async () => {
+      await getAuthRequest("valid-code", "https://example.com/callback");
+    }).rejects.toThrow(
+      "Auth request data is invalid for code: valid-code, Auth request has expired",
+    );
   });
 });

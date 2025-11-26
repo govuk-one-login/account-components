@@ -20,15 +20,26 @@ export const verifyJti = async (jti: string | undefined) => {
     ({ Item: item } = await dynamoDbClient.get({
       TableName: tableName,
       Key: { nonce: jti },
+      ConsistentRead: true,
     }));
   } catch {
     errorManager.throwError(
       "serverError",
       "Error checking replay attack table",
     );
+    return;
   }
 
-  if (!item) {
-    errorManager.throwError("invalidRequest", `jti not found: ${jti}`);
+  if (item) {
+    errorManager.throwError("invalidRequest", `jti found: ${jti}`);
+    return;
   }
+
+  await dynamoDbClient.put({
+    TableName: tableName,
+    Item: {
+      nonce: jti,
+      expires: Math.floor(Date.now() / 1000) + 300,
+    },
+  });
 };
