@@ -147,7 +147,6 @@ const getTokenRequestBody = async ({
     iss: client.client_id,
     aud: process.env["API_TOKEN_ENDPOINT_URL"],
     jti: crypto.randomUUID(),
-    redirect_uri: currentUrl,
   })
     .setProtectedHeader({ alg: jwtSigningAlgorithm })
     .setIssuedAt()
@@ -160,6 +159,7 @@ const getTokenRequestBody = async ({
     client_assertion_type:
       "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
     client_assertion: clientAssertion,
+    redirect_uri: currentUrl,
   });
 
   return params;

@@ -21,7 +21,11 @@ export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
 
       const assertion = await verifyClientAssertion(request.client_assertion);
 
-      await getAuthRequest(request.code, assertion.redirect_uri);
+      await getAuthRequest(
+        request.code,
+        request.redirect_uri,
+        String(assertion.iss),
+      );
 
       await verifyJti(assertion.jti);
 

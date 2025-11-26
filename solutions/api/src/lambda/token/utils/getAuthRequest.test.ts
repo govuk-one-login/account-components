@@ -32,7 +32,7 @@ describe("getAuthRequest", () => {
     delete process.env["AUTH_TABLE_NAME"];
 
     await expect(
-      getAuthRequest("code-1", "https://example.com/callback"),
+      getAuthRequest("code-1", "https://example.com/callback", "client-abc"),
     ).rejects.toThrow("AUTH_TABLE_NAME is not configured");
   });
 
@@ -48,7 +48,11 @@ describe("getAuthRequest", () => {
     mockGet.mockResolvedValueOnce({ Item: item });
 
     await expect(
-      getAuthRequest("valid-code", "https://example.com/callback"),
+      getAuthRequest(
+        "valid-code",
+        "https://example.com/callback",
+        "client-abc",
+      ),
     ).resolves.toStrictEqual(item);
 
     expect(mockGet).toHaveBeenCalledWith({
@@ -70,9 +74,13 @@ describe("getAuthRequest", () => {
     mockGet.mockResolvedValueOnce({ Item: item });
 
     await expect(async () => {
-      await getAuthRequest("valid-code", "https://example.com/callback");
+      await getAuthRequest(
+        "valid-code",
+        "https://example.com/callback",
+        "client-abc",
+      );
     }).rejects.toThrow(
-      "Auth request data is invalid for code: valid-code, auth request redirect=https://example.com/other-callback, client assertion redirect=https://example.com/callback",
+      "Auth request data is invalid for code: valid-code, auth redirect=https://example.com/other-callback, request redirect=https://example.com/callback",
     );
   });
 
@@ -88,7 +96,11 @@ describe("getAuthRequest", () => {
     mockGet.mockResolvedValueOnce({ Item: item });
 
     await expect(async () => {
-      await getAuthRequest("valid-code", "https://example.com/callback");
+      await getAuthRequest(
+        "valid-code",
+        "https://example.com/callback",
+        "client-abc",
+      );
     }).rejects.toThrow(
       "Auth request data is invalid for code: valid-code, Auth request has expired",
     );

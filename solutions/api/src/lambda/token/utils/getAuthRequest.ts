@@ -4,27 +4,26 @@ import * as v from "valibot";
 
 export const getAuthRequest = async (
   code: string,
-  assertion_redirect_uri: string | undefined,
+  redirect_uri: string,
+  client_id: string,
 ) => {
-  if (!assertion_redirect_uri) {
-    return errorManager.throwError(
-      "invalidCode",
-      "Client assertion is missing redirect_uri",
-    );
-  }
-
   const dynamoDbClient = getDynamoDbClient();
 
   const AuthRequestSchema = v.object({
     code: v.string(),
     outcome_id: v.string(),
-    client_id: v.string(),
+    client_id: v.pipe(
+      v.string(),
+      v.literal(client_id, (issue) => {
+        return `auth client_id=${String(issue.input)}, assertion client_id=${client_id}`;
+      }),
+    ),
     sub: v.string(),
     redirect_uri: v.pipe(
       v.string(),
       v.url(),
-      v.literal(assertion_redirect_uri, (issue) => {
-        return `auth request redirect=${String(issue.input)}, client assertion redirect=${assertion_redirect_uri}`;
+      v.literal(redirect_uri, (issue) => {
+        return `auth redirect=${String(issue.input)}, request redirect=${redirect_uri}`;
       }),
     ),
     expires: v.pipe(
