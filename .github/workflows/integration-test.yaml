@@ -28,17 +28,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install dependencies
+      # Necessary to prevent localstack errors
+      - name: Upgrade click
         run: pip3 install --upgrade click
 
       - name: Install LocalStack CLIs
         uses: LocalStack/setup-localstack@9392b05ddb345894c2e86305fc426566e738c1db
         with:
           skip-startup: "true"
-
-      - name: Check LocalStack CLI version
-        # This will fail the step if the command is not found, which is a better test.
-        run: localstack --version
 
       - name: Configure frontend environment
         run: |
