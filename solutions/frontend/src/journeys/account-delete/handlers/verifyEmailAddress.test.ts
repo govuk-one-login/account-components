@@ -104,14 +104,14 @@ describe("verifyEmailAddress handlers", () => {
           errors: expect.objectContaining({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             code: expect.objectContaining({
-              text: "TODO mustBeAString",
+              text: "TODO invalidRequestBody",
               href: "#code",
             }),
           }),
           // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
-              text: "TODO mustBeAString",
+              text: "TODO invalidRequestBody",
               href: "#code",
             }),
           ]),
@@ -209,6 +209,70 @@ describe("verifyEmailAddress handlers", () => {
             expect.objectContaining({
               text: "TODO mustBeAString",
               href: "#code",
+            }),
+          ]),
+          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+        }),
+      );
+      expect(result).toBe(mockReply);
+    });
+
+    it("should render error when code is empty string", async () => {
+      mockRequest.body = { code: "" };
+
+      const result = await verifyEmailAddressPostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockReply.render).toHaveBeenCalledWith(
+        "journeys/account-delete/templates/verifyEmailAddress.njk",
+        expect.objectContaining({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errors: expect.objectContaining({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            code: expect.objectContaining({
+              text: "TODO mustNotBeEmpty",
+              href: "#code",
+            }),
+          }),
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errorList: expect.arrayContaining([
+            expect.objectContaining({
+              text: "TODO mustNotBeEmpty",
+              href: "#code",
+            }),
+          ]),
+          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+        }),
+      );
+      expect(result).toBe(mockReply);
+    });
+
+    it("should render error when request body is not an object", async () => {
+      mockRequest.body = "invalid";
+
+      const result = await verifyEmailAddressPostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockReply.render).toHaveBeenCalledWith(
+        "journeys/account-delete/templates/verifyEmailAddress.njk",
+        expect.objectContaining({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errors: expect.objectContaining({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            "": expect.objectContaining({
+              text: "TODO invalidRequestBody",
+              href: "#",
+            }),
+          }),
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errorList: expect.arrayContaining([
+            expect.objectContaining({
+              text: "TODO invalidRequestBody",
+              href: "#",
             }),
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",

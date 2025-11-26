@@ -44,17 +44,22 @@ export async function verifyEmailAddressPostHandler(
     );
   };
 
-  const bodySchema = v.object(
-    {
-      code: v.pipe(
-        v.string("TODO mustBeAString"),
-        v.minLength(1, "TODO mustNotBeEmpty"),
-        v.length(6, "TODO mustBe6Chars"),
-        v.digits("TODO mustBeAllDigits"),
+  const bodySchema = v.object({
+    code: v.pipe(
+      v.string(),
+      v.minLength(
+        1,
+        request.i18n.t("journey:verifyEmailAddress.formErrors.empty"),
       ),
-    },
-    //"TODO mustBeAnObject",
-  );
+      v.length(
+        6,
+        request.i18n.t("journey:verifyEmailAddress.formErrors.tooShort"),
+      ),
+      v.digits(
+        request.i18n.t("journey:verifyEmailAddress.formErrors.notAllDigits"),
+      ),
+    ),
+  });
   const bodyFormErrors = getFormErrorsFromValueAndSchema(
     request.body,
     bodySchema,

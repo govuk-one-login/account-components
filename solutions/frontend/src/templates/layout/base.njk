@@ -120,7 +120,7 @@
         ga4ContainerId: "{{ga4ContainerId}}"
       }, {
         enableGa4Tracking: {{isGa4Enabled}},
-        cookieDomain: "{{analyticsCookieDomain}}",
+        cookieDomain: "{{ globals.analyticsCookieDomain }}",
         isDataSensitive: false,
         isPageDataSensitive: {{ opl.isPageDataSensitive | default("true") }},
         enablePageViewTracking: true,

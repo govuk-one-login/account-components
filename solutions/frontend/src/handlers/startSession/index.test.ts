@@ -68,6 +68,7 @@ vi.mock(
   }),
 );
 
+// @ts-expect-error
 vi.mock(import("valibot"), () => ({
   parse: mockParse,
   safeParse: mockSafeParse,
