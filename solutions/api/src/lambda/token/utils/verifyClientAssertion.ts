@@ -3,6 +3,7 @@ import { jwtVerify, decodeJwt, createRemoteJWKSet } from "jose";
 import { getClientRegistry } from "../../../../../commons/utils/getClientRegistry/index.js";
 import { errorManager } from "./errors.js";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
+import assert from "node:assert";
 
 export const verifyClientAssertion = async (
   clientAssertion: string,
@@ -10,6 +11,12 @@ export const verifyClientAssertion = async (
   const clientRegistry = await getClientRegistry();
   const decodedJwt = decodeJwt(clientAssertion);
   const { iss, iat, aud } = decodedJwt;
+
+  assert(
+    process.env["TOKEN_ENDPOINT_URL"],
+    "TOKEN_ENDPOINT_URL is not defined",
+  );
+  const tokenEndpointUrl = process.env["TOKEN_ENDPOINT_URL"];
 
   if (!iss) {
     errorManager.throwError(
@@ -36,6 +43,14 @@ export const verifyClientAssertion = async (
     return errorManager.throwError(
       "invalidClientAssertion",
       "Missing aud in client assertion",
+    );
+  }
+
+  const audList = Array.isArray(aud) ? aud : [aud];
+  if (!audList.includes(tokenEndpointUrl)) {
+    return errorManager.throwError(
+      "invalidClientAssertion",
+      `Invalid aud in client assertion: ${audList.join(", ")}`,
     );
   }
 

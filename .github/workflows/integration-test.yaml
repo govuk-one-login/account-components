@@ -98,7 +98,8 @@ jobs:
             },
             "TokenLambda": {
               "AUTH_TABLE_NAME": "components-core-AuthCode",
-              "REPLAY_ATTACK_TABLE_NAME": "components-api-ReplayAttack"
+              "REPLAY_ATTACK_TABLE_NAME": "components-api-ReplayAttack",
+              "TOKEN_ENDPOINT_URL": "http://localhost:6004/token"
             }
           }
           EOF
