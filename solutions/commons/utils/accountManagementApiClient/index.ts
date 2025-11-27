@@ -1,8 +1,8 @@
 import assert from "node:assert";
 
 export class AccountManagementApiClient {
-  private baseUrl: string;
-  private accessToken: string;
+  private readonly baseUrl: string;
+  private readonly accessToken: string;
 
   constructor(accessToken: string) {
     assert(
