@@ -110,7 +110,9 @@ describe("token handler", () => {
   });
 
   it("returns an error when jti has been used before", async () => {
-    mockHasJtiBeenUsed.mockResolvedValue();
+    mockHasJtiBeenUsed.mockImplementationOnce(async () => {
+      errorManager.throwError("invalidRequest", "jti found: some_jti");
+    });
 
     const result = await handler(
       {

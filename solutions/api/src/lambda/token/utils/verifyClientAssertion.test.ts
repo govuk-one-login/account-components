@@ -27,7 +27,7 @@ describe("verifyClientAssertion", () => {
   ];
   const mockDecodedJwt = {
     iss: "test-client-id",
-    iat: Math.floor((Date.now() - 1) / 1000)
+    iat: Math.floor((Date.now() - 1) / 1000),
     aud: "https://example.com/token",
   };
   const mockPayload = { sub: "test-subject", iss: "test-client-id" };
