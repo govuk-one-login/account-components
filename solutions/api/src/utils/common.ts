@@ -65,6 +65,8 @@ export class ErrorManager<T extends Record<string, ErrorType>> {
     logger.warn("Invalid Request", {
       error,
     });
+    logger.debug("Error", e);
+
     if (error.metric) {
       metrics.addMetric(error.metric, MetricUnit.Count, 1);
     }
