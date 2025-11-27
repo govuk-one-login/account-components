@@ -27,7 +27,7 @@ describe("verifyClientAssertion", () => {
   ];
   const mockDecodedJwt = {
     iss: "test-client-id",
-    iat: Math.floor(Date.now() / 1000) - 60,
+    iat: Math.floor((Date.now() - 1) / 1000)
     aud: "https://example.com/token",
   };
   const mockPayload = { sub: "test-subject", iss: "test-client-id" };
@@ -89,7 +89,7 @@ describe("verifyClientAssertion", () => {
   });
 
   it("should raise an error if the iat is in the future", async () => {
-    const futureIat = Math.floor(Date.now() / 1000) + 10 * 60; // 10 minutes in the future
+    const futureIat = Math.floor(Date.now() / 1000) + 1; // 1 sec in the future
     mockDecodeJwt.mockReturnValue({
       ...mockDecodedJwt,
       iat: futureIat,
