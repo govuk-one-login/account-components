@@ -656,6 +656,11 @@ Resources:
               Action:
                 - kms:Decrypt
               Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
+            - Effect: Allow
+              Action:
+                - appconfig:GetLatestConfiguration
+                - appconfig:StartConfigurationSession
+              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
