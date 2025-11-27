@@ -29,7 +29,14 @@ describe("verifyEmailAddress handlers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockRequest = {};
+    mockRequest = {
+      session: {
+        // @ts-expect-error
+        claims: {
+          email: "test@example.com",
+        },
+      },
+    };
     mockReply = {
       render: vi.fn().mockResolvedValue(undefined),
       redirect: vi.fn().mockReturnThis(),
@@ -42,7 +49,7 @@ describe("verifyEmailAddress handlers", () => {
   });
 
   describe("verifyEmailAddressGetHandler", () => {
-    it("should render verify email address template with resend code link", async () => {
+    it("should render verify email address template with resend code link and email address", async () => {
       const result = await verifyEmailAddressGetHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
@@ -52,6 +59,7 @@ describe("verifyEmailAddress handlers", () => {
         "journeys/account-delete/templates/verifyEmailAddress.njk",
         {
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          emailAddress: "test@example.com",
         },
       );
       expect(result).toBe(mockReply);
@@ -59,6 +67,19 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should throw if reply.render is not available", async () => {
       delete mockReply.render;
+
+      await expect(
+        verifyEmailAddressGetHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+        // eslint-disable-next-line vitest/require-to-throw-message
+      ).rejects.toThrow();
+    });
+
+    it("should throw if session claims email is not available", async () => {
+      // @ts-expect-error
+      mockRequest.session = { claims: {} };
 
       await expect(
         verifyEmailAddressGetHandler(
@@ -126,6 +147,7 @@ describe("verifyEmailAddress handlers", () => {
             }),
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          emailAddress: "test@example.com",
         }),
       );
       expect(result).toBe(mockReply);
@@ -162,6 +184,7 @@ describe("verifyEmailAddress handlers", () => {
             }),
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          emailAddress: "test@example.com",
         }),
       );
       expect(result).toBe(mockReply);
@@ -198,6 +221,7 @@ describe("verifyEmailAddress handlers", () => {
             }),
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          emailAddress: "test@example.com",
         }),
       );
       expect(result).toBe(mockReply);
@@ -236,6 +260,7 @@ describe("verifyEmailAddress handlers", () => {
             }),
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          emailAddress: "test@example.com",
         }),
       );
       expect(result).toBe(mockReply);
@@ -272,6 +297,7 @@ describe("verifyEmailAddress handlers", () => {
             }),
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          emailAddress: "test@example.com",
         }),
       );
       expect(result).toBe(mockReply);
@@ -312,6 +338,7 @@ describe("verifyEmailAddress handlers", () => {
             }),
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          emailAddress: "test@example.com",
         }),
       );
       expect(result).toBe(mockReply);

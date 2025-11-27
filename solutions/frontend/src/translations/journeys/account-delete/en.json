@@ -13,6 +13,7 @@
   "verifyEmailAddress": {
     "pageTitle": "TODO verifyEmailAddress",
     "heading": "TODO verifyEmailAddress",
+    "emailAddress": "TODO <strong>{{emailAddress}}</strong>",
     "codeInputLabel": "TODO code",
     "buttonLabel": "TODO verify",
     "resendCodeLinkText": "TODO resendCode",

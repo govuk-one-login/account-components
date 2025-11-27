@@ -6,20 +6,28 @@ import {
   getFormErrorsList,
 } from "../../../utils/formErrorsHelpers.js";
 import * as v from "valibot";
+import type { FastifySessionObject } from "@fastify/session";
+
+const getRenderOptions = (claims: FastifySessionObject["claims"]) => {
+  assert.ok(claims?.email);
+
+  return {
+    resendCodeLinkUrl:
+      paths.journeys["account-delete"].EMAIL_NOT_VERIFIED
+        .resendEmailVerificationCode.path,
+    emailAddress: claims.email,
+  };
+};
 
 export async function verifyEmailAddressGetHandler(
-  _request: FastifyRequest,
+  request: FastifyRequest,
   reply: FastifyReply,
 ) {
   assert.ok(reply.render);
 
   await reply.render(
     "journeys/account-delete/templates/verifyEmailAddress.njk",
-    {
-      resendCodeLinkUrl:
-        paths.journeys["account-delete"].EMAIL_NOT_VERIFIED
-          .resendEmailVerificationCode.path,
-    },
+    getRenderOptions(request.session.claims),
   );
   return reply;
 }
@@ -37,9 +45,7 @@ export async function verifyEmailAddressPostHandler(
       "journeys/account-delete/templates/verifyEmailAddress.njk",
       {
         ...options,
-        resendCodeLinkUrl:
-          paths.journeys["account-delete"].EMAIL_NOT_VERIFIED
-            .resendEmailVerificationCode.path,
+        ...getRenderOptions(request.session.claims),
       },
     );
   };
