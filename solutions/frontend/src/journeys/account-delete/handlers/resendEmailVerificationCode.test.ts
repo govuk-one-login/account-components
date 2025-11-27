@@ -14,6 +14,19 @@ vi.mock(import("../../../utils/paths.js"), () => ({
   },
 }));
 
+const mockSendOtpChallenge = vi.fn();
+
+vi.mock(
+  import("../../../../../commons/utils/accountManagementApiClient/index.js"),
+  () => ({
+    AccountManagementApiClient: vi.fn().mockImplementation(function () {
+      return {
+        sendOtpChallenge: mockSendOtpChallenge,
+      };
+    }),
+  }),
+);
+
 const {
   resendEmailVerificationCodeGetHandler,
   resendEmailVerificationCodePostHandler,
@@ -26,7 +39,15 @@ describe("resendEmailVerificationCode handlers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockRequest = {};
+    mockRequest = {
+      session: {
+        // @ts-expect-error
+        claims: {
+          access_token: "test-token",
+          email: "test@example.com",
+        },
+      },
+    };
     mockReply = {
       render: vi.fn().mockResolvedValue(undefined),
       redirect: vi.fn().mockReturnThis(),
@@ -63,16 +84,31 @@ describe("resendEmailVerificationCode handlers", () => {
   });
 
   describe("resendEmailVerificationCodePostHandler", () => {
-    it("should redirect to verify email address page", async () => {
+    it("should send OTP challenge and redirect to verify email address page", async () => {
+      mockSendOtpChallenge.mockResolvedValue({ ok: true });
+
       const result = await resendEmailVerificationCodePostHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
 
+      expect(mockSendOtpChallenge).toHaveBeenCalledWith("test@example.com");
       expect(mockReply.redirect).toHaveBeenCalledWith(
         "/delete-account/verify-email-address",
       );
       expect(result).toBe(mockReply);
+    });
+
+    it("should throw if session claims are not available", async () => {
+      delete mockRequest.session;
+
+      await expect(
+        resendEmailVerificationCodePostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+        // eslint-disable-next-line vitest/require-to-throw-message
+      ).rejects.toThrow();
     });
   });
 });

@@ -19,6 +19,19 @@ vi.mock(import("../../../utils/paths.js"), () => ({
   },
 }));
 
+const mockVerifyOtpChallenge = vi.fn();
+
+vi.mock(
+  import("../../../../../commons/utils/accountManagementApiClient/index.js"),
+  () => ({
+    AccountManagementApiClient: vi.fn().mockImplementation(function () {
+      return {
+        verifyOtpChallenge: mockVerifyOtpChallenge,
+      };
+    }),
+  }),
+);
+
 const { verifyEmailAddressGetHandler, verifyEmailAddressPostHandler } =
   await import("./verifyEmailAddress.js");
 
@@ -33,6 +46,7 @@ describe("verifyEmailAddress handlers", () => {
       session: {
         // @ts-expect-error
         claims: {
+          access_token: "test-token",
           email: "test@example.com",
         },
       },
@@ -92,16 +106,21 @@ describe("verifyEmailAddress handlers", () => {
   });
 
   describe("verifyEmailAddressPostHandler", () => {
-    it("should send emailVerified event and redirect when valid code provided", async () => {
+    it("should verify OTP challenge, send emailVerified event and redirect when valid code provided", async () => {
       mockRequest.body = { code: "123456" };
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
+      mockVerifyOtpChallenge.mockResolvedValue({ ok: true });
 
       const result = await verifyEmailAddressPostHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
 
+      expect(mockVerifyOtpChallenge).toHaveBeenCalledWith(
+        "test@example.com",
+        "123456",
+      );
       expect(
         // eslint-disable-next-line @typescript-eslint/unbound-method
         mockReply.journeyStates?.["account-delete"]?.send,

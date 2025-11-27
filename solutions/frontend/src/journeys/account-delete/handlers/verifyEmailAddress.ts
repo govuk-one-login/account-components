@@ -7,6 +7,7 @@ import {
 } from "../../../utils/formErrorsHelpers.js";
 import * as v from "valibot";
 import type { FastifySessionObject } from "@fastify/session";
+import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
 
 const getRenderOptions = (claims: FastifySessionObject["claims"]) => {
   assert.ok(claims?.email);
@@ -79,7 +80,20 @@ export async function verifyEmailAddressPostHandler(
     return reply;
   }
 
-  // TODO verify OTP and handler errors
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const body = request.body as v.InferOutput<typeof bodySchema>;
+
+  assert.ok(request.session.claims);
+  const accountManagementApiClient = new AccountManagementApiClient(
+    request.session.claims.access_token,
+  );
+
+  await accountManagementApiClient.verifyOtpChallenge(
+    request.session.claims.email,
+    body.code,
+  );
+
+  // TODO perhaps handle verify OTP error responses here in future
 
   reply.journeyStates["account-delete"].send({
     type: "emailVerified",
