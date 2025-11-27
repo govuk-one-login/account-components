@@ -17,7 +17,7 @@ describe("getRedirectToClientRedirectUri", () => {
   it("should add error parameters when error is provided", () => {
     const result = getRedirectToClientRedirectUri(
       "https://example.com/callback",
-      authorizeErrors.accountDeleteUserAborted,
+      authorizeErrors.userAborted,
     );
 
     expect(result).toBe(
@@ -79,5 +79,55 @@ describe("getRedirectToClientRedirectUri", () => {
     );
 
     expect(result).toBe("https://example.com/callback");
+  });
+
+  it("should handle relative redirect URI with code parameter", () => {
+    const result = getRedirectToClientRedirectUri(
+      "/callback",
+      undefined,
+      undefined,
+      "auth_code_123",
+      true,
+    );
+
+    expect(result).toBe("/callback?code=auth_code_123");
+  });
+
+  it("should handle relative redirect URI with error parameters", () => {
+    const result = getRedirectToClientRedirectUri(
+      "/callback",
+      authorizeErrors.userAborted,
+      undefined,
+      undefined,
+      true,
+    );
+
+    expect(result).toBe(
+      "/callback?error=access_denied&error_description=E1001",
+    );
+  });
+
+  it("should handle relative redirect URI with state parameter", () => {
+    const result = getRedirectToClientRedirectUri(
+      "/callback",
+      undefined,
+      "state_123",
+      undefined,
+      true,
+    );
+
+    expect(result).toBe("/callback?state=state_123");
+  });
+
+  it("should handle relative redirect URI with no parameters", () => {
+    const result = getRedirectToClientRedirectUri(
+      "/callback",
+      undefined,
+      undefined,
+      undefined,
+      true,
+    );
+
+    expect(result).toBe("/callback");
   });
 });

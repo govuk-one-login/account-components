@@ -13,20 +13,24 @@ import { createActor } from "xstate";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
 import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
+import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
 import type { ClientEntry } from "../../../../config/schema/types.js";
 
 // @ts-expect-error
 vi.mock(import("../../utils/paths.js"), () => ({
   paths: {
-    others: {
-      authorizeError: { path: "/authorize-error" },
-    },
     journeys: {
+      others: {
+        goToClientCallback: { path: "/go-to-client-callback" },
+      },
       "test-scope": {
         "test-state": {
           page: { path: "/test-path" },
         },
       },
+    },
+    others: {
+      authorizeError: { path: "/authorize-error" },
     },
   },
 }));
@@ -74,9 +78,30 @@ vi.mock(
   import("../../../../commons/utils/authorize/authorizeErrors.js"),
   () => ({
     authorizeErrors: {
-      failedToCreateStateMachineActor: "failed_to_create_state_machine_actor",
-      failedToValidateJourneyUrl: "failed_to_validate_journey_url",
+      userAborted: {
+        description: "E1001",
+        type: "access_denied",
+      },
+      failedToCreateStateMachineActor: {
+        description: "E5009",
+        type: "server_error",
+      },
+      failedToValidateJourneyUrl: {
+        description: "E5010",
+        type: "server_error",
+      },
     },
+  }),
+);
+
+vi.mock(
+  import(
+    "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js"
+  ),
+  () => ({
+    getRedirectToClientRedirectUri: vi
+      .fn()
+      .mockReturnValue("/exit-journey-url"),
   }),
 );
 
@@ -111,12 +136,14 @@ describe("onRequest", () => {
     mockReply = {
       redirect: vi.fn().mockReturnThis(),
       journeyStates: {},
+      client: undefined,
       globals: {
         currentUrl: {
           pathname: "/test-path",
         } as URL,
+        exitJourneyUrl: undefined,
       },
-    };
+    } as unknown as FastifyReply;
 
     vi.mocked(createActor).mockReturnValue(mockActor);
     vi.mocked(getClientRegistry).mockResolvedValue([
@@ -202,7 +229,10 @@ describe("onRequest", () => {
         mockRequest,
         mockReply,
         "http://client-redirect",
-        "failed_to_create_state_machine_actor",
+        {
+          description: "E5009",
+          type: "server_error",
+        },
         "test-state",
       );
     });
@@ -230,6 +260,21 @@ describe("onRequest", () => {
       expect(mockReply.redirect).toHaveBeenCalledWith("/test-path");
     });
 
+    it("should not redirect when URL matches others journey paths", async () => {
+      mockReply.globals = {
+        currentUrl: {
+          pathname: "/go-to-client-callback",
+        } as URL,
+      };
+
+      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockReply.redirect).not.toHaveBeenCalled();
+      expect(mockReply.journeyStates).toStrictEqual({
+        "test-scope": mockActor,
+      });
+    });
+
     it("should handle missing currentUrl", async () => {
       // @ts-expect-error
       mockReply.globals.currentUrl = undefined;
@@ -251,7 +296,10 @@ describe("onRequest", () => {
         mockRequest,
         mockReply,
         "http://client-redirect",
-        "failed_to_validate_journey_url",
+        {
+          description: "E5010",
+          type: "server_error",
+        },
         "test-state",
       );
     });
@@ -273,6 +321,7 @@ describe("onRequest", () => {
         client_id: "test-client-id",
       });
       expect(mockReply.client).toStrictEqual({ client_id: "test-client-id" });
+      expect(mockReply.globals?.exitJourneyUrl).toBe("/exit-journey-url");
       expect(journeys["test-scope" as Scope]).toHaveBeenCalledWith();
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockRequest.i18n?.addResourceBundle).toHaveBeenCalledWith(
@@ -286,6 +335,21 @@ describe("onRequest", () => {
       expect(mockReply.journeyStates).toStrictEqual({
         "test-scope": mockActor,
       });
+    });
+
+    it("should call getRedirectToClientRedirectUri with correct parameters", async () => {
+      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(getRedirectToClientRedirectUri).toHaveBeenCalledWith(
+        "/go-to-client-callback",
+        {
+          description: "E1001",
+          type: "access_denied",
+        },
+        undefined,
+        undefined,
+        true,
+      );
     });
 
     it("should handle existing serialized snapshot", async () => {

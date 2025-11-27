@@ -10,6 +10,7 @@ import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeEr
 import assert from "node:assert";
 import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
+import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
 
 export const onRequest = async (
   request: FastifyRequest,
@@ -42,6 +43,13 @@ export const onRequest = async (
   }
 
   reply.client = client;
+  reply.globals.exitJourneyUrl = getRedirectToClientRedirectUri(
+    paths.journeys.others.goToClientCallback.path,
+    authorizeErrors.userAborted,
+    claims.state,
+    undefined,
+    true,
+  );
 
   const journey = await journeys[claims.scope]();
 
@@ -103,7 +111,15 @@ export const onRequest = async (
       "reply.globals.currentUrl is not defined",
     );
 
-    if (!pathsForCurrentState.includes(reply.globals.currentUrl.pathname)) {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    const otherJourneyPaths = Object.values(paths.journeys.others).map(
+      (val) => val.path,
+    ) as string[];
+
+    if (
+      !otherJourneyPaths.includes(reply.globals.currentUrl.pathname) &&
+      !pathsForCurrentState.includes(reply.globals.currentUrl.pathname)
+    ) {
       reply.redirect(pathsForCurrentState[0]);
       return await reply;
     }
