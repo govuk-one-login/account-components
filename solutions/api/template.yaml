@@ -632,14 +632,12 @@ Resources:
         Variables:
           AUTH_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableName}}"
           REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
-          TOKEN_ENDPOINT_URL: !Sub
-            - "https://${PrivateApiDomain}/token"
-            - PrivateApiDomain:
-                !FindInMap [
-                  EnvironmentConfiguration,
-                  !Ref Environment,
-                  privateApiDomain,
-                ]
+          TOKEN_ENDPOINT_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              tokenEndpointUrl,
+            ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
