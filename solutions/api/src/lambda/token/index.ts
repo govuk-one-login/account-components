@@ -5,23 +5,37 @@ import { errorManager } from "./utils/errors.js";
 import type { TokenAppError } from "./utils/errors.js";
 import type { TokenRequest } from "./utils/assertTokenRequest.js";
 import { assertTokenRequest } from "./utils/assertTokenRequest.js";
+import * as querystring from "node:querystring";
+import { getAuthRequest } from "./utils/getAuthRequest.js";
+import { verifyJti } from "./utils/verifyJti.js";
 
 export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
   async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const request = JSON.parse(e.body ?? "{}") as TokenRequest;
+      const request = querystring.parse(
+        e.body ?? "{}",
+      ) as unknown as TokenRequest;
 
       assertTokenRequest(request);
-      await verifyClientAssertion(request.client_assertion);
+
+      const assertion = await verifyClientAssertion(request.client_assertion);
+
+      await getAuthRequest(
+        request.code,
+        request.redirect_uri,
+        String(assertion.iss),
+      );
+
+      await verifyJti(assertion.jti);
+
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ hello: "world" }),
+      };
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       return errorManager.handleError(error as TokenAppError | Error);
     }
-
-    return {
-      statusCode: 200,
-      body: '"hello world"',
-    };
   },
 );

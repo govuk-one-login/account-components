@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { handler } from "./index.js";
 import type { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy.js";
 import type { Context } from "aws-lambda";
-import type { JWTPayload } from "jose";
 import { errorManager } from "./utils/errors.js";
+import * as querystring from "node:querystring";
 
 const mockContext = {} as unknown as Context;
 
@@ -12,16 +12,34 @@ const mockVerifyClientAssertion = vi.mocked(
   await import("./utils/verifyClientAssertion.js"),
 ).verifyClientAssertion;
 
+vi.mock(import("./utils/verifyJti.js"));
+const mockHasJtiBeenUsed = vi.mocked(
+  await import("./utils/verifyJti.js"),
+).verifyJti;
+
+vi.mock(import("./utils/getAuthRequest.js"));
+const mockGetAuthRequest = vi.mocked(
+  await import("./utils/getAuthRequest.js"),
+).getAuthRequest;
+
 describe("token handler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("returns 200 status with hello world body", async () => {
-    mockVerifyClientAssertion.mockResolvedValue({} as any as JWTPayload);
+    mockVerifyClientAssertion.mockResolvedValue({
+      jti: "jti",
+      redirect_uri: "https://example.com/callback",
+    } as any as Awaited<ReturnType<typeof mockVerifyClientAssertion>>);
+    mockGetAuthRequest.mockResolvedValue({
+      redirect_uri: "https://example.com/callback",
+    } as any as Awaited<ReturnType<typeof mockGetAuthRequest>>);
+    mockHasJtiBeenUsed.mockResolvedValue();
+
     const result = await handler(
       {
-        body: JSON.stringify({
+        body: querystring.stringify({
           grant_type: "authorization_code",
           code: "some_code",
           redirect_uri: "https://example.com/callback",
@@ -35,7 +53,7 @@ describe("token handler", () => {
 
     expect(result).toStrictEqual({
       statusCode: 200,
-      body: '"hello world"',
+      body: '{"hello":"world"}',
     });
   });
 
@@ -43,11 +61,11 @@ describe("token handler", () => {
     mockVerifyClientAssertion.mockImplementation(() => {
       errorManager.throwError("invalidClientAssertion", "error");
       // line below would never be reached, it's to satisfy TS that a value is returned
-      return {} as any as Promise<JWTPayload>;
+      return {} as any as ReturnType<typeof mockVerifyClientAssertion>;
     });
     const result = await handler(
       {
-        body: JSON.stringify({
+        body: querystring.stringify({
           grant_type: "authorization_code",
           code: "some_code",
           redirect_uri: "https://example.com/callback",
@@ -71,7 +89,7 @@ describe("token handler", () => {
   it("returns 400 status with invalid_request error for invalid request", async () => {
     const result = await handler(
       {
-        body: JSON.stringify({
+        body: querystring.stringify({
           grant_type: "invalid_grant",
           code: "",
           redirect_uri: "",
@@ -87,6 +105,34 @@ describe("token handler", () => {
       body: JSON.stringify({
         error: "invalid_request",
         error_description: "E4001",
+      }),
+    });
+  });
+
+  it("returns an error when jti has been used before", async () => {
+    mockHasJtiBeenUsed.mockImplementationOnce(async () => {
+      errorManager.throwError("invalidRequest", "jti found: some_jti");
+    });
+
+    const result = await handler(
+      {
+        body: querystring.stringify({
+          grant_type: "authorization_code",
+          code: "some_code",
+          redirect_uri: "https://example.com/callback",
+          client_assertion_type:
+            "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+          client_assertion: "some_client_assertion",
+        }),
+      } as APIGatewayProxyEvent,
+      mockContext,
+    );
+
+    expect(result).toStrictEqual({
+      statusCode: 400,
+      body: JSON.stringify({
+        error: "invalid_request",
+        error_description: "E4002",
       }),
     });
   });

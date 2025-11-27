@@ -11,6 +11,7 @@ export const assertTokenRequest = (request: TokenRequest) => {
       "Invalid client_assertion_type",
     );
     assert(request.client_assertion, "Missing client_assertion");
+    assert(request.redirect_uri, "Missing redirect_uri");
   } catch (e) {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     errorManager.throwError("invalidRequest", (e as Error).message);
@@ -22,4 +23,5 @@ export interface TokenRequest {
   code: string;
   client_assertion_type: string;
   client_assertion: string;
+  redirect_uri: string;
 }
