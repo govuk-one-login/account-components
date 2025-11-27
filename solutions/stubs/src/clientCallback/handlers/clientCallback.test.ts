@@ -276,7 +276,7 @@ describe("clientCallback handler", () => {
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",
         },
-        body: "grant_type=authorization_code&code=auth-code-123&client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer&client_assertion=mock-jwt-token",
+        body: "grant_type=authorization_code&code=auth-code-123&client_assertion_type=urn%3Aietf%3Aparams%3Aoauth%3Aclient-assertion-type%3Ajwt-bearer&client_assertion=mock-jwt-token&redirect_uri=http%3A%2F%2Flocalhost%3A6003%2Fclient-callback%2Ftest-client",
       });
 
       expect(mockFetch).toHaveBeenCalledWith(

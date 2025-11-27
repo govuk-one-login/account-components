@@ -1,5 +1,5 @@
 import { verifyClientAssertion } from "./verifyClientAssertion.js";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as jose from "jose";
 import { getClientRegistry } from "../../../../../commons/utils/getClientRegistry/index.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
@@ -11,6 +11,8 @@ const mockGetClientRegistry = vi.mocked(getClientRegistry);
 const mockDecodeJwt = vi.mocked(jose.decodeJwt);
 const mockJwtVerify = vi.mocked(jose.jwtVerify);
 const mockCreateRemoteJWKSet = vi.mocked(jose.createRemoteJWKSet);
+
+const ORIGINAL_ENV = { ...process.env };
 
 describe("verifyClientAssertion", () => {
   const mockClientAssertion = "mock.jwt.token";
@@ -25,11 +27,14 @@ describe("verifyClientAssertion", () => {
   ];
   const mockDecodedJwt = {
     iss: "test-client-id",
+    iat: Math.floor((Date.now() - 1) / 1000),
+    aud: "https://example.com/token",
   };
   const mockPayload = { sub: "test-subject", iss: "test-client-id" };
 
   beforeEach(() => {
     vi.clearAllMocks();
+    process.env["TOKEN_ENDPOINT_URL"] = "https://example.com/token";
     mockGetClientRegistry.mockResolvedValue(mockClientRegistry);
     mockDecodeJwt.mockReturnValue(mockDecodedJwt);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
@@ -38,6 +43,10 @@ describe("verifyClientAssertion", () => {
     } as any);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockCreateRemoteJWKSet.mockReturnValue(vi.fn() as any);
+  });
+
+  afterEach(() => {
+    process.env = { ...ORIGINAL_ENV };
   });
 
   it("should successfully verify client assertion", async () => {
@@ -60,7 +69,10 @@ describe("verifyClientAssertion", () => {
   });
 
   it("should throw error when client is not found in registry", async () => {
-    mockDecodeJwt.mockReturnValue({ iss: "unknown-client-id" });
+    mockDecodeJwt.mockReturnValue({
+      ...mockDecodedJwt,
+      iss: "unknown-client-id",
+    });
 
     await expect(verifyClientAssertion(mockClientAssertion)).rejects.toThrow(
       "Client unknown-client-id not found for client assertion",
@@ -73,6 +85,29 @@ describe("verifyClientAssertion", () => {
 
     await expect(verifyClientAssertion(mockClientAssertion)).rejects.toThrow(
       "JWT verification failed",
+    );
+  });
+
+  it("should raise an error if the iat is in the future", async () => {
+    const futureIat = Math.floor(Date.now() / 1000) + 1; // 1 sec in the future
+    mockDecodeJwt.mockReturnValue({
+      ...mockDecodedJwt,
+      iat: futureIat,
+    });
+
+    await expect(verifyClientAssertion(mockClientAssertion)).rejects.toThrow(
+      "Client assertion iat is in the future",
+    );
+  });
+
+  it("should raise an error if the aud does not include the token endpoint URL", async () => {
+    mockDecodeJwt.mockReturnValue({
+      ...mockDecodedJwt,
+      aud: "https://invalid-audience.com",
+    });
+
+    await expect(verifyClientAssertion(mockClientAssertion)).rejects.toThrow(
+      "Invalid aud in client assertion: https://invalid-audience.com",
     );
   });
 });
