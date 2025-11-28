@@ -174,8 +174,8 @@ describe("goToClientCallback", () => {
       const testCases = [
         {
           error: "access_denied",
-          error_description: "E1001",
-          expectedError: authorizeErrors.userAborted,
+          error_description: "E1002",
+          expectedError: authorizeErrors.accountDeletePasswordIncorrect,
         },
         {
           error: "invalid_request",
