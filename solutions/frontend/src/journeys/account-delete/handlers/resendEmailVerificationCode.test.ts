@@ -14,6 +14,12 @@ vi.mock(import("../../../utils/paths.js"), () => ({
   },
 }));
 
+const mockHandleSendOtpChallenge = vi.fn();
+
+vi.mock(import("../utils/handleSendOtpChallenge.js"), () => ({
+  handleSendOtpChallenge: mockHandleSendOtpChallenge,
+}));
+
 const {
   resendEmailVerificationCodeGetHandler,
   resendEmailVerificationCodePostHandler,
@@ -63,15 +69,37 @@ describe("resendEmailVerificationCode handlers", () => {
   });
 
   describe("resendEmailVerificationCodePostHandler", () => {
-    it("should redirect to verify email address page", async () => {
+    it("should handle OTP challenge and redirect to verify email address page on success", async () => {
+      mockHandleSendOtpChallenge.mockResolvedValue({ success: true });
+
       const result = await resendEmailVerificationCodePostHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
 
+      expect(mockHandleSendOtpChallenge).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
       expect(mockReply.redirect).toHaveBeenCalledWith(
         "/delete-account/verify-email-address",
       );
+      expect(result).toBe(mockReply);
+    });
+
+    it("should return early when OTP challenge fails", async () => {
+      mockHandleSendOtpChallenge.mockResolvedValue({ success: false });
+
+      const result = await resendEmailVerificationCodePostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockHandleSendOtpChallenge).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
+      expect(mockReply.redirect).not.toHaveBeenCalled();
       expect(result).toBe(mockReply);
     });
   });

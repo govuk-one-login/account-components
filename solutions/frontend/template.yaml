@@ -52,6 +52,7 @@ Mappings:
       authorizeEndpointUrl: https://api.manage.dev.account.gov.uk/authorize
       authFrontendUrl: https://signin.dev.account.gov.uk
       analyticsCookieDomain: dev.account.gov.uk
+      accountManagementApiUrl: https://am-stub.home.dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
@@ -62,6 +63,7 @@ Mappings:
       authorizeEndpointUrl: https://api.manage.build.account.gov.uk/authorize
       authFrontendUrl: https://signin.build.account.gov.uk
       analyticsCookieDomain: build.account.gov.uk
+      accountManagementApiUrl: https://am-stub.home.build.account.gov.uk
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
@@ -72,6 +74,7 @@ Mappings:
       authorizeEndpointUrl: https://api.manage.staging.account.gov.uk/authorize
       authFrontendUrl: https://signin.staging.account.gov.uk
       analyticsCookieDomain: staging.account.gov.uk
+      accountManagementApiUrl: "https://cgh8nx4500-vpce-0c9ce65be09f99db7.execute-api.eu-west-2.amazonaws.com/staging"
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
@@ -82,6 +85,7 @@ Mappings:
       authorizeEndpointUrl: https://api.manage.integration.account.gov.uk/authorize
       authFrontendUrl: https://signin.integration.account.gov.uk
       analyticsCookieDomain: integration.account.gov.uk
+      accountManagementApiUrl: "https://z7lornzyy5-vpce-0e594accb3d775457.execute-api.eu-west-2.amazonaws.com/integration"
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
@@ -92,6 +96,7 @@ Mappings:
       authorizeEndpointUrl: https://api.manage.account.gov.uk/authorize
       authFrontendUrl: https://signin.account.gov.uk
       analyticsCookieDomain: account.gov.uk
+      accountManagementApiUrl: "https://63qq2dsjo5-vpce-0d7972874707185a0.execute-api.eu-west-2.amazonaws.com/production"
 
 Conditions:
   UseCodeSigning:
@@ -405,6 +410,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               analyticsCookieDomain,
+            ]
+          ACCOUNT_MANAGEMENT_API_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              accountManagementApiUrl,
             ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
