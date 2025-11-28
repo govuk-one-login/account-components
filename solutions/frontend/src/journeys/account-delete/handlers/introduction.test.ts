@@ -15,7 +15,9 @@ vi.mock(import("../../../utils/paths.js"), () => ({
 }));
 
 const mockSendOtpChallenge = vi.fn();
+const mockRedirectToClientRedirectUri = vi.fn();
 
+// @ts-expect-error
 vi.mock(
   import("../../../../../commons/utils/accountManagementApiClient/index.js"),
   () => ({
@@ -26,6 +28,10 @@ vi.mock(
     }),
   }),
 );
+
+vi.mock(import("../../../utils/redirectToClientRedirectUri.js"), () => ({
+  redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
+}));
 
 const { introductionGetHandler, introductionPostHandler } = await import(
   "./introduction.js"
@@ -44,6 +50,8 @@ describe("introduction handlers", () => {
         claims: {
           access_token: "test-token",
           email: "test@example.com",
+          redirect_uri: "https://example.com/callback",
+          state: "test-state",
         },
       },
     };
@@ -81,7 +89,7 @@ describe("introduction handlers", () => {
 
   describe("introductionPostHandler", () => {
     it("should send OTP challenge and redirect to verify email address page", async () => {
-      mockSendOtpChallenge.mockResolvedValue({ ok: true });
+      mockSendOtpChallenge.mockResolvedValue({ success: true });
 
       const result = await introductionPostHandler(
         mockRequest as FastifyRequest,
@@ -106,5 +114,40 @@ describe("introduction handlers", () => {
         // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
+
+    it.each([
+      "RequestIsMissingParameters",
+      "BlockedForEmailVerificationCodes",
+      "TooManyEmailCodesEntered",
+      "InvalidPrincipalInRequest",
+      "AccountManagementApiUnexpectedError",
+      "ErrorParsingResponseBody",
+      "UnknownErrorResponse",
+      "UnknownError",
+    ] as const)(
+      "should redirect to client redirect URI when sendOtpChallenge fails with %s",
+      async (errorType) => {
+        mockSendOtpChallenge.mockResolvedValue({
+          success: false,
+          error: errorType,
+        });
+        mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
+
+        const result = await introductionPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockSendOtpChallenge).toHaveBeenCalledWith("test@example.com");
+        expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
+          mockRequest,
+          mockReply,
+          "https://example.com/callback",
+          { description: "E1000", type: "access_denied" },
+          "test-state",
+        );
+        expect(result).toBe(mockReply);
+      },
+    );
   });
 });

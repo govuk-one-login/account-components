@@ -1,9 +1,13 @@
 import assert from "node:assert";
 import * as v from "valibot";
-
+import { logger } from "../logger/index.js";
 export class AccountManagementApiClient {
   private readonly baseUrl: string;
   private readonly accessToken: string;
+  private static readonly unknownError = {
+    success: false,
+    error: "UnknownError",
+  } as const;
 
   constructor(accessToken: string) {
     assert(
@@ -23,15 +27,15 @@ export class AccountManagementApiClient {
     errorCodesMap: TErrorMap,
   ): Promise<
     | {
-        success: true;
-        result: TSuccess;
+        readonly success: true;
+        readonly result: TSuccess;
       }
     | {
-        success: false;
-        error:
+        readonly success: false;
+        readonly error:
           | TErrorMap[keyof TErrorMap]
           | "ErrorParsingResponseBody"
-          | "UnknownError";
+          | "UnknownErrorResponse";
       }
   > {
     if (response.ok) {
@@ -68,7 +72,7 @@ export class AccountManagementApiClient {
     if (!Object.keys(errorCodesMap).includes(body.output.code.toString())) {
       return {
         success: false,
-        error: "UnknownError",
+        error: "UnknownErrorResponse",
       };
     }
 
@@ -83,57 +87,67 @@ export class AccountManagementApiClient {
   }
 
   async sendOtpChallenge(emailAdress: string) {
-    const response = await fetch(`${this.baseUrl}/send-otp-challenge`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-      body: JSON.stringify({
-        email: emailAdress,
-        mfaMethodType: "EMAIL",
-      }),
-    });
+    try {
+      const response = await fetch(`${this.baseUrl}/send-otp-challenge`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+        body: JSON.stringify({
+          email: emailAdress,
+          mfaMethodType: "EMAIL",
+        }),
+      });
 
-    const errorsCodesMap = {
-      "1001": "RequestIsMissingParameters",
-      "1092": "BlockedForEmailVerificationCodes",
-      "1093": "TooManyEmailCodesEntered",
-      "1079": "InvalidPrincipalInRequest",
-      "1071": "AccountManagementApiUnexpectedError",
-    } as const;
+      const errorsCodesMap = {
+        "1001": "RequestIsMissingParameters",
+        "1092": "BlockedForEmailVerificationCodes",
+        "1093": "TooManyEmailCodesEntered",
+        "1079": "InvalidPrincipalInRequest",
+        "1071": "AccountManagementApiUnexpectedError",
+      } as const;
 
-    return AccountManagementApiClient.processResponse(
-      response,
-      v.unknown(),
-      errorsCodesMap,
-    );
+      return await AccountManagementApiClient.processResponse(
+        response,
+        v.unknown(),
+        errorsCodesMap,
+      );
+    } catch (e) {
+      logger.error({ error: e, message: "Error sending OTP challenge" });
+      return AccountManagementApiClient.unknownError;
+    }
   }
 
   async verifyOtpChallenge(emailAdress: string, otp: string) {
-    const response = await fetch(`${this.baseUrl}/verify-otp-challenge`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${this.accessToken}`,
-      },
-      body: JSON.stringify({
-        email: emailAdress,
-        mfaMethodType: "EMAIL",
-        otp,
-      }),
-    });
+    try {
+      const response = await fetch(`${this.baseUrl}/verify-otp-challenge`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+        body: JSON.stringify({
+          email: emailAdress,
+          mfaMethodType: "EMAIL",
+          otp,
+        }),
+      });
 
-    const errorsCodesMap = {
-      "1001": "RequestIsMissingParameters",
-      "1020": "InvalidOTPCode",
-      "1093": "TooManyEmailCodesEntered",
-    } as const;
+      const errorsCodesMap = {
+        "1001": "RequestIsMissingParameters",
+        "1020": "InvalidOTPCode",
+        "1093": "TooManyEmailCodesEntered",
+      } as const;
 
-    return AccountManagementApiClient.processResponse(
-      response,
-      v.unknown(),
-      errorsCodesMap,
-    );
+      return await AccountManagementApiClient.processResponse(
+        response,
+        v.unknown(),
+        errorsCodesMap,
+      );
+    } catch (e) {
+      logger.error({ error: e, message: "Error sending OTP challenge" });
+      return AccountManagementApiClient.unknownError;
+    }
   }
 }

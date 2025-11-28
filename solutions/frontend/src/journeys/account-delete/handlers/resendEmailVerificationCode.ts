@@ -41,13 +41,16 @@ export async function resendEmailVerificationCodePostHandler(
       SendOtpChallengeError,
       (typeof authorizeErrors)[keyof typeof authorizeErrors]
     > = {
-      RequestIsMissingParameters: authorizeErrors.userAborted, // TODO
-      BlockedForEmailVerificationCodes: authorizeErrors.userAborted, // TODO
-      TooManyEmailCodesEntered: authorizeErrors.userAborted, // TODO
-      InvalidPrincipalInRequest: authorizeErrors.userAborted, // TODO
-      AccountManagementApiUnexpectedError: authorizeErrors.userAborted, // TODO
-      ErrorParsingResponseBody: authorizeErrors.userAborted, // TODO
-      UnknownError: authorizeErrors.userAborted, // TODO
+      RequestIsMissingParameters: authorizeErrors.tempErrorTODORemoveLater,
+      BlockedForEmailVerificationCodes:
+        authorizeErrors.tempErrorTODORemoveLater,
+      TooManyEmailCodesEntered: authorizeErrors.tempErrorTODORemoveLater,
+      InvalidPrincipalInRequest: authorizeErrors.tempErrorTODORemoveLater,
+      AccountManagementApiUnexpectedError:
+        authorizeErrors.tempErrorTODORemoveLater,
+      ErrorParsingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
+      UnknownErrorResponse: authorizeErrors.tempErrorTODORemoveLater,
+      UnknownError: authorizeErrors.tempErrorTODORemoveLater,
     };
 
     return await redirectToClientRedirectUri(

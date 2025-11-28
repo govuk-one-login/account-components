@@ -20,6 +20,11 @@ interface AuthorizeErrorServerError {
 }
 
 export const authorizeErrors = {
+  // TODO remove this and it's use before going live
+  tempErrorTODORemoveLater: {
+    description: "E1000",
+    type: "access_denied",
+  },
   userAborted: {
     description: "E1001",
     type: "access_denied",

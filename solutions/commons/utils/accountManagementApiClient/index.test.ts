@@ -76,7 +76,7 @@ describe("accountManagementApiClient", () => {
       });
     });
 
-    it("should return UnknownError for unknown error codes", async () => {
+    it("should return UnknownErrorResponse for unknown error codes", async () => {
       mockFetch.mockResolvedValue({
         ok: false,
         json: () => Promise.resolve({ code: 9999, message: "Unknown error" }),
@@ -85,7 +85,22 @@ describe("accountManagementApiClient", () => {
       const client = new AccountManagementApiClient("test-token");
       const result = await client.sendOtpChallenge("test@example.com");
 
-      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
+      expect(result).toStrictEqual({
+        success: false,
+        error: "UnknownErrorResponse",
+      });
+    });
+
+    it("should return UnknownError when fetch throws an exception", async () => {
+      mockFetch.mockRejectedValue(new Error("Network error"));
+
+      const client = new AccountManagementApiClient("test-token");
+      const result = await client.sendOtpChallenge("test@example.com");
+
+      expect(result).toStrictEqual({
+        success: false,
+        error: "UnknownError",
+      });
     });
   });
 
@@ -135,7 +150,7 @@ describe("accountManagementApiClient", () => {
       expect(result).toStrictEqual({ success: false, error: "InvalidOTPCode" });
     });
 
-    it("should return UnknownError for unknown error codes", async () => {
+    it("should return UnknownErrorResponse for unknown error codes", async () => {
       mockFetch.mockResolvedValue({
         ok: false,
         json: () => Promise.resolve({ code: 8888, message: "Unknown error" }),
@@ -147,7 +162,25 @@ describe("accountManagementApiClient", () => {
         "123456",
       );
 
-      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
+      expect(result).toStrictEqual({
+        success: false,
+        error: "UnknownErrorResponse",
+      });
+    });
+
+    it("should return UnknownError when fetch throws an exception", async () => {
+      mockFetch.mockRejectedValue(new Error("Network error"));
+
+      const client = new AccountManagementApiClient("test-token");
+      const result = await client.verifyOtpChallenge(
+        "test@example.com",
+        "123456",
+      );
+
+      expect(result).toStrictEqual({
+        success: false,
+        error: "UnknownError",
+      });
     });
   });
 });

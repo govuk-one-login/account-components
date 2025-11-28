@@ -20,7 +20,9 @@ vi.mock(import("../../../utils/paths.js"), () => ({
 }));
 
 const mockVerifyOtpChallenge = vi.fn();
+const mockRedirectToClientRedirectUri = vi.fn();
 
+// @ts-expect-error
 vi.mock(
   import("../../../../../commons/utils/accountManagementApiClient/index.js"),
   () => ({
@@ -31,6 +33,10 @@ vi.mock(
     }),
   }),
 );
+
+vi.mock(import("../../../utils/redirectToClientRedirectUri.js"), () => ({
+  redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
+}));
 
 const { verifyEmailAddressGetHandler, verifyEmailAddressPostHandler } =
   await import("./verifyEmailAddress.js");
@@ -48,6 +54,8 @@ describe("verifyEmailAddress handlers", () => {
         claims: {
           access_token: "test-token",
           email: "test@example.com",
+          redirect_uri: "https://example.com/callback",
+          state: "test-state",
         },
       },
     };
@@ -110,7 +118,7 @@ describe("verifyEmailAddress handlers", () => {
       mockRequest.body = { code: "123456" };
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
-      mockVerifyOtpChallenge.mockResolvedValue({ ok: true });
+      mockVerifyOtpChallenge.mockResolvedValue({ success: true });
 
       const result = await verifyEmailAddressPostHandler(
         mockRequest as FastifyRequest,
@@ -386,5 +394,44 @@ describe("verifyEmailAddress handlers", () => {
         // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
+
+    it.each([
+      "RequestIsMissingParameters",
+      "TooManyEmailCodesEntered",
+      "InvalidOTPCode",
+      "ErrorParsingResponseBody",
+      "UnknownErrorResponse",
+      "UnknownError",
+    ] as const)(
+      "should redirect to client redirect URI when verifyOtpChallenge fails with %s",
+      async (errorType) => {
+        mockRequest.body = { code: "123456" };
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
+        mockVerifyOtpChallenge.mockResolvedValue({
+          success: false,
+          error: errorType,
+        });
+        mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
+
+        const result = await verifyEmailAddressPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockVerifyOtpChallenge).toHaveBeenCalledWith(
+          "test@example.com",
+          "123456",
+        );
+        expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
+          mockRequest,
+          mockReply,
+          "https://example.com/callback",
+          { description: "E1000", type: "access_denied" },
+          "test-state",
+        );
+        expect(result).toBe(mockReply);
+      },
+    );
   });
 });

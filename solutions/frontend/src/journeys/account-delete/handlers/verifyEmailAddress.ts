@@ -101,11 +101,12 @@ export async function verifyEmailAddressPostHandler(
       SendOtpChallengeError,
       (typeof authorizeErrors)[keyof typeof authorizeErrors]
     > = {
-      RequestIsMissingParameters: authorizeErrors.userAborted, // TODO
-      TooManyEmailCodesEntered: authorizeErrors.userAborted, // TODO
-      InvalidOTPCode: authorizeErrors.userAborted, // TODO
-      ErrorParsingResponseBody: authorizeErrors.userAborted, // TODO
-      UnknownError: authorizeErrors.userAborted, // TODO
+      RequestIsMissingParameters: authorizeErrors.tempErrorTODORemoveLater,
+      TooManyEmailCodesEntered: authorizeErrors.tempErrorTODORemoveLater,
+      InvalidOTPCode: authorizeErrors.tempErrorTODORemoveLater,
+      ErrorParsingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
+      UnknownErrorResponse: authorizeErrors.tempErrorTODORemoveLater,
+      UnknownError: authorizeErrors.tempErrorTODORemoveLater,
     };
 
     return await redirectToClientRedirectUri(
