@@ -15,7 +15,8 @@
     "test:update-snapshots": "bash update-snapshots.sh",
     "test:ui": "npm ci && run-p test:ui:*",
     "test:ui:watch": "npm run watch",
-    "test:ui:run": "playwright test --ui"
+    "test:ui:run": "playwright test --ui",
+    "audit": "npm audit --audit-level=moderate && npm audit signatures"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.11.0",
