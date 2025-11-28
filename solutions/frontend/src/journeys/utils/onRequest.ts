@@ -47,8 +47,6 @@ export const onRequest = async (
     paths.journeys.others.goToClientCallback.path,
     authorizeErrors.userAborted,
     claims.state,
-    undefined,
-    true,
   );
 
   const journey = await journeys[claims.scope]();

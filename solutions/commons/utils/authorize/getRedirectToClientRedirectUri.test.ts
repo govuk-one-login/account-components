@@ -87,7 +87,6 @@ describe("getRedirectToClientRedirectUri", () => {
       undefined,
       undefined,
       "auth_code_123",
-      true,
     );
 
     expect(result).toBe("/callback?code=auth_code_123");
@@ -97,9 +96,6 @@ describe("getRedirectToClientRedirectUri", () => {
     const result = getRedirectToClientRedirectUri(
       "/callback",
       authorizeErrors.userAborted,
-      undefined,
-      undefined,
-      true,
     );
 
     expect(result).toBe(
@@ -112,21 +108,13 @@ describe("getRedirectToClientRedirectUri", () => {
       "/callback",
       undefined,
       "state_123",
-      undefined,
-      true,
     );
 
     expect(result).toBe("/callback?state=state_123");
   });
 
   it("should handle relative redirect URI with no parameters", () => {
-    const result = getRedirectToClientRedirectUri(
-      "/callback",
-      undefined,
-      undefined,
-      undefined,
-      true,
-    );
+    const result = getRedirectToClientRedirectUri("/callback");
 
     expect(result).toBe("/callback");
   });

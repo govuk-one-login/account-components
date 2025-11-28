@@ -5,7 +5,7 @@
 
 {% set pageTitleName = 'journey:verifyEmailAddress.pageTitle' | translate %}
 
-{% block pageContent %}
+{% block journeyPageContent %}
   <h1 class="govuk-heading-l">{{ 'journey:verifyEmailAddress.heading' | translate }}</h1>
   <form method="post">
     <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
