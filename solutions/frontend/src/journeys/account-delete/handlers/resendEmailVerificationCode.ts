@@ -1,9 +1,7 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
-import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
-import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
-import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
+import { handleSendOtpChallenge } from "../utils/handleSendOtpChallenge.js";
 
 export async function resendEmailVerificationCodeGetHandler(
   _request: FastifyRequest,
@@ -26,40 +24,10 @@ export async function resendEmailVerificationCodePostHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(request.session.claims);
-  const accountManagementApiClient = new AccountManagementApiClient(
-    request.session.claims.access_token,
-  );
-
-  const result = await accountManagementApiClient.sendOtpChallenge(
-    request.session.claims.email,
-  );
+  const result = await handleSendOtpChallenge(request, reply);
 
   if (!result.success) {
-    type SendOtpChallengeError = (typeof result)["error"];
-    const errorMap: Record<
-      SendOtpChallengeError,
-      (typeof authorizeErrors)[keyof typeof authorizeErrors]
-    > = {
-      RequestIsMissingParameters: authorizeErrors.tempErrorTODORemoveLater,
-      BlockedForEmailVerificationCodes:
-        authorizeErrors.tempErrorTODORemoveLater,
-      TooManyEmailCodesEntered: authorizeErrors.tempErrorTODORemoveLater,
-      InvalidPrincipalInRequest: authorizeErrors.tempErrorTODORemoveLater,
-      AccountManagementApiUnexpectedError:
-        authorizeErrors.tempErrorTODORemoveLater,
-      ErrorParsingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
-      UnknownErrorResponse: authorizeErrors.tempErrorTODORemoveLater,
-      UnknownError: authorizeErrors.tempErrorTODORemoveLater,
-    };
-
-    return await redirectToClientRedirectUri(
-      request,
-      reply,
-      request.session.claims.redirect_uri,
-      errorMap[result.error],
-      request.session.claims.state,
-    );
+    return reply;
   }
 
   reply.redirect(

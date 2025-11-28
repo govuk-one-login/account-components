@@ -14,23 +14,10 @@ vi.mock(import("../../../utils/paths.js"), () => ({
   },
 }));
 
-const mockSendOtpChallenge = vi.fn();
-const mockRedirectToClientRedirectUri = vi.fn();
+const mockHandleSendOtpChallenge = vi.fn();
 
-// @ts-expect-error
-vi.mock(
-  import("../../../../../commons/utils/accountManagementApiClient/index.js"),
-  () => ({
-    AccountManagementApiClient: vi.fn().mockImplementation(function () {
-      return {
-        sendOtpChallenge: mockSendOtpChallenge,
-      };
-    }),
-  }),
-);
-
-vi.mock(import("../../../utils/redirectToClientRedirectUri.js"), () => ({
-  redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
+vi.mock(import("../utils/handleSendOtpChallenge.js"), () => ({
+  handleSendOtpChallenge: mockHandleSendOtpChallenge,
 }));
 
 const { introductionGetHandler, introductionPostHandler } = await import(
@@ -44,17 +31,7 @@ describe("introduction handlers", () => {
   beforeEach(() => {
     vi.clearAllMocks();
 
-    mockRequest = {
-      session: {
-        // @ts-expect-error
-        claims: {
-          access_token: "test-token",
-          email: "test@example.com",
-          redirect_uri: "https://example.com/callback",
-          state: "test-state",
-        },
-      },
-    };
+    mockRequest = {};
     mockReply = {
       render: vi.fn().mockResolvedValue(undefined),
       redirect: vi.fn().mockReturnThis(),
@@ -88,66 +65,38 @@ describe("introduction handlers", () => {
   });
 
   describe("introductionPostHandler", () => {
-    it("should send OTP challenge and redirect to verify email address page", async () => {
-      mockSendOtpChallenge.mockResolvedValue({ success: true });
+    it("should handle OTP challenge and redirect to verify email address page on success", async () => {
+      mockHandleSendOtpChallenge.mockResolvedValue({ success: true });
 
       const result = await introductionPostHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
 
-      expect(mockSendOtpChallenge).toHaveBeenCalledWith("test@example.com");
+      expect(mockHandleSendOtpChallenge).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
       expect(mockReply.redirect).toHaveBeenCalledWith(
         "/delete-account/verify-email-address",
       );
       expect(result).toBe(mockReply);
     });
 
-    it("should throw if session claims are not available", async () => {
-      delete mockRequest.session;
+    it("should return early when OTP challenge fails", async () => {
+      mockHandleSendOtpChallenge.mockResolvedValue({ success: false });
 
-      await expect(
-        introductionPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-        // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrow();
+      const result = await introductionPostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockHandleSendOtpChallenge).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
+      expect(mockReply.redirect).not.toHaveBeenCalled();
+      expect(result).toBe(mockReply);
     });
-
-    it.each([
-      "RequestIsMissingParameters",
-      "BlockedForEmailVerificationCodes",
-      "TooManyEmailCodesEntered",
-      "InvalidPrincipalInRequest",
-      "AccountManagementApiUnexpectedError",
-      "ErrorParsingResponseBody",
-      "UnknownErrorResponse",
-      "UnknownError",
-    ] as const)(
-      "should redirect to client redirect URI when sendOtpChallenge fails with %s",
-      async (errorType) => {
-        mockSendOtpChallenge.mockResolvedValue({
-          success: false,
-          error: errorType,
-        });
-        mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
-
-        const result = await introductionPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        );
-
-        expect(mockSendOtpChallenge).toHaveBeenCalledWith("test@example.com");
-        expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
-          mockRequest,
-          mockReply,
-          "https://example.com/callback",
-          { description: "E1000", type: "access_denied" },
-          "test-state",
-        );
-        expect(result).toBe(mockReply);
-      },
-    );
   });
 });
