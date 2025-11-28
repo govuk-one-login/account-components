@@ -347,7 +347,6 @@ describe("onRequest", () => {
           type: "access_denied",
         },
         undefined,
-        undefined,
       );
     });
 
