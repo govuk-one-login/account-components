@@ -8,6 +8,7 @@ export class AccountManagementApiClient {
     success: false,
     error: "UnknownError",
   } as const;
+  private static readonly undefinedSchema = v.undefined();
 
   constructor(accessToken: string) {
     assert(
@@ -16,6 +17,21 @@ export class AccountManagementApiClient {
     );
     this.baseUrl = process.env["ACCOUNT_MANAGEMENT_API_URL"];
     this.accessToken = accessToken;
+  }
+
+  private async logOnError<T extends { success: boolean; error?: string }>(
+    methodName: string,
+    fn: () => Promise<T>,
+  ): Promise<T> {
+    const result = await fn();
+    if (!result.success) {
+      logger.error({
+        message: "Account management API error",
+        error: result.error,
+        method: methodName,
+      });
+    }
+    return result;
   }
 
   private static async processResponse<
@@ -39,6 +55,16 @@ export class AccountManagementApiClient {
       }
   > {
     if (response.ok) {
+      if (
+        // @ts-expect-error
+        successResponseBodySchema === AccountManagementApiClient.undefinedSchema
+      ) {
+        return {
+          success: true,
+          result: v.parse(successResponseBodySchema, undefined),
+        };
+      }
+
       const body = v.safeParse(
         successResponseBodySchema,
         await response.json(),
@@ -87,67 +113,71 @@ export class AccountManagementApiClient {
   }
 
   async sendOtpChallenge(emailAdress: string) {
-    try {
-      const response = await fetch(`${this.baseUrl}/send-otp-challenge`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.accessToken}`,
-        },
-        body: JSON.stringify({
-          email: emailAdress,
-          mfaMethodType: "EMAIL",
-        }),
-      });
+    return this.logOnError("sendOtpChallenge", async () => {
+      try {
+        const response = await fetch(`${this.baseUrl}/send-otp-challenge`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+          body: JSON.stringify({
+            email: emailAdress,
+            mfaMethodType: "EMAIL",
+          }),
+        });
 
-      const errorsCodesMap = {
-        "1001": "RequestIsMissingParameters",
-        "1092": "BlockedForEmailVerificationCodes",
-        "1093": "TooManyEmailCodesEntered",
-        "1079": "InvalidPrincipalInRequest",
-        "1071": "AccountManagementApiUnexpectedError",
-      } as const;
+        const errorsCodesMap = {
+          "1001": "RequestIsMissingParameters",
+          "1092": "BlockedForEmailVerificationCodes",
+          "1093": "TooManyEmailCodesEntered",
+          "1079": "InvalidPrincipalInRequest",
+          "1071": "AccountManagementApiUnexpectedError",
+        } as const;
 
-      return await AccountManagementApiClient.processResponse(
-        response,
-        v.unknown(),
-        errorsCodesMap,
-      );
-    } catch (e) {
-      logger.error({ error: e, message: "Error sending OTP challenge" });
-      return AccountManagementApiClient.unknownError;
-    }
+        return await AccountManagementApiClient.processResponse(
+          response,
+          AccountManagementApiClient.undefinedSchema,
+          errorsCodesMap,
+        );
+      } catch (e) {
+        logger.error({ error: e, message: "Error sending OTP challenge" });
+        return AccountManagementApiClient.unknownError;
+      }
+    });
   }
 
   async verifyOtpChallenge(emailAdress: string, otp: string) {
-    try {
-      const response = await fetch(`${this.baseUrl}/verify-otp-challenge`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.accessToken}`,
-        },
-        body: JSON.stringify({
-          email: emailAdress,
-          mfaMethodType: "EMAIL",
-          otp,
-        }),
-      });
+    return this.logOnError("verifyOtpChallenge", async () => {
+      try {
+        const response = await fetch(`${this.baseUrl}/verify-otp-challenge`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${this.accessToken}`,
+          },
+          body: JSON.stringify({
+            email: emailAdress,
+            mfaMethodType: "EMAIL",
+            otp,
+          }),
+        });
 
-      const errorsCodesMap = {
-        "1001": "RequestIsMissingParameters",
-        "1020": "InvalidOTPCode",
-        "1093": "TooManyEmailCodesEntered",
-      } as const;
+        const errorsCodesMap = {
+          "1001": "RequestIsMissingParameters",
+          "1020": "InvalidOTPCode",
+          "1093": "TooManyEmailCodesEntered",
+        } as const;
 
-      return await AccountManagementApiClient.processResponse(
-        response,
-        v.unknown(),
-        errorsCodesMap,
-      );
-    } catch (e) {
-      logger.error({ error: e, message: "Error sending OTP challenge" });
-      return AccountManagementApiClient.unknownError;
-    }
+        return await AccountManagementApiClient.processResponse(
+          response,
+          AccountManagementApiClient.undefinedSchema,
+          errorsCodesMap,
+        );
+      } catch (e) {
+        logger.error({ error: e, message: "Error verifying OTP challenge" });
+        return AccountManagementApiClient.unknownError;
+      }
+    });
   }
 }

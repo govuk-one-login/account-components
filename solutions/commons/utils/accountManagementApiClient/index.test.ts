@@ -1,8 +1,16 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AccountManagementApiClient } from "./index.js";
+import { logger } from "../logger/index.js";
 
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
+
+// @ts-expect-error
+vi.mock(import("../logger/index.js"), () => ({
+  logger: {
+    error: vi.fn(),
+  },
+}));
 
 describe("accountManagementApiClient", () => {
   const originalEnv = process.env;
@@ -37,7 +45,6 @@ describe("accountManagementApiClient", () => {
     it("should return success object on successful response", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(true),
       });
 
       const client = new AccountManagementApiClient("test-token");
@@ -57,10 +64,10 @@ describe("accountManagementApiClient", () => {
           }),
         },
       );
-      expect(result).toStrictEqual({ success: true, result: true });
+      expect(result).toStrictEqual({ success: true, result: undefined });
     });
 
-    it("should return error object for known errors", async () => {
+    it("should return error object for known errors and log the error", async () => {
       mockFetch.mockResolvedValue({
         ok: false,
         json: () =>
@@ -73,6 +80,12 @@ describe("accountManagementApiClient", () => {
       expect(result).toStrictEqual({
         success: false,
         error: "RequestIsMissingParameters",
+      });
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(logger.error).toHaveBeenCalledWith({
+        message: "Account management API error",
+        error: "RequestIsMissingParameters",
+        method: "sendOtpChallenge",
       });
     });
 
@@ -108,7 +121,6 @@ describe("accountManagementApiClient", () => {
     it("should return success object on successful verification", async () => {
       mockFetch.mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve(true),
       });
 
       const client = new AccountManagementApiClient("test-token");
@@ -132,10 +144,10 @@ describe("accountManagementApiClient", () => {
           }),
         },
       );
-      expect(result).toStrictEqual({ success: true, result: true });
+      expect(result).toStrictEqual({ success: true, result: undefined });
     });
 
-    it("should return error object for invalid OTP", async () => {
+    it("should return error object for invalid OTP and log the error", async () => {
       mockFetch.mockResolvedValue({
         ok: false,
         json: () => Promise.resolve({ code: 1020, message: "Invalid OTP" }),
@@ -148,6 +160,12 @@ describe("accountManagementApiClient", () => {
       );
 
       expect(result).toStrictEqual({ success: false, error: "InvalidOTPCode" });
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(logger.error).toHaveBeenCalledWith({
+        message: "Account management API error",
+        error: "InvalidOTPCode",
+        method: "verifyOtpChallenge",
+      });
     });
 
     it("should return UnknownErrorResponse for unknown error codes", async () => {
