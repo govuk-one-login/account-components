@@ -214,7 +214,8 @@ Resources:
       EndpointConfiguration:
         Types:
           - REGIONAL
-      SecurityPolicy: TLS_1_2
+      SecurityPolicy: SecurityPolicy_TLS13_1_2_FIPS_PQ_2025_09
+      EndpointAccessMode: STRICT
 
   StubsRecord:
     Type: AWS::Route53::RecordSet
@@ -240,6 +241,7 @@ Resources:
   StubsApiGateway:
     Type: AWS::Serverless::Api
     Properties:
+      Description: Account Components Stub API
       StageName: !Ref Environment
       AlwaysDeploy: true
       DisableExecuteApiEndpoint: true
@@ -248,9 +250,46 @@ Resources:
         Type: REGIONAL
       BinaryMediaTypes:
         - "*/*"
+      AccessLogSetting:
+        Format: >-
+          {
+          "requestId": "$context.requestId",
+          "requestTime": "$context.requestTime",
+          "requestTimeEpoch": "$context.requestTimeEpoch",
+          "httpMethod": "$context.httpMethod",
+          "domainName": "$context.domainName",
+          "path": "$context.path",
+          "routeKey": "$context.routeKey",
+          "protocol": "$context.protocol",
+          "status": "$context.status",
+          "responseLength": "$context.responseLength",
+          "responseLatency": "$context.responseLatency",
+          "authorizerLatency": "$context.authorizer.latency",
+          "integrationStatus": "$context.integrationStatus",
+          "integrationLatency": "$context.integrationLatency",
+          "integrationErrorMessage": "$context.integrationErrorMessage",
+          "errorMessage": "$context.error.message",
+          "errorResponseType": "$context.error.responseType",
+          "validationErrorString": "$context.error.validationErrorString",
+          "xrayTraceId": "$context.xrayTraceId",
+          "tlsVersion": "$context.tlsVersion",
+          "cipherSuite": "$context.cipherSuite"
+          }
+        DestinationArn: !GetAtt StubsApiGatewayAccessLogGroup.Arn
+      MethodSettings:
+        - MetricsEnabled: true
+          ResourcePath: /*
+          HttpMethod: "*"
       Tags:
         FMSRegionalPolicy: false
         CustomPolicy: mock
+
+  StubsApiGatewayAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/${StubsApiGateway}/${Environment}"
+      RetentionInDays: 30
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
   StubsLambda:
     Type: AWS::Serverless::Function
