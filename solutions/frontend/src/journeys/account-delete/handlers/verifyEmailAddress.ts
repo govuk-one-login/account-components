@@ -8,6 +8,8 @@ import {
 import * as v from "valibot";
 import type { FastifySessionObject } from "@fastify/session";
 import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
+import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
+import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
 
 const getRenderOptions = (claims: FastifySessionObject["claims"]) => {
   assert.ok(claims?.email);
@@ -88,12 +90,32 @@ export async function verifyEmailAddressPostHandler(
     request.session.claims.access_token,
   );
 
-  await accountManagementApiClient.verifyOtpChallenge(
+  const result = await accountManagementApiClient.verifyOtpChallenge(
     request.session.claims.email,
     body.code,
   );
 
-  // TODO perhaps handle verify OTP error responses here in future
+  if (!result.success) {
+    type SendOtpChallengeError = (typeof result)["error"];
+    const errorMap: Record<
+      SendOtpChallengeError,
+      (typeof authorizeErrors)[keyof typeof authorizeErrors]
+    > = {
+      RequestIsMissingParameters: authorizeErrors.userAborted, // TODO
+      TooManyEmailCodesEntered: authorizeErrors.userAborted, // TODO
+      InvalidOTPCode: authorizeErrors.userAborted, // TODO
+      ErrorParsingResponseBody: authorizeErrors.userAborted, // TODO
+      UnknownError: authorizeErrors.userAborted, // TODO
+    };
+
+    return await redirectToClientRedirectUri(
+      request,
+      reply,
+      request.session.claims.redirect_uri,
+      errorMap[result.error],
+      request.session.claims.state,
+    );
+  }
 
   reply.journeyStates["account-delete"].send({
     type: "emailVerified",

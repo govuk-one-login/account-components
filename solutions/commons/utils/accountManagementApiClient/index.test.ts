@@ -34,9 +34,11 @@ describe("accountManagementApiClient", () => {
   });
 
   describe("sendOtpChallenge", () => {
-    it("should make POST request with correct parameters", async () => {
-      const mockResponse = { ok: true };
-      mockFetch.mockResolvedValue(mockResponse);
+    it("should return success object on successful response", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(true),
+      });
 
       const client = new AccountManagementApiClient("test-token");
       const result = await client.sendOtpChallenge("test@example.com");
@@ -55,14 +57,44 @@ describe("accountManagementApiClient", () => {
           }),
         },
       );
-      expect(result).toBe(mockResponse);
+      expect(result).toStrictEqual({ success: true, result: true });
+    });
+
+    it("should return error object for known errors", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        json: () =>
+          Promise.resolve({ code: 1001, message: "Missing parameters" }),
+      });
+
+      const client = new AccountManagementApiClient("test-token");
+      const result = await client.sendOtpChallenge("test@example.com");
+
+      expect(result).toStrictEqual({
+        success: false,
+        error: "RequestIsMissingParameters",
+      });
+    });
+
+    it("should return UnknownError for unknown error codes", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        json: () => Promise.resolve({ code: 9999, message: "Unknown error" }),
+      });
+
+      const client = new AccountManagementApiClient("test-token");
+      const result = await client.sendOtpChallenge("test@example.com");
+
+      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
     });
   });
 
   describe("verifyOtpChallenge", () => {
-    it("should make POST request with correct parameters including OTP", async () => {
-      const mockResponse = { ok: true };
-      mockFetch.mockResolvedValue(mockResponse);
+    it("should return success object on successful verification", async () => {
+      mockFetch.mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(true),
+      });
 
       const client = new AccountManagementApiClient("test-token");
       const result = await client.verifyOtpChallenge(
@@ -71,7 +103,7 @@ describe("accountManagementApiClient", () => {
       );
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://api.example.com/send-otp-challenge",
+        "https://api.example.com/verify-otp-challenge",
         {
           method: "POST",
           headers: {
@@ -85,7 +117,37 @@ describe("accountManagementApiClient", () => {
           }),
         },
       );
-      expect(result).toBe(mockResponse);
+      expect(result).toStrictEqual({ success: true, result: true });
+    });
+
+    it("should return error object for invalid OTP", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        json: () => Promise.resolve({ code: 1020, message: "Invalid OTP" }),
+      });
+
+      const client = new AccountManagementApiClient("test-token");
+      const result = await client.verifyOtpChallenge(
+        "test@example.com",
+        "wrong-otp",
+      );
+
+      expect(result).toStrictEqual({ success: false, error: "InvalidOTPCode" });
+    });
+
+    it("should return UnknownError for unknown error codes", async () => {
+      mockFetch.mockResolvedValue({
+        ok: false,
+        json: () => Promise.resolve({ code: 8888, message: "Unknown error" }),
+      });
+
+      const client = new AccountManagementApiClient("test-token");
+      const result = await client.verifyOtpChallenge(
+        "test@example.com",
+        "123456",
+      );
+
+      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
     });
   });
 });
