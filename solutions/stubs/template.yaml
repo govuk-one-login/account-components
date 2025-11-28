@@ -250,7 +250,7 @@ Resources:
         - "*/*"
       Tags:
         FMSRegionalPolicy: false
-        CustomPolicy: true
+        CustomPolicy: mock
 
   StubsLambda:
     Type: AWS::Serverless::Function

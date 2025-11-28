@@ -353,9 +353,6 @@ Resources:
         Type: REGIONAL
       BinaryMediaTypes:
         - "*/*"
-      Tags:
-        FMSRegionalPolicy: false
-        CustomPolicy: true
 
   FrontendLambda:
     Type: AWS::Serverless::Function

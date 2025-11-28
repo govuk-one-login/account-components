@@ -105,6 +105,6 @@
     "run:all": "bash solutions/localstack/provision.sh && RUN_ALL=1 concurrently 'npm run run:frontend' 'npm run run:stubs' 'npm run run:api' 'npm run watch:config-schema' --kill-others",
     "config:validate": "for f in solutions/config/*.json; do (jsonschema validate solutions/config/schema/config.json $f) || exit 1; done",
     "api-specs:validate": "for f in solutions/api/src/specs/*.yaml; do (spectral lint $f) || exit 1; done",
-    "audit": "npm audit --audit-level=moderate && npm audit signatures"
+    "audit": "npm audit --audit-level=moderate && npm audit signatures && cd solutions/integration-tests && npm run audit"
   }
 }
