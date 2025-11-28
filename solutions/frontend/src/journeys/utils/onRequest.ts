@@ -48,7 +48,6 @@ export const onRequest = async (
     authorizeErrors.userAborted,
     claims.state,
     undefined,
-    true,
   );
 
   const journey = await journeys[claims.scope]();

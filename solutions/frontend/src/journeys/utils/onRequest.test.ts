@@ -348,7 +348,6 @@ describe("onRequest", () => {
         },
         undefined,
         undefined,
-        true,
       );
     });
 

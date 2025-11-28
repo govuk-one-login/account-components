@@ -1,12 +1,15 @@
 import type { authorizeErrors } from "./authorizeErrors.js";
+import * as v from "valibot";
 
 export const getRedirectToClientRedirectUri = (
   redirectUri: string,
   error?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
   state?: string,
   code?: string,
-  redirectUriIsRelative = false,
 ) => {
+  const isRelativeUrl = !v.safeParse(v.pipe(v.string(), v.url()), redirectUri)
+    .success;
+
   const url = new URL(redirectUri, "http://localhost");
   if (error) {
     url.searchParams.set("error", error.type);
@@ -17,5 +20,6 @@ export const getRedirectToClientRedirectUri = (
   if (state) {
     url.searchParams.set("state", state);
   }
-  return redirectUriIsRelative ? url.pathname + url.search : url.toString();
+
+  return isRelativeUrl ? url.pathname + url.search : url.toString();
 };
