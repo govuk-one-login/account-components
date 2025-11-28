@@ -347,9 +347,6 @@ Resources:
       TracingEnabled: true
       EndpointConfiguration:
         Type: REGIONAL
-      Tags:
-        FMSRegionalPolicy: false
-        CustomPolicy: true
       DefinitionBody:
         openapi: 3.0.3
         info:
