@@ -140,8 +140,7 @@ export class AccountManagementApiClient {
           AccountManagementApiClient.undefinedSchema,
           errorsCodesMap,
         );
-      } catch (e) {
-        logger.error({ error: e, message: "Error sending OTP challenge" });
+      } catch {
         return AccountManagementApiClient.unknownError;
       }
     });
@@ -174,8 +173,7 @@ export class AccountManagementApiClient {
           AccountManagementApiClient.undefinedSchema,
           errorsCodesMap,
         );
-      } catch (e) {
-        logger.error({ error: e, message: "Error verifying OTP challenge" });
+      } catch {
         return AccountManagementApiClient.unknownError;
       }
     });
