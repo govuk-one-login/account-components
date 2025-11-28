@@ -1,13 +1,20 @@
-{% extends "templates/layout/base-page.njk" %}
+{% extends "templates/layout/journey-base-page.njk" %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 
 {% set pageTitleName = 'journey:verifyEmailAddress.pageTitle' | translate %}
 
-{% block pageContent %}
+{% block journeyPageContent %}
   <h1 class="govuk-heading-l">{{ 'journey:verifyEmailAddress.heading' | translate }}</h1>
   <form method="post">
     <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
+
+    {{ govukInsetText({
+        text: 'journey:verifyEmailAddress.emailAddress' | translate({
+          emailAddress: emailAddress
+        }) | safe
+    })}}
 
     {{ govukInput({
         label: {

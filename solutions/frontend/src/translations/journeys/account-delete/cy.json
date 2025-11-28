@@ -13,8 +13,14 @@
   "verifyEmailAddress": {
     "pageTitle": "TODO verifyEmailAddress",
     "heading": "TODO verifyEmailAddress",
+    "emailAddress": "TODO <strong>{{emailAddress}}</strong>",
     "codeInputLabel": "TODO code",
     "buttonLabel": "TODO verify",
-    "resendCodeLinkText": "TODO resendCode"
+    "resendCodeLinkText": "TODO resendCode",
+    "formErrors": {
+      "empty": "TODO empty",
+      "tooShort": "TODO tooShort",
+      "notAllDigits": "TODO notAllDigits"
+    }
   }
 }

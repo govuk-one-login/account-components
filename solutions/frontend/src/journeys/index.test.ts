@@ -6,6 +6,8 @@ import type { FastifyInstance } from "fastify";
 import { testingJourney } from "./testing-journey/index.js";
 import { onRequest } from "./utils/onRequest.js";
 import { onSend } from "./utils/onSend.js";
+import { goToClientCallback } from "./goToClientCallback/handler.js";
+import { paths } from "../utils/paths.js";
 
 vi.mock(import("./utils/onRequest.js"), () => ({
   onRequest: vi.fn(),
@@ -13,11 +15,15 @@ vi.mock(import("./utils/onRequest.js"), () => ({
 vi.mock(import("./utils/onSend.js"), () => ({
   onSend: vi.fn(),
 }));
+vi.mock(import("./goToClientCallback/handler.js"), () => ({
+  goToClientCallback: vi.fn(),
+}));
 
 describe("journeyRoutes plugin", () => {
   let mockFastify: FastifyInstance;
   let mockAddHook: Mock;
   let mockRegister: Mock;
+  let mockGet: Mock;
   let mockRequest: any;
   let mockReply: any;
 
@@ -25,12 +31,14 @@ describe("journeyRoutes plugin", () => {
     vi.clearAllMocks();
     mockAddHook = vi.fn();
     mockRegister = vi.fn();
+    mockGet = vi.fn();
     mockRequest = {};
     mockReply = {};
 
     mockFastify = {
       addHook: mockAddHook,
       register: mockRegister,
+      get: mockGet,
     } as unknown as FastifyInstance;
   });
 
@@ -84,5 +92,14 @@ describe("journeyRoutes plugin", () => {
     journeyRoutes(mockFastify);
 
     expect(mockRegister).toHaveBeenCalledWith(accountDelete);
+  });
+
+  it("registers goToClientCallback route", () => {
+    journeyRoutes(mockFastify);
+
+    expect(mockGet).toHaveBeenCalledWith(
+      paths.journeys.others.goToClientCallback.path,
+      goToClientCallback,
+    );
   });
 });

@@ -72,6 +72,7 @@ export const initFrontend = async function () {
       currentUrl: getCurrentUrl(request),
       htmlLang: request.i18n.language,
       authFrontEndUrl: process.env["AUTH_FRONTEND_URL"],
+      analyticsCookieDomain: process.env["ANALYTICS_COOKIE_DOMAIN"],
     };
   });
   fastify.decorateReply("render", render);

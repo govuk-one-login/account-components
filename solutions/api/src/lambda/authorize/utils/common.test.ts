@@ -76,7 +76,7 @@ describe("getRedirectToClientRedirectUriResponse", () => {
     );
     const result = getRedirectToClientRedirectUriResponse(
       "https://example.com/callback",
-      authorizeErrors.accountDeleteUserAborted,
+      authorizeErrors.userAborted,
       "state-456",
     );
 

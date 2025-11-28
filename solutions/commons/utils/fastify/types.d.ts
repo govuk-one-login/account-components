@@ -25,6 +25,8 @@ declare module "fastify" {
       currentUrl?: URL;
       htmlLang?: string | undefined;
       authFrontEndUrl?: string | undefined;
+      analyticsCookieDomain?: string | undefined;
+      exitJourneyUrl?: string | undefined;
     };
     journeyStates?: {
       [Scope.testingJourney]?: Actor<typeof testingJourneyStateMachine>;

@@ -4,6 +4,7 @@
     "errorTitlePrefix": "Error",
     "serviceNameTitle": "GOV.UK One Login",
     "back": "Back",
+    "exitJourneyLinkText": "TODO exitJourney",
     "phaseBanner": {
       "testText": "This is a test environment."
     },

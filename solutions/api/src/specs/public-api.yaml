@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components OAuth Provider Public API
-  version: 0.0.9
+  version: 0.0.10
   description: |
     OAuth 2.0 provider endpoints, including:
     - GET /authorize
@@ -71,7 +71,7 @@ paths:
               examples:
                 success:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?code=anAuthCode&state=aRandomString
-                account_delete__user_aborted:
+                user_aborted:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1001&state=aRandomString
                 account_delete__password_incorrect:
                   value: https://signin.account.gov.uk/callbacks/account-deletion?error=access_denied&error_description=E1002&state=aRandomString

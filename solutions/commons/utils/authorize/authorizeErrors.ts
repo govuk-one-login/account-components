@@ -20,7 +20,7 @@ interface AuthorizeErrorServerError {
 }
 
 export const authorizeErrors = {
-  accountDeleteUserAborted: {
+  userAborted: {
     description: "E1001",
     type: "access_denied",
   },
