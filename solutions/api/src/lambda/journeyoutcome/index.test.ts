@@ -2,7 +2,10 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy.js";
 import type { Context } from "aws-lambda";
 import type { CryptoKey } from "jose";
-import type { JourneyInfoPayload } from "./utils/validateJourneyOutcomeJwtClaims.js";
+import type {
+  JourneyOutcomePayload,
+  JourneyOutcome,
+} from "../../../../commons/utils/interfaces.js";
 
 const mockContext = {} as unknown as Context;
 
@@ -10,6 +13,11 @@ const mockMetrics = {
   addMetric: vi.fn(),
   addDimensions: vi.fn(),
 };
+
+const mockOutcomeData: JourneyOutcome = [
+  { step: 1, action: "start" },
+  { step: 2, action: "complete" },
+];
 
 vi.mock(import("./utils/verifySignatureAndGetPayload.js"));
 const mockverifySignatureAndGetPayload = vi.mocked(
@@ -20,6 +28,11 @@ vi.mock(import("./utils/validateJourneyOutcomeJwtClaims.js"));
 const mockValidateJourneyOutcomeJwtClaims = vi.mocked(
   await import("./utils/validateJourneyOutcomeJwtClaims.js"),
 ).validateJourneyOutcomeJwtClaims;
+
+vi.mock(import("./utils/getJourneyOutcome.js"));
+const mockGetJourneyOutcome = vi.mocked(
+  await import("./utils/getJourneyOutcome.js"),
+).getJourneyOutcome;
 
 vi.mock(import("./utils/getKmsKey.js"));
 const mockGetKmsKey = vi.mocked(await import("./utils/getKmsKey.js")).getKMSKey;
@@ -36,14 +49,16 @@ describe("journeyoutcome handler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env["JWT_SIGNING_KEY_ALIAS"] = "test-alias";
+    process.env["JOURNEY_OUTCOME_TABLE_NAME"] = "test-table-name";
   });
 
-  it("returns 200 status for valid Authorization header with access token", async () => {
+  it("returns 200 status with outcome object for valid Authorization header with valid access_token containing a valid outcome_id", async () => {
     mockverifySignatureAndGetPayload.mockResolvedValue(
-      {} as any as JourneyInfoPayload,
+      {} as any as JourneyOutcomePayload,
     );
     mockValidateJourneyOutcomeJwtClaims.mockResolvedValue(undefined);
     mockGetKmsKey.mockResolvedValue({} as any as CryptoKey);
+    mockGetJourneyOutcome.mockResolvedValue(mockOutcomeData);
 
     const mockValidEvent = {
       headers: { Authorization: "Bearer blah" },
@@ -52,7 +67,34 @@ describe("journeyoutcome handler", () => {
 
     expect(result).toStrictEqual({
       statusCode: 200,
-      body: '"hello world"',
+      body: JSON.stringify(mockOutcomeData),
+    });
+  });
+
+  it("returns 404 status if outcome is not found for provided outcome_id", async () => {
+    mockverifySignatureAndGetPayload.mockResolvedValue(
+      {} as any as JourneyOutcomePayload,
+    );
+    mockValidateJourneyOutcomeJwtClaims.mockResolvedValue(undefined);
+    mockGetKmsKey.mockResolvedValue({} as any as CryptoKey);
+    mockGetJourneyOutcome.mockResolvedValue(undefined);
+
+    const mockValidEvent = {
+      headers: { Authorization: "Bearer blah" },
+    } as unknown as APIGatewayProxyEvent;
+    const result = await handler(mockValidEvent, mockContext);
+
+    expect(mockMetrics.addMetric).toHaveBeenCalledWith(
+      "MissingOutcome",
+      "Count",
+      1,
+    );
+    expect(result).toStrictEqual({
+      statusCode: 404,
+      body: JSON.stringify({
+        error: "not_found",
+        error_description: "E404",
+      }),
     });
   });
 

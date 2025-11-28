@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
-import type { JourneyInfoPayload } from "./validateJourneyOutcomeJwtClaims.js";
+import type { JourneyOutcomePayload } from "../../../../../commons/utils/interfaces.js";
 
 vi.doMock("./errors.js", () => ({
   errorManager: { throwError: vi.fn(() => undefined) },
@@ -68,7 +68,7 @@ describe("validateJourneyOutcomeJwtClaims", () => {
         basePayload as Record<string, unknown>;
 
       validateJourneyOutcomeJwtClaims(
-        payloadWithMissingClaim as JourneyInfoPayload,
+        payloadWithMissingClaim as JourneyOutcomePayload,
       );
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
