@@ -48,7 +48,7 @@
     "@types/node": "^22.19.1",
     "@types/nunjucks": "^3.2.6",
     "@vitest/coverage-v8": "^4.0.13",
-    "@vitest/eslint-plugin": "^1.4.4",
+    "@vitest/eslint-plugin": "^1.5.0",
     "chokidar-cli": "^3.0.0",
     "concurrently": "^9.2.1",
     "csso-cli": "^4.0.2",
@@ -57,12 +57,12 @@
     "eslint-plugin-n": "^17.23.1",
     "eslint-plugin-playwright": "^2.3.0",
     "json-schema-to-typescript": "^15.0.4",
-    "knip": "^5.70.1",
+    "knip": "^5.70.2",
     "prettier": "^3.6.2",
     "rolldown": "1.0.0-beta.51",
     "sass": "^1.94.2",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.47.0",
+    "typescript-eslint": "^8.48.0",
     "vitest": "^4.0.13"
   },
   "scripts": {
