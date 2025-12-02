@@ -44,8 +44,8 @@ Mappings:
       stubsDomain: stubs.manage.dev.account.gov.uk
       LambdaLogLevel: DEBUG
       UseCanary: false
-      apiTokenEndpointUrl: https://vck31ob5zj.execute-api.eu-west-2.amazonaws.com/v1/token
-      apiJourneyOutcomeEndpointUrl: https://vck31ob5zj.execute-api.eu-west-2.amazonaws.com/v1/journeyoutcome
+      apiTokenEndpointUrl: https://ra87ckqt87.execute-api.eu-west-2.amazonaws.com/v1/token
+      apiJourneyOutcomeEndpointUrl: https://ra87ckqt87.execute-api.eu-west-2.amazonaws.com/v1/journeyoutcome
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       stubsDomain: stubs.manage.build.account.gov.uk

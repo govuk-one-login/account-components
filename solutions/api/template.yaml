@@ -60,7 +60,7 @@ Mappings:
       privateApiDomain: internal.manage.dev.account.gov.uk
       authorizeErrorPageUrl: https://manage.dev.account.gov.uk/authorize-error
       authorizeEndpointUrl: https://api.manage.dev.account.gov.uk/authorize
-      tokenEndpointUrl: https://vck31ob5zj.execute-api.eu-west-2.amazonaws.com/v1/token
+      tokenEndpointUrl: https://ra87ckqt87.execute-api.eu-west-2.amazonaws.com/v1/token
       journeyOutcomeEndpointUrl: https://internal.manage.dev.account.gov.uk/journeyoutcome
       privateApiAllowedVpceIds: [
           "vpce-0a7dad1503be13796", # di-account-components-dev
