@@ -1,5 +1,5 @@
 import assert from "node:assert";
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 import type { JWTPayload } from "jose";
 
 import { getKmsClient } from "../../../../../commons/utils/awsClient/kmsClient/index.js";
@@ -18,17 +18,18 @@ export const createAccessToken = async (
     process.env["TOKEN_ENDPOINT_URL"],
     "TOKEN_ENDPOINT_URL is not configured",
   );
-  const issuer = process.env["TOKEN_ENDPOINT_URL"];
   assert(
     process.env["JOURNEY_OUTCOME_ENDPOINT_URL"],
     "JOURNEY_OUTCOME_ENDPOINT_URL is not configured",
   );
-  const audience = process.env["JOURNEY_OUTCOME_ENDPOINT_URL"];
   assert(
     process.env["JWT_SIGNING_KEY_ALIAS"],
     "JWT_SIGNING_KEY_ALIAS is not configured",
   );
+
   const keyAlias = process.env["JWT_SIGNING_KEY_ALIAS"];
+  const audience = process.env["JOURNEY_OUTCOME_ENDPOINT_URL"];
+  const issuer = process.env["TOKEN_ENDPOINT_URL"];
 
   const kmsClient = getKmsClient();
 
