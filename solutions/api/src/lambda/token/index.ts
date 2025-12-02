@@ -8,6 +8,7 @@ import { assertTokenRequest } from "./utils/assertTokenRequest.js";
 import * as querystring from "node:querystring";
 import { getAuthRequest } from "./utils/getAuthRequest.js";
 import { verifyJti } from "./utils/verifyJti.js";
+import { createAccessToken } from "./utils/createAccessToken.js";
 
 export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
   async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -21,7 +22,7 @@ export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
 
       const assertion = await verifyClientAssertion(request.client_assertion);
 
-      await getAuthRequest(
+      const authRequest = await getAuthRequest(
         request.code,
         request.redirect_uri,
         String(assertion.iss),
@@ -29,9 +30,18 @@ export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
 
       await verifyJti(assertion.jti);
 
+      const accessToken = await createAccessToken(assertion, authRequest);
+
       return {
         statusCode: 200,
-        body: JSON.stringify({ hello: "world" }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          access_token: accessToken,
+          token_type: "Bearer",
+          expires_in: 3600,
+        }),
       };
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions

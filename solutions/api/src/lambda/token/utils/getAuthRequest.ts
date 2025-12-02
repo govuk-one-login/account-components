@@ -61,3 +61,5 @@ export const getAuthRequest = async (
     );
   }
 };
+
+export type AuthRequestT = Awaited<ReturnType<typeof getAuthRequest>>;

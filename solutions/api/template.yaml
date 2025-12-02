@@ -638,6 +638,13 @@ Resources:
               !Ref Environment,
               tokenEndpointUrl,
             ]
+          JOURNEY_OUTCOME_ENDPOINT_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              journeyOutcomeEndpointUrl,
+            ]
+          JWT_SIGNING_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyAlias}}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
