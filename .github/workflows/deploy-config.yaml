@@ -41,7 +41,7 @@ jobs:
           name: ${{ inputs.artifact-name }}
 
       - name: Assume AWS Role
-        uses: aws-actions/configure-aws-credentials@06083b756457410befa79ac62f8e6daf35a41869
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
         with:
           role-to-assume: ${{ secrets.aws-role-arn }}
           aws-region: eu-west-2
