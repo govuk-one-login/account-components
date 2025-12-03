@@ -29,7 +29,7 @@ jobs:
 
     steps:
       - name: Pull repository
-        uses: actions/checkout@ff7abcd0c3c05ccf6adc123a8cd1fd4fb30fb493
+        uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3
         with:
           fetch-depth: 0 # Disable shallow cloning
           persist-credentials: false
@@ -41,7 +41,7 @@ jobs:
           name: ${{ inputs.artifact-name }}
 
       - name: Assume AWS Role
-        uses: aws-actions/configure-aws-credentials@06083b756457410befa79ac62f8e6daf35a41869
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708
         with:
           role-to-assume: ${{ secrets.aws-role-arn }}
           aws-region: eu-west-2

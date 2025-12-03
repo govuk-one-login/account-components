@@ -68,7 +68,7 @@ describe("redirectToClientRedirectUri", () => {
 
   it("includes error in redirect when provided", async () => {
     const redirectUri = "https://client.example.com/callback";
-    const error = authorizeErrors.accountDeleteUserAborted;
+    const error = authorizeErrors.userAborted;
 
     await redirectToClientRedirectUri(
       mockRequest,

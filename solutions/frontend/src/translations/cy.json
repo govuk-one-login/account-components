@@ -4,6 +4,7 @@
     "errorTitlePrefix": "Gwall",
     "serviceNameTitle": "GOV.UK One Login",
     "back": "Yn ôl",
+    "exitJourneyLinkText": "TODO exitJourney",
     "phaseBanner": {
       "testText": "Mae hwn yn amgylchedd profi."
     },

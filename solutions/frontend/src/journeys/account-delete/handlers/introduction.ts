@@ -1,6 +1,7 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
+import { handleSendOtpChallenge } from "../utils/handleSendOtpChallenge.js";
 
 export async function introductionGetHandler(
   _request: FastifyRequest,
@@ -13,10 +14,14 @@ export async function introductionGetHandler(
 }
 
 export async function introductionPostHandler(
-  _request: FastifyRequest,
+  request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  // TODO send OTP here and handle errors
+  const result = await handleSendOtpChallenge(request, reply);
+
+  if (!result.success) {
+    return reply;
+  }
 
   reply.redirect(
     paths.journeys["account-delete"].EMAIL_NOT_VERIFIED.verifyEmailAddress.path,

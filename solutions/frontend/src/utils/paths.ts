@@ -40,6 +40,9 @@ export const paths = {
         },
       },
     },
+    others: {
+      goToClientCallback: { path: "/go-to-client-callback" },
+    },
   },
   others: {
     authorizeError: { path: "/authorize-error" },
@@ -47,6 +50,7 @@ export const paths = {
   },
 } as const satisfies {
   journeys: {
+    others: PathsMap;
     [Scope.testingJourney]: Record<TestingJourneyState, PathsMap>;
     [Scope.accountDelete]: Record<AcountDeleteJourneyState, PathsMap>;
   };

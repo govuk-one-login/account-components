@@ -25,15 +25,15 @@ repos:
         args: ["--baseline", ".secrets.baseline"]
         stages: [pre-commit]
 
-  ##- repo: local
-  #hooks:
-  #  - id: package-audit-check
-  #   name: Check dependencies
-  #   entry: npm run audit
-  #   language: system
-  #  exclude: .*
-  #  always_run: true
-  #  stages: [pre-commit]
+  - repo: local
+    hooks:
+      - id: package-audit-check
+        name: Check dependencies
+        entry: npm run audit
+        language: system
+        exclude: .*
+        always_run: true
+        stages: [pre-commit]
 
   - repo: local
     hooks:
@@ -111,6 +111,7 @@ repos:
         name: SAM validate frontend
         entry: npm run sam-validate:frontend
         language: system
+        pass_filenames: false
         exclude: .*
         always_run: true
         stages: [pre-commit]
@@ -121,6 +122,7 @@ repos:
         name: SAM validate API
         entry: npm run sam-validate:api
         language: system
+        pass_filenames: false
         exclude: .*
         always_run: true
         stages: [pre-commit]
@@ -131,6 +133,7 @@ repos:
         name: SAM validate stubs
         entry: npm run sam-validate:stubs
         language: system
+        pass_filenames: false
         exclude: .*
         always_run: true
         stages: [pre-commit]
@@ -141,6 +144,7 @@ repos:
         name: SAM validate core
         entry: npm run sam-validate:core
         language: system
+        pass_filenames: false
         exclude: .*
         always_run: true
         stages: [pre-commit]
