@@ -147,7 +147,6 @@ const getTokenRequestBody = async ({
     iss: client.client_id,
     aud: process.env["API_TOKEN_ENDPOINT_URL"],
     jti: crypto.randomUUID(),
-    sub: "urn:fdc:gov.uk:default",
   })
     .setProtectedHeader({ alg: jwtSigningAlgorithm })
     .setIssuedAt()

@@ -30,7 +30,7 @@ export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
 
       await verifyJti(assertion.jti);
 
-      const accessToken = await createAccessToken(assertion, authRequest);
+      const accessToken = await createAccessToken(authRequest);
 
       return {
         statusCode: 200,

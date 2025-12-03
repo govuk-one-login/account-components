@@ -1,6 +1,5 @@
 import assert from "node:assert";
 import { randomUUID } from "node:crypto";
-import type { JWTPayload } from "jose";
 
 import { getKmsClient } from "../../../../../commons/utils/awsClient/kmsClient/index.js";
 import {
@@ -9,11 +8,9 @@ import {
 } from "../../../../../commons/utils/constants.js";
 import type { AuthRequestT } from "./getAuthRequest.js";
 import { derToJose } from "ecdsa-sig-formatter";
+import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
 
-export const createAccessToken = async (
-  assertion: JWTPayload,
-  authRequest: AuthRequestT,
-) => {
+export const createAccessToken = async (authRequest: AuthRequestT) => {
   assert(
     process.env["TOKEN_ENDPOINT_URL"],
     "TOKEN_ENDPOINT_URL is not configured",
@@ -26,18 +23,32 @@ export const createAccessToken = async (
     process.env["JWT_SIGNING_KEY_ALIAS"],
     "JWT_SIGNING_KEY_ALIAS is not configured",
   );
+  assert(process.env["AUTH_TABLE_NAME"], "AUTH_TABLE_NAME is not configured");
 
   const keyAlias = process.env["JWT_SIGNING_KEY_ALIAS"];
   const audience = process.env["JOURNEY_OUTCOME_ENDPOINT_URL"];
   const issuer = process.env["TOKEN_ENDPOINT_URL"];
+  const authTableName = process.env["AUTH_TABLE_NAME"];
 
   const kmsClient = getKmsClient();
+  const ddbClient = getDynamoDbClient();
 
   const keyId = (
     await kmsClient.describeKey({
       KeyId: keyAlias,
     })
   ).KeyMetadata?.KeyId;
+
+  const { Item: AuthCodeItem } = await ddbClient.get({
+    TableName: authTableName,
+    Key: { code: authRequest.code },
+    ConsistentRead: true,
+  });
+
+  assert(
+    AuthCodeItem?.["sub"],
+    `Auth request subject not found for code: ${authRequest.code}`,
+  );
 
   const header = {
     alg: jwtSigningAlgorithm,
@@ -48,7 +59,7 @@ export const createAccessToken = async (
   const claims = {
     outcome_id: authRequest.outcome_id,
     iss: issuer,
-    sub: assertion.sub,
+    sub: String(AuthCodeItem["sub"]),
     aud: audience,
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + 60,
