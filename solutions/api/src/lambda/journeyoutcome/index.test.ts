@@ -2,10 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy.js";
 import type { Context } from "aws-lambda";
 import type { CryptoKey } from "jose";
-import type {
-  JourneyOutcomePayload,
-  JourneyOutcome,
-} from "../../../../commons/utils/interfaces.js";
+import type { JourneyOutcomePayload } from "./utils/interfaces.js";
+import type { JourneyOutcome } from "../../../../commons/utils/interfaces.js";
 
 const mockContext = {} as unknown as Context;
 

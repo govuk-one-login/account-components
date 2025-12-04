@@ -9,7 +9,7 @@ import { verifySignatureAndGetPayload } from "./utils/verifySignatureAndGetPaylo
 import { validateJourneyOutcomeJwtClaims } from "./utils/validateJourneyOutcomeJwtClaims.js";
 import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
 import { getJourneyOutcome } from "./utils/getJourneyOutcome.js";
-import type { JourneyOutcomePayload } from "../../../../commons/utils/interfaces.js";
+import type { JourneyOutcomePayload } from "./utils/interfaces.js";
 
 export const handler = loggerAPIGatewayProxyHandlerWrapper(
   metricsAPIGatewayProxyHandlerWrapper(
