@@ -5,6 +5,7 @@ import type {
   Claims,
   getClaimsSchema,
 } from "../../../../commons/utils/authorize/getClaimsSchema.js";
+import type { JourneyOutcome } from "../../../../commons/utils/interfaces.js";
 import type * as v from "valibot";
 
 const mockTransactWrite = vi.fn();
@@ -57,7 +58,7 @@ describe("completeJourney", () => {
   let mockRequest: FastifyRequest;
   let mockReply: FastifyReply;
   let mockClaims: Claims;
-  let mockJourneyOutcome: object[];
+  let mockJourneyOutcome: JourneyOutcome;
 
   beforeEach(() => {
     vi.clearAllMocks();

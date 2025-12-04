@@ -30,9 +30,14 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
 
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
-  logger: { error: vi.fn(), warn: vi.fn() },
+  logger: { error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
   loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
+
+vi.mock(import("./utils/createAccessToken.js"));
+const mockCreateAccessToken = vi.mocked(
+  await import("./utils/createAccessToken.js"),
+).createAccessToken;
 
 describe("token handler", () => {
   beforeEach(() => {
@@ -48,6 +53,7 @@ describe("token handler", () => {
       redirect_uri: "https://example.com/callback",
     } as any as Awaited<ReturnType<typeof mockGetAuthRequest>>);
     mockHasJtiBeenUsed.mockResolvedValue();
+    mockCreateAccessToken.mockResolvedValue("mock-access-token");
 
     const result = await handler(
       {
@@ -63,9 +69,22 @@ describe("token handler", () => {
       mockContext,
     );
 
-    expect(result).toStrictEqual({
+    const parsedBody = JSON.parse(result.body) as unknown as {
+      access_token: string;
+      token_type: string;
+      expires_in: number;
+    };
+
+    expect({ ...result, body: parsedBody }).toStrictEqual({
       statusCode: 200,
-      body: '{"hello":"world"}',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: {
+        access_token: "mock-access-token",
+        token_type: "Bearer",
+        expires_in: 3600,
+      },
     });
   });
 

@@ -1,13 +1,9 @@
-import type { JWTPayload } from "jose";
+import type { JourneyOutcomePayload } from "../../../../../commons/utils/interfaces.js";
 import { errorManager } from "../utils/errors.js";
 import assert from "node:assert";
 
-export interface JourneyInfoPayload extends JWTPayload {
-  outcome_id?: string;
-}
-
 export function validateJourneyOutcomeJwtClaims(
-  payload: JourneyInfoPayload,
+  payload: JourneyOutcomePayload,
 ): void {
   const nowInSeconds = Math.floor(Date.now() / 1000);
   const expectedIssuer = process.env["TOKEN_ENDPOINT_URL"];

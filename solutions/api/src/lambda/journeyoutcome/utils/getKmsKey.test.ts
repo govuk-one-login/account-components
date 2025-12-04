@@ -43,6 +43,7 @@ describe("getKMSKey", () => {
       }),
       decrypt: vi.fn(),
       describeKey: vi.fn(),
+      sign: vi.fn(),
     };
 
     vi.mocked(getKmsClient).mockReturnValue(mockKmsClient);

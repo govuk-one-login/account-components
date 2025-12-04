@@ -50,7 +50,7 @@ export const verifyClientAssertion = async (
   if (!audList.includes(tokenEndpointUrl)) {
     return errorManager.throwError(
       "invalidClientAssertion",
-      `Invalid aud in client assertion: ${audList.join(", ")} for iss=${String(iss)}`,
+      `Invalid aud in client assertion: ${audList.join(", ")} for iss=${String(iss)}, does not contain ${tokenEndpointUrl}`,
     );
   }
 

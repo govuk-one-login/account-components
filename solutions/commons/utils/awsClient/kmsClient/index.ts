@@ -2,6 +2,7 @@ import type {
   DecryptCommandInput,
   DescribeKeyCommandInput,
   GetPublicKeyCommandInput,
+  SignCommandInput,
 } from "@aws-sdk/client-kms";
 import { KMSClient } from "@aws-sdk/client-kms";
 import { getAwsClientConfig } from "../getAwsClientConfig/index.js";
@@ -30,6 +31,10 @@ const createKmsClient = () => {
     describeKey: async (params: DescribeKeyCommandInput) => {
       const { DescribeKeyCommand } = await import("@aws-sdk/client-kms");
       return await wrappedClient.send(new DescribeKeyCommand(params));
+    },
+    sign: async (params: SignCommandInput) => {
+      const { SignCommand } = await import("@aws-sdk/client-kms");
+      return await wrappedClient.send(new SignCommand(params));
     },
   };
 };

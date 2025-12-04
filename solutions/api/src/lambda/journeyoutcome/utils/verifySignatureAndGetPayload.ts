@@ -7,13 +7,13 @@ import {
 } from "jose/errors";
 import { jwtVerify, decodeJwt } from "jose";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
-import type { JourneyInfoPayload } from "./validateJourneyOutcomeJwtClaims.js";
+import type { JourneyOutcomePayload } from "../../../../../commons/utils/interfaces.js";
 export async function verifySignatureAndGetPayload(
   token: string,
   key: CryptoKey,
-): Promise<JourneyInfoPayload> {
+): Promise<JourneyOutcomePayload> {
   try {
-    const { payload }: JWTVerifyResult<JourneyInfoPayload> = await jwtVerify(
+    const { payload }: JWTVerifyResult<JourneyOutcomePayload> = await jwtVerify(
       token,
       key,
       {
@@ -28,7 +28,7 @@ export async function verifySignatureAndGetPayload(
         `Access token is malformed or invalid`,
       );
     } else if (error instanceof JWSSignatureVerificationFailed) {
-      const payload: JourneyInfoPayload = decodeJwt(token);
+      const payload: JourneyOutcomePayload = decodeJwt(token);
       const parts = token.split(".");
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -49,5 +49,5 @@ export async function verifySignatureAndGetPayload(
   }
   // Line below is unreachable. It's to appease TS
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  return {} as JourneyInfoPayload;
+  return {} as JourneyOutcomePayload;
 }
