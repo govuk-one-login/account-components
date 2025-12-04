@@ -4,19 +4,24 @@ import { errorManager } from "./utils/errors.js";
 import type { JourneyOutcomeAppError } from "./utils/errors.js";
 import { flushMetricsAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/metrics/index.js";
 import assert from "node:assert";
-import { verifySignatureAndGetPayload } from "./utils/verifySignatureAndGetPayload.js";
 import { getKMSKey } from "./utils/getKmsKey.js";
+import { verifySignatureAndGetPayload } from "./utils/verifySignatureAndGetPayload.js";
 import { validateJourneyOutcomeJwtClaims } from "./utils/validateJourneyOutcomeJwtClaims.js";
-import type { JourneyInfoPayload } from "./utils/validateJourneyOutcomeJwtClaims.js";
+import { getJourneyOutcome } from "./utils/getJourneyOutcome.js";
+import type { JourneyOutcomePayload } from "../../../../commons/utils/interfaces.js";
 
 export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     const bearerPrefix = "Bearer ";
     const authorisationHeader = getHeader(event.headers, "Authorization");
-
     assert(
       process.env["JWT_SIGNING_KEY_ALIAS"],
       "JWT_SIGNING_KEY_ALIAS not set",
+    );
+
+    assert(
+      process.env["JOURNEY_OUTCOME_TABLE_NAME"],
+      "JOURNEY_OUTCOME_TABLE_NAME not set",
     );
 
     try {
@@ -27,24 +32,33 @@ export const handler = flushMetricsAPIGatewayProxyHandlerWrapper(
         );
       }
       const token = authorisationHeader?.replace(bearerPrefix, "");
+
       if (token?.length) {
+        // if token exists, verify signature and get payload, then validate claims
         const key = await getKMSKey(process.env["JWT_SIGNING_KEY_ALIAS"]);
-        const payload: JourneyInfoPayload = await verifySignatureAndGetPayload(
-          token,
-          key,
-        );
+        const payload: JourneyOutcomePayload =
+          await verifySignatureAndGetPayload(token, key);
 
         validateJourneyOutcomeJwtClaims(payload);
+        const outcome = await getJourneyOutcome(payload);
+        if (outcome) {
+          return {
+            statusCode: 200,
+            body: JSON.stringify(outcome),
+          };
+        } else {
+          errorManager.throwError(
+            "MissingOutcome",
+            `Missing outcome with outcome_id: ${payload.outcome_id ?? "undefined"} and jti: ${payload.jti ?? "undefined"}`,
+          );
+        }
       } else {
         errorManager.throwError(
           "InvalidAuthorizationHeader",
           `Token is empty after removing '${bearerPrefix}'`,
         );
       }
-      return {
-        statusCode: 200,
-        body: '"hello world"',
-      };
+      return errorManager.handleError(new Error("Unreachable code reached"));
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       return errorManager.handleError(error as JourneyOutcomeAppError | Error);

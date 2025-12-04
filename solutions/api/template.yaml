@@ -783,6 +783,7 @@ Resources:
               !Ref Environment,
               journeyOutcomeEndpointUrl,
             ]
+          JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableName}}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
     Metadata:

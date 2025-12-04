@@ -13,6 +13,18 @@ const journeyOutcomeErrors: Record<string, ErrorType> = {
     description: "internal_server_error",
     statusCode: 500,
   },
+  FailedToFindOutcome: {
+    code: "E500",
+    description: "internal_server_error",
+    statusCode: 500,
+    metric: "FailedToFindOutcome",
+  },
+  MissingOutcome: {
+    code: "E404",
+    description: "not_found",
+    statusCode: 404,
+    metric: "MissingOutcome",
+  },
   InvalidAccessToken: {
     code: "E4007",
     description: "invalid_request",
