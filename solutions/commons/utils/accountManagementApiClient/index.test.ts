@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AccountManagementApiClient } from "./index.js";
+import type { APIGatewayProxyEvent } from "aws-lambda";
 
 // @ts-expect-error
 vi.mock(import("../jsonApiClient/index.js"), () => ({
@@ -20,11 +21,23 @@ vi.mock(import("../jsonApiClient/index.js"), () => ({
   },
 }));
 
+vi.mock(import("../getUsefulPropsForLoggingFromEvent/index.js"), () => ({
+  getUsefulPropsForLoggingFromEvent: vi.fn(() => ({
+    persistentSessionId: "test-persistent-session-id",
+    sessionId: "test-session-id",
+    clientSessionId: "test-client-session-id",
+    userLanguage: "en",
+    sourceIp: "192.168.1.1",
+    txmaAuditEncoded: "test-txma-audit",
+  })),
+}));
+
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 describe("accountManagementApiClient", () => {
   const mockAccessToken = "test-access-token";
+  const mockEvent = {} as APIGatewayProxyEvent;
   const originalEnv = process.env;
 
   beforeEach(() => {
@@ -41,13 +54,13 @@ describe("accountManagementApiClient", () => {
     it("should throw error when ACCOUNT_MANAGEMENT_API_URL is not set", () => {
       delete process.env["ACCOUNT_MANAGEMENT_API_URL"];
 
-      expect(() => new AccountManagementApiClient(mockAccessToken)).toThrow(
-        "ACCOUNT_MANAGEMENT_API_URL is not set",
-      );
+      expect(
+        () => new AccountManagementApiClient(mockAccessToken, mockEvent),
+      ).toThrow("ACCOUNT_MANAGEMENT_API_URL is not set");
     });
 
     it("should create instance with valid environment variable", () => {
-      const client = new AccountManagementApiClient(mockAccessToken);
+      const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
 
       expect(client).toBeInstanceOf(AccountManagementApiClient);
     });
@@ -55,7 +68,7 @@ describe("accountManagementApiClient", () => {
 
   describe("sendOtpChallenge", () => {
     it("should make correct API call", async () => {
-      const client = new AccountManagementApiClient(mockAccessToken);
+      const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
       const email = "test@example.com";
 
       mockFetch.mockResolvedValueOnce(new Response());
@@ -69,6 +82,12 @@ describe("accountManagementApiClient", () => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${mockAccessToken}`,
+            "di-persistent-session-id": "test-persistent-session-id",
+            "session-id": "test-session-id",
+            "client-session-id": "test-client-session-id",
+            "user-language": "en",
+            "x-forwarded-for": "192.168.1.1",
+            "txma-audit-encoded": "test-txma-audit",
           },
           body: JSON.stringify({
             email,
@@ -79,7 +98,7 @@ describe("accountManagementApiClient", () => {
     });
 
     it("should return unknown error when fetch throws", async () => {
-      const client = new AccountManagementApiClient(mockAccessToken);
+      const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
 
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
@@ -91,7 +110,7 @@ describe("accountManagementApiClient", () => {
 
   describe("verifyOtpChallenge", () => {
     it("should make correct API call", async () => {
-      const client = new AccountManagementApiClient(mockAccessToken);
+      const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
       const email = "test@example.com";
       const otp = "123456";
 
@@ -106,6 +125,12 @@ describe("accountManagementApiClient", () => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${mockAccessToken}`,
+            "di-persistent-session-id": "test-persistent-session-id",
+            "session-id": "test-session-id",
+            "client-session-id": "test-client-session-id",
+            "user-language": "en",
+            "x-forwarded-for": "192.168.1.1",
+            "txma-audit-encoded": "test-txma-audit",
           },
           body: JSON.stringify({
             email,
@@ -117,7 +142,7 @@ describe("accountManagementApiClient", () => {
     });
 
     it("should return unknown error when fetch throws", async () => {
-      const client = new AccountManagementApiClient(mockAccessToken);
+      const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
 
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 

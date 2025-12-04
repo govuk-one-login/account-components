@@ -88,6 +88,7 @@ export async function verifyEmailAddressPostHandler(
   assert.ok(request.session.claims);
   const accountManagementApiClient = new AccountManagementApiClient(
     request.session.claims.access_token,
+    request.awsLambda?.event,
   );
 
   const result = await accountManagementApiClient.verifyOtpChallenge(

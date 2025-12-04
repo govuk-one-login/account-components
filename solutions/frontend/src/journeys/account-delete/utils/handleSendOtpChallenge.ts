@@ -12,6 +12,7 @@ export async function handleSendOtpChallenge(
 
   const accountManagementApiClient = new AccountManagementApiClient(
     request.session.claims.access_token,
+    request.awsLambda?.event,
   );
 
   const result = await accountManagementApiClient.sendOtpChallenge(
