@@ -32,6 +32,7 @@ export async function handleSendOtpChallenge(
       AccountManagementApiUnexpectedError:
         authorizeErrors.tempErrorTODORemoveLater,
       ErrorParsingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
+      ErrorParsingResponseBodyJson: authorizeErrors.tempErrorTODORemoveLater,
       UnknownErrorResponse: authorizeErrors.tempErrorTODORemoveLater,
       UnknownError: authorizeErrors.tempErrorTODORemoveLater,
     };

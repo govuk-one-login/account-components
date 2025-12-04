@@ -400,6 +400,7 @@ describe("verifyEmailAddress handlers", () => {
       "TooManyEmailCodesEntered",
       "InvalidOTPCode",
       "ErrorParsingResponseBody",
+      "ErrorParsingResponseBodyJson",
       "UnknownErrorResponse",
       "UnknownError",
     ] as const)(

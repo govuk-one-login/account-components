@@ -1,24 +1,36 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AccountManagementApiClient } from "./index.js";
-import { logger } from "../logger/index.js";
-
-const mockFetch = vi.fn();
-vi.stubGlobal("fetch", mockFetch);
 
 // @ts-expect-error
-vi.mock(import("../logger/index.js"), () => ({
-  logger: {
-    error: vi.fn(),
+vi.mock(import("../jsonApiClient/index.js"), () => ({
+  JsonApiClient: class MockJsonApiClient {
+    baseUrl: string;
+    serviceName: string;
+
+    constructor(baseUrl: string, serviceName: string) {
+      this.baseUrl = baseUrl;
+      this.serviceName = serviceName;
+    }
+
+    logOnError = vi.fn((_methodName: string, fn: () => Promise<any>) => fn());
+
+    static processResponse = vi.fn();
+    static undefinedSchema = {};
+    static unknownError = { success: false, error: "UnknownError" };
   },
 }));
 
+const mockFetch = vi.fn();
+global.fetch = mockFetch;
+
 describe("accountManagementApiClient", () => {
+  const mockAccessToken = "test-access-token";
   const originalEnv = process.env;
 
   beforeEach(() => {
-    vi.clearAllMocks();
     process.env = { ...originalEnv };
     process.env["ACCOUNT_MANAGEMENT_API_URL"] = "https://api.example.com";
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -26,29 +38,29 @@ describe("accountManagementApiClient", () => {
   });
 
   describe("constructor", () => {
-    it("should create instance with access token", () => {
-      const client = new AccountManagementApiClient("test-token");
-
-      expect(client).toBeInstanceOf(AccountManagementApiClient);
-    });
-
-    it("should throw if ACCOUNT_MANAGEMENT_API_URL is not set", () => {
+    it("should throw error when ACCOUNT_MANAGEMENT_API_URL is not set", () => {
       delete process.env["ACCOUNT_MANAGEMENT_API_URL"];
 
-      expect(() => new AccountManagementApiClient("test-token")).toThrow(
+      expect(() => new AccountManagementApiClient(mockAccessToken)).toThrow(
         "ACCOUNT_MANAGEMENT_API_URL is not set",
       );
+    });
+
+    it("should create instance with valid environment variable", () => {
+      const client = new AccountManagementApiClient(mockAccessToken);
+
+      expect(client).toBeInstanceOf(AccountManagementApiClient);
     });
   });
 
   describe("sendOtpChallenge", () => {
-    it("should return success object on successful response", async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-      });
+    it("should make correct API call", async () => {
+      const client = new AccountManagementApiClient(mockAccessToken);
+      const email = "test@example.com";
 
-      const client = new AccountManagementApiClient("test-token");
-      const result = await client.sendOtpChallenge("test@example.com");
+      mockFetch.mockResolvedValueOnce(new Response());
+
+      await client.sendOtpChallenge(email);
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://api.example.com/send-otp-challenge",
@@ -56,79 +68,36 @@ describe("accountManagementApiClient", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer test-token",
+            Authorization: `Bearer ${mockAccessToken}`,
           },
           body: JSON.stringify({
-            email: "test@example.com",
+            email,
             mfaMethodType: "EMAIL",
           }),
         },
       );
-      expect(result).toStrictEqual({ success: true, result: undefined });
     });
 
-    it("should return error object for known errors and log the error", async () => {
-      mockFetch.mockResolvedValue({
-        ok: false,
-        json: () =>
-          Promise.resolve({ code: 1001, message: "Missing parameters" }),
-      });
+    it("should return unknown error when fetch throws", async () => {
+      const client = new AccountManagementApiClient(mockAccessToken);
 
-      const client = new AccountManagementApiClient("test-token");
+      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+
       const result = await client.sendOtpChallenge("test@example.com");
 
-      expect(result).toStrictEqual({
-        success: false,
-        error: "RequestIsMissingParameters",
-      });
-
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(logger.error).toHaveBeenCalledWith({
-        message: "Account management API error",
-        error: "RequestIsMissingParameters",
-        method: "sendOtpChallenge",
-      });
-    });
-
-    it("should return UnknownErrorResponse for unknown error codes", async () => {
-      mockFetch.mockResolvedValue({
-        ok: false,
-        json: () => Promise.resolve({ code: 9999, message: "Unknown error" }),
-      });
-
-      const client = new AccountManagementApiClient("test-token");
-      const result = await client.sendOtpChallenge("test@example.com");
-
-      expect(result).toStrictEqual({
-        success: false,
-        error: "UnknownErrorResponse",
-      });
-    });
-
-    it("should return UnknownError when fetch throws an exception", async () => {
-      mockFetch.mockRejectedValue(new Error("Network error"));
-
-      const client = new AccountManagementApiClient("test-token");
-      const result = await client.sendOtpChallenge("test@example.com");
-
-      expect(result).toStrictEqual({
-        success: false,
-        error: "UnknownError",
-      });
+      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
     });
   });
 
   describe("verifyOtpChallenge", () => {
-    it("should return success object on successful verification", async () => {
-      mockFetch.mockResolvedValue({
-        ok: true,
-      });
+    it("should make correct API call", async () => {
+      const client = new AccountManagementApiClient(mockAccessToken);
+      const email = "test@example.com";
+      const otp = "123456";
 
-      const client = new AccountManagementApiClient("test-token");
-      const result = await client.verifyOtpChallenge(
-        "test@example.com",
-        "123456",
-      );
+      mockFetch.mockResolvedValueOnce(new Response());
+
+      await client.verifyOtpChallenge(email, otp);
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://api.example.com/verify-otp-challenge",
@@ -136,71 +105,28 @@ describe("accountManagementApiClient", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: "Bearer test-token",
+            Authorization: `Bearer ${mockAccessToken}`,
           },
           body: JSON.stringify({
-            email: "test@example.com",
+            email,
             mfaMethodType: "EMAIL",
-            otp: "123456",
+            otp,
           }),
         },
       );
-      expect(result).toStrictEqual({ success: true, result: undefined });
     });
 
-    it("should return error object for invalid OTP and log the error", async () => {
-      mockFetch.mockResolvedValue({
-        ok: false,
-        json: () => Promise.resolve({ code: 1020, message: "Invalid OTP" }),
-      });
+    it("should return unknown error when fetch throws", async () => {
+      const client = new AccountManagementApiClient(mockAccessToken);
 
-      const client = new AccountManagementApiClient("test-token");
-      const result = await client.verifyOtpChallenge(
-        "test@example.com",
-        "wrong-otp",
-      );
+      mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
-      expect(result).toStrictEqual({ success: false, error: "InvalidOTPCode" });
-
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(logger.error).toHaveBeenCalledWith({
-        message: "Account management API error",
-        error: "InvalidOTPCode",
-        method: "verifyOtpChallenge",
-      });
-    });
-
-    it("should return UnknownErrorResponse for unknown error codes", async () => {
-      mockFetch.mockResolvedValue({
-        ok: false,
-        json: () => Promise.resolve({ code: 8888, message: "Unknown error" }),
-      });
-
-      const client = new AccountManagementApiClient("test-token");
       const result = await client.verifyOtpChallenge(
         "test@example.com",
         "123456",
       );
 
-      expect(result).toStrictEqual({
-        success: false,
-        error: "UnknownErrorResponse",
-      });
-    });
-
-    it("should return UnknownError when fetch throws an exception", async () => {
-      mockFetch.mockRejectedValue(new Error("Network error"));
-
-      const client = new AccountManagementApiClient("test-token");
-      const result = await client.verifyOtpChallenge(
-        "test@example.com",
-        "123456",
-      );
-
-      expect(result).toStrictEqual({
-        success: false,
-        error: "UnknownError",
-      });
+      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
     });
   });
 });

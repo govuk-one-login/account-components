@@ -74,6 +74,7 @@ describe("handleSendOtpChallenge", () => {
     "InvalidPrincipalInRequest",
     "AccountManagementApiUnexpectedError",
     "ErrorParsingResponseBody",
+    "ErrorParsingResponseBodyJson",
     "UnknownErrorResponse",
     "UnknownError",
   ] as const)(
