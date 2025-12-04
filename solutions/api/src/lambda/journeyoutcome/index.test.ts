@@ -11,6 +11,10 @@ const mockMetrics = {
   addDimensions: vi.fn(),
 };
 
+const mockerLogger = {
+  appendKeys: vi.fn(),
+};
+
 vi.mock(import("./utils/verifySignatureAndGetPayload.js"));
 const mockverifySignatureAndGetPayload = vi.mocked(
   await import("./utils/verifySignatureAndGetPayload.js"),
@@ -27,7 +31,19 @@ const mockGetKmsKey = vi.mocked(await import("./utils/getKmsKey.js")).getKMSKey;
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
   metrics: mockMetrics,
-  flushMetricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
+  metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
+  logger: mockerLogger,
+  loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
+  logger: { warn: vi.fn() },
+  loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
 const { handler } = await import("./index.js");

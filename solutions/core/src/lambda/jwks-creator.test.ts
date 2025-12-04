@@ -10,12 +10,12 @@ const mockDescribeKey = vi.fn();
 const mockPutObject = vi.fn();
 
 // @ts-expect-error
-vi.mock(import("@aws-lambda-powertools/logger"), () => ({
-  Logger: class {
-    info = vi.fn();
-    warn = vi.fn();
-    error = vi.fn();
-    addContext = vi.fn();
+vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
+  logger: {
+    info: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    addContext: vi.fn(),
   },
 }));
 

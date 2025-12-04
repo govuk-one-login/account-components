@@ -22,6 +22,18 @@ const mockGetAuthRequest = vi.mocked(
   await import("./utils/getAuthRequest.js"),
 ).getAuthRequest;
 
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
+  metrics: { addMetric: vi.fn() },
+  metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
+  logger: { error: vi.fn(), warn: vi.fn() },
+  loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
+}));
+
 describe("token handler", () => {
   beforeEach(() => {
     vi.clearAllMocks();

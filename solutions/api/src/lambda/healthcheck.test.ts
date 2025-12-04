@@ -1,9 +1,16 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { handler } from "./healthcheck.js";
+import type { APIGatewayProxyEvent, Context } from "aws-lambda";
+
+// @ts-expect-error
+vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
+  logger: {},
+  loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
+}));
 
 describe("healthcheck handler", () => {
   it("returns 200 status with ok body", async () => {
-    const result = await handler();
+    const result = await handler({} as APIGatewayProxyEvent, {} as Context);
 
     expect(result).toStrictEqual({
       statusCode: 200,

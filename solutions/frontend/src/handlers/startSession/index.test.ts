@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { FastifyRequest, FastifyReply, FastifyBaseLogger } from "fastify";
 import type { FastifySessionObject } from "@fastify/session";
 import type { ClientEntry } from "../../../../config/schema/types.js";
+import { logger } from "../../../../commons/utils/logger/index.js";
 
 const mockGet = vi.fn();
 const mockAddMetric = vi.fn();
@@ -21,6 +22,12 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
     addMetric: mockAddMetric,
     addDimensions: mockAddDimensions,
   },
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
+  logger: { appendKeys: vi.fn() },
+  loggerAPIGatewayProxyHandlerWrapper: vi.fn(),
 }));
 
 // @ts-expect-error
@@ -352,6 +359,10 @@ describe("startSession handler", () => {
       expect(mockAddDimensions).toHaveBeenCalledWith({
         client_id: "test-client",
       });
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(logger.appendKeys).toHaveBeenCalledWith({
+        client_id: "test-client",
+      });
     });
   });
 
@@ -410,6 +421,10 @@ describe("startSession handler", () => {
         ConsistentRead: true,
       });
       expect(mockAddDimensions).toHaveBeenCalledWith({
+        client_id: "test-client",
+      });
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(logger.appendKeys).toHaveBeenCalledWith({
         client_id: "test-client",
       });
       // eslint-disable-next-line @typescript-eslint/unbound-method
