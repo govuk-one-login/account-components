@@ -15,6 +15,7 @@ import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirec
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
 import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
 import type { ClientEntry } from "../../../../config/schema/types.js";
+import { logger } from "../../../../commons/utils/logger/index.js";
 
 // @ts-expect-error
 vi.mock(import("../../utils/paths.js"), () => ({
@@ -41,6 +42,12 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
     addMetric: vi.fn(),
     addDimensions: vi.fn(),
   },
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
+  logger: { appendKeys: vi.fn() },
+  loggerAPIGatewayProxyHandlerWrapper: vi.fn(),
 }));
 
 // @ts-expect-error
@@ -318,6 +325,10 @@ describe("onRequest", () => {
 
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(metrics.addDimensions).toHaveBeenCalledWith({
+        client_id: "test-client-id",
+      });
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(logger.appendKeys).toHaveBeenCalledWith({
         client_id: "test-client-id",
       });
       expect(mockReply.client).toStrictEqual({ client_id: "test-client-id" });

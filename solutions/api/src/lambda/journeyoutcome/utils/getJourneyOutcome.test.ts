@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import type {
-  JourneyOutcomePayload,
-  JourneyOutcome,
-} from "../../../../../commons/utils/interfaces.js";
+import type { JourneyOutcomePayload } from "./interfaces.js";
+import type { JourneyOutcome } from "../../../../../commons/utils/interfaces.js";
 
 const mockDynamoDbGet = vi.fn();
 

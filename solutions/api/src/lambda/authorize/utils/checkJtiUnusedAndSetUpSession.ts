@@ -82,11 +82,17 @@ export const checkJtiUnusedAndSetUpSession = async (
       statusCode: 302,
       headers: {
         location: frontendUrl.toString(),
-        "Set-Cookie": serialize(
-          apiSessionCookieName,
-          sessionId,
-          getApiSessionCookieOptions(process.env["API_SESSION_COOKIE_DOMAIN"]),
-        ),
+      },
+      multiValueHeaders: {
+        "Set-Cookie": [
+          serialize(
+            apiSessionCookieName,
+            sessionId,
+            getApiSessionCookieOptions(
+              process.env["API_SESSION_COOKIE_DOMAIN"],
+            ),
+          ),
+        ],
       },
       body: "",
     };

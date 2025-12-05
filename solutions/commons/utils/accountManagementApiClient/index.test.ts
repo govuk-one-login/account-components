@@ -81,6 +81,7 @@ describe("accountManagementApiClient", () => {
         success: false,
         error: "RequestIsMissingParameters",
       });
+
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(logger.error).toHaveBeenCalledWith({
         message: "Account management API error",
@@ -160,6 +161,7 @@ describe("accountManagementApiClient", () => {
       );
 
       expect(result).toStrictEqual({ success: false, error: "InvalidOTPCode" });
+
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(logger.error).toHaveBeenCalledWith({
         message: "Account management API error",

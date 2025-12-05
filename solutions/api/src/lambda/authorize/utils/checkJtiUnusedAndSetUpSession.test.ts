@@ -109,10 +109,9 @@ describe("checkJtiUnusedAndSetUpSession", () => {
     expect(response.headers?.["location"]).toBe(
       "https://frontend.example.com/start-session?client_id=test-client-id&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback&state=test-state",
     );
-    expect(response.headers?.["Set-Cookie"]).toBe(
+    expect(response.multiValueHeaders?.["Set-Cookie"]).toStrictEqual([
       "apisession=abcdef123456789012345678; Domain=example.com; HttpOnly; SameSite=Strict",
-    );
-    expect(response.headers?.["Set-Cookie"]).toContain("Domain=example.com");
+    ]);
 
     expect(mockTransactWrite).toHaveBeenCalledWith({
       TransactItems: [

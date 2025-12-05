@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components Private API
-  version: 0.0.5
+  version: 0.0.6
   description: |
     OAuth 2.0 provider endpoints, including:
     - POST /token (supports client assertions via private_key_jwt)
@@ -48,6 +48,13 @@ paths:
       operationId: token
       tags:
         - OAuth
+      parameters:
+        - $ref: "#/components/parameters/DiPersistentSessionId"
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/ClientSessionId"
+        - $ref: "#/components/parameters/TxmaAuditEncoded"
+        - $ref: "#/components/parameters/XForwardedFor"
+        - $ref: "#/components/parameters/UserLanguage"
       requestBody:
         required: true
         content:
@@ -116,6 +123,13 @@ paths:
       operationId: journeyoutcome
       tags:
         - AMC
+      parameters:
+        - $ref: "#/components/parameters/DiPersistentSessionId"
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/ClientSessionId"
+        - $ref: "#/components/parameters/TxmaAuditEncoded"
+        - $ref: "#/components/parameters/XForwardedFor"
+        - $ref: "#/components/parameters/UserLanguage"
       responses:
         "200":
           description: Claims about the outcome of the user's journey
@@ -192,6 +206,59 @@ paths:
                     grant_types_supported: [authorization_code]
 
 components:
+  parameters:
+    DiPersistentSessionId:
+      in: header
+      name: di-persistent-session-id
+      description: Optional DI persistent session identifier
+      required: false
+      schema:
+        type: string
+
+    SessionId:
+      in: header
+      name: session-id
+      description: Optional DI session identifier
+      required: false
+      schema:
+        type: string
+
+    ClientSessionId:
+      in: header
+      name: client-session-id
+      description: Optional DI client session identifier
+      required: false
+      schema:
+        type: string
+
+    TxmaAuditEncoded:
+      in: header
+      name: txma-audit-encoded
+      description: Optional TXMA audit encoded data
+      required: false
+      schema:
+        type: string
+
+    XForwardedFor:
+      in: header
+      name: x-forwarded-for
+      description: Optional client IP address
+      required: false
+      schema:
+        type: string
+        pattern: ^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$|^::1$|^::$
+        example: 192.168.1.1
+
+    UserLanguage:
+      in: header
+      name: user-language
+      description: Optional two-letter language code
+      required: false
+      schema:
+        type: string
+        pattern: ^[a-z]{2}$
+        example: en
+
   securitySchemes:
     bearerAuth:
       type: http

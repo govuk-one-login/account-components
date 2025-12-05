@@ -1,6 +1,9 @@
+import { flushMetrics } from "../../commons/utils/fastify/flushMetrics/index.js";
 import { initStubs } from "./index.js";
 
 const fastify = await initStubs();
+
+fastify.addHook("onResponse", () => flushMetrics());
 
 fastify.listen({ port: 6003, host: "0.0.0.0" }, (err) => {
   if (err) throw err;

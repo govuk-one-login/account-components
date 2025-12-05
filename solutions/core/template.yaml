@@ -542,7 +542,7 @@ Resources:
         EntryPoints:
           - solutions/core/src/lambda/jwks-creator.ts
         Banner:
-          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
 
   JwksGeneratorLambdaLogGroup:
     Type: AWS::Logs::LogGroup

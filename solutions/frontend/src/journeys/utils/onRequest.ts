@@ -11,6 +11,7 @@ import assert from "node:assert";
 import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
 import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
+import { logger } from "../../../../commons/utils/logger/index.js";
 
 export const onRequest = async (
   request: FastifyRequest,
@@ -25,6 +26,9 @@ export const onRequest = async (
   const claims = request.session.claims;
 
   metrics.addDimensions({ client_id: claims.client_id });
+  logger.appendKeys({
+    client_id: claims.client_id,
+  });
 
   const clientRegistry = await getClientRegistry();
   const client = clientRegistry.find(

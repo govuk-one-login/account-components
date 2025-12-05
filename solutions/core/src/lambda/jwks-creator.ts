@@ -1,4 +1,3 @@
-import { Logger } from "@aws-lambda-powertools/logger";
 import { exportJWK, importSPKI } from "jose";
 import type { JWK } from "jose";
 import type { Context } from "aws-lambda";
@@ -7,8 +6,7 @@ import assert from "node:assert";
 import { getS3Client } from "../../../commons/utils/awsClient/s3Client/index.js";
 import { getKmsClient } from "../../../commons/utils/awsClient/kmsClient/index.js";
 import { jarKeyEncryptionAlgorithm } from "../../../commons/utils/constants.js";
-
-const logger = new Logger();
+import { logger } from "../../../commons/utils/logger/index.js";
 
 export const handler = async (
   _event: unknown,

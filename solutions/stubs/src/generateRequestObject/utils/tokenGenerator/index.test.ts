@@ -15,7 +15,6 @@ import {
 } from "../../../types/common.js";
 import type { RequestBody } from "../../../types/common.js";
 import type { JWTPayload } from "jose";
-import type { Logger } from "@aws-lambda-powertools/logger";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -26,11 +25,12 @@ vi.mock(import("../../../utils/jwt-adapter.js"), () => ({
     };
   }),
 }));
+// @ts-expect-error
 vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
   logger: {
     debug: vi.fn(),
     error: vi.fn(),
-  } as unknown as Logger,
+  },
 }));
 
 describe("generateJwtToken", () => {

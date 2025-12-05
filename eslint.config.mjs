@@ -44,6 +44,12 @@ export default defineConfig(
     extends: ["depend/flat/recommended"],
     rules: {
       "no-console": "error",
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: ["@aws-lambda-powertools/logger"],
+        },
+      ],
       "@typescript-eslint/consistent-type-imports": "error",
       "no-restricted-exports": [
         "error",

@@ -22,6 +22,18 @@ const mockGetAuthRequest = vi.mocked(
   await import("./utils/getAuthRequest.js"),
 ).getAuthRequest;
 
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
+  metrics: { addMetric: vi.fn() },
+  metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
+  logger: { error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+  loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
+}));
+
 vi.mock(import("./utils/createAccessToken.js"));
 const mockCreateAccessToken = vi.mocked(
   await import("./utils/createAccessToken.js"),

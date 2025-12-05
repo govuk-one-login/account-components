@@ -7,7 +7,8 @@ import {
 } from "jose/errors";
 import { jwtVerify, decodeJwt } from "jose";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
-import type { JourneyOutcomePayload } from "../../../../../commons/utils/interfaces.js";
+import type { JourneyOutcomePayload } from "./interfaces.js";
+
 export async function verifySignatureAndGetPayload(
   token: string,
   key: CryptoKey,
