@@ -31,7 +31,6 @@ import {
   frontendUiTranslationEn,
 } from "@govuk-one-login/frontend-ui";
 import { paths } from "./utils/paths.js";
-import { flushMetrics } from "../../commons/utils/fastify/flushMetrics/index.js";
 import { getEnvironment } from "../../commons/utils/getEnvironment/index.js";
 import { FastifyPowertoolsLogger } from "../../commons/utils/fastify/powertoolsLogger/index.js";
 
@@ -55,9 +54,6 @@ export const initFrontend = async function () {
 
   fastify.addHook("onRequest", removeTrailingSlash);
   fastify.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
-  if (getEnvironment() === "local") {
-    fastify.addHook("onResponse", () => flushMetrics());
-  }
 
   fastify.register(fastifyCookie);
   fastify.register(i18nextMiddlewarePlugin, { i18next });
