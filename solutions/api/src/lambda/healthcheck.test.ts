@@ -8,6 +8,12 @@ vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
   loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
+// @ts-expect-error
+vi.mock(import("../../../commons/utils/metrics/index.js"), () => ({
+  metrics: {},
+  metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
+}));
+
 describe("healthcheck handler", () => {
   it("returns 200 status with ok body", async () => {
     const result = await handler({} as APIGatewayProxyEvent, {} as Context);
