@@ -13,8 +13,10 @@ import { generateRequestObject } from "./generateRequestObject/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 import { clientJwks } from "./clientJwks/index.js";
 import { clientCallback } from "./clientCallback/index.js";
+import { flushMetrics } from "../../commons/utils/fastify/flushMetrics/index.js";
 import { getCurrentUrl } from "../../commons/utils/fastify/getCurrentUrl/index.js";
 import { FastifyPowertoolsLogger } from "../../commons/utils/fastify/powertoolsLogger/index.js";
+import { getEnvironment } from "../../commons/utils/getEnvironment/index.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
@@ -25,6 +27,9 @@ export const initStubs = async function () {
 
   fastify.addHook("onRequest", removeTrailingSlash);
   fastify.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
+  if (getEnvironment() === "local") {
+    fastify.addHook("onResponse", () => flushMetrics());
+  }
 
   fastify.register(fastifyCookie);
   fastify.register(fastifyFormbody);
