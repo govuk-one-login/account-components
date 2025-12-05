@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda";
-import { getUsefulPropsForLoggingFromEvent } from "./index.js";
+import { getPropsForLoggingFromEvent } from "./index.js";
 
-describe("getUsefulPropsForLoggingFromEvent", () => {
+describe("getPropsForLoggingFromEvent", () => {
   const createMockEvent = (
     headers: Record<string, string> = {},
     sourceIp = "127.0.0.1",
@@ -17,7 +17,7 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
     }) as APIGatewayProxyEvent;
 
   it("returns empty object when event is undefined", () => {
-    const result = getUsefulPropsForLoggingFromEvent();
+    const result = getPropsForLoggingFromEvent();
 
     expect(result).toStrictEqual({});
   });
@@ -29,10 +29,9 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
       "client-session-id": "header-client-789",
       "user-language": "en",
       "x-forwarded-for": "192.168.1.1",
-      "txma-audit-encoded": "audit-data",
     });
 
-    const result = getUsefulPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: "header-persistent-123",
@@ -40,7 +39,6 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
       clientSessionId: "header-client-789",
       userLanguage: "en",
       sourceIp: "192.168.1.1",
-      txmaAuditEncoded: "audit-data",
     });
   });
 
@@ -50,7 +48,7 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
         "gs=cookie-session.cookie-client; di-persistent-session-id=cookie-persistent; lng=fr",
     });
 
-    const result = getUsefulPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: "cookie-persistent",
@@ -58,7 +56,6 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
       clientSessionId: "cookie-client",
       userLanguage: "fr",
       sourceIp: "127.0.0.1",
-      txmaAuditEncoded: undefined,
     });
   });
 
@@ -73,7 +70,7 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
         "gs=cookie-session.cookie-client; di-persistent-session-id=cookie-persistent; lng=fr",
     });
 
-    const result = getUsefulPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: "header-persistent",
@@ -81,14 +78,13 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
       clientSessionId: "header-client",
       userLanguage: "en",
       sourceIp: "192.168.1.1",
-      txmaAuditEncoded: undefined,
     });
   });
 
   it("falls back to requestContext sourceIp when x-forwarded-for not available", () => {
     const event = createMockEvent({}, "10.0.0.1");
 
-    const result = getUsefulPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -96,14 +92,13 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
       clientSessionId: undefined,
       userLanguage: undefined,
       sourceIp: "10.0.0.1",
-      txmaAuditEncoded: undefined,
     });
   });
 
   it("handles missing cookie header gracefully", () => {
     const event = createMockEvent({});
 
-    const result = getUsefulPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -111,7 +106,6 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
       clientSessionId: undefined,
       userLanguage: undefined,
       sourceIp: "127.0.0.1",
-      txmaAuditEncoded: undefined,
     });
   });
 
@@ -120,7 +114,7 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
       cookie: "gs=incomplete; other=value",
     });
 
-    const result = getUsefulPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -128,7 +122,6 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
       clientSessionId: undefined,
       userLanguage: undefined,
       sourceIp: "127.0.0.1",
-      txmaAuditEncoded: undefined,
     });
   });
 
@@ -137,7 +130,7 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
       cookie: "gs=; other=value",
     });
 
-    const result = getUsefulPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -145,7 +138,6 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
       clientSessionId: undefined,
       userLanguage: undefined,
       sourceIp: "127.0.0.1",
-      txmaAuditEncoded: undefined,
     });
   });
 
@@ -154,7 +146,7 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
       cookie: "other=value; lng=es",
     });
 
-    const result = getUsefulPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -162,7 +154,6 @@ describe("getUsefulPropsForLoggingFromEvent", () => {
       clientSessionId: undefined,
       userLanguage: "es",
       sourceIp: "127.0.0.1",
-      txmaAuditEncoded: undefined,
     });
   });
 });

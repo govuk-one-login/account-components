@@ -13,14 +13,13 @@ vi.mock(import("@aws-lambda-powertools/logger"), () => ({
   },
 }));
 
-vi.mock(import("../getUsefulPropsForLoggingFromEvent/index.js"), () => ({
-  getUsefulPropsForLoggingFromEvent: vi.fn().mockReturnValue({
+vi.mock(import("../getPropsForLoggingFromEvent/index.js"), () => ({
+  getPropsForLoggingFromEvent: vi.fn().mockReturnValue({
     persistentSessionId: "persistent-123",
     sessionId: "session-456",
     clientSessionId: "client-789",
     userLanguage: "fr",
     sourceIp: "192.168.1.1",
-    txmaAuditEncoded: undefined,
   }),
 }));
 

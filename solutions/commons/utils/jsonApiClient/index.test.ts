@@ -1,19 +1,35 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as v from "valibot";
 import { JsonApiClient } from "./index.js";
+import type { APIGatewayProxyEvent } from "aws-lambda";
 
 const mockLogger = vi.hoisted(() => ({
   error: vi.fn(),
 }));
+
+const mockGetPropsForLoggingFromEvent = vi.hoisted(() => vi.fn());
+const mockGetTxmaAuditEncodedFromEvent = vi.hoisted(() => vi.fn());
 
 // @ts-expect-error
 vi.mock(import("../logger/index.js"), () => ({
   logger: mockLogger,
 }));
 
+vi.mock(import("../getPropsForLoggingFromEvent/index.js"), () => ({
+  getPropsForLoggingFromEvent: mockGetPropsForLoggingFromEvent,
+}));
+
+vi.mock(import("../getTxmaAuditEncodedFromEvent/index.js"), () => ({
+  getTxmaAuditEncodedFromEvent: mockGetTxmaAuditEncodedFromEvent,
+}));
+
 class TestJsonApiClient extends JsonApiClient {
   public get testBaseUrl() {
     return this.baseUrl;
+  }
+
+  public get testCommonHeaders() {
+    return this.commonHeaders;
   }
 
   public testLogOnError<T extends { success: boolean; error?: string }>(
@@ -51,8 +67,10 @@ describe("jsonApiClient", () => {
   let client: TestJsonApiClient;
 
   beforeEach(() => {
-    client = new TestJsonApiClient("https://api.example.com", "TestService");
     vi.clearAllMocks();
+    mockGetPropsForLoggingFromEvent.mockReturnValue({});
+    mockGetTxmaAuditEncodedFromEvent.mockReturnValue(undefined);
+    client = new TestJsonApiClient("https://api.example.com", "TestService");
   });
 
   afterEach(() => {
@@ -60,8 +78,70 @@ describe("jsonApiClient", () => {
   });
 
   describe("constructor", () => {
-    it("should initialize with baseUrl", () => {
-      expect(client.testBaseUrl).toBe("https://api.example.com");
+    it("should initialize with baseUrl and empty commonHeaders when no event provided", () => {
+      vi.clearAllMocks();
+      mockGetPropsForLoggingFromEvent.mockReturnValue({});
+      mockGetTxmaAuditEncodedFromEvent.mockReturnValue(undefined);
+      const testClient = new TestJsonApiClient(
+        "https://api.example.com",
+        "TestService",
+      );
+
+      expect(testClient.testBaseUrl).toBe("https://api.example.com");
+      expect(testClient.testCommonHeaders).toStrictEqual({});
+      expect(mockGetPropsForLoggingFromEvent).toHaveBeenCalledWith(undefined);
+      expect(mockGetTxmaAuditEncodedFromEvent).toHaveBeenCalledWith(undefined);
+    });
+
+    it("should initialize commonHeaders from event", () => {
+      vi.clearAllMocks();
+      const mockEvent = {} as APIGatewayProxyEvent;
+      mockGetPropsForLoggingFromEvent.mockReturnValue({
+        persistentSessionId: "persistent-123",
+        sessionId: "session-456",
+        clientSessionId: "client-789",
+        userLanguage: "en",
+        sourceIp: "192.168.1.1",
+      });
+      mockGetTxmaAuditEncodedFromEvent.mockReturnValue("audit-data");
+
+      const clientWithEvent = new TestJsonApiClient(
+        "https://api.example.com",
+        "TestService",
+        mockEvent,
+      );
+
+      expect(clientWithEvent.testCommonHeaders).toStrictEqual({
+        "di-persistent-session-id": "persistent-123",
+        "session-id": "session-456",
+        "client-session-id": "client-789",
+        "user-language": "en",
+        "x-forwarded-for": "192.168.1.1",
+        "txma-audit-encoded": "audit-data",
+      });
+      expect(mockGetPropsForLoggingFromEvent).toHaveBeenCalledWith(mockEvent);
+      expect(mockGetTxmaAuditEncodedFromEvent).toHaveBeenCalledWith(mockEvent);
+    });
+
+    it("should handle partial props from event", () => {
+      vi.clearAllMocks();
+      const mockEvent = {} as APIGatewayProxyEvent;
+      mockGetPropsForLoggingFromEvent.mockReturnValue({
+        sessionId: "session-only",
+        sourceIp: "10.0.0.1",
+      });
+      mockGetTxmaAuditEncodedFromEvent.mockReturnValue(undefined);
+
+      const clientWithEvent = new TestJsonApiClient(
+        "https://api.example.com",
+        "TestService",
+        mockEvent,
+      );
+
+      expect(clientWithEvent.testCommonHeaders).toStrictEqual({
+        "session-id": "session-only",
+        "x-forwarded-for": "10.0.0.1",
+      });
     });
   });
 
@@ -207,7 +287,7 @@ describe("jsonApiClient", () => {
 
         expect(result).toStrictEqual({
           success: false,
-          error: "ErrorParsingResponseBody",
+          error: "ErrorValidatingResponseBody",
           rawResponse: response,
         });
       });
@@ -274,7 +354,7 @@ describe("jsonApiClient", () => {
 
         expect(result).toStrictEqual({
           success: false,
-          error: "ErrorParsingResponseBodyJson",
+          error: "ErrorParsingErrorResponseBodyJson",
           rawResponse: response,
         });
       });
@@ -296,7 +376,7 @@ describe("jsonApiClient", () => {
 
         expect(result).toStrictEqual({
           success: false,
-          error: "ErrorParsingResponseBody",
+          error: "ErrorValidatingErrorResponseBody",
           rawResponse: response,
         });
       });
@@ -318,7 +398,7 @@ describe("jsonApiClient", () => {
 
         expect(result).toStrictEqual({
           success: false,
-          error: "ErrorParsingResponseBody",
+          error: "ErrorValidatingErrorResponseBody",
           rawResponse: response,
         });
       });

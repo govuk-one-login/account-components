@@ -1,7 +1,7 @@
 import type { APIGatewayProxyHandler } from "../interfaces.js";
 // eslint-disable-next-line no-restricted-imports
 import { Logger } from "@aws-lambda-powertools/logger";
-import { getUsefulPropsForLoggingFromEvent } from "../getUsefulPropsForLoggingFromEvent/index.js";
+import { getPropsForLoggingFromEvent } from "../getPropsForLoggingFromEvent/index.js";
 
 export const logger = new Logger();
 
@@ -12,19 +12,18 @@ export const loggerAPIGatewayProxyHandlerWrapper = (
     try {
       logger.addContext(context);
 
-      const usefulPropsForLoggingFromEvent =
-        getUsefulPropsForLoggingFromEvent(event);
+      const propsForLoggingFromEvent = getPropsForLoggingFromEvent(event);
 
       logger.appendKeys({
-        persistentSessionId: usefulPropsForLoggingFromEvent.persistentSessionId,
-        sessionId: usefulPropsForLoggingFromEvent.sessionId,
-        clientSessionId: usefulPropsForLoggingFromEvent.clientSessionId,
-        userLanguage: usefulPropsForLoggingFromEvent.userLanguage,
-        sourceIp: usefulPropsForLoggingFromEvent.sourceIp,
+        persistentSessionId: propsForLoggingFromEvent.persistentSessionId,
+        sessionId: propsForLoggingFromEvent.sessionId,
+        clientSessionId: propsForLoggingFromEvent.clientSessionId,
+        userLanguage: propsForLoggingFromEvent.userLanguage,
+        sourceIp: propsForLoggingFromEvent.sourceIp,
         method: event.httpMethod,
         path: event.path,
         referer: event.headers["referer"],
-        trace: usefulPropsForLoggingFromEvent.sessionId,
+        trace: propsForLoggingFromEvent.sessionId,
       });
 
       const res = await handler(event, context);

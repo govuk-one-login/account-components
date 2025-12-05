@@ -1,5 +1,8 @@
 import * as v from "valibot";
 import { logger } from "../logger/index.js";
+import { getPropsForLoggingFromEvent } from "../getPropsForLoggingFromEvent/index.js";
+import type { APIGatewayProxyEvent } from "aws-lambda";
+import { getTxmaAuditEncodedFromEvent } from "../getTxmaAuditEncodedFromEvent/index.js";
 
 export class JsonApiClient {
   protected readonly baseUrl: string;
@@ -9,10 +12,46 @@ export class JsonApiClient {
     error: "UnknownError",
   } as const;
   protected static readonly undefinedSchema = v.undefined();
+  protected commonHeaders: NonNullable<RequestInit["headers"]>;
 
-  constructor(baseUrl: string, errorScope: string) {
+  constructor(
+    baseUrl: string,
+    errorScope: string,
+    event?: APIGatewayProxyEvent,
+  ) {
     this.baseUrl = baseUrl;
     this.errorScope = errorScope;
+
+    const propsForLoggingFromEvent = getPropsForLoggingFromEvent(event);
+    const txmaAuditEncoded = getTxmaAuditEncodedFromEvent(event);
+
+    this.commonHeaders = {
+      ...(propsForLoggingFromEvent.persistentSessionId
+        ? {
+            "di-persistent-session-id":
+              propsForLoggingFromEvent.persistentSessionId,
+          }
+        : {}),
+      ...(propsForLoggingFromEvent.sessionId
+        ? { "session-id": propsForLoggingFromEvent.sessionId }
+        : {}),
+      ...(propsForLoggingFromEvent.clientSessionId
+        ? {
+            "client-session-id": propsForLoggingFromEvent.clientSessionId,
+          }
+        : {}),
+      ...(propsForLoggingFromEvent.userLanguage
+        ? { "user-language": propsForLoggingFromEvent.userLanguage }
+        : {}),
+      ...(propsForLoggingFromEvent.sourceIp
+        ? { "x-forwarded-for": propsForLoggingFromEvent.sourceIp }
+        : {}),
+      ...(txmaAuditEncoded
+        ? {
+            "txma-audit-encoded": txmaAuditEncoded,
+          }
+        : {}),
+    };
   }
 
   protected async logOnError<T extends { success: boolean; error?: string }>(
@@ -48,7 +87,9 @@ export class JsonApiClient {
         readonly error:
           | TErrorMap[keyof TErrorMap]
           | "ErrorParsingResponseBodyJson"
-          | "ErrorParsingResponseBody"
+          | "ErrorValidatingResponseBody"
+          | "ErrorParsingErrorResponseBodyJson"
+          | "ErrorValidatingErrorResponseBody"
           | "UnknownErrorResponse";
         rawResponse: Response;
       }
@@ -80,7 +121,7 @@ export class JsonApiClient {
       if (!body.success) {
         return {
           success: false,
-          error: "ErrorParsingResponseBody",
+          error: "ErrorValidatingResponseBody",
           rawResponse: response,
         };
       }
@@ -102,7 +143,7 @@ export class JsonApiClient {
     } catch {
       return {
         success: false,
-        error: "ErrorParsingResponseBodyJson",
+        error: "ErrorParsingErrorResponseBodyJson",
         rawResponse: response,
       };
     }
@@ -112,7 +153,7 @@ export class JsonApiClient {
     if (!body.success) {
       return {
         success: false,
-        error: "ErrorParsingResponseBody",
+        error: "ErrorValidatingErrorResponseBody",
         rawResponse: response,
       };
     }

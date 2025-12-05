@@ -1,9 +1,7 @@
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import { parse } from "cookie";
 
-export const getUsefulPropsForLoggingFromEvent = (
-  event?: APIGatewayProxyEvent,
-) => {
+export const getPropsForLoggingFromEvent = (event?: APIGatewayProxyEvent) => {
   if (!event) return {};
 
   const cookies = parse(event.headers["cookie"] ?? "");
@@ -20,6 +18,5 @@ export const getUsefulPropsForLoggingFromEvent = (
     sourceIp:
       event.headers["x-forwarded-for"] ??
       event.requestContext.identity.sourceIp,
-    txmaAuditEncoded: event.headers["txma-audit-encoded"],
   };
 };

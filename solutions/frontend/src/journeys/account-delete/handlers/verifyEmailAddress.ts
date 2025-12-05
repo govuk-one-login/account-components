@@ -105,8 +105,12 @@ export async function verifyEmailAddressPostHandler(
       RequestIsMissingParameters: authorizeErrors.tempErrorTODORemoveLater,
       TooManyEmailCodesEntered: authorizeErrors.tempErrorTODORemoveLater,
       InvalidOTPCode: authorizeErrors.tempErrorTODORemoveLater,
-      ErrorParsingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
+      ErrorValidatingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
       ErrorParsingResponseBodyJson: authorizeErrors.tempErrorTODORemoveLater,
+      ErrorValidatingErrorResponseBody:
+        authorizeErrors.tempErrorTODORemoveLater,
+      ErrorParsingErrorResponseBodyJson:
+        authorizeErrors.tempErrorTODORemoveLater,
       UnknownErrorResponse: authorizeErrors.tempErrorTODORemoveLater,
       UnknownError: authorizeErrors.tempErrorTODORemoveLater,
     };

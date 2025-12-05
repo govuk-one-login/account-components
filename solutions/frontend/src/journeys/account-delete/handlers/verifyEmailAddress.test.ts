@@ -399,8 +399,10 @@ describe("verifyEmailAddress handlers", () => {
       "RequestIsMissingParameters",
       "TooManyEmailCodesEntered",
       "InvalidOTPCode",
-      "ErrorParsingResponseBody",
+      "ErrorValidatingResponseBody",
       "ErrorParsingResponseBodyJson",
+      "ErrorValidatingErrorResponseBody",
+      "ErrorParsingErrorResponseBodyJson",
       "UnknownErrorResponse",
       "UnknownError",
     ] as const)(

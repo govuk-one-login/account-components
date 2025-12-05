@@ -32,8 +32,12 @@ export async function handleSendOtpChallenge(
       InvalidPrincipalInRequest: authorizeErrors.tempErrorTODORemoveLater,
       AccountManagementApiUnexpectedError:
         authorizeErrors.tempErrorTODORemoveLater,
-      ErrorParsingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
+      ErrorValidatingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
       ErrorParsingResponseBodyJson: authorizeErrors.tempErrorTODORemoveLater,
+      ErrorValidatingErrorResponseBody:
+        authorizeErrors.tempErrorTODORemoveLater,
+      ErrorParsingErrorResponseBodyJson:
+        authorizeErrors.tempErrorTODORemoveLater,
       UnknownErrorResponse: authorizeErrors.tempErrorTODORemoveLater,
       UnknownError: authorizeErrors.tempErrorTODORemoveLater,
     };

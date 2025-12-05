@@ -7,10 +7,19 @@ vi.mock(import("../jsonApiClient/index.js"), () => ({
   JsonApiClient: class MockJsonApiClient {
     baseUrl: string;
     serviceName: string;
+    commonHeaders: Record<string, string>;
 
     constructor(baseUrl: string, serviceName: string) {
       this.baseUrl = baseUrl;
       this.serviceName = serviceName;
+      this.commonHeaders = {
+        "di-persistent-session-id": "test-persistent-session-id",
+        "session-id": "test-session-id",
+        "client-session-id": "test-client-session-id",
+        "user-language": "en",
+        "x-forwarded-for": "192.168.1.1",
+        "txma-audit-encoded": "test-txma-audit",
+      };
     }
 
     logOnError = vi.fn((_methodName: string, fn: () => Promise<any>) => fn());
@@ -19,17 +28,6 @@ vi.mock(import("../jsonApiClient/index.js"), () => ({
     static undefinedSchema = {};
     static unknownError = { success: false, error: "UnknownError" };
   },
-}));
-
-vi.mock(import("../getUsefulPropsForLoggingFromEvent/index.js"), () => ({
-  getUsefulPropsForLoggingFromEvent: vi.fn(() => ({
-    persistentSessionId: "test-persistent-session-id",
-    sessionId: "test-session-id",
-    clientSessionId: "test-client-session-id",
-    userLanguage: "en",
-    sourceIp: "192.168.1.1",
-    txmaAuditEncoded: "test-txma-audit",
-  })),
 }));
 
 const mockFetch = vi.fn();
@@ -80,14 +78,14 @@ describe("accountManagementApiClient", () => {
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${mockAccessToken}`,
             "di-persistent-session-id": "test-persistent-session-id",
             "session-id": "test-session-id",
             "client-session-id": "test-client-session-id",
             "user-language": "en",
             "x-forwarded-for": "192.168.1.1",
             "txma-audit-encoded": "test-txma-audit",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${mockAccessToken}`,
           },
           body: JSON.stringify({
             email,
@@ -123,14 +121,14 @@ describe("accountManagementApiClient", () => {
         {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${mockAccessToken}`,
             "di-persistent-session-id": "test-persistent-session-id",
             "session-id": "test-session-id",
             "client-session-id": "test-client-session-id",
             "user-language": "en",
             "x-forwarded-for": "192.168.1.1",
             "txma-audit-encoded": "test-txma-audit",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${mockAccessToken}`,
           },
           body: JSON.stringify({
             email,
