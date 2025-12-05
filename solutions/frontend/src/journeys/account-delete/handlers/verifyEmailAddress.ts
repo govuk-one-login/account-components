@@ -88,6 +88,7 @@ export async function verifyEmailAddressPostHandler(
   assert.ok(request.session.claims);
   const accountManagementApiClient = new AccountManagementApiClient(
     request.session.claims.access_token,
+    request.awsLambda?.event,
   );
 
   const result = await accountManagementApiClient.verifyOtpChallenge(
@@ -104,7 +105,12 @@ export async function verifyEmailAddressPostHandler(
       RequestIsMissingParameters: authorizeErrors.tempErrorTODORemoveLater,
       TooManyEmailCodesEntered: authorizeErrors.tempErrorTODORemoveLater,
       InvalidOTPCode: authorizeErrors.tempErrorTODORemoveLater,
-      ErrorParsingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
+      ErrorValidatingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
+      ErrorParsingResponseBodyJson: authorizeErrors.tempErrorTODORemoveLater,
+      ErrorValidatingErrorResponseBody:
+        authorizeErrors.tempErrorTODORemoveLater,
+      ErrorParsingErrorResponseBodyJson:
+        authorizeErrors.tempErrorTODORemoveLater,
       UnknownErrorResponse: authorizeErrors.tempErrorTODORemoveLater,
       UnknownError: authorizeErrors.tempErrorTODORemoveLater,
     };
