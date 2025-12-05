@@ -4,8 +4,7 @@ import { getPropsForLoggingFromEvent } from "../getPropsForLoggingFromEvent/inde
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import { getTxmaAuditEncodedFromEvent } from "../getTxmaAuditEncodedFromEvent/index.js";
 
-export class JsonApiClient {
-  protected readonly baseUrl: string;
+export abstract class JsonApiClient {
   private readonly errorScope: string;
   protected static readonly unknownError = {
     success: false,
@@ -14,12 +13,7 @@ export class JsonApiClient {
   protected static readonly undefinedSchema = v.undefined();
   protected commonHeaders: NonNullable<RequestInit["headers"]>;
 
-  constructor(
-    baseUrl: string,
-    errorScope: string,
-    event?: APIGatewayProxyEvent,
-  ) {
-    this.baseUrl = baseUrl;
+  constructor(errorScope: string, event?: APIGatewayProxyEvent) {
     this.errorScope = errorScope;
 
     const propsForLoggingFromEvent = getPropsForLoggingFromEvent(event);

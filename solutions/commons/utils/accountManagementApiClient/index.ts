@@ -3,16 +3,17 @@ import { JsonApiClient } from "../jsonApiClient/index.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 
 export class AccountManagementApiClient extends JsonApiClient {
+  private readonly baseUrl: string;
+
   constructor(accessToken: string, event?: APIGatewayProxyEvent) {
+    super("Account management API", event);
+
     assert(
       process.env["ACCOUNT_MANAGEMENT_API_URL"],
       "ACCOUNT_MANAGEMENT_API_URL is not set",
     );
-    super(
-      process.env["ACCOUNT_MANAGEMENT_API_URL"],
-      "Account management API",
-      event,
-    );
+
+    this.baseUrl = process.env["ACCOUNT_MANAGEMENT_API_URL"];
 
     this.commonHeaders = {
       // eslint-disable-next-line @typescript-eslint/no-misused-spread

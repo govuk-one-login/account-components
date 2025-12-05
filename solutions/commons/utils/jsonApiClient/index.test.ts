@@ -24,10 +24,6 @@ vi.mock(import("../getTxmaAuditEncodedFromEvent/index.js"), () => ({
 }));
 
 class TestJsonApiClient extends JsonApiClient {
-  public get testBaseUrl() {
-    return this.baseUrl;
-  }
-
   public get testCommonHeaders() {
     return this.commonHeaders;
   }
@@ -70,7 +66,7 @@ describe("jsonApiClient", () => {
     vi.clearAllMocks();
     mockGetPropsForLoggingFromEvent.mockReturnValue({});
     mockGetTxmaAuditEncodedFromEvent.mockReturnValue(undefined);
-    client = new TestJsonApiClient("https://api.example.com", "TestService");
+    client = new TestJsonApiClient("TestService");
   });
 
   afterEach(() => {
@@ -78,16 +74,12 @@ describe("jsonApiClient", () => {
   });
 
   describe("constructor", () => {
-    it("should initialize with baseUrl and empty commonHeaders when no event provided", () => {
+    it("should initialize with empty commonHeaders when no event provided", () => {
       vi.clearAllMocks();
       mockGetPropsForLoggingFromEvent.mockReturnValue({});
       mockGetTxmaAuditEncodedFromEvent.mockReturnValue(undefined);
-      const testClient = new TestJsonApiClient(
-        "https://api.example.com",
-        "TestService",
-      );
+      const testClient = new TestJsonApiClient("TestService");
 
-      expect(testClient.testBaseUrl).toBe("https://api.example.com");
       expect(testClient.testCommonHeaders).toStrictEqual({});
       expect(mockGetPropsForLoggingFromEvent).toHaveBeenCalledWith(undefined);
       expect(mockGetTxmaAuditEncodedFromEvent).toHaveBeenCalledWith(undefined);
@@ -105,11 +97,7 @@ describe("jsonApiClient", () => {
       });
       mockGetTxmaAuditEncodedFromEvent.mockReturnValue("audit-data");
 
-      const clientWithEvent = new TestJsonApiClient(
-        "https://api.example.com",
-        "TestService",
-        mockEvent,
-      );
+      const clientWithEvent = new TestJsonApiClient("TestService", mockEvent);
 
       expect(clientWithEvent.testCommonHeaders).toStrictEqual({
         "di-persistent-session-id": "persistent-123",
@@ -132,11 +120,7 @@ describe("jsonApiClient", () => {
       });
       mockGetTxmaAuditEncodedFromEvent.mockReturnValue(undefined);
 
-      const clientWithEvent = new TestJsonApiClient(
-        "https://api.example.com",
-        "TestService",
-        mockEvent,
-      );
+      const clientWithEvent = new TestJsonApiClient("TestService", mockEvent);
 
       expect(clientWithEvent.testCommonHeaders).toStrictEqual({
         "session-id": "session-only",

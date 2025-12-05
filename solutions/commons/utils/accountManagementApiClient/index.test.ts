@@ -5,12 +5,10 @@ import type { APIGatewayProxyEvent } from "aws-lambda";
 // @ts-expect-error
 vi.mock(import("../jsonApiClient/index.js"), () => ({
   JsonApiClient: class MockJsonApiClient {
-    baseUrl: string;
     serviceName: string;
     commonHeaders: Record<string, string>;
 
-    constructor(baseUrl: string, serviceName: string) {
-      this.baseUrl = baseUrl;
+    constructor(serviceName: string) {
       this.serviceName = serviceName;
       this.commonHeaders = {
         "di-persistent-session-id": "test-persistent-session-id",
