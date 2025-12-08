@@ -435,6 +435,7 @@ Resources:
                 Action: kms:Decrypt
                 Resource: !Sub "{{resolve:ssm:/${CoreStackName}/S3SSEKeyArn}}"
 
+  # required to allow stub to call private api via custom domain name
   PrivateApiDomainRecord:
     Condition: IsDevOrBuild
     Type: AWS::Route53::RecordSet
@@ -453,7 +454,7 @@ Resources:
           - "${vpceId}-${apiId}.execute-api.${AWS::Region}.vpce.amazonaws.com"
           - vpceId:
               Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
-            apiId: !GetAtt PrivateApiGateway.RootResourceId
+            apiId: !Ref PrivateApiGateway
         HostedZoneId: "Z7K1066E3PUKB"
         EvaluateTargetHealth: false
 
