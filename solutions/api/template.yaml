@@ -488,6 +488,10 @@ Resources:
       AlwaysDeploy: true
       DisableExecuteApiEndpoint: true
       TracingEnabled: true
+      Auth:
+        ResourcePolicy:
+          IntrinsicVpcWhitelist:
+            - Fn::ImportValue: !Sub "${VpcStackName}-VpcId"
       EndpointConfiguration:
         Type: PRIVATE
         VpcEndpointIds:
