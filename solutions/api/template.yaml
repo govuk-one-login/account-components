@@ -826,6 +826,27 @@ Resources:
           JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableName}}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+              Resource:
+                - !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableArn}}"
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
+            - Effect: Allow
+              Action:
+                - kms:DescribeKey
+                - kms:Verify
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyArn}}"
+            - Effect: Allow
+              Action:
+                - appconfig:GetLatestConfiguration
+                - appconfig:StartConfigurationSession
+              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
+
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
