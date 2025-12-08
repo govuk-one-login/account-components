@@ -7,6 +7,7 @@ import { SignJWT, importPKCS8 } from "jose";
 import type { ClientEntry } from "../../../../config/schema/types.js";
 import { getParametersProvider } from "../../../../commons/utils/awsClient/ssmClient/index.js";
 import { jwtSigningAlgorithm } from "../../../../commons/utils/constants.js";
+import { logger } from "../../../../commons/utils/logger/index.js";
 
 export async function handler(request: FastifyRequest, reply: FastifyReply) {
   assert.ok(reply.render);
@@ -22,6 +23,8 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       },
     );
 
+    logger.debug("parsedRequestParams", parsedRequestParams);
+
     const clientRegistry = await getClientRegistry();
     const client = clientRegistry.find((client) => {
       return client.client_name.toLowerCase() === parsedRequestParams.client;
@@ -30,6 +33,8 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
     if (!client) {
       throw new Error(`Client '${parsedRequestParams.client}' not found`);
     }
+
+    logger.debug("client", { client });
 
     const parsedRequestQueryParams = v.parse(
       v.union([
@@ -46,12 +51,15 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       request.query,
     );
 
+    logger.debug("parsedRequestQueryParams", parsedRequestQueryParams);
+
     if ("code" in parsedRequestQueryParams) {
+      logger.debug("code exists in request params");
       assert.ok(reply.globals.currentUrl, "currentUrl is not set");
 
       const currentUrl = new URL(reply.globals.currentUrl);
       currentUrl.search = "";
-
+      logger.debug("currentUrl", { currentUrl });
       const tokenRequestBody = await getTokenRequestBody({
         client,
         authCode: parsedRequestQueryParams.code,
@@ -71,6 +79,8 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         body: tokenRequestBody.toString(),
       });
 
+      logger.debug("tokenResponse", { tokenResponse });
+
       const parsedTokenResponseBody = v.parse(
         v.object({
           access_token: v.string(),
@@ -79,6 +89,8 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         }),
         await tokenResponse.json(),
       );
+
+      logger.debug("parsedTokenResponseBody", parsedTokenResponseBody);
 
       assert.ok(
         process.env["API_JOURNEY_OUTCOME_ENDPOINT_URL"],
@@ -95,7 +107,11 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         },
       );
 
+      logger.debug("journeyOutcomeResponse", { journeyOutcomeResponse });
+
       const journeyOutcomeDetails = await journeyOutcomeResponse.json();
+
+      logger.debug("journeyOutcomeDetails", { journeyOutcomeDetails });
 
       await reply.render("clientCallback/handlers/clientCallback.njk", {
         client: `${client.client_name} (${client.client_id})`,
@@ -112,6 +128,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
     });
     return await reply;
   } catch (error) {
+    logger.warn("callback error", { error });
     await reply.render("clientCallback/handlers/clientCallback.njk", {
       exception: error,
     });
@@ -161,6 +178,8 @@ const getTokenRequestBody = async ({
     client_assertion: clientAssertion,
     redirect_uri: currentUrl,
   });
+
+  logger.debug("token request body", { params });
 
   return params;
 };
