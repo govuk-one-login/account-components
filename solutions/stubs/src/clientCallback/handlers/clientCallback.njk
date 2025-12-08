@@ -18,11 +18,11 @@
         {% endif %}
         {% if journeyOutcomeDetails %}
             <p>Journey outcome details:</p>
-            <pre>{{ journeyOutcomeDetails | JSON.stringify(null, 2) }}</pre>
+            <pre>{{ journeyOutcomeDetails | dump(2) | safe }}</pre>
         {% endif %}        
         {% if exception %}
             <p>An error occurred:</p>
-            <pre>{{ exception | JSON.stringify(null, 2) }}</pre>
+            <pre>{{ exception | dump(2) | safe }}</pre>
         {% endif %}
     </body>
 </html>
