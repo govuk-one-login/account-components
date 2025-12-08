@@ -102,9 +102,7 @@ vi.mock(
 );
 
 vi.mock(
-  import(
-    "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js"
-  ),
+  import("../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js"),
   () => ({
     getRedirectToClientRedirectUri: vi
       .fn()

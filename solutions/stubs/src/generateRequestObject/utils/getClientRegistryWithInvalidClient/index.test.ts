@@ -27,9 +27,8 @@ describe("getClientRegistryWithInvalidClient", () => {
   };
 
   it("adds invalid client to existing registry", async () => {
-    const { getClientRegistry } = await import(
-      "../../../../../commons/utils/getClientRegistry/index.js"
-    );
+    const { getClientRegistry } =
+      await import("../../../../../commons/utils/getClientRegistry/index.js");
     vi.mocked(getClientRegistry).mockResolvedValue([mockClient]);
 
     const result = await getClientRegistryWithInvalidClient();

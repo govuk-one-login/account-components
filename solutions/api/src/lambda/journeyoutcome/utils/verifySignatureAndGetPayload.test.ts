@@ -16,15 +16,13 @@ vi.doMock("./errors.js", () => ({
   errorManager: { throwError: vi.fn(() => undefined) },
 }));
 
-const { verifySignatureAndGetPayload } = await import(
-  "./verifySignatureAndGetPayload.js"
-);
+const { verifySignatureAndGetPayload } =
+  await import("./verifySignatureAndGetPayload.js");
 
 const { errorManager } = await import("./errors.js");
 const { jwtVerify, decodeJwt } = await import("jose");
-const { jwtSigningAlgorithm: mockSigningAlgorithm } = await import(
-  "../../../../../commons/utils/constants.js"
-);
+const { jwtSigningAlgorithm: mockSigningAlgorithm } =
+  await import("../../../../../commons/utils/constants.js");
 
 const mockJwtVerify = vi.mocked(jwtVerify);
 const mockDecodeJwt = vi.mocked(decodeJwt);

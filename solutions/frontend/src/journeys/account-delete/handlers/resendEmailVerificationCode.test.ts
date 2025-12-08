@@ -64,7 +64,7 @@ describe("resendEmailVerificationCode handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrow();
+      ).rejects.toThrowError();
     });
   });
 

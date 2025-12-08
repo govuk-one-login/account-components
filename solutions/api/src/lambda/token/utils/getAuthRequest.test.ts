@@ -8,9 +8,7 @@ vi.mock(
   import("../../../../../commons/utils/awsClient/dynamodbClient/index.js"),
 );
 const mockedDynamoDbClient = vi.mocked(
-  await import(
-    "../../../../../commons/utils/awsClient/dynamodbClient/index.js"
-  ),
+  await import("../../../../../commons/utils/awsClient/dynamodbClient/index.js"),
 ).getDynamoDbClient;
 
 describe("getAuthRequest", () => {
@@ -33,7 +31,7 @@ describe("getAuthRequest", () => {
 
     await expect(
       getAuthRequest("code-1", "https://example.com/callback", "client-abc"),
-    ).rejects.toThrow("AUTH_TABLE_NAME is not configured");
+    ).rejects.toThrowError("AUTH_TABLE_NAME is not configured");
   });
 
   it("returns the parsed auth request when data is valid", async () => {
@@ -79,7 +77,7 @@ describe("getAuthRequest", () => {
         "https://example.com/callback",
         "client-abc",
       );
-    }).rejects.toThrow(
+    }).rejects.toThrowError(
       "Auth request data is invalid for code: valid-code, auth redirect=https://example.com/other-callback, request redirect=https://example.com/callback",
     );
   });
@@ -101,7 +99,7 @@ describe("getAuthRequest", () => {
         "https://example.com/callback",
         "client-abc",
       );
-    }).rejects.toThrow(
+    }).rejects.toThrowError(
       "Auth request data is invalid for code: valid-code, Auth request has expired",
     );
   });

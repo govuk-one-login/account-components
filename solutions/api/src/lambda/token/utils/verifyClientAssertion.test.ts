@@ -63,9 +63,9 @@ describe("verifyClientAssertion", () => {
   it("should throw error when iss is missing from JWT", async () => {
     mockDecodeJwt.mockReturnValue({});
 
-    await expect(verifyClientAssertion(mockClientAssertion)).rejects.toThrow(
-      "Missing iss in client assertion",
-    );
+    await expect(
+      verifyClientAssertion(mockClientAssertion),
+    ).rejects.toThrowError("Missing iss in client assertion");
   });
 
   it("should throw error when client is not found in registry", async () => {
@@ -74,7 +74,9 @@ describe("verifyClientAssertion", () => {
       iss: "unknown-client-id",
     });
 
-    await expect(verifyClientAssertion(mockClientAssertion)).rejects.toThrow(
+    await expect(
+      verifyClientAssertion(mockClientAssertion),
+    ).rejects.toThrowError(
       "Client unknown-client-id not found for client assertion",
     );
   });
@@ -83,9 +85,9 @@ describe("verifyClientAssertion", () => {
     const jwtError = new Error("JWT verification failed");
     mockJwtVerify.mockRejectedValue(jwtError);
 
-    await expect(verifyClientAssertion(mockClientAssertion)).rejects.toThrow(
-      "JWT verification failed",
-    );
+    await expect(
+      verifyClientAssertion(mockClientAssertion),
+    ).rejects.toThrowError("JWT verification failed");
   });
 
   it("should raise an error if the iat is in the future", async () => {
@@ -95,9 +97,9 @@ describe("verifyClientAssertion", () => {
       iat: futureIat,
     });
 
-    await expect(verifyClientAssertion(mockClientAssertion)).rejects.toThrow(
-      "Client assertion iat is in the future",
-    );
+    await expect(
+      verifyClientAssertion(mockClientAssertion),
+    ).rejects.toThrowError("Client assertion iat is in the future");
   });
 
   it("should raise an error if the aud does not include the token endpoint URL", async () => {
@@ -106,7 +108,9 @@ describe("verifyClientAssertion", () => {
       aud: "https://invalid-audience.com",
     });
 
-    await expect(verifyClientAssertion(mockClientAssertion)).rejects.toThrow(
+    await expect(
+      verifyClientAssertion(mockClientAssertion),
+    ).rejects.toThrowError(
       "Invalid aud in client assertion: https://invalid-audience.com",
     );
   });

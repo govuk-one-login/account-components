@@ -158,8 +158,8 @@ describe("destroyApiSession", () => {
       clearCookie: mockClearCookie,
     } as unknown as FastifyReply;
 
-    await expect(destroyApiSession(mockRequest, mockReply)).rejects.toThrow(
-      "API_SESSION_COOKIE_DOMAIN is not set",
-    );
+    await expect(
+      destroyApiSession(mockRequest, mockReply),
+    ).rejects.toThrowError("API_SESSION_COOKIE_DOMAIN is not set");
   });
 });

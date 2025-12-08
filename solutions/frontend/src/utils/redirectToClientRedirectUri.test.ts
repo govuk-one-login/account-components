@@ -21,9 +21,8 @@ vi.mock(import("./apiSession.js"), () => ({
   destroyApiSession: mockDestroyApiSession,
 }));
 
-const { redirectToClientRedirectUri } = await import(
-  "./redirectToClientRedirectUri.js"
-);
+const { redirectToClientRedirectUri } =
+  await import("./redirectToClientRedirectUri.js");
 
 describe("redirectToClientRedirectUri", () => {
   let mockRequest: FastifyRequest;

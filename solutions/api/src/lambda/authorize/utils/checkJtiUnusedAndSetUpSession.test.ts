@@ -48,9 +48,8 @@ vi.mock(import("node:crypto"), () => ({
   randomBytes: mockRandomBytes,
 }));
 
-const { checkJtiUnusedAndSetUpSession } = await import(
-  "./checkJtiUnusedAndSetUpSession.js"
-);
+const { checkJtiUnusedAndSetUpSession } =
+  await import("./checkJtiUnusedAndSetUpSession.js");
 const { ErrorResponse } = await import("./common.js");
 
 describe("checkJtiUnusedAndSetUpSession", () => {
