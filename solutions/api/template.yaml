@@ -666,7 +666,7 @@ Resources:
   HealthcheckLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/lambda/${AWS::StackName}/HealthcheckLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/HealthcheckLambdaLogGroup"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
@@ -693,7 +693,7 @@ Resources:
   TokenLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/lambda/${AWS::StackName}/TokenLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/TokenLambdaLogGroup"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
@@ -758,7 +758,7 @@ Resources:
   JourneyOutcomeLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/lambda/${AWS::StackName}/JourneyOutcomeLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/JourneyOutcomeLambdaLogGroup"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
@@ -803,7 +803,7 @@ Resources:
   AuthorizeLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/lambda/${AWS::StackName}/AuthorizeLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/AuthorizeLambdaLogGroup"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 

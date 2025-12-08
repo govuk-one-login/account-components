@@ -493,6 +493,6 @@ Resources:
   FrontendLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/lambda/${AWS::StackName}/FrontendLambda"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/FrontendLambda"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
