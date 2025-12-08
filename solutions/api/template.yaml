@@ -773,6 +773,11 @@ Resources:
               Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
             - Effect: Allow
               Action:
+                - kms:DescribeKey
+                - kms:Sign
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyArn}}"
+            - Effect: Allow
+              Action:
                 - appconfig:GetLatestConfiguration
                 - appconfig:StartConfigurationSession
               Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
