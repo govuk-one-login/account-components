@@ -839,7 +839,7 @@ Resources:
             - Effect: Allow
               Action:
                 - kms:DescribeKey
-                - kms:Verify
+                - kms:GetPublicKey
               Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyArn}}"
 
     Metadata:
