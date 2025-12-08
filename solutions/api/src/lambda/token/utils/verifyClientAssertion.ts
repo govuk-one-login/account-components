@@ -12,7 +12,7 @@ export const verifyClientAssertion = async (
   const clientRegistry = await getClientRegistry();
   const decodedJwt = decodeJwt(clientAssertion);
   const { iss, iat, aud } = decodedJwt;
-  logger.debug("decodedJwt", decodedJwt)
+  logger.debug("decodedJwt", decodedJwt);
   assert(
     process.env["TOKEN_ENDPOINT_URL"],
     "TOKEN_ENDPOINT_URL is not defined",

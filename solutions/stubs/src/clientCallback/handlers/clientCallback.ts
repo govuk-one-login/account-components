@@ -23,7 +23,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       },
     );
 
-    logger.debug("parsedRequestParams", parsedRequestParams);
+    logger.info("parsedRequestParams", parsedRequestParams);
 
     const clientRegistry = await getClientRegistry();
     const client = clientRegistry.find((client) => {
@@ -34,7 +34,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       throw new Error(`Client '${parsedRequestParams.client}' not found`);
     }
 
-    logger.debug("client", { client });
+    logger.info("client", { client });
 
     const parsedRequestQueryParams = v.parse(
       v.union([
@@ -51,15 +51,15 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       request.query,
     );
 
-    logger.debug("parsedRequestQueryParams", parsedRequestQueryParams);
+    logger.info("parsedRequestQueryParams", parsedRequestQueryParams);
 
     if ("code" in parsedRequestQueryParams) {
-      logger.debug("code exists in request params");
+      logger.info("code exists in request params");
       assert.ok(reply.globals.currentUrl, "currentUrl is not set");
 
       const currentUrl = new URL(reply.globals.currentUrl);
       currentUrl.search = "";
-      logger.debug("currentUrl", { currentUrl });
+      logger.info("currentUrl", { currentUrl });
       const tokenRequestBody = await getTokenRequestBody({
         client,
         authCode: parsedRequestQueryParams.code,
@@ -79,7 +79,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         body: tokenRequestBody.toString(),
       });
 
-      logger.debug("tokenResponse", { tokenResponse });
+      logger.info("tokenResponse", { tokenResponse });
 
       const parsedTokenResponseBody = v.parse(
         v.object({
@@ -90,7 +90,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         await tokenResponse.json(),
       );
 
-      logger.debug("parsedTokenResponseBody", parsedTokenResponseBody);
+      logger.info("parsedTokenResponseBody", parsedTokenResponseBody);
 
       assert.ok(
         process.env["API_JOURNEY_OUTCOME_ENDPOINT_URL"],
@@ -107,11 +107,11 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         },
       );
 
-      logger.debug("journeyOutcomeResponse", { journeyOutcomeResponse });
+      logger.info("journeyOutcomeResponse", { journeyOutcomeResponse });
 
       const journeyOutcomeDetails = await journeyOutcomeResponse.json();
 
-      logger.debug("journeyOutcomeDetails", { journeyOutcomeDetails });
+      logger.info("journeyOutcomeDetails", { journeyOutcomeDetails });
 
       await reply.render("clientCallback/handlers/clientCallback.njk", {
         client: `${client.client_name} (${client.client_id})`,
