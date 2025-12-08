@@ -36,7 +36,7 @@ export const handler = loggerAPIGatewayProxyHandlerWrapper(
         await verifyJti(assertion.jti);
 
         const accessToken = await createAccessToken(authRequest);
-        logger.debug("access_token", accessToken)
+        logger.debug("access_token", accessToken);
         return {
           statusCode: 200,
           headers: {
