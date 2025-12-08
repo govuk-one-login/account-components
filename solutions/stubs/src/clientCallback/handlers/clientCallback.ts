@@ -10,6 +10,8 @@ import { jwtSigningAlgorithm } from "../../../../commons/utils/constants.js";
 import { logger } from "../../../../commons/utils/logger/index.js";
 
 export async function handler(request: FastifyRequest, reply: FastifyReply) {
+  logger.info("clientCallback handler invoked");
+
   assert.ok(reply.render);
 
   try {
