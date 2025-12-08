@@ -452,7 +452,7 @@ Resources:
       AliasTarget:
         #        Temporary fix until https://govukverify.atlassian.net/browse/PSREDEV-3033 is done
         DNSName: !If
-          - IsDev
+          - IsDevEnvironment
           - "vpce-0a7dad1503be13796-1qvf1azf.execute-api.eu-west-2.vpce.amazonaws.com"
           - "vpce-0f4845b63ae267db4-p0gt4n6p.execute-api.eu-west-2.vpce.amazonaws.com"
         #        DNSName:
