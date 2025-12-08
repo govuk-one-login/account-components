@@ -2,16 +2,18 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy.js";
 import type { Context } from "aws-lambda";
 import type { CryptoKey } from "jose";
-import type {
-  JourneyOutcomePayload,
-  JourneyOutcome,
-} from "../../../../commons/utils/interfaces.js";
+import type { JourneyOutcomePayload } from "./utils/interfaces.js";
+import type { JourneyOutcome } from "../../../../commons/utils/interfaces.js";
 
 const mockContext = {} as unknown as Context;
 
 const mockMetrics = {
   addMetric: vi.fn(),
   addDimensions: vi.fn(),
+};
+
+const mockLogger = {
+  appendKeys: vi.fn(),
 };
 
 const mockOutcomeData: JourneyOutcome = [
@@ -40,7 +42,19 @@ const mockGetKmsKey = vi.mocked(await import("./utils/getKmsKey.js")).getKMSKey;
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
   metrics: mockMetrics,
-  flushMetricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
+  metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
+  logger: mockLogger,
+  loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
+  logger: { warn: vi.fn(), debug: vi.fn() },
+  loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
 const { handler } = await import("./index.js");

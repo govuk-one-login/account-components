@@ -1,6 +1,4 @@
 import { removeTrailingSlash } from "../../commons/utils/fastify/removeTrailingSlash/index.js";
-import { logRequest } from "../../commons/utils/fastify/logRequest/index.js";
-import { logResponse } from "../../commons/utils/fastify/logResponse/index.js";
 import { addDefaultCaching } from "../../commons/utils/fastify/addDefaultCaching/index.js";
 import Fastify from "fastify";
 import fastifyCookie from "@fastify/cookie";
@@ -15,21 +13,18 @@ import { generateRequestObject } from "./generateRequestObject/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 import { clientJwks } from "./clientJwks/index.js";
 import { clientCallback } from "./clientCallback/index.js";
-import { flushMetrics } from "../../commons/utils/fastify/flushMetrics/index.js";
 import { getCurrentUrl } from "../../commons/utils/fastify/getCurrentUrl/index.js";
+import { FastifyPowertoolsLogger } from "../../commons/utils/fastify/powertoolsLogger/index.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
     trustProxy: true, // Required as HTTPS is terminated before the Lambda
-    logger: true,
+    loggerInstance: new FastifyPowertoolsLogger(),
     disableRequestLogging: true,
   });
 
-  fastify.addHook("onRequest", logRequest);
   fastify.addHook("onRequest", removeTrailingSlash);
   fastify.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
-  fastify.addHook("onSend", logResponse);
-  fastify.addHook("onResponse", () => flushMetrics());
 
   fastify.register(fastifyCookie);
   fastify.register(fastifyFormbody);

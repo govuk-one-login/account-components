@@ -1,6 +1,6 @@
-import type { JourneyOutcomePayload } from "../../../../../commons/utils/interfaces.js";
 import { errorManager } from "../utils/errors.js";
 import assert from "node:assert";
+import type { JourneyOutcomePayload } from "./interfaces.js";
 
 export function validateJourneyOutcomeJwtClaims(
   payload: JourneyOutcomePayload,

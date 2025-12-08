@@ -9,6 +9,7 @@ import { getClaimsSchema } from "../../../../commons/utils/authorize/getClaimsSc
 import { destroyApiSession } from "../../utils/apiSession.js";
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
 import { decodeJwt } from "jose";
+import { logger } from "../../../../commons/utils/logger/index.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -82,6 +83,9 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
 
       claims = claimsResult.output;
       metrics.addDimensions({ client_id: claims.client_id });
+      logger.appendKeys({
+        client_id: claims.client_id,
+      });
 
       await request.session.regenerate();
 

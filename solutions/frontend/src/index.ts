@@ -1,6 +1,4 @@
 import { removeTrailingSlash } from "../../commons/utils/fastify/removeTrailingSlash/index.js";
-import { logRequest } from "../../commons/utils/fastify/logRequest/index.js";
-import { logResponse } from "../../commons/utils/fastify/logResponse/index.js";
 import { addDefaultCaching } from "../../commons/utils/fastify/addDefaultCaching/index.js";
 import Fastify from "fastify";
 import fastifyCookie from "@fastify/cookie";
@@ -33,8 +31,8 @@ import {
   frontendUiTranslationEn,
 } from "@govuk-one-login/frontend-ui";
 import { paths } from "./utils/paths.js";
-import { flushMetrics } from "../../commons/utils/fastify/flushMetrics/index.js";
 import { getEnvironment } from "../../commons/utils/getEnvironment/index.js";
+import { FastifyPowertoolsLogger } from "../../commons/utils/fastify/powertoolsLogger/index.js";
 
 await configureI18n({
   [Lang.English]: {
@@ -50,15 +48,12 @@ await configureI18n({
 export const initFrontend = async function () {
   const fastify = Fastify.default({
     trustProxy: true, // Required as HTTPS is terminated before the Lambda
-    logger: true,
+    loggerInstance: new FastifyPowertoolsLogger(),
     disableRequestLogging: true,
   });
 
-  fastify.addHook("onRequest", logRequest);
   fastify.addHook("onRequest", removeTrailingSlash);
   fastify.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
-  fastify.addHook("onSend", logResponse);
-  fastify.addHook("onResponse", () => flushMetrics());
 
   fastify.register(fastifyCookie);
   fastify.register(i18nextMiddlewarePlugin, { i18next });
