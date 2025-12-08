@@ -1,7 +1,9 @@
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import { parse } from "cookie";
 
-export const getDiSessionIdsFromEvent = (event: APIGatewayProxyEvent) => {
+export const getPropsForLoggingFromEvent = (event?: APIGatewayProxyEvent) => {
+  if (!event) return {};
+
   const cookies = parse(event.headers["cookie"] ?? "");
   const gsCookie = cookies["gs"];
   const gsCookieParts = gsCookie ? gsCookie.split(".") : [];
@@ -12,5 +14,9 @@ export const getDiSessionIdsFromEvent = (event: APIGatewayProxyEvent) => {
       cookies["di-persistent-session-id"],
     sessionId: event.headers["session-id"] ?? gsCookieParts[0],
     clientSessionId: event.headers["client-session-id"] ?? gsCookieParts[1],
+    userLanguage: event.headers["user-language"] ?? cookies["lng"],
+    sourceIp:
+      event.headers["x-forwarded-for"] ??
+      event.requestContext.identity.sourceIp,
   };
 };

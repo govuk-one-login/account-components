@@ -12,6 +12,7 @@ export async function handleSendOtpChallenge(
 
   const accountManagementApiClient = new AccountManagementApiClient(
     request.session.claims.access_token,
+    request.awsLambda?.event,
   );
 
   const result = await accountManagementApiClient.sendOtpChallenge(
@@ -31,7 +32,12 @@ export async function handleSendOtpChallenge(
       InvalidPrincipalInRequest: authorizeErrors.tempErrorTODORemoveLater,
       AccountManagementApiUnexpectedError:
         authorizeErrors.tempErrorTODORemoveLater,
-      ErrorParsingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
+      ErrorValidatingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
+      ErrorParsingResponseBodyJson: authorizeErrors.tempErrorTODORemoveLater,
+      ErrorValidatingErrorResponseBody:
+        authorizeErrors.tempErrorTODORemoveLater,
+      ErrorParsingErrorResponseBodyJson:
+        authorizeErrors.tempErrorTODORemoveLater,
       UnknownErrorResponse: authorizeErrors.tempErrorTODORemoveLater,
       UnknownError: authorizeErrors.tempErrorTODORemoveLater,
     };

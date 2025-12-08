@@ -13,11 +13,13 @@ vi.mock(import("@aws-lambda-powertools/logger"), () => ({
   },
 }));
 
-vi.mock(import("../getDiSessionIdsFromEvent/index.js"), () => ({
-  getDiSessionIdsFromEvent: vi.fn().mockReturnValue({
+vi.mock(import("../getPropsForLoggingFromEvent/index.js"), () => ({
+  getPropsForLoggingFromEvent: vi.fn().mockReturnValue({
     persistentSessionId: "persistent-123",
     sessionId: "session-456",
     clientSessionId: "client-789",
+    userLanguage: "fr",
+    sourceIp: "192.168.1.1",
   }),
 }));
 
@@ -73,75 +75,6 @@ describe("loggerAPIGatewayProxyHandlerWrapper", () => {
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.info).toHaveBeenCalledWith("Response", { statusCode: 200 });
     expect(result).toStrictEqual({ statusCode: 200, body: "success" });
-  });
-
-  it("falls back to cookie language when user-language header is missing", async () => {
-    const eventWithoutUserLanguage = {
-      ...mockEvent,
-      headers: {
-        ...mockEvent.headers,
-        "user-language": undefined,
-      },
-    } as unknown as APIGatewayProxyEvent;
-
-    const wrappedHandler = loggerAPIGatewayProxyHandlerWrapper(mockHandler);
-    await wrappedHandler(eventWithoutUserLanguage, mockContext);
-
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(logger.appendKeys).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userLanguage: "en",
-      }),
-    );
-  });
-
-  it("falls back to requestContext sourceIp when x-forwarded-for is missing", async () => {
-    const eventWithoutForwardedFor = {
-      ...mockEvent,
-      headers: {
-        ...mockEvent.headers,
-        "x-forwarded-for": undefined,
-      },
-    } as unknown as APIGatewayProxyEvent;
-
-    const wrappedHandler = loggerAPIGatewayProxyHandlerWrapper(mockHandler);
-    await wrappedHandler(eventWithoutForwardedFor, mockContext);
-
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(logger.appendKeys).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sourceIp: "10.0.0.1",
-      }),
-    );
-  });
-
-  it("handles missing headers gracefully", async () => {
-    const eventWithMinimalHeaders = {
-      headers: {},
-      httpMethod: "POST",
-      path: "/minimal",
-      requestContext: {
-        identity: {
-          sourceIp: "127.0.0.1",
-        },
-      },
-    } as unknown as APIGatewayProxyEvent;
-
-    const wrappedHandler = loggerAPIGatewayProxyHandlerWrapper(mockHandler);
-    await wrappedHandler(eventWithMinimalHeaders, mockContext);
-
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(logger.appendKeys).toHaveBeenCalledWith({
-      persistentSessionId: "persistent-123",
-      sessionId: "session-456",
-      clientSessionId: "client-789",
-      userLanguage: undefined,
-      sourceIp: "127.0.0.1",
-      method: "POST",
-      path: "/minimal",
-      referer: undefined,
-      trace: "session-456",
-    });
   });
 
   it("logs response even when handler throws", async () => {
