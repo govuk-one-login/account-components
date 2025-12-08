@@ -450,11 +450,15 @@ Resources:
         ]
       Type: A
       AliasTarget:
-        DNSName: !Sub
-          - "${vpceId}-${apiId}.execute-api.${AWS::Region}.vpce.amazonaws.com"
-          - vpceId:
-              Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
-            apiId: !Ref PrivateApiGateway
+        #        Temporary fix until https://govukverify.atlassian.net/browse/PSREDEV-3033 is done
+        DNSName: !If
+          - IsDev
+          - "vpce-0a7dad1503be13796-1qvf1azf.execute-api.eu-west-2.vpce.amazonaws.com"
+          - "vpce-0f4845b63ae267db4-p0gt4n6p.execute-api.eu-west-2.vpce.amazonaws.com"
+        #        DNSName:
+        #          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointDnsName"
+        #        HostedZoneId:
+        #          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointHostedZoneId"
         HostedZoneId: "Z7K1066E3PUKB"
         EvaluateTargetHealth: false
 
