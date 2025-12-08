@@ -96,7 +96,7 @@ describe("verifyEmailAddress handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrow();
+      ).rejects.toThrowError();
     });
 
     it("should throw if session claims email is not available", async () => {
@@ -109,7 +109,7 @@ describe("verifyEmailAddress handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrow();
+      ).rejects.toThrowError();
     });
   });
 
@@ -380,7 +380,7 @@ describe("verifyEmailAddress handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrow();
+      ).rejects.toThrowError();
     });
 
     it("should throw if account-delete journey state is not available", async () => {
@@ -392,7 +392,7 @@ describe("verifyEmailAddress handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrow();
+      ).rejects.toThrowError();
     });
 
     it.each([

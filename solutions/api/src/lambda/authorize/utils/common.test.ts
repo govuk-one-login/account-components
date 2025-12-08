@@ -13,9 +13,8 @@ describe("getRedirectToClientRedirectUriResponse", () => {
   });
 
   it("returns redirect response with code parameter", async () => {
-    const { getRedirectToClientRedirectUriResponse } = await import(
-      "./common.js"
-    );
+    const { getRedirectToClientRedirectUriResponse } =
+      await import("./common.js");
     const result = getRedirectToClientRedirectUriResponse(
       "https://example.com/callback",
       undefined,
@@ -33,9 +32,8 @@ describe("getRedirectToClientRedirectUriResponse", () => {
   });
 
   it("returns redirect response with error parameters", async () => {
-    const { getRedirectToClientRedirectUriResponse } = await import(
-      "./common.js"
-    );
+    const { getRedirectToClientRedirectUriResponse } =
+      await import("./common.js");
     const result = getRedirectToClientRedirectUriResponse(
       "https://example.com/callback",
       authorizeErrors.jwtExpired,
@@ -52,9 +50,8 @@ describe("getRedirectToClientRedirectUriResponse", () => {
   });
 
   it("returns redirect response with state parameter", async () => {
-    const { getRedirectToClientRedirectUriResponse } = await import(
-      "./common.js"
-    );
+    const { getRedirectToClientRedirectUriResponse } =
+      await import("./common.js");
     const result = getRedirectToClientRedirectUriResponse(
       "https://example.com/callback",
       undefined,
@@ -71,9 +68,8 @@ describe("getRedirectToClientRedirectUriResponse", () => {
   });
 
   it("returns redirect response with error and state parameters", async () => {
-    const { getRedirectToClientRedirectUriResponse } = await import(
-      "./common.js"
-    );
+    const { getRedirectToClientRedirectUriResponse } =
+      await import("./common.js");
     const result = getRedirectToClientRedirectUriResponse(
       "https://example.com/callback",
       authorizeErrors.userAborted,
@@ -91,9 +87,8 @@ describe("getRedirectToClientRedirectUriResponse", () => {
   });
 
   it("returns redirect response with code and state parameters", async () => {
-    const { getRedirectToClientRedirectUriResponse } = await import(
-      "./common.js"
-    );
+    const { getRedirectToClientRedirectUriResponse } =
+      await import("./common.js");
     const result = getRedirectToClientRedirectUriResponse(
       "https://example.com/callback",
       undefined,
@@ -112,9 +107,8 @@ describe("getRedirectToClientRedirectUriResponse", () => {
   });
 
   it("returns redirect response with only redirect URI when no optional parameters provided", async () => {
-    const { getRedirectToClientRedirectUriResponse } = await import(
-      "./common.js"
-    );
+    const { getRedirectToClientRedirectUriResponse } =
+      await import("./common.js");
     const result = getRedirectToClientRedirectUriResponse(
       "https://example.com/callback",
     );

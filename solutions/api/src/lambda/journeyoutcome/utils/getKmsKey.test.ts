@@ -87,7 +87,7 @@ describe("getKMSKey", () => {
       $metadata: {},
     });
 
-    await expect(getKMSKey(mockKeyAlias)).rejects.toThrow(
+    await expect(getKMSKey(mockKeyAlias)).rejects.toThrowError(
       `Public key data missing for KMS Key Alias: ${mockKeyAlias}`,
     );
   });

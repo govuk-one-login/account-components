@@ -5,9 +5,8 @@ vi.doMock("./errors.js", () => ({
   errorManager: { throwError: vi.fn(() => undefined) },
 }));
 
-const { validateJourneyOutcomeJwtClaims } = await import(
-  "./validateJourneyOutcomeJwtClaims.js"
-);
+const { validateJourneyOutcomeJwtClaims } =
+  await import("./validateJourneyOutcomeJwtClaims.js");
 
 const { errorManager } = await import("./errors.js");
 const mockErrorManager = vi.mocked(errorManager);

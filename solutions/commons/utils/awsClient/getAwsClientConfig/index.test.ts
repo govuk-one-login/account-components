@@ -17,7 +17,7 @@ describe("getAwsClientConfig", () => {
   });
 
   it("throws error when AWS_REGION is not set", () => {
-    expect(() => getAwsClientConfig()).toThrow("AWS_REGION is not set");
+    expect(() => getAwsClientConfig()).toThrowError("AWS_REGION is not set");
   });
 
   it("returns basic config when AWS_REGION is set", () => {
@@ -60,7 +60,7 @@ describe("getAwsClientConfig", () => {
     process.env["AWS_REGION"] = "eu-west-2";
     process.env["USE_LOCALSTACK"] = "true";
 
-    expect(() => getAwsClientConfig()).toThrow(
+    expect(() => getAwsClientConfig()).toThrowError(
       "LOCALSTACK_ENDPOINT is not set",
     );
   });
@@ -70,7 +70,7 @@ describe("getAwsClientConfig", () => {
     process.env["USE_LOCALSTACK"] = "true";
     process.env["LOCALSTACK_ENDPOINT"] = "http://localhost:4566";
 
-    expect(() => getAwsClientConfig()).toThrow(
+    expect(() => getAwsClientConfig()).toThrowError(
       "LOCALSTACK_ACCESS_KEY_ID is not set",
     );
   });
@@ -81,7 +81,7 @@ describe("getAwsClientConfig", () => {
     process.env["LOCALSTACK_ENDPOINT"] = "http://localhost:4566";
     process.env["LOCALSTACK_ACCESS_KEY_ID"] = "test";
 
-    expect(() => getAwsClientConfig()).toThrow(
+    expect(() => getAwsClientConfig()).toThrowError(
       "LOCALSTACK_ACCESS_KEY is not set",
     );
   });

@@ -20,9 +20,8 @@ vi.mock(import("../utils/handleSendOtpChallenge.js"), () => ({
   handleSendOtpChallenge: mockHandleSendOtpChallenge,
 }));
 
-const { introductionGetHandler, introductionPostHandler } = await import(
-  "./introduction.js"
-);
+const { introductionGetHandler, introductionPostHandler } =
+  await import("./introduction.js");
 
 describe("introduction handlers", () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -60,7 +59,7 @@ describe("introduction handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrow();
+      ).rejects.toThrowError();
     });
   });
 

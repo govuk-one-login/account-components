@@ -41,9 +41,8 @@ describe("jwtAdapter", () => {
       {} as unknown as Awaited<ReturnType<typeof jose.importPKCS8>>,
     );
 
-    const { getParametersProvider } = await import(
-      "../../../commons/utils/awsClient/ssmClient/index.js"
-    );
+    const { getParametersProvider } =
+      await import("../../../commons/utils/awsClient/ssmClient/index.js");
     vi.mocked(getParametersProvider).mockReturnValue(mockParametersProvider);
     mockGet.mockResolvedValue("privateKey");
   });
@@ -60,7 +59,7 @@ describe("jwtAdapter", () => {
 
         await expect(
           jwtAdapter.sign(header, payload, signatureType),
-        ).rejects.toThrow(
+        ).rejects.toThrowError(
           "Failed to retrieve key from SSM for param /components-mocks/MockClientEcPrivateKey",
         );
       });

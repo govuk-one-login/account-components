@@ -12,9 +12,8 @@ vi.mock(import("./apiSession.js"), () => ({
   destroyApiSession: mockDestroyApiSession,
 }));
 
-const { redirectToAuthorizeErrorPage } = await import(
-  "./redirectToAuthorizeErrorPage.js"
-);
+const { redirectToAuthorizeErrorPage } =
+  await import("./redirectToAuthorizeErrorPage.js");
 
 describe("redirectToAuthorizeErrorPage", () => {
   let mockRequest: FastifyRequest;

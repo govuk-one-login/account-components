@@ -84,7 +84,7 @@ describe("createAccessToken", () => {
           sub: "user-xyz",
           expires: Date.now() / 1000 + 600,
         }),
-      ).rejects.toThrow(`${envVar} is not configured`);
+      ).rejects.toThrowError(`${envVar} is not configured`);
     });
   });
 

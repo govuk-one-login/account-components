@@ -52,7 +52,7 @@ describe("accountManagementApiClient", () => {
 
       expect(
         () => new AccountManagementApiClient(mockAccessToken, mockEvent),
-      ).toThrow("ACCOUNT_MANAGEMENT_API_URL is not set");
+      ).toThrowError("ACCOUNT_MANAGEMENT_API_URL is not set");
     });
 
     it("should create instance with valid environment variable", () => {

@@ -74,7 +74,7 @@ describe("generateJwtToken", () => {
 
     const scenario = MockRequestObjectScenarios.VALID;
 
-    await expect(generateJwtToken(requestBody, scenario)).rejects.toThrow(
+    await expect(generateJwtToken(requestBody, scenario)).rejects.toThrowError(
       CustomError,
     );
   });
@@ -90,7 +90,7 @@ describe("generateJwtToken", () => {
 
     const scenario = MockRequestObjectScenarios.VALID;
 
-    await expect(generateJwtToken(requestBody, scenario)).rejects.toThrow(
+    await expect(generateJwtToken(requestBody, scenario)).rejects.toThrowError(
       CustomError,
     );
   });
@@ -186,7 +186,7 @@ describe("getJwtPayload", () => {
 
     expect(() =>
       getJwtPayload(MockRequestObjectScenarios.VALID, invalidBody),
-    ).toThrow(CustomError);
+    ).toThrowError(CustomError);
   });
 
   it("should use default values if fields missing", () => {

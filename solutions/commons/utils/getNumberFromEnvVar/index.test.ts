@@ -28,7 +28,7 @@ describe("getNumberFromEnvVar", () => {
   it("should throw an error if the environment variable is not a valid number", () => {
     process.env["INVALID_ENV_VAR"] = "not_a_number";
 
-    expect(() => getNumberFromEnvVar("INVALID_ENV_VAR", 42)).toThrow(
+    expect(() => getNumberFromEnvVar("INVALID_ENV_VAR", 42)).toThrowError(
       "INVALID_ENV_VAR is not a number",
     );
   });

@@ -93,7 +93,7 @@ describe("handler", () => {
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
     mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
 
-    await expect(handler({}, context)).resolves.not.toThrow();
+    await expect(handler({}, context)).resolves.not.toThrowError();
 
     expect(mockGetPublicKey).toHaveBeenCalledWith({
       KeyId: "alias/test-key",
@@ -126,13 +126,15 @@ describe("handler", () => {
 
     delete process.env["BUCKET_NAME"];
 
-    await expect(handler({}, context)).rejects.toThrow("BUCKET_NAME not set");
+    await expect(handler({}, context)).rejects.toThrowError(
+      "BUCKET_NAME not set",
+    );
   });
 
   it("throws if JAR_RSA_ENCRYPTION_KEY_ALIAS is not set", async () => {
     delete process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"];
 
-    await expect(handler({}, context)).rejects.toThrow(
+    await expect(handler({}, context)).rejects.toThrowError(
       "JAR_RSA_ENCRYPTION_KEY_ALIAS not set",
     );
   });
@@ -140,7 +142,7 @@ describe("handler", () => {
   it("throws if public key is missing", async () => {
     mockGetPublicKey.mockResolvedValueOnce({ PublicKey: undefined });
 
-    await expect(handler({}, context)).rejects.toThrow(
+    await expect(handler({}, context)).rejects.toThrowError(
       "Public key not found for KMS Key Alias: alias/test-key",
     );
   });
@@ -151,7 +153,7 @@ describe("handler", () => {
     mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
     mockDescribeKey.mockResolvedValueOnce({ KeyMetadata: undefined });
 
-    await expect(handler({}, context)).rejects.toThrow(
+    await expect(handler({}, context)).rejects.toThrowError(
       "Key ID not found for KMS Key Alias: alias/test-key",
     );
   });
@@ -166,7 +168,7 @@ describe("handler", () => {
     (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
 
-    await expect(handler({}, context)).rejects.toThrow(
+    await expect(handler({}, context)).rejects.toThrowError(
       "KeyMetadata.KeyId not defined",
     );
   });
@@ -174,7 +176,7 @@ describe("handler", () => {
   it("handles error in KMS getPublicKey", async () => {
     mockGetPublicKey.mockRejectedValueOnce(new Error("KMS failure"));
 
-    await expect(handler({}, context)).rejects.toThrow("KMS failure");
+    await expect(handler({}, context)).rejects.toThrowError("KMS failure");
   });
 
   it("handles error in KMS describeKey", async () => {
@@ -183,7 +185,9 @@ describe("handler", () => {
     mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
     mockDescribeKey.mockRejectedValueOnce(new Error("KMS describe failure"));
 
-    await expect(handler({}, context)).rejects.toThrow("KMS describe failure");
+    await expect(handler({}, context)).rejects.toThrowError(
+      "KMS describe failure",
+    );
   });
 
   it("handles error in JOSE operations", async () => {
@@ -197,7 +201,7 @@ describe("handler", () => {
       new Error("JOSE failure"),
     );
 
-    await expect(handler({}, context)).rejects.toThrow("JOSE failure");
+    await expect(handler({}, context)).rejects.toThrowError("JOSE failure");
   });
 
   it("handles error in S3 upload", async () => {
@@ -213,7 +217,7 @@ describe("handler", () => {
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
     mockPutObject.mockRejectedValueOnce(new Error("S3 upload failed"));
 
-    await expect(handler({}, context)).rejects.toThrow("S3 upload failed");
+    await expect(handler({}, context)).rejects.toThrowError("S3 upload failed");
   });
 });
 
@@ -246,12 +250,14 @@ describe("putContentToS3", () => {
   it("throws on S3 upload error", async () => {
     mockPutObject.mockRejectedValueOnce(new Error("S3 upload failed"));
 
-    await expect(putContentToS3("{}")).rejects.toThrow("S3 upload failed");
+    await expect(putContentToS3("{}")).rejects.toThrowError("S3 upload failed");
   });
 
   it("throws if BUCKET_NAME is not set", async () => {
     delete process.env["BUCKET_NAME"];
 
-    await expect(putContentToS3("{}")).rejects.toThrow("BUCKET_NAME not set");
+    await expect(putContentToS3("{}")).rejects.toThrowError(
+      "BUCKET_NAME not set",
+    );
   });
 });

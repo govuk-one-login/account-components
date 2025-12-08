@@ -64,7 +64,7 @@ describe("handleSendOtpChallenge", () => {
         mockReply as FastifyReply,
       ),
       // eslint-disable-next-line vitest/require-to-throw-message
-    ).rejects.toThrow();
+    ).rejects.toThrowError();
   });
 
   it.each([
