@@ -609,7 +609,7 @@ Resources:
             get:
               x-amazon-apigateway-integration:
                 type: aws_proxy
-                httpMethod: GET
+                httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JourneyOutcomeLambda.Arn}/invocations"
           /.well-known/jwks.json:
             get:
