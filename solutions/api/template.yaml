@@ -156,9 +156,9 @@ Conditions:
     - !FindInMap [EnvironmentConfiguration, !Ref Environment, UseCanary]
     - true
 
-  IsDevEnvironment: !Equals [!Ref Environment, 'dev']
-  IsBuildEnvironment: !Equals [!Ref Environment, 'build']
-  IsDevOrBuild: !Or [ Condition: IsDevEnvironment, Condition: IsBuildEnvironment ]
+  IsDevEnvironment: !Equals [!Ref Environment, "dev"]
+  IsBuildEnvironment: !Equals [!Ref Environment, "build"]
+  IsDevOrBuild: !Or [Condition: IsDevEnvironment, Condition: IsBuildEnvironment]
 
 Globals:
   Function:
@@ -453,7 +453,7 @@ Resources:
           - "${vpceId}-${apiId}.execute-api.${AWS::Region}.vpce.amazonaws.com"
           - vpceId:
               Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
-          - apiId: !GetAtt PrivateApiGateway.RootResourceId
+            apiId: !GetAtt PrivateApiGateway.RootResourceId
         HostedZoneId: "Z7K1066E3PUKB"
         EvaluateTargetHealth: false
 
