@@ -4,7 +4,6 @@ import { getClientRegistry } from "../../../../../commons/utils/getClientRegistr
 import { errorManager } from "./errors.js";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import assert from "node:assert";
-import { logger } from "../../../../../commons/utils/logger/index.js";
 
 export const verifyClientAssertion = async (
   clientAssertion: string,
@@ -12,7 +11,7 @@ export const verifyClientAssertion = async (
   const clientRegistry = await getClientRegistry();
   const decodedJwt = decodeJwt(clientAssertion);
   const { iss, iat, aud } = decodedJwt;
-  logger.debug("decodedJwt", decodedJwt);
+
   assert(
     process.env["TOKEN_ENDPOINT_URL"],
     "TOKEN_ENDPOINT_URL is not defined",

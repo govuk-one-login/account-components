@@ -8,10 +8,7 @@ import { assertTokenRequest } from "./utils/assertTokenRequest.js";
 import * as querystring from "node:querystring";
 import { getAuthRequest } from "./utils/getAuthRequest.js";
 import { verifyJti } from "./utils/verifyJti.js";
-import {
-  logger,
-  loggerAPIGatewayProxyHandlerWrapper,
-} from "../../../../commons/utils/logger/index.js";
+import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
 import { createAccessToken } from "./utils/createAccessToken.js";
 
 export const handler = loggerAPIGatewayProxyHandlerWrapper(
@@ -36,7 +33,7 @@ export const handler = loggerAPIGatewayProxyHandlerWrapper(
         await verifyJti(assertion.jti);
 
         const accessToken = await createAccessToken(authRequest);
-        logger.debug("access_token", accessToken);
+
         return {
           statusCode: 200,
           headers: {
