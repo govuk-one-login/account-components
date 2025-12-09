@@ -1,9 +1,35 @@
 <html>
     <head>
         <title>AMC Journey Initiator Stub</title>
+        <style type='text/css' nonce='{{ styleNonce }}'>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 40px;
+            }
+            fieldset {
+                margin-bottom: 20px;
+                padding: 10px;
+            }
+            legend {
+                font-weight: bold;
+            }
+            input[type="submit"], .button {
+                padding: 10px 20px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                cursor: pointer;
+                text-decoration: none;
+                font-size: 14px;
+            }
+            pre {
+                white-space: pre-wrap;
+            }
+        </style>
     </head>
     <body>
         <h1>Client callback</h1>
+        <a href="/" class="button">Start Again</a>
         {% if client %}        
             <p><strong>Client:</strong> {{ client }}</p>
         {% endif %}
@@ -17,11 +43,11 @@
         {% endif %}
         {% if journeyOutcomeDetails %}
             <p>Journey outcome details:</p>
-            <pre>{{ journeyOutcomeDetails | JSON.stringify(null, 2) }}</pre>
+            <pre>{{ journeyOutcomeDetails | dump(2) | safe }}</pre>
         {% endif %}        
         {% if exception %}
             <p>An error occurred:</p>
-            <pre>{{ exception | JSON.stringify(null, 2) }}</pre>
+            <pre>{{ exception | dump(2) | safe }}</pre>
         {% endif %}
     </body>
 </html>

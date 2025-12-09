@@ -356,6 +356,6 @@ Resources:
   StubsLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/lambda/${AWS::StackName}/StubsLambda"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/StubsLambda"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"

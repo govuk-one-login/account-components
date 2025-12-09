@@ -60,12 +60,12 @@ Mappings:
       privateApiDomain: internal.manage.dev.account.gov.uk
       authorizeErrorPageUrl: https://manage.dev.account.gov.uk/authorize-error
       authorizeEndpointUrl: https://api.manage.dev.account.gov.uk/authorize
-      tokenEndpointUrl: https://ra87ckqt87.execute-api.eu-west-2.amazonaws.com/v1/token
+      tokenEndpointUrl: https://internal.manage.dev.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://internal.manage.dev.account.gov.uk/journeyoutcome
-      privateApiAllowedVpceIds: [
-          "vpce-0a7dad1503be13796", # di-account-components-dev
-          "vpce-087ac48f23f28a39b", # di-account-dev
-        ]
+      privateApiAllowedVpceIds:
+        - "vpce-0a7dad1503be13796" # di-account-components-dev
+        - "vpce-087ac48f23f28a39b" # di-account-dev
+      privateApiAllowedVpcIds: []
       LambdaLogLevel: DEBUG
       UseCanary: false
       apiSessionCookieDomain: manage.dev.account.gov.uk
@@ -77,12 +77,12 @@ Mappings:
       privateApiDomain: internal.manage.build.account.gov.uk
       authorizeErrorPageUrl: https://manage.build.account.gov.uk/authorize-error
       authorizeEndpointUrl: https://api.manage.build.account.gov.uk/authorize
-      tokenEndpointUrl: https://xmf4xsle69.execute-api.eu-west-2.amazonaws.com/v1/token
+      tokenEndpointUrl: https://internal.manage.build.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://internal.manage.build.account.gov.uk/journeyoutcome
-      privateApiAllowedVpceIds: [
-          "vpce-0f4845b63ae267db4", # di-account-components-build
-          "vpce-0e1bb7e9c33b0e516", # di-account-build
-        ]
+      privateApiAllowedVpceIds:
+        - "vpce-0f4845b63ae267db4" # di-account-components-build
+        - "vpce-0e1bb7e9c33b0e516" # di-account-build
+      privateApiAllowedVpcIds: []
       LambdaLogLevel: INFO
       UseCanary: false
       apiSessionCookieDomain: manage.build.account.gov.uk
@@ -96,9 +96,12 @@ Mappings:
       authorizeEndpointUrl: https://api.manage.staging.account.gov.uk/authorize
       tokenEndpointUrl: https://internal.manage.staging.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://internal.manage.staging.account.gov.uk/journeyoutcome
-      privateApiAllowedVpceIds: [
-          "vpce-0c9ce65be09f99db7", # di-account-staging
-        ]
+      privateApiAllowedVpceIds:
+        - "vpce-0c9ce65be09f99db7" # di-account-staging
+        - "vpce-07078f5f005fe5efc" # di-authentication-staging
+      privateApiAllowedVpcIds:
+        - "vpc-04163263e42ae55ee" # di-account-staging
+        - "vpc-07cf1e76e27f28e86" # di-authentication-staging
       LambdaLogLevel: INFO
       UseCanary: true
       apiSessionCookieDomain: manage.staging.account.gov.uk
@@ -112,9 +115,10 @@ Mappings:
       authorizeEndpointUrl: https://api.manage.integration.account.gov.uk/authorize
       tokenEndpointUrl: https://internal.manage.integration.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://internal.manage.integration.account.gov.uk/journeyoutcome
-      privateApiAllowedVpceIds: [
-          "vpce-0e594accb3d775457", # di-account-integration
-        ]
+      privateApiAllowedVpceIds:
+        - "vpce-0df10df14d851e1c9" # di-authentication-integration
+      privateApiAllowedVpcIds:
+        - "vpc-04796e8a5bf41b046" # di-authentication-integration
       LambdaLogLevel: INFO
       UseCanary: true
       apiSessionCookieDomain: manage.integration.account.gov.uk
@@ -128,9 +132,10 @@ Mappings:
       authorizeEndpointUrl: https://api.manage.account.gov.uk/authorize
       tokenEndpointUrl: https://internal.manage.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://internal.manage.account.gov.uk/journeyoutcome
-      privateApiAllowedVpceIds: [
-          "vpce-0d7972874707185a0", # di-account-production
-        ]
+      privateApiAllowedVpceIds:
+        - "vpce-0db136878c87bf2d0" # di-authentication-production
+      privateApiAllowedVpcIds:
+        - "vpc-06a7d758af9eefddb" # di-authentication-production
       LambdaLogLevel: INFO
       UseCanary: true
       apiSessionCookieDomain: manage.account.gov.uk
@@ -155,6 +160,10 @@ Conditions:
   CanariesEnabled: !Equals
     - !FindInMap [EnvironmentConfiguration, !Ref Environment, UseCanary]
     - true
+
+  IsDevEnvironment: !Equals [!Ref Environment, "dev"]
+  IsBuildEnvironment: !Equals [!Ref Environment, "build"]
+  IsDevOrBuild: !Or [Condition: IsDevEnvironment, Condition: IsBuildEnvironment]
 
 Globals:
   Function:
@@ -431,6 +440,33 @@ Resources:
                 Action: kms:Decrypt
                 Resource: !Sub "{{resolve:ssm:/${CoreStackName}/S3SSEKeyArn}}"
 
+  # required to allow stub to call private api via custom domain name
+  PrivateApiDomainRecord:
+    Condition: IsDevOrBuild
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId:
+        Fn::ImportValue: hosted-zone-HostedZoneID
+      Name:
+        !FindInMap [
+          EnvironmentConfiguration,
+          !Ref Environment,
+          privateApiDomain,
+        ]
+      Type: A
+      AliasTarget:
+        #        Temporary fix until https://govukverify.atlassian.net/browse/PSREDEV-3033 is done
+        DNSName: !If
+          - IsDevEnvironment
+          - "vpce-0a7dad1503be13796-1qvf1azf.execute-api.eu-west-2.vpce.amazonaws.com"
+          - "vpce-0f4845b63ae267db4-p0gt4n6p.execute-api.eu-west-2.vpce.amazonaws.com"
+        #        DNSName:
+        #          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointDnsName"
+        #        HostedZoneId:
+        #          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointHostedZoneId"
+        HostedZoneId: "Z7K1066E3PUKB"
+        EvaluateTargetHealth: false
+
   PrivateApiDomain:
     Type: AWS::ApiGateway::DomainNameV2
     Properties:
@@ -488,6 +524,19 @@ Resources:
       AlwaysDeploy: true
       DisableExecuteApiEndpoint: true
       TracingEnabled: true
+      Auth:
+        ResourcePolicy:
+          IntrinsicVpcWhitelist: !Join
+            - ""
+            - - !If
+                - IsDevOrBuild
+                - - Fn::ImportValue: !Sub "${VpcStackName}-VpcId"
+                - []
+              - !FindInMap
+                - EnvironmentConfiguration
+                - !Ref Environment
+                - privateApiAllowedVpcIds
+
       EndpointConfiguration:
         Type: PRIVATE
         VpcEndpointIds:
@@ -574,7 +623,7 @@ Resources:
             get:
               x-amazon-apigateway-integration:
                 type: aws_proxy
-                httpMethod: GET
+                httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JourneyOutcomeLambda.Arn}/invocations"
           /.well-known/jwks.json:
             get:
@@ -666,7 +715,7 @@ Resources:
   HealthcheckLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/lambda/${AWS::StackName}/HealthcheckLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/HealthcheckLambdaLogGroup"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
@@ -686,14 +735,17 @@ Resources:
         OutExtension:
           - .js=.mjs
         Target: "es2022"
-        Sourcemap: true
+        Sourcemap: !If
+          - IsDevOrBuild
+          - true
+          - false
         EntryPoints:
           - solutions/api/src/lambda/healthcheck.ts
 
   TokenLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/lambda/${AWS::StackName}/TokenLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/TokenLambdaLogGroup"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
@@ -738,6 +790,11 @@ Resources:
               Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
             - Effect: Allow
               Action:
+                - kms:DescribeKey
+                - kms:Sign
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyArn}}"
+            - Effect: Allow
+              Action:
                 - appconfig:GetLatestConfiguration
                 - appconfig:StartConfigurationSession
               Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
@@ -749,7 +806,10 @@ Resources:
         OutExtension:
           - .js=.mjs
         Target: "es2022"
-        Sourcemap: true
+        Sourcemap: !If
+          - IsDevOrBuild
+          - true
+          - false
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:
@@ -758,7 +818,7 @@ Resources:
   JourneyOutcomeLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/lambda/${AWS::StackName}/JourneyOutcomeLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/JourneyOutcomeLambdaLogGroup"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
@@ -786,6 +846,22 @@ Resources:
           JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableName}}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+              Resource:
+                - !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableArn}}"
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
+            - Effect: Allow
+              Action:
+                - kms:DescribeKey
+                - kms:GetPublicKey
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyArn}}"
+
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -794,7 +870,10 @@ Resources:
         OutExtension:
           - .js=.mjs
         Target: "es2022"
-        Sourcemap: true
+        Sourcemap: !If
+          - IsDevOrBuild
+          - true
+          - false
         EntryPoints:
           - solutions/api/src/lambda/journeyoutcome/index.ts
         Banner:
@@ -803,7 +882,7 @@ Resources:
   AuthorizeLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/lambda/${AWS::StackName}/AuthorizeLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/AuthorizeLambdaLogGroup"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
@@ -870,7 +949,10 @@ Resources:
         OutExtension:
           - .js=.mjs
         Target: "es2022"
-        Sourcemap: true
+        Sourcemap: !If
+          - IsDevOrBuild
+          - true
+          - false
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:
