@@ -527,7 +527,7 @@ Resources:
       Auth:
         ResourcePolicy:
           IntrinsicVpcWhitelist: !Join
-            - ''
+            - ""
             - - !If
                 - IsDevOrBuild
                 - - Fn::ImportValue: !Sub "${VpcStackName}-VpcId"
