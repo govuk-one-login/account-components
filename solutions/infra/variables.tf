@@ -228,3 +228,27 @@ variable "config_final_bake_time_in_minutes" {
   description = "After the deployment this represents a period of time that AppConfig should continue to monitor the specified alarms for errors to trigger an rollback."
   default     = 0
 }
+
+variable "alarm_sns_topic_name" {
+    description = "Name for the high severity alarms SNS topic."
+    type        = string
+    default     = "account-component-alarms"
+}
+
+variable "pagerduty_integration_endpoint" {
+    description = "PagerDuty HTTPS endpoint for alarm notifications."
+    type        = string
+    default     = null
+}
+
+variable "alarm_slack_channel_id" {
+    description = "Slack channel to send alarm notifications to."
+    type        = string
+    default     = "C0A1TS3EJ4X"
+}
+
+variable "alarm_slack_workspace_id" {
+    description = "ID of the Slack workspace authorized with AWS Chatbot"
+    type        = string
+    default     = "T8GT9416G"
+}

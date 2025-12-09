@@ -18,3 +18,5 @@ config_artifact_source_bucket_arn                    = "arn:aws:s3:::pipeline-ap
 config_artifact_source_bucket_event_trigger_role_arn = "arn:aws:iam::629382882013:role/PL-pipeline-app-config-DepTrigRole-0636b3c8efc9"
 api_artifact_source_bucket_arn                       = "arn:aws:s3:::pipeline-api-artifactpromotionbucket-p54kqltdyha1"
 api_artifact_source_bucket_event_trigger_role_arn    = "arn:aws:iam::837553126879:role/PL-pipeline-api-PromoTrigRole-069d8ab482ed"
+alarm_slack_channel_id                               = "C0A2N78NXDX"
+alarm_slack_workspace_id                             = "T8GT9416G"
