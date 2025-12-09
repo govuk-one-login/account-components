@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "engines": {
-    "node": ">=22.16.0 <23"
+    "node": ">=24.11.1 <25"
   },
   "scripts": {
     "run:all": "cd ../../ && export IS_INTEGRATION_TEST=1; npm run run:all",

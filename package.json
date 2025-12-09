@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "engines": {
-    "node": ">=22.16.0 <23"
+    "node": ">=24.11.1 <25"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.29.0",
@@ -43,10 +43,10 @@
     "@eslint/compat": "^2.0.0",
     "@eslint/js": "^9.39.1",
     "@stoplight/spectral-cli": "^6.15.0",
-    "@tsconfig/node22": "^22.0.5",
+    "@tsconfig/node24": "^24.0.3",
     "@tsconfig/strictest": "^2.0.8",
     "@types/aws-lambda": "^8.10.159",
-    "@types/node": "^22.19.1",
+    "@types/node": "^24.10.2",
     "@types/nunjucks": "^3.2.6",
     "@vitest/coverage-v8": "^4.0.14",
     "@vitest/eslint-plugin": "^1.5.1",

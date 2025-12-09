@@ -33,7 +33,6 @@ describe("generateAccessToken", () => {
     vi.clearAllMocks();
     process.env = { ...ORIGINAL_ENV };
 
-    // eslint-disable-next-line n/no-unsupported-features/node-builtins
     vi.spyOn(crypto, "randomUUID").mockReturnValue(mockUUID);
 
     // Mock jose.importJWK
