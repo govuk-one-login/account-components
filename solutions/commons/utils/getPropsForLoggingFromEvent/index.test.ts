@@ -22,13 +22,6 @@ describe("getPropsForLoggingFromEvent", () => {
     expect(result).toStrictEqual({});
   });
 
-  // it("returns empty object when event is undefined", () => {
-  //   const event = createMockEvent({});
-  //   const result = getPropsForLoggingFromEvent(event);
-  //
-  //   expect(result).toStrictEqual({});
-  // });
-
   it("extracts values from headers when available", () => {
     const event = createMockEvent({
       "di-persistent-session-id": "header-persistent-123",
