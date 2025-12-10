@@ -146,7 +146,7 @@ Globals:
     MemorySize: 2048
     Architectures:
       - arm64
-    Runtime: nodejs22.x
+    Runtime: nodejs24.x
     CodeUri: dist
     Handler: lambda.handler
     Environment:

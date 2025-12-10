@@ -24,9 +24,9 @@ When updating the Node version you will need to update the following:
 - all `.nvmrc` files (the version should correspond to the lowest version which matches the `engines.node` field in the associated `package.json` file)
 - Node version used by Lambda functions
 - Node version used in Docker images
-- ensure the base TSConfig installed as a development dependency in `package.json` and used in `tsconfig.json` corresponds with the Node version being used e.g. for Node 22 use the base TSConfig `@tsconfig/node22`
+- ensure the base TSConfig installed as a development dependency in `package.json` and used in `tsconfig.json` corresponds with the Node version being used e.g. for Node 24 use the base TSConfig `@tsconfig/node24`
 - ensure the major version of `@types/node` installed as a development dependency in `package.json` corresponds with the Node version being used
-- where ESBuild is used (e.g. in Lambda `Metadata` in CloudFormation templates) ensure that the configured target matches the target in the base TSConfig e.g. the base TSConfig `@tsconfig/node22` sets a target of `es2022` and therefore the ESBuild target should be `es2022` too.
+- where ESBuild is used (e.g. in Lambda `Metadata` in CloudFormation templates) ensure that the configured target matches the target in the base TSConfig e.g. the base TSConfig `@tsconfig/node24` sets a target of `es2024` and therefore the ESBuild target should be `es2024` too.
 
 ## Useful commands
 

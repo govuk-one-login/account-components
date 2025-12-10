@@ -1,4 +1,4 @@
-FROM node:22-bookworm@sha256:4ad2c2b350ab49fb637ab40a269ffe207c61818bb7eb3a4ea122001a0c605e1f
+FROM node:24-bookworm@sha256:9a2ed90cd91b1f3412affe080b62e69b057ba8661d9844e143a6bbd76a23260f
 
 ADD https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip awscliv2.zip
 RUN unzip awscliv2.zip && ./aws/install

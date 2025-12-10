@@ -202,7 +202,7 @@ Globals:
     MemorySize: 256
     Architectures:
       - !Ref LambdaArchitecture
-    Runtime: nodejs22.x
+    Runtime: nodejs24.x
     Environment:
       Variables:
         POWERTOOLS_LOG_LEVEL:
@@ -734,7 +734,7 @@ Resources:
         Format: "esm"
         OutExtension:
           - .js=.mjs
-        Target: "es2022"
+        Target: "es2024"
         Sourcemap: !If
           - IsDevOrBuild
           - true
@@ -805,7 +805,7 @@ Resources:
         Format: "esm"
         OutExtension:
           - .js=.mjs
-        Target: "es2022"
+        Target: "es2024"
         Sourcemap: !If
           - IsDevOrBuild
           - true
@@ -869,7 +869,7 @@ Resources:
         Format: "esm"
         OutExtension:
           - .js=.mjs
-        Target: "es2022"
+        Target: "es2024"
         Sourcemap: !If
           - IsDevOrBuild
           - true
@@ -948,7 +948,7 @@ Resources:
         Format: "esm"
         OutExtension:
           - .js=.mjs
-        Target: "es2022"
+        Target: "es2024"
         Sourcemap: !If
           - IsDevOrBuild
           - true
