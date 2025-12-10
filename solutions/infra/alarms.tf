@@ -1,5 +1,6 @@
 resource "aws_sns_topic" "high_severity" {
-    name = "${var.alarm_sns_topic_name}-high" 
+    name              = "${var.alarm_sns_topic_name}-high" 
+    kms_master_key_id = var.custom_kms_key_arn
     tags = {
         "Environment" = var.environment
         "Severity"    = "high"
@@ -7,7 +8,8 @@ resource "aws_sns_topic" "high_severity" {
 }
 
 resource "aws_sns_topic" "low_severity" {
-    name = "${var.alarm_sns_topic_name}-low" 
+    name              = "${var.alarm_sns_topic_name}-low" 
+    kms_master_key_id = var.custom_kms_key_arn
     tags = {
         "Environment" = var.environment
         "Severity"    = "low"
