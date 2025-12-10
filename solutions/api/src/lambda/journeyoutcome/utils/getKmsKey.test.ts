@@ -25,7 +25,6 @@ const jwtSigningAlgorithm = "ES256";
 const mockCreatePublicKey = vi.mocked(createPublicKey);
 
 describe("getKMSKey", () => {
-  const mockKeyAlias = "alias/test-key";
   const mockPublicKeyData = Buffer.from("mock-public-key-der");
   const mockPemKey = "-----BEGIN PUBLIC KEY-----...-----END PUBLIC KEY-----";
   const mockCryptoKey = {} as CryptoKey;
@@ -34,7 +33,6 @@ describe("getKMSKey", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-
     mockKmsClient = {
       client: {} as KMSClient,
       config: {} as KMSClientResolvedConfig,
@@ -57,6 +55,7 @@ describe("getKMSKey", () => {
   });
 
   it("should fetch the public key from KMS and return a CryptoKey", async () => {
+    const mockKeyAlias = "alias/test-key";
     const result = await getKMSKey(mockKeyAlias);
 
     expect(getKmsClient).toHaveBeenCalledTimes(1);
@@ -82,13 +81,24 @@ describe("getKMSKey", () => {
   });
 
   it("should throw an error if PublicKey data is missing from KMS response", async () => {
+    const mockKeyAliasDoesNotExist = "alias/test-key2";
     vi.mocked(mockKmsClient.getPublicKey).mockResolvedValue({
       PublicKey: undefined,
       $metadata: {},
     });
 
-    await expect(getKMSKey(mockKeyAlias)).rejects.toThrowError(
-      `Public key data missing for KMS Key Alias: ${mockKeyAlias}`,
+    await expect(getKMSKey(mockKeyAliasDoesNotExist)).rejects.toThrowError(
+      `Public key data missing for KMS Key Alias: ${mockKeyAliasDoesNotExist}`,
     );
+  });
+
+  it("should return cached key on subsequent calls", async () => {
+    const mockKeyAliasCached = "alias/test-cache-key";
+    const result1 = await getKMSKey(mockKeyAliasCached);
+    const result2 = await getKMSKey(mockKeyAliasCached);
+
+    expect(getKmsClient).toHaveBeenCalledTimes(1);
+    expect(mockKmsClient.getPublicKey).toHaveBeenCalledTimes(1);
+    expect(result2).toBe(result1);
   });
 });
