@@ -404,6 +404,9 @@ Resources:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizeLambda.Arn}/invocations"
+      Tags:
+        FMSCustomPolicy: false
+        CustomPolicy: true
 
   ApiGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup

@@ -385,6 +385,9 @@ Resources:
         - MetricsEnabled: true
           ResourcePath: /*
           HttpMethod: "*"
+      Tags:
+        FMSCustomPolicy: false
+        CustomPolicy: true
 
   FrontendApiGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup
