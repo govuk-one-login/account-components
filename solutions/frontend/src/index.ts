@@ -37,10 +37,12 @@ import { FastifyPowertoolsLogger } from "../../commons/utils/fastify/powertoolsL
 await configureI18n({
   [Lang.English]: {
     ...en,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     FECTranslations: frontendUiTranslationEn,
   },
   [Lang.Welsh]: {
     ...cy,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     FECTranslations: frontendUiTranslationCy,
   },
 });
