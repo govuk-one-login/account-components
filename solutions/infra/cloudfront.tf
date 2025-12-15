@@ -16,6 +16,9 @@ resource "aws_cloudformation_stack" "main_cloudfront_stack" {
   }
 
   capabilities = ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"]
+  tags = {
+    FMSGlobalCustomPolicy = true
+  }
 }
 
 resource "aws_cloudformation_stack" "api_cloudfront_stack" {
@@ -36,4 +39,7 @@ resource "aws_cloudformation_stack" "api_cloudfront_stack" {
   }
 
   capabilities = ["CAPABILITY_NAMED_IAM", "CAPABILITY_AUTO_EXPAND"]
+  tags = {
+    FMSGlobalCustomPolicy = true
+  }
 }

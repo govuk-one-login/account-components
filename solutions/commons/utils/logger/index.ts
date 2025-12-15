@@ -31,10 +31,12 @@ export const loggerAPIGatewayProxyHandlerWrapper = (
       logger.info("Response", {
         statusCode: res.statusCode,
       });
+      logger.resetKeys();
 
       return res;
     } catch (error) {
       logger.error("An error occurred", { error });
+      logger.resetKeys();
       return {
         statusCode: 500,
         body: "",

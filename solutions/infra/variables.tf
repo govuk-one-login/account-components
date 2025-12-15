@@ -155,21 +155,6 @@ variable "on_failure" {
   default = "ROLLBACK"
 }
 
-variable "tags" {
-  description = "A Map of tags - with optional default values"
-  type = object({
-    Product     = optional(string, "GOV.UK One Login")
-    System      = optional(string, "One Login Home")
-    Environment = optional(string, "build")
-  })
-
-  default = {
-    Product     = "GOV.UK One Login"
-    System      = "One Login Home"
-    Environment = "build"
-  }
-}
-
 variable "allowed_config_access_accounts" {
   type        = list(string)
   description = "The AWS account IDs that this can read config"

@@ -26,7 +26,6 @@ export const render = async function (
   if (this.request.i18n) {
     env.addFilter("translate", this.request.i18n.t);
   }
-  env.addFilter("JSON.stringify", JSON.stringify);
   env.addGlobal("cspNonce", this.cspNonce.script);
   env.addGlobal("styleNonce", this.cspNonce.style);
   env.addGlobal("globals", this.globals);
