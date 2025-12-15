@@ -946,7 +946,7 @@ Resources:
   HealthcheckLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref HealthcheckLambda
+      FunctionName: !Ref HealthcheckLambda.Alias
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
@@ -954,7 +954,7 @@ Resources:
   PrivateHealthcheckLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref HealthcheckLambda
+      FunctionName: !Ref HealthcheckLambda.Alias
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
@@ -962,7 +962,7 @@ Resources:
   PrivateTokenLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref TokenLambda
+      FunctionName: !Ref TokenLambda.Alias
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
@@ -970,7 +970,7 @@ Resources:
   PrivateJourneyOutcomeLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref JourneyOutcomeLambda
+      FunctionName: !Ref JourneyOutcomeLambda.Alias
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
@@ -978,7 +978,7 @@ Resources:
   AuthorizeLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref AuthorizeLambda
+      FunctionName: !Ref AuthorizeLambda.Alias
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
