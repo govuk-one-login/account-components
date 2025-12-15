@@ -99,7 +99,7 @@ Globals:
       SecurityGroupIds:
         - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
     Timeout: 10
-    MemorySize: 1769
+    MemorySize: 2048
     Architectures:
       - arm64
     Runtime: nodejs24.x
