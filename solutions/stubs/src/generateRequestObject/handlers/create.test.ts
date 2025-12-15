@@ -3,16 +3,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const ORIGINAL_ENV = { ...process.env };
 
-// @ts-expect-error
-vi.mock(import("../../../../commons/utils/getEnvironment/index.js"), () => ({
-  getEnvironment: vi.fn(() => "local"),
-}));
-
-// @ts-expect-error
-vi.mock(import("node:crypto"), () => ({
-  randomUUID: vi.fn(() => "mock-uuid"),
-}));
-
 describe("createRequestObjectGet", () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
@@ -20,12 +10,9 @@ describe("createRequestObjectGet", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     process.env = { ...ORIGINAL_ENV };
-    mockRequest = {
-      cookies: {},
-    };
+    mockRequest = {};
     mockReply = {
       render: vi.fn(),
-      setCookie: vi.fn(),
     };
   });
 
@@ -55,47 +42,6 @@ describe("createRequestObjectGet", () => {
       }),
     );
   });
-
-  it("should set cookies when they don't exist", async () => {
-    const { createRequestObjectGet } = await import("./create.js");
-
-    await createRequestObjectGet(
-      mockRequest as FastifyRequest,
-      mockReply as FastifyReply,
-    );
-
-    expect(mockReply.setCookie).toHaveBeenCalledWith(
-      "di-persistent-session-id",
-      "mock-uuid",
-      {
-        httpOnly: true,
-        secure: false,
-      },
-    );
-    expect(mockReply.setCookie).toHaveBeenCalledWith(
-      "gs",
-      "mock-uuid.mock-uuid",
-      {
-        httpOnly: true,
-        secure: false,
-      },
-    );
-  });
-
-  it("should not set cookies when they already exist", async () => {
-    const { createRequestObjectGet } = await import("./create.js");
-    mockRequest.cookies = {
-      "di-persistent-session-id": "existing-session-id",
-      gs: "existing-gs",
-    };
-
-    await createRequestObjectGet(
-      mockRequest as FastifyRequest,
-      mockReply as FastifyReply,
-    );
-
-    expect(mockReply.setCookie).not.toHaveBeenCalled();
-  });
 });
 
 describe("createRequestObjectPost", () => {
@@ -117,7 +63,6 @@ describe("createRequestObjectPost", () => {
     };
 
     mockRequest = {
-      cookies: {},
       body: {
         client_id: "23456789012345678901234567890123",
         scenario: "valid",
@@ -133,7 +78,6 @@ describe("createRequestObjectPost", () => {
 
     mockReply = {
       render: vi.fn(),
-      setCookie: vi.fn(),
     };
   });
 

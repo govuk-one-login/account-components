@@ -14,8 +14,6 @@ import { paths } from "../../utils/paths.js";
 import assert from "node:assert";
 import * as v from "valibot";
 import type { JWTPayload } from "jose";
-import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.js";
-import { randomUUID } from "node:crypto";
 
 const requestBodySchema = v.object({
   client_id: v.string(),
@@ -30,7 +28,7 @@ const requestBodySchema = v.object({
 });
 
 export async function createRequestObjectGet(
-  request: FastifyRequest,
+  _: FastifyRequest,
   reply: FastifyReply,
   authorizeUrl?: string,
   jwtPayload?: JWTPayload,
@@ -41,19 +39,6 @@ export async function createRequestObjectGet(
   const availableScenarios = Object.values(MockRequestObjectScenarios);
   const availableClients = await getClientRegistryWithInvalidClient();
   const availableUsers = Object.values(Users);
-
-  if (!request.cookies["di-persistent-session-id"]) {
-    reply.setCookie("di-persistent-session-id", randomUUID(), {
-      httpOnly: true,
-      secure: getEnvironment() !== "local",
-    });
-  }
-  if (!request.cookies["gs"]) {
-    reply.setCookie("gs", `${randomUUID()}.${randomUUID()}`, {
-      httpOnly: true,
-      secure: getEnvironment() !== "local",
-    });
-  }
 
   assert.ok(reply.render);
   await reply.render("generateRequestObject/handlers/create.njk", {
