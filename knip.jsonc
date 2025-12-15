@@ -17,6 +17,10 @@
         "solutions/api/src/lambda/token/index.ts",
         "solutions/api/src/lambda/journeyoutcome/index.ts",
       ],
+      "ignore": [
+        "solutions/frontend/src/static/application.scss",
+        "solutions/stubs/src/static/application.scss",
+      ],
       "ignoreBinaries": [
         "zizmor",
         "tflint",
