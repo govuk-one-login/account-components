@@ -46,14 +46,12 @@ export async function createRequestObjectGet(
     reply.setCookie("di-persistent-session-id", randomUUID(), {
       httpOnly: true,
       secure: getEnvironment() !== "local",
-      sameSite: "strict",
     });
   }
   if (!request.cookies["gs"]) {
     reply.setCookie("gs", `${randomUUID()}.${randomUUID()}`, {
       httpOnly: true,
       secure: getEnvironment() !== "local",
-      sameSite: "strict",
     });
   }
 
