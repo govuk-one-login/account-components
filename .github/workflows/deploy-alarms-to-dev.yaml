@@ -1,0 +1,13 @@
+name: No Op Workflow
+on:
+  workflow_dispatch:
+
+jobs:
+  never-run:
+    runs-on: ubuntu-latest
+    if: false
+    permissions:
+      id-token: none
+
+    steps:
+      - run: echo Never run
