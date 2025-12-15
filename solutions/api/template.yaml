@@ -196,6 +196,8 @@ Globals:
         - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
     Timeout: 10
     MemorySize: 2048
+    ProvisionedConcurrencyConfig:
+      ProvisionedConcurrentExecutions: 3
     Architectures:
       - !Ref LambdaArchitecture
     Runtime: nodejs24.x
