@@ -394,13 +394,13 @@ Resources:
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Arn}/invocations"
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Alias}/invocations"
           /authorize:
             get:
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizeLambda.Arn}/invocations"
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizeLambda.Alias}/invocations"
 
   ApiGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup
@@ -609,19 +609,19 @@ Resources:
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Arn}/invocations"
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Alias}/invocations"
           /token:
             post:
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TokenLambda.Arn}/invocations"
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TokenLambda.Alias}/invocations"
           /journeyoutcome:
             get:
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JourneyOutcomeLambda.Arn}/invocations"
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JourneyOutcomeLambda.Alias}/invocations"
           /.well-known/jwks.json:
             get:
               responses:
