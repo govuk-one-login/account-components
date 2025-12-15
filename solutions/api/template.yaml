@@ -64,7 +64,6 @@ Mappings:
       journeyOutcomeEndpointUrl: https://internal.manage.dev.account.gov.uk/journeyoutcome
       privateApiAllowedVpceIds:
         - "vpce-0a7dad1503be13796" # di-account-components-dev
-        - "vpce-087ac48f23f28a39b" # di-account-dev
       privateApiAllowedVpcIds: []
       LambdaLogLevel: DEBUG
       UseCanary: false
@@ -81,7 +80,6 @@ Mappings:
       journeyOutcomeEndpointUrl: https://internal.manage.build.account.gov.uk/journeyoutcome
       privateApiAllowedVpceIds:
         - "vpce-0f4845b63ae267db4" # di-account-components-build
-        - "vpce-0e1bb7e9c33b0e516" # di-account-build
       privateApiAllowedVpcIds: []
       LambdaLogLevel: INFO
       UseCanary: false
@@ -97,10 +95,8 @@ Mappings:
       tokenEndpointUrl: https://internal.manage.staging.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://internal.manage.staging.account.gov.uk/journeyoutcome
       privateApiAllowedVpceIds:
-        - "vpce-0c9ce65be09f99db7" # di-account-staging
         - "vpce-07078f5f005fe5efc" # di-authentication-staging
       privateApiAllowedVpcIds:
-        - "vpc-04163263e42ae55ee" # di-account-staging
         - "vpc-07cf1e76e27f28e86" # di-authentication-staging
       LambdaLogLevel: INFO
       UseCanary: true
@@ -160,10 +156,10 @@ Conditions:
   CanariesEnabled: !Equals
     - !FindInMap [EnvironmentConfiguration, !Ref Environment, UseCanary]
     - true
-
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
   IsBuildEnvironment: !Equals [!Ref Environment, "build"]
   IsDevOrBuild: !Or [Condition: IsDevEnvironment, Condition: IsBuildEnvironment]
+  IsLocalOrDev: !Or [Condition: IsDevEnvironment, Condition: IsLocal]
 
 Globals:
   Function:
@@ -213,7 +209,8 @@ Globals:
           ]
         POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
         AWS_XRAY_CONTEXT_MISSING: IGNORE_ERROR
-        NODE_OPTIONS: !If [IsLocal, "--enable-source-maps", !Ref AWS::NoValue]
+        NODE_OPTIONS:
+          !If [IsLocalOrDev, "--enable-source-maps", !Ref AWS::NoValue]
         USE_LOCALSTACK: !Ref AWS::NoValue
         ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"
@@ -404,9 +401,6 @@ Resources:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizeLambda.Arn}/invocations"
-      Tags:
-        FMSCustomPolicy: false
-        CustomPolicy: true
 
   ApiGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup
@@ -467,7 +461,7 @@ Resources:
         #          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointDnsName"
         #        HostedZoneId:
         #          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointHostedZoneId"
-        HostedZoneId: "Z7K1066E3PUKB"
+        HostedZoneId: "Z7K1066E3PUKB" # Canonical hosted zone ID for VPC interface endpoint in eu-west-2 (eu-west-2.vpce.amazonaws.com.)
         EvaluateTargetHealth: false
 
   PrivateApiDomain:
@@ -738,10 +732,7 @@ Resources:
         OutExtension:
           - .js=.mjs
         Target: "es2024"
-        Sourcemap: !If
-          - IsDevOrBuild
-          - true
-          - false
+        Sourcemap: true
         EntryPoints:
           - solutions/api/src/lambda/healthcheck.ts
 
@@ -809,10 +800,7 @@ Resources:
         OutExtension:
           - .js=.mjs
         Target: "es2024"
-        Sourcemap: !If
-          - IsDevOrBuild
-          - true
-          - false
+        Sourcemap: true
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:
@@ -873,10 +861,7 @@ Resources:
         OutExtension:
           - .js=.mjs
         Target: "es2024"
-        Sourcemap: !If
-          - IsDevOrBuild
-          - true
-          - false
+        Sourcemap: true
         EntryPoints:
           - solutions/api/src/lambda/journeyoutcome/index.ts
         Banner:
@@ -952,10 +937,7 @@ Resources:
         OutExtension:
           - .js=.mjs
         Target: "es2024"
-        Sourcemap: !If
-          - IsDevOrBuild
-          - true
-          - false
+        Sourcemap: true
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:

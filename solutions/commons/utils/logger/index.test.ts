@@ -9,6 +9,7 @@ vi.mock(import("@aws-lambda-powertools/logger"), () => ({
       appendKeys: vi.fn(),
       info: vi.fn(),
       error: vi.fn(),
+      resetKeys: vi.fn(),
     };
   },
 }));
@@ -74,6 +75,8 @@ describe("loggerAPIGatewayProxyHandlerWrapper", () => {
     expect(mockHandler).toHaveBeenCalledWith(mockEvent, mockContext);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.info).toHaveBeenCalledWith("Response", { statusCode: 200 });
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(logger.resetKeys).toHaveBeenCalledWith();
     expect(result).toStrictEqual({ statusCode: 200, body: "success" });
   });
 
@@ -90,6 +93,8 @@ describe("loggerAPIGatewayProxyHandlerWrapper", () => {
     expect(logger.error).toHaveBeenCalledWith("An error occurred", {
       error,
     });
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(logger.resetKeys).toHaveBeenCalledWith();
     expect(result).toStrictEqual({ statusCode: 500, body: "" });
   });
 });

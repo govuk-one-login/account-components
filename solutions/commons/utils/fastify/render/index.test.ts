@@ -101,10 +101,6 @@ describe("render", () => {
       "translate",
       reply.request?.i18n.t,
     );
-    expect(mockEnv.addFilter).toHaveBeenCalledWith(
-      "JSON.stringify",
-      JSON.stringify,
-    );
     expect(nunjucks.render).toHaveBeenCalledExactlyOnceWith("template.html", {
       currentUrl: new URL("http://example.com/current"),
       htmlLang: "en",

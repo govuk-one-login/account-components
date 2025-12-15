@@ -2,10 +2,7 @@ import assert from "node:assert";
 import { randomUUID } from "node:crypto";
 
 import { getKmsClient } from "../../../../../commons/utils/awsClient/kmsClient/index.js";
-import {
-  jwtSigningAlgorithm,
-  kmsJwtSigningAlgorithm,
-} from "../../../../../commons/utils/constants.js";
+import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import type { AuthRequestT } from "./getAuthRequest.js";
 import { derToJose } from "ecdsa-sig-formatter";
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
@@ -77,7 +74,7 @@ export const createAccessToken = async (authRequest: AuthRequestT) => {
   const { Signature } = await kmsClient.sign({
     KeyId: keyId,
     Message: Buffer.from(unsignedToken),
-    SigningAlgorithm: kmsJwtSigningAlgorithm,
+    SigningAlgorithm: "ECDSA_SHA_256",
     MessageType: "RAW",
   });
 

@@ -180,5 +180,4 @@ resource "aws_cloudformation_stack" "deploy" {
   template_body = file("${path.module}/app_config_pipeline.cf.yaml")
   capabilities  = var.capabilities
   on_failure    = var.on_failure
-  tags          = var.tags
 }

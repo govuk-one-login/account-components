@@ -33,6 +33,7 @@ repos:
         language: system
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -43,6 +44,7 @@ repos:
         language: system
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -53,6 +55,7 @@ repos:
         language: system
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -63,6 +66,7 @@ repos:
         language: system
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -73,6 +77,7 @@ repos:
         language: system
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -83,6 +88,7 @@ repos:
         language: system
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -93,6 +99,7 @@ repos:
         language: system
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -103,6 +110,7 @@ repos:
         language: system
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -111,9 +119,9 @@ repos:
         name: SAM validate frontend
         entry: npm run sam-validate:frontend
         language: system
-        pass_filenames: false
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -122,9 +130,9 @@ repos:
         name: SAM validate API
         entry: npm run sam-validate:api
         language: system
-        pass_filenames: false
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -133,9 +141,9 @@ repos:
         name: SAM validate stubs
         entry: npm run sam-validate:stubs
         language: system
-        pass_filenames: false
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -144,9 +152,9 @@ repos:
         name: SAM validate core
         entry: npm run sam-validate:core
         language: system
-        pass_filenames: false
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -157,6 +165,7 @@ repos:
         language: system
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -167,6 +176,7 @@ repos:
         language: system
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-commit]
 
   - repo: local
@@ -177,4 +187,5 @@ repos:
         language: system
         exclude: .*
         always_run: true
+        pass_filenames: false
         stages: [pre-push]
