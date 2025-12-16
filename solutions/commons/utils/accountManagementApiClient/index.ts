@@ -23,14 +23,74 @@ export class AccountManagementApiClient extends JsonApiClient {
     };
   }
 
-  async sendOtpChallenge(emailAdress: string) {
+  async authenticate(emailAddress: string, password: string) {
+    return this.logOnError("authenticate", async () => {
+      try {
+        const response = await fetch(`${this.baseUrl}/authenticate`, {
+          method: "POST",
+          headers: this.commonHeaders,
+          body: JSON.stringify({
+            email: emailAddress,
+            password,
+          }),
+        });
+
+        const errorsCodesMap = {
+          "1001": "RequestIsMissingParameters",
+          "1010": "AccountDoesNotExist",
+          "1008": "InvalidLoginCredentials",
+          "1084": "UserAccountBlocked",
+          "1083": "UserAccountSuspended",
+          "1085": "AccountInterventionsUnexpectedError",
+          "1094": "ExceededIncorrectPasswordSubmissionLimit",
+        } as const;
+
+        return await AccountManagementApiClient.processResponse(
+          response,
+          AccountManagementApiClient.undefinedSchema,
+          errorsCodesMap,
+        );
+      } catch {
+        return AccountManagementApiClient.unknownError;
+      }
+    });
+  }
+
+  async deleteAccount(emailAddress: string) {
+    return this.logOnError("authenticate", async () => {
+      try {
+        const response = await fetch(`${this.baseUrl}/delete-account`, {
+          method: "POST",
+          headers: this.commonHeaders,
+          body: JSON.stringify({
+            email: emailAddress,
+          }),
+        });
+
+        const errorsCodesMap = {
+          "1001": "RequestIsMissingParameters",
+          "1010": "AccountDoesNotExist",
+        } as const;
+
+        return await AccountManagementApiClient.processResponse(
+          response,
+          AccountManagementApiClient.undefinedSchema,
+          errorsCodesMap,
+        );
+      } catch {
+        return AccountManagementApiClient.unknownError;
+      }
+    });
+  }
+
+  async sendOtpChallenge(emailAddress: string) {
     return this.logOnError("sendOtpChallenge", async () => {
       try {
         const response = await fetch(`${this.baseUrl}/send-otp-challenge`, {
           method: "POST",
           headers: this.commonHeaders,
           body: JSON.stringify({
-            email: emailAdress,
+            email: emailAddress,
             mfaMethodType: "EMAIL",
           }),
         });
@@ -54,14 +114,14 @@ export class AccountManagementApiClient extends JsonApiClient {
     });
   }
 
-  async verifyOtpChallenge(emailAdress: string, otp: string) {
+  async verifyOtpChallenge(emailAddress: string, otp: string) {
     return this.logOnError("verifyOtpChallenge", async () => {
       try {
         const response = await fetch(`${this.baseUrl}/verify-otp-challenge`, {
           method: "POST",
           headers: this.commonHeaders,
           body: JSON.stringify({
-            email: emailAdress,
+            email: emailAddress,
             mfaMethodType: "EMAIL",
             otp,
           }),

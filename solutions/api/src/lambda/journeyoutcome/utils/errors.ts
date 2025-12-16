@@ -25,6 +25,12 @@ const journeyOutcomeErrors: Record<string, ErrorType> = {
     statusCode: 404,
     metric: "MissingOutcome",
   },
+  OutcomeSubDoesNotMatchPayload: {
+    code: "E4005",
+    description: "invalid_request",
+    statusCode: 400,
+    metric: "OutcomeSubDoesNotMatchPayload",
+  },
   InvalidAccessToken: {
     code: "E4007",
     description: "invalid_request",

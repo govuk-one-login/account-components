@@ -5,7 +5,7 @@ import type { JourneyOutcomePayload } from "./interfaces.js";
 
 export const getJourneyOutcome = async (
   payload: JourneyOutcomePayload,
-): Promise<JourneyOutcome | undefined> => {
+): Promise<JourneyOutcome> => {
   const dynamoDb = getDynamoDbClient();
   try {
     const result = await dynamoDb.get({
@@ -15,14 +15,31 @@ export const getJourneyOutcome = async (
       },
     });
 
+    if (!result.Item) {
+      errorManager.throwError(
+        "MissingOutcome",
+        `Missing outcome with outcome_id: ${payload.outcome_id ?? "undefined"} and jti: ${payload.jti ?? "undefined"}`,
+      );
+      throw new Error("Unreachable code reached");
+    }
+
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    return result.Item?.["outcome"] as JourneyOutcome | undefined;
+    const outcome = result.Item["outcome"] as JourneyOutcome;
+
+    if (outcome.some((anOutcome) => anOutcome.sub !== payload.sub)) {
+      errorManager.throwError(
+        "OutcomeSubDoesNotMatchPayload",
+        `Outcome sub does not match payload sub with outcome_id: ${payload.outcome_id ?? "undefined"} and jti: ${payload.jti ?? "undefined"}`,
+      );
+      throw new Error("Unreachable code reached");
+    }
+
+    return outcome;
   } catch (error) {
     errorManager.throwError(
       "FailedToFindOutcome",
       `A problem occurred while retrieving the journey outcome: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
-    // line below is to appease the linter; not actually needed as errorManager.throwError will throw an exception
-    return undefined;
+    throw new Error("Unreachable code reached");
   }
 };

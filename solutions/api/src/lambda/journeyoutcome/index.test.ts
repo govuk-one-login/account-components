@@ -16,10 +16,10 @@ const mockLogger = {
   appendKeys: vi.fn(),
 };
 
-const mockOutcomeData: JourneyOutcome = [
+const mockOutcomeData = [
   { step: 1, action: "start" },
   { step: 2, action: "complete" },
-];
+] as unknown as JourneyOutcome;
 
 vi.mock(import("./utils/verifySignatureAndGetPayload.js"));
 const mockverifySignatureAndGetPayload = vi.mocked(
@@ -82,33 +82,6 @@ describe("journeyoutcome handler", () => {
     expect(result).toStrictEqual({
       statusCode: 200,
       body: JSON.stringify(mockOutcomeData),
-    });
-  });
-
-  it("returns 404 status if outcome is not found for provided outcome_id", async () => {
-    mockverifySignatureAndGetPayload.mockResolvedValue(
-      {} as any as JourneyOutcomePayload,
-    );
-    mockValidateJourneyOutcomeJwtClaims.mockResolvedValue(undefined);
-    mockGetKmsKey.mockResolvedValue({} as any as CryptoKey);
-    mockGetJourneyOutcome.mockResolvedValue(undefined);
-
-    const mockValidEvent = {
-      headers: { Authorization: "Bearer blah" },
-    } as unknown as APIGatewayProxyEvent;
-    const result = await handler(mockValidEvent, mockContext);
-
-    expect(mockMetrics.addMetric).toHaveBeenCalledWith(
-      "MissingOutcome",
-      "Count",
-      1,
-    );
-    expect(result).toStrictEqual({
-      statusCode: 404,
-      body: JSON.stringify({
-        error: "not_found",
-        error_description: "E404",
-      }),
     });
   });
 

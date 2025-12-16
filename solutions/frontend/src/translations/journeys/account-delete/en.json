@@ -22,5 +22,20 @@
       "tooShort": "TODO tooShort",
       "notAllDigits": "TODO notAllDigits"
     }
+  },
+  "enterPassword": {
+    "pageTitle": "TODO enterPassword",
+    "heading": "TODO enterPassword",
+    "pwInputLabel": "TODO password",
+    "buttonLabel": "TODO continue",
+    "formErrors": {
+      "empty": "TODO empty",
+      "incorrect": "TODO incorrect"
+    }
+  },
+  "confirm": {
+    "pageTitle": "TODO confirm",
+    "heading": "TODO confirm",
+    "buttonLabel": "TODO delete account"
   }
 }

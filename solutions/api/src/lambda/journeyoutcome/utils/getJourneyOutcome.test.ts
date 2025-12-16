@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { JourneyOutcomePayload } from "./interfaces.js";
-import type { JourneyOutcome } from "../../../../../commons/utils/interfaces.js";
 
 const mockDynamoDbGet = vi.fn();
 
@@ -24,11 +23,13 @@ const { getJourneyOutcome } = await import("./getJourneyOutcome.js");
 
 const mockPayload: JourneyOutcomePayload = {
   outcome_id: "test-outcome-123",
+  jti: "test-jti-456",
+  sub: "test-sub-789",
 };
 
-const mockOutcomeData: JourneyOutcome = [
-  { step: 1, action: "start" },
-  { step: 2, action: "complete" },
+const mockOutcomeData = [
+  { step: 1, action: "start", sub: "test-sub-789" },
+  { step: 2, action: "complete", sub: "test-sub-789" },
 ];
 
 describe("getJourneyOutcome", () => {
@@ -36,9 +37,9 @@ describe("getJourneyOutcome", () => {
     vi.clearAllMocks();
     process.env["JOURNEY_OUTCOME_TABLE_NAME"] = "TestTable";
 
-    vi.spyOn(mockErrorManager, "throwError").mockImplementation(
-      () => undefined,
-    );
+    vi.spyOn(mockErrorManager, "throwError").mockImplementation(() => {
+      throw new Error("Mock error thrown");
+    });
   });
 
   afterEach(() => {
@@ -69,31 +70,58 @@ describe("getJourneyOutcome", () => {
     expect(mockErrorManager.throwError).not.toHaveBeenCalled();
   });
 
-  it("should return undefined if the item does not exist", async () => {
+  it("should throw MissingOutcome error if the item does not exist", async () => {
     mockDynamoDbGet.mockResolvedValueOnce({
       Item: undefined,
     });
 
-    const result = await getJourneyOutcome(mockPayload);
+    await expect(getJourneyOutcome(mockPayload)).rejects.toThrowError(
+      "Mock error thrown",
+    );
 
-    expect(result).toBeUndefined();
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    expect(mockErrorManager.throwError).not.toHaveBeenCalled();
+    expect(mockErrorManager.throwError).toHaveBeenCalledWith(
+      "MissingOutcome",
+      "Missing outcome with outcome_id: test-outcome-123 and jti: test-jti-456",
+    );
   });
 
-  it("should call errorManager.throwError if the DynamoDB operation fails", async () => {
+  it("should throw FailedToFindOutcome error if the DynamoDB operation fails", async () => {
     const mockError = new Error("DB Connection Failed");
     mockDynamoDbGet.mockRejectedValueOnce(mockError);
 
-    const result = await getJourneyOutcome(mockPayload);
+    await expect(getJourneyOutcome(mockPayload)).rejects.toThrowError(
+      "Mock error thrown",
+    );
 
-    expect(result).toBeUndefined();
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "FailedToFindOutcome",
-      expect.stringContaining(
-        "A problem occurred while retrieving the journey outcome: DB Connection Failed",
-      ),
+      "A problem occurred while retrieving the journey outcome: DB Connection Failed",
+    );
+  });
+
+  it("should throw OutcomeSubDoesNotMatchPayload error if outcome sub does not match payload sub", async () => {
+    const mismatchedOutcomeData = [
+      { step: 1, action: "start", sub: "different-sub" },
+      { step: 2, action: "complete", sub: "test-sub-789" },
+    ];
+
+    mockDynamoDbGet.mockResolvedValueOnce({
+      Item: {
+        outcome_id: mockPayload.outcome_id,
+        outcome: mismatchedOutcomeData,
+      },
+    });
+
+    await expect(getJourneyOutcome(mockPayload)).rejects.toThrowError(
+      "Mock error thrown",
+    );
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockErrorManager.throwError).toHaveBeenCalledWith(
+      "OutcomeSubDoesNotMatchPayload",
+      "Outcome sub does not match payload sub with outcome_id: test-outcome-123 and jti: test-jti-456",
     );
   });
 });

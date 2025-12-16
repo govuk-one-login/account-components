@@ -5,7 +5,6 @@ import type {
   Claims,
   getClaimsSchema,
 } from "../../../../commons/utils/authorize/getClaimsSchema.js";
-import type { JourneyOutcome } from "../../../../commons/utils/interfaces.js";
 import type * as v from "valibot";
 
 const mockTransactWrite = vi.fn();
@@ -58,7 +57,7 @@ describe("completeJourney", () => {
   let mockRequest: FastifyRequest;
   let mockReply: FastifyReply;
   let mockClaims: Claims;
-  let mockJourneyOutcome: JourneyOutcome;
+  let mockJourneyOutcome: object[];
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -113,9 +112,13 @@ describe("completeJourney", () => {
             TableName: "test-outcome-table",
             Item: {
               outcome_id: mockOutcomeId,
-              outcome: mockJourneyOutcome,
-              scope: mockClaims.scope,
-              sub: mockClaims.sub,
+              outcome: mockJourneyOutcome.map((outcome) => ({
+                ...outcome,
+                scope: mockClaims.scope,
+                sub: mockClaims.sub,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                timestamp: expect.any(Number),
+              })),
             },
           },
         },

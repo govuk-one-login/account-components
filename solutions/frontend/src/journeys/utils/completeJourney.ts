@@ -8,7 +8,6 @@ import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
-import type { JourneyOutcome } from "../../../../commons/utils/interfaces.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -16,7 +15,7 @@ export const completeJourney = async (
   request: FastifyRequest,
   reply: FastifyReply,
   claims: v.InferOutput<ReturnType<typeof getClaimsSchema>>,
-  journeyOutcome: JourneyOutcome,
+  journeyOutcome: object[],
 ) => {
   try {
     const authCode = randomBytes(24).toString("hex");
@@ -31,9 +30,12 @@ export const completeJourney = async (
             TableName: process.env["JOURNEY_OUTCOME_TABLE_NAME"],
             Item: {
               outcome_id: outcomeId,
-              outcome: journeyOutcome,
-              scope: claims.scope,
-              sub: claims.sub,
+              outcome: journeyOutcome.map((outcome) => ({
+                ...outcome,
+                scope: claims.scope,
+                sub: claims.sub,
+                timestamp: Date.now(),
+              })),
             },
           },
         },
