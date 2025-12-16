@@ -64,6 +64,7 @@ describe("getJourneyOutcome", () => {
       Key: {
         outcome_id: "test-outcome-123",
       },
+      ConsistentRead: true,
     });
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
