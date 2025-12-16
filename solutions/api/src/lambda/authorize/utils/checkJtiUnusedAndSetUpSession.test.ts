@@ -19,9 +19,6 @@ const mockMetrics = {
   addMetric: vi.fn(),
 };
 const mockRandomBytes = vi.fn();
-const mockFetch = vi.fn();
-
-vi.stubGlobal("fetch", mockFetch);
 
 // @ts-expect-error
 vi.mock(
@@ -88,7 +85,6 @@ describe("checkJtiUnusedAndSetUpSession", () => {
     mockRandomBytes.mockReturnValue(
       Buffer.from("abcdef123456789012345678", "hex"), // pragma: allowlist secret
     );
-    mockFetch.mockResolvedValue(new Response());
   });
 
   it("returns redirect response with session cookie when transaction succeeds", async () => {
@@ -140,10 +136,6 @@ describe("checkJtiUnusedAndSetUpSession", () => {
         },
       ],
     });
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      "https://frontend.example.com/healthcheck",
-    );
   });
 
   it("returns redirect response when state is not provided", async () => {
@@ -165,10 +157,6 @@ describe("checkJtiUnusedAndSetUpSession", () => {
     expect(response.statusCode).toBe(302);
     expect(response.headers?.["location"]).toBe(
       "https://frontend.example.com/start-session?client_id=test-client-id&redirect_uri=https%3A%2F%2Fexample.com%2Fcallback",
-    );
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      "https://frontend.example.com/healthcheck",
     );
   });
 
@@ -511,31 +499,6 @@ describe("checkJtiUnusedAndSetUpSession", () => {
       "FailedToCheckJtiUnusedAndSetUpSession",
       MetricUnit.Count,
       1,
-    );
-  });
-
-  it("logs fetch errors when pre-warming frontend fails", async () => {
-    const fetchError = new Error("Network error");
-    mockFetch.mockRejectedValue(fetchError);
-    mockTransactWrite.mockResolvedValue({});
-
-    await checkJtiUnusedAndSetUpSession(
-      mockClaims,
-      mockClientId,
-      mockRedirectUri,
-      mockState,
-    );
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      "https://frontend.example.com/healthcheck",
-    );
-
-    // Wait for the promise chain to complete
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(mockLogger.warn).toHaveBeenCalledWith(
-      "An error occurred when pre-warming the frontend",
-      { error: fetchError },
     );
   });
 });

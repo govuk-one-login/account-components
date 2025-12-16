@@ -36,13 +36,6 @@ export const checkJtiUnusedAndSetUpSession = async (
     );
     assert.ok(process.env["FRONTEND_URL"], "FRONTEND_URL is not set");
 
-    // Hit the frontend healthcheck endpoint to ensure there is a warm Lambda
-    const frontendHealthcheckUrl = new URL(process.env["FRONTEND_URL"]);
-    frontendHealthcheckUrl.pathname = "/healthcheck";
-    void fetch(frontendHealthcheckUrl.toString()).catch((error: unknown) => {
-      logger.warn("An error occurred when pre-warming the frontend", { error });
-    });
-
     const appConfig = await getAppConfig();
 
     const savedJtiExpires =
