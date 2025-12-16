@@ -1,7 +1,6 @@
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import { errorManager } from "./errors.js";
-import type { JourneyOutcome } from "../../../../../commons/utils/interfaces.js";
-import type { JourneyOutcomePayload } from "./interfaces.js";
+import type { JourneyOutcome, JourneyOutcomePayload } from "./interfaces.js";
 
 export const getJourneyOutcome = async (
   payload: JourneyOutcomePayload,
@@ -13,6 +12,7 @@ export const getJourneyOutcome = async (
       Key: {
         outcome_id: payload.outcome_id,
       },
+      ConsistentRead: true,
     });
 
     if (!result.Item) {
