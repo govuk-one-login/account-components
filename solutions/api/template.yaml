@@ -197,7 +197,7 @@ Globals:
     Timeout: 10
     MemorySize: 1792
     ProvisionedConcurrencyConfig:
-      ProvisionedConcurrentExecutions: 3
+      ProvisionedConcurrentExecutions: 1
     Architectures:
       - !Ref LambdaArchitecture
     Runtime: nodejs24.x
@@ -211,6 +211,8 @@ Globals:
           ]
         POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
         AWS_XRAY_CONTEXT_MISSING: IGNORE_ERROR
+        NODE_OPTIONS:
+          !If [IsLocalOrDev, "--enable-source-maps", !Ref AWS::NoValue]
         USE_LOCALSTACK: !Ref AWS::NoValue
         ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"

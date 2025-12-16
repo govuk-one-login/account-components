@@ -101,7 +101,7 @@ Globals:
     Timeout: 10
     MemorySize: 1792
     ProvisionedConcurrencyConfig:
-      ProvisionedConcurrentExecutions: 3
+      ProvisionedConcurrentExecutions: 1
     Architectures:
       - arm64
     Runtime: nodejs24.x
