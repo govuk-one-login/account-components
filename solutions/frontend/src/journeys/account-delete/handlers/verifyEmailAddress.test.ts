@@ -36,6 +36,7 @@ describe("verifyEmailAddress handlers", () => {
         claims: {
           access_token: "test-token",
           email: "test@example.com",
+          public_sub: "test-public_sub-123",
           redirect_uri: "https://example.com/callback",
           state: "test-state",
         },
@@ -108,7 +109,7 @@ describe("verifyEmailAddress handlers", () => {
       );
 
       expect(mockVerifyOtpChallenge).toHaveBeenCalledWith(
-        "test@example.com",
+        "test-public_sub-123",
         "123456",
       );
       expect(
@@ -396,7 +397,7 @@ describe("verifyEmailAddress handlers", () => {
       );
 
       expect(mockVerifyOtpChallenge).toHaveBeenCalledWith(
-        "test@example.com",
+        "test-public_sub-123",
         "123456",
       );
       expect(mockReply.render).toHaveBeenCalledWith(
@@ -451,7 +452,7 @@ describe("verifyEmailAddress handlers", () => {
         );
 
         expect(mockVerifyOtpChallenge).toHaveBeenCalledWith(
-          "test@example.com",
+          "test-public_sub-123",
           "123456",
         );
         expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(

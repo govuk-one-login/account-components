@@ -57,7 +57,7 @@ export class AccountManagementApiClient extends JsonApiClient {
   }
 
   async deleteAccount(emailAddress: string) {
-    return this.logOnError("authenticate", async () => {
+    return this.logOnError("deleteAccount", async () => {
       try {
         const response = await fetch(`${this.baseUrl}/delete-account`, {
           method: "POST",
@@ -83,17 +83,19 @@ export class AccountManagementApiClient extends JsonApiClient {
     });
   }
 
-  async sendOtpChallenge(emailAddress: string) {
+  async sendOtpChallenge(publicSubjectId: string) {
     return this.logOnError("sendOtpChallenge", async () => {
       try {
-        const response = await fetch(`${this.baseUrl}/send-otp-challenge`, {
-          method: "POST",
-          headers: this.commonHeaders,
-          body: JSON.stringify({
-            email: emailAddress,
-            mfaMethodType: "EMAIL",
-          }),
-        });
+        const response = await fetch(
+          `${this.baseUrl}/send-otp-challenge/${publicSubjectId}`,
+          {
+            method: "POST",
+            headers: this.commonHeaders,
+            body: JSON.stringify({
+              mfaMethodType: "EMAIL",
+            }),
+          },
+        );
 
         const errorsCodesMap = {
           "1001": "RequestIsMissingParameters",
@@ -114,18 +116,20 @@ export class AccountManagementApiClient extends JsonApiClient {
     });
   }
 
-  async verifyOtpChallenge(emailAddress: string, otp: string) {
+  async verifyOtpChallenge(publicSubjectId: string, otp: string) {
     return this.logOnError("verifyOtpChallenge", async () => {
       try {
-        const response = await fetch(`${this.baseUrl}/verify-otp-challenge`, {
-          method: "POST",
-          headers: this.commonHeaders,
-          body: JSON.stringify({
-            email: emailAddress,
-            mfaMethodType: "EMAIL",
-            otp,
-          }),
-        });
+        const response = await fetch(
+          `${this.baseUrl}/verify-otp-challenge/${publicSubjectId}`,
+          {
+            method: "POST",
+            headers: this.commonHeaders,
+            body: JSON.stringify({
+              otp,
+              mfaMethodType: "EMAIL",
+            }),
+          },
+        );
 
         const errorsCodesMap = {
           "1001": "RequestIsMissingParameters",

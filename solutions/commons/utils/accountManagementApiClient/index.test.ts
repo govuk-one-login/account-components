@@ -65,14 +65,14 @@ describe("accountManagementApiClient", () => {
   describe("sendOtpChallenge", () => {
     it("should make correct API call", async () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
-      const email = "test@example.com";
+      const publicSubjectId = "test-public-subject-id";
 
       mockFetch.mockResolvedValueOnce(new Response());
 
-      await client.sendOtpChallenge(email);
+      await client.sendOtpChallenge(publicSubjectId);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://api.example.com/send-otp-challenge",
+        "https://api.example.com/send-otp-challenge/test-public-subject-id",
         {
           method: "POST",
           headers: {
@@ -86,7 +86,6 @@ describe("accountManagementApiClient", () => {
             Authorization: `Bearer ${mockAccessToken}`,
           },
           body: JSON.stringify({
-            email,
             mfaMethodType: "EMAIL",
           }),
         },
@@ -98,7 +97,7 @@ describe("accountManagementApiClient", () => {
 
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
-      const result = await client.sendOtpChallenge("test@example.com");
+      const result = await client.sendOtpChallenge("test-public-subject-id");
 
       expect(result).toStrictEqual({ success: false, error: "UnknownError" });
     });
@@ -194,15 +193,15 @@ describe("accountManagementApiClient", () => {
   describe("verifyOtpChallenge", () => {
     it("should make correct API call", async () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
-      const email = "test@example.com";
+      const publicSubjectId = "test-public-subject-id";
       const otp = "123456";
 
       mockFetch.mockResolvedValueOnce(new Response());
 
-      await client.verifyOtpChallenge(email, otp);
+      await client.verifyOtpChallenge(publicSubjectId, otp);
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "https://api.example.com/verify-otp-challenge",
+        "https://api.example.com/verify-otp-challenge/test-public-subject-id",
         {
           method: "POST",
           headers: {
@@ -216,9 +215,8 @@ describe("accountManagementApiClient", () => {
             Authorization: `Bearer ${mockAccessToken}`,
           },
           body: JSON.stringify({
-            email,
-            mfaMethodType: "EMAIL",
             otp,
+            mfaMethodType: "EMAIL",
           }),
         },
       );
@@ -230,7 +228,7 @@ describe("accountManagementApiClient", () => {
       mockFetch.mockRejectedValueOnce(new Error("Network error"));
 
       const result = await client.verifyOtpChallenge(
-        "test@example.com",
+        "test-public-subject-id",
         "123456",
       );
 

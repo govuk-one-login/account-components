@@ -74,6 +74,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: "refresh-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -98,6 +99,7 @@ describe("getClaimsSchema", () => {
       jti: "unique-jti",
       access_token: "access-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -123,6 +125,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: undefined,
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -148,6 +151,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: null,
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -173,6 +177,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: "refresh-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -198,6 +203,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: "refresh-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -223,6 +229,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: "refresh-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -248,6 +255,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: "refresh-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -273,6 +281,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: "refresh-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -298,6 +307,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: "refresh-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -323,6 +333,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: "refresh-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -348,6 +359,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: "refresh-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -373,6 +385,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: "refresh-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -398,6 +411,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: "refresh-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };
@@ -423,6 +437,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: "refresh-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "invalid-email",
       govuk_signin_journey_id: "journey-123",
     };
@@ -453,6 +468,7 @@ describe("getClaimsSchema", () => {
       access_token: "access-token",
       refresh_token: "refresh-token",
       sub: "user-123",
+      public_sub: "public-user-123",
       email: "test@example.com",
       govuk_signin_journey_id: "journey-123",
     };

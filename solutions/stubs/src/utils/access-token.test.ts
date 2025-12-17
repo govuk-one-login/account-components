@@ -60,6 +60,7 @@ describe("generateAccessToken", () => {
       sub: expect.stringMatching(
         /^urn:fdc:gov.uk:2022:[0-9a-f-]{36}$/,
       ) as unknown as string,
+      public_sub: expect.stringMatching(/^[0-9a-f-]{36}$/) as unknown as string,
       iss: "http://localhost:6003",
       aud: expect.stringMatching(
         /^[a-f0-9]{10}-[a-f0-9]{10}-[a-f0-9]{10}$/,
