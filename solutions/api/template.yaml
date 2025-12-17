@@ -770,7 +770,7 @@ Resources:
             ]
           JWT_SIGNING_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyAlias}}"
       Policies:
-        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
             - Effect: Allow
@@ -846,7 +846,7 @@ Resources:
             ]
           JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableName}}"
       Policies:
-        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
             - Effect: Allow
@@ -923,7 +923,7 @@ Resources:
           FRONTEND_URL:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendUrl]
       Policies:
-        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
             - Effect: Allow

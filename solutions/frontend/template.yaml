@@ -457,7 +457,7 @@ Resources:
               accountManagementApiUrl,
             ]
       Policies:
-        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
         - Statement:
             - Effect: Allow
               Action:
