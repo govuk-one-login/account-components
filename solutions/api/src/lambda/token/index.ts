@@ -10,11 +10,8 @@ import { getAuthRequest } from "./utils/getAuthRequest.js";
 import { verifyJti } from "./utils/verifyJti.js";
 import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
 import { createAccessToken } from "./utils/createAccessToken.js";
-import { tracer } from "../../../../commons/utils/awsClient/tracer.js";
-
-export const handler = tracer.captureLambdaHandler(
-  loggerAPIGatewayProxyHandlerWrapper(
-    metricsAPIGatewayProxyHandlerWrapper(
+export const handler = loggerAPIGatewayProxyHandlerWrapper(
+  metricsAPIGatewayProxyHandlerWrapper(
     async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
       try {
         // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -52,6 +49,5 @@ export const handler = tracer.captureLambdaHandler(
         return errorManager.handleError(error as TokenAppError | Error);
       }
     },
-    ),
   ),
 );

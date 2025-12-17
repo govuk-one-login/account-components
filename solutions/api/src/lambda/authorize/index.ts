@@ -14,11 +14,8 @@ import {
   metrics,
 } from "../../../../commons/utils/metrics/index.js";
 import { checkJtiUnusedAndSetUpSession } from "./utils/checkJtiUnusedAndSetUpSession.js";
-import { tracer } from "../../../../commons/utils/awsClient/tracer.js";
-
-export const handler = tracer.captureLambdaHandler(
-  loggerAPIGatewayProxyHandlerWrapper(
-    metricsAPIGatewayProxyHandlerWrapper(
+export const handler = loggerAPIGatewayProxyHandlerWrapper(
+  metricsAPIGatewayProxyHandlerWrapper(
     async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
       try {
         metrics.addDimensions({
@@ -88,6 +85,5 @@ export const handler = tracer.captureLambdaHandler(
         return badRequestResponse;
       }
     },
-    ),
   ),
 );
