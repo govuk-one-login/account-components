@@ -11,13 +11,20 @@ import { AccountManagementApiClient } from "../../../../../commons/utils/account
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
 
+const getRenderOptions = () => ({
+  dontShowExitJourneyLink: true,
+});
+
 export async function enterPasswordGetHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {
   assert.ok(reply.render);
 
-  await reply.render("journeys/account-delete/templates/enterPassword.njk");
+  await reply.render(
+    "journeys/account-delete/templates/enterPassword.njk",
+    getRenderOptions(),
+  );
   return reply;
 }
 
@@ -30,10 +37,10 @@ export async function enterPasswordPostHandler(
   const renderPage = async (options: object) => {
     assert.ok(reply.render);
 
-    await reply.render(
-      "journeys/account-delete/templates/enterPassword.njk",
-      options,
-    );
+    await reply.render("journeys/account-delete/templates/enterPassword.njk", {
+      ...getRenderOptions(),
+      ...options,
+    });
   };
 
   const bodySchema = v.object({
