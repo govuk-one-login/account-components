@@ -34,7 +34,7 @@ describe("handleSendOtpChallenge", () => {
         // @ts-expect-error
         claims: {
           access_token: "test-token",
-          email: "test@example.com",
+          sub: "test-sub-123",
           redirect_uri: "https://example.com/callback",
           state: "test-state",
         },
@@ -51,7 +51,7 @@ describe("handleSendOtpChallenge", () => {
       mockReply as FastifyReply,
     );
 
-    expect(mockSendOtpChallenge).toHaveBeenCalledWith("test@example.com");
+    expect(mockSendOtpChallenge).toHaveBeenCalledWith("test-sub-123");
     expect(result).toStrictEqual({ success: true });
   });
 
@@ -92,7 +92,7 @@ describe("handleSendOtpChallenge", () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockSendOtpChallenge).toHaveBeenCalledWith("test@example.com");
+      expect(mockSendOtpChallenge).toHaveBeenCalledWith("test-sub-123");
       expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
         mockRequest,
         mockReply,
