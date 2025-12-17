@@ -2,6 +2,7 @@ import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
 import {
+  getFormErrors,
   getFormErrorsFromValueAndSchema,
   getFormErrorsList,
 } from "../../../utils/formErrorsHelpers.js";
@@ -97,14 +98,30 @@ export async function verifyEmailAddressPostHandler(
   );
 
   if (!result.success) {
+    if (result.error === "InvalidOTPCode") {
+      const formErrors = getFormErrors([
+        {
+          msg: request.i18n.t(
+            "journey:verifyEmailAddress.formErrors.incorrect",
+          ),
+          fieldId: "code",
+        },
+      ]);
+
+      await renderPage({
+        errors: formErrors,
+        errorList: getFormErrorsList(formErrors),
+      });
+      return reply;
+    }
+
     type SendOtpChallengeError = (typeof result)["error"];
     const errorMap: Record<
-      SendOtpChallengeError,
+      Exclude<SendOtpChallengeError, "InvalidOTPCode">,
       (typeof authorizeErrors)[keyof typeof authorizeErrors]
     > = {
       RequestIsMissingParameters: authorizeErrors.tempErrorTODORemoveLater,
       TooManyEmailCodesEntered: authorizeErrors.tempErrorTODORemoveLater,
-      InvalidOTPCode: authorizeErrors.tempErrorTODORemoveLater,
       ErrorValidatingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
       ErrorParsingResponseBodyJson: authorizeErrors.tempErrorTODORemoveLater,
       ErrorValidatingErrorResponseBody:

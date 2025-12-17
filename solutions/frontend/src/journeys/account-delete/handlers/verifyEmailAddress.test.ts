@@ -380,10 +380,54 @@ describe("verifyEmailAddress handlers", () => {
       ).rejects.toThrowError();
     });
 
+    it("should render error when verifyOtpChallenge fails with InvalidOTPCode", async () => {
+      mockRequest.body = { code: "123456" };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = {
+        t: vi.fn().mockReturnValue("Incorrect verification code"),
+      } as any;
+      mockVerifyOtpChallenge.mockResolvedValue({
+        success: false,
+        error: "InvalidOTPCode",
+      });
+
+      const result = await verifyEmailAddressPostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockVerifyOtpChallenge).toHaveBeenCalledWith(
+        "test@example.com",
+        "123456",
+      );
+      expect(mockReply.render).toHaveBeenCalledWith(
+        "journeys/account-delete/templates/verifyEmailAddress.njk",
+        expect.objectContaining({
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errors: expect.objectContaining({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            code: expect.objectContaining({
+              text: "Incorrect verification code",
+              href: "#code",
+            }),
+          }),
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          errorList: expect.arrayContaining([
+            expect.objectContaining({
+              text: "Incorrect verification code",
+              href: "#code",
+            }),
+          ]),
+          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          emailAddress: "test@example.com",
+        }),
+      );
+      expect(result).toBe(mockReply);
+    });
+
     it.each([
       "RequestIsMissingParameters",
       "TooManyEmailCodesEntered",
-      "InvalidOTPCode",
       "ErrorValidatingResponseBody",
       "ErrorParsingResponseBodyJson",
       "ErrorValidatingErrorResponseBody",
