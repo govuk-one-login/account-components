@@ -49,14 +49,13 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
 
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
-  logger: mockLogger,
+  logger: { ...mockLogger, warn: vi.fn(), debug: vi.fn() },
   loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
 // @ts-expect-error
-vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
-  logger: { warn: vi.fn(), debug: vi.fn() },
-  loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
+vi.mock(import("../../../../commons/utils/awsClient/tracer.js"), () => ({
+  tracer: { captureLambdaHandler: (fn) => fn },
 }));
 
 const { handler } = await import("./index.js");

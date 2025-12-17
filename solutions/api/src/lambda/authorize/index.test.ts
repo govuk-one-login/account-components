@@ -50,6 +50,11 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
   metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/awsClient/tracer.js"), () => ({
+  tracer: { captureLambdaHandler: (fn) => fn },
+}));
+
 const { handler } = await import("./index.js");
 const { ErrorResponse, badRequestResponse } = await import("./utils/common.js");
 

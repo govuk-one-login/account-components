@@ -10,9 +10,11 @@ import { validateJourneyOutcomeJwtClaims } from "./utils/validateJourneyOutcomeJ
 import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
 import { getJourneyOutcome } from "./utils/getJourneyOutcome.js";
 import type { JourneyOutcomePayload } from "./utils/interfaces.js";
+import { tracer } from "../../../../commons/utils/awsClient/tracer.js";
 
-export const handler = loggerAPIGatewayProxyHandlerWrapper(
-  metricsAPIGatewayProxyHandlerWrapper(
+export const handler = tracer.captureLambdaHandler(
+  loggerAPIGatewayProxyHandlerWrapper(
+    metricsAPIGatewayProxyHandlerWrapper(
     async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
       const bearerPrefix = "Bearer ";
       const authorisationHeader = getHeader(event.headers, "Authorization");
@@ -61,5 +63,6 @@ export const handler = loggerAPIGatewayProxyHandlerWrapper(
         );
       }
     },
+    ),
   ),
 );
