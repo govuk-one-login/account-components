@@ -211,7 +211,10 @@ Globals:
             !Ref Environment,
             LambdaLogLevel,
           ]
+        POWERTOOLS_TRACE_ENABLED: true
+        POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS: true
         POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
+        POWERTOOLS_TRACER_CAPTURE_ERROR: true
         AWS_XRAY_CONTEXT_MISSING: IGNORE_ERROR
         NODE_OPTIONS:
           !If [IsLocalOrDev, "--enable-source-maps", !Ref AWS::NoValue]
@@ -726,8 +729,10 @@ Resources:
       LoggingConfig:
         LogGroup: !Ref HealthcheckLambdaLogGroup
       Handler: healthcheck.handler
+      Tracing: Active
       Policies:
-        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -753,6 +758,7 @@ Resources:
       LoggingConfig:
         LogGroup: !Ref TokenLambdaLogGroup
       Handler: index.handler
+      Tracing: Active
       Environment:
         Variables:
           AUTH_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableName}}"
@@ -770,8 +776,13 @@ Resources:
               journeyOutcomeEndpointUrl,
             ]
           JWT_SIGNING_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyAlias}}"
+          POWERTOOLS_TRACE_ENABLED: true
+          POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS: true
+          POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
+          POWERTOOLS_TRACER_CAPTURE_ERROR: true
       Policies:
-        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
             - Effect: Allow
               Action:
@@ -823,6 +834,7 @@ Resources:
       LoggingConfig:
         LogGroup: !Ref JourneyOutcomeLambdaLogGroup
       Handler: index.handler
+      Tracing: Active
       Environment:
         Variables:
           JWT_SIGNING_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyAlias}}"
@@ -839,8 +851,13 @@ Resources:
               journeyOutcomeEndpointUrl,
             ]
           JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableName}}"
+          POWERTOOLS_TRACE_ENABLED: true
+          POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS: true
+          POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
+          POWERTOOLS_TRACER_CAPTURE_ERROR: true
       Policies:
-        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
             - Effect: Allow
               Action:
@@ -884,6 +901,7 @@ Resources:
       LoggingConfig:
         LogGroup: !Ref AuthorizeLambdaLogGroup
       Handler: index.handler
+      Tracing: Active
       Environment:
         Variables:
           AUTHORIZE_ERROR_PAGE_URL:
@@ -909,8 +927,13 @@ Resources:
             ]
           FRONTEND_URL:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendUrl]
+          POWERTOOLS_TRACE_ENABLED: true
+          POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS: true
+          POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
+          POWERTOOLS_TRACER_CAPTURE_ERROR: true
       Policies:
-        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
             - Effect: Allow
               Action:

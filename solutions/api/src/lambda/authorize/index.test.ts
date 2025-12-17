@@ -50,6 +50,8 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
   metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
+
+
 const { handler } = await import("./index.js");
 const { ErrorResponse, badRequestResponse } = await import("./utils/common.js");
 

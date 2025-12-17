@@ -6,7 +6,7 @@ import type {
 import { SQSClient } from "@aws-sdk/client-sqs";
 import { getAwsClientConfig } from "../getAwsClientConfig/index.js";
 import { getEnvironment } from "../../getEnvironment/index.js";
-import * as AWSXRay from "aws-xray-sdk";
+import { tracer } from "../tracer.js";
 
 const createSqsClient = () => {
   const sqsClient = new SQSClient(getAwsClientConfig());
@@ -14,7 +14,7 @@ const createSqsClient = () => {
   const wrappedClient =
     getEnvironment() === "local"
       ? sqsClient
-      : AWSXRay.captureAWSv3Client(sqsClient);
+      : tracer.captureAWSv3Client(sqsClient);
 
   return {
     client: wrappedClient,

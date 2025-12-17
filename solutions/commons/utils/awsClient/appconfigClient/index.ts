@@ -1,7 +1,7 @@
 import { AppConfigDataClient } from "@aws-sdk/client-appconfigdata";
 import { getAwsClientConfig } from "../getAwsClientConfig/index.js";
 import { getEnvironment } from "../../getEnvironment/index.js";
-import * as AWSXRay from "aws-xray-sdk";
+import { tracer } from "../tracer.js";
 
 const createAppConfigClient = () => {
   const appconfigClient = new AppConfigDataClient(getAwsClientConfig());
@@ -9,7 +9,7 @@ const createAppConfigClient = () => {
   const wrappedClient =
     getEnvironment() === "local"
       ? appconfigClient
-      : AWSXRay.captureAWSv3Client(appconfigClient);
+      : tracer.captureAWSv3Client(appconfigClient);
 
   return {
     client: wrappedClient,

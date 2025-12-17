@@ -14,7 +14,6 @@ import {
   metrics,
 } from "../../../../commons/utils/metrics/index.js";
 import { checkJtiUnusedAndSetUpSession } from "./utils/checkJtiUnusedAndSetUpSession.js";
-
 export const handler = loggerAPIGatewayProxyHandlerWrapper(
   metricsAPIGatewayProxyHandlerWrapper(
     async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {

@@ -4,16 +4,17 @@ resource "aws_cloudformation_stack" "vpc_stack" {
   template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/vpc/template.yaml"
 
   parameters = {
-    CloudWatchApiEnabled     = "Yes"
-    DynatraceApiEnabled      = "Yes"
-    KMSApiEnabled            = "Yes"
-    SSMApiEnabled            = "Yes"
-    DynamoDBApiEnabled       = "Yes"
-    AppConfigDataApiEnabled  = "Yes"
-    S3ApiEnabled             = "Yes"
     AllowRules               = "pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:\"account.gov.uk\"; endswith; msg:\"Pass TLS to *.account.gov.uk\"; flow:established; sid:2001; rev:1;)"
     AllowedDomains           = "*.account.gov.uk"
+    AppConfigDataApiEnabled  = "Yes"
+    CloudWatchApiEnabled     = "Yes"
+    DynamoDBApiEnabled       = "Yes"
+    DynatraceApiEnabled      = "Yes"
     ExecuteApiGatewayEnabled = "Yes"
+    KMSApiEnabled            = "Yes"
+    S3ApiEnabled             = "Yes"
+    SSMApiEnabled            = "Yes"
+    XRayApiEnabled           = "Yes"
   }
 
   capabilities = var.capabilities

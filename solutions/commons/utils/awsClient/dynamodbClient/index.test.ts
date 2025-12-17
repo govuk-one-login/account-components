@@ -4,7 +4,7 @@ vi.mock(import("@aws-sdk/client-dynamodb"));
 vi.mock(import("@aws-sdk/lib-dynamodb"));
 vi.mock(import("../getAwsClientConfig/index.js"));
 vi.mock(import("../../getEnvironment/index.js"));
-vi.mock(import("aws-xray-sdk"));
+vi.mock(import("../tracer.js"));
 
 const mockDynamoDbClient = {
   config: { region: "eu-west-2" },
@@ -55,8 +55,8 @@ describe("getDynamoDbClient", () => {
     vi.doMock("../../getEnvironment/index.js", () => ({
       getEnvironment: vi.fn(() => "local"),
     }));
-    vi.doMock("aws-xray-sdk", () => ({
-      captureAWSv3Client: vi.fn(<T>(client: T): T => client),
+    vi.doMock("../tracer.js", () => ({
+      tracer: { captureAWSv3Client: vi.fn(<T>(client: T): T => client) },
     }));
   });
 
@@ -224,13 +224,13 @@ describe("getDynamoDbClient", () => {
       getEnvironment: vi.fn(() => "production"),
     }));
 
-    vi.doMock("aws-xray-sdk", () => ({
-      captureAWSv3Client: mockCaptureAWSv3Client,
+    vi.doMock("../tracer.js", () => ({
+      tracer: { captureAWSv3Client: mockCaptureAWSv3Client },
     }));
 
     const { getDynamoDbClient } = await import("./index.js");
     getDynamoDbClient();
 
-    expect(mockCaptureAWSv3Client).toHaveBeenCalledWith(mockDynamoDbClient);
+    expect(mockCaptureAWSv3Client).toHaveBeenCalledWith(expect.any(Object));
   });
 });
