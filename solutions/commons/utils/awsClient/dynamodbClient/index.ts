@@ -11,9 +11,9 @@ import type {
   TransactWriteCommandInput,
 } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
-import * as AWSXRay from "aws-xray-sdk";
 import { getEnvironment } from "../../getEnvironment/index.js";
 import { getAwsClientConfig } from "../getAwsClientConfig/index.js";
+import { tracer } from "../tracer.js";
 
 const createDynamoDbClient = () => {
   const dynamoDbClient = new DynamoDBClient(getAwsClientConfig());
@@ -21,7 +21,7 @@ const createDynamoDbClient = () => {
   const wrappedClient =
     getEnvironment() === "local"
       ? dynamoDbClient
-      : AWSXRay.captureAWSv3Client(dynamoDbClient);
+      : tracer.captureAWSv3Client(dynamoDbClient);
 
   const docClient = DynamoDBDocumentClient.from(wrappedClient);
 

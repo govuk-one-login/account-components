@@ -2,7 +2,7 @@ import type { PutObjectCommandInput } from "@aws-sdk/client-s3";
 import { S3Client } from "@aws-sdk/client-s3";
 import { getAwsClientConfig } from "../getAwsClientConfig/index.js";
 import { getEnvironment } from "../../getEnvironment/index.js";
-import * as AWSXRay from "aws-xray-sdk";
+import { tracer } from "../tracer.js";
 
 const createS3Client = () => {
   const s3Client = new S3Client(getAwsClientConfig());
@@ -10,7 +10,7 @@ const createS3Client = () => {
   const wrappedClient =
     getEnvironment() === "local"
       ? s3Client
-      : AWSXRay.captureAWSv3Client(s3Client);
+      : tracer.captureAWSv3Client(s3Client);
 
   return {
     client: wrappedClient,

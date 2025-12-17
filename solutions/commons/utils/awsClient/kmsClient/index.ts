@@ -7,7 +7,7 @@ import type {
 import { KMSClient } from "@aws-sdk/client-kms";
 import { getAwsClientConfig } from "../getAwsClientConfig/index.js";
 import { getEnvironment } from "../../getEnvironment/index.js";
-import * as AWSXRay from "aws-xray-sdk";
+import { tracer } from "../tracer.js";
 
 const createKmsClient = () => {
   const kmsClient = new KMSClient(getAwsClientConfig(true));
@@ -15,7 +15,7 @@ const createKmsClient = () => {
   const wrappedClient =
     getEnvironment() === "local"
       ? kmsClient
-      : AWSXRay.captureAWSv3Client(kmsClient);
+      : tracer.captureAWSv3Client(kmsClient);
 
   return {
     client: wrappedClient,
