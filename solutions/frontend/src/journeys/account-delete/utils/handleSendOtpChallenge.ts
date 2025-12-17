@@ -16,7 +16,7 @@ export async function handleSendOtpChallenge(
   );
 
   const result = await accountManagementApiClient.sendOtpChallenge(
-    request.session.claims.sub,
+    request.session.claims.public_sub,
   );
 
   if (!result.success) {

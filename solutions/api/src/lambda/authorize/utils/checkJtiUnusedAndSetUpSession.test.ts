@@ -67,6 +67,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
     access_token: "test-access-token",
     refresh_token: "test-refresh-token",
     sub: "test-subject",
+    public_sub: "test-public-subject",
     email: "test@example.com",
     govuk_signin_journey_id: "test-journey-id",
   };

@@ -151,6 +151,7 @@ export function getJwtPayload(
         : getDateEpoch(0) + expiresIn,
     iss,
     sub: user.sub,
+    public_sub: user.public_sub,
     email: user.email,
     govuk_signin_journey_id: Buffer.from(randomBytes(10)).toString("hex"),
   } as JWTPayload;

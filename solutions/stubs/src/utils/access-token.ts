@@ -27,6 +27,7 @@ const tokenBody = (expiresIn = 600) => {
 
   return {
     sub: `urn:fdc:gov.uk:2022:${randomUUID()}`,
+    public_sub: randomUUID(),
     iss: process.env["ACCESS_TOKEN_ISSUER"],
     aud: `${Buffer.from(randomBytes(5)).toString("hex")}-${Buffer.from(randomBytes(5)).toString("hex")}-${Buffer.from(randomBytes(5)).toString("hex")}`,
     iat: epochDateNow(),

@@ -173,6 +173,7 @@ describe("getJwtPayload", () => {
     expect(payload.iat).toBeTypeOf("number");
     expect(payload.exp).toBeTypeOf("number");
     expect(payload.sub).toBe("urn:fdc:gov.uk:default");
+    expect(payload["public_sub"]).toBe("4c950955-03c3-45a4-a97e-763152c172ff");
     expect(payload["scope"]).toBe("customScope");
     expect(payload["extra"]).toBe("value");
     expect(payload["client_id"]).toBe("my-client-id");

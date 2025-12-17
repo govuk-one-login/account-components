@@ -61,6 +61,7 @@ export interface RequestBody {
   access_token?: string;
   refresh_token?: string;
   sub?: string;
+  public_sub?: string;
   email?: string;
   govuk_signin_journey_id?: string;
   scenario?: string;
@@ -74,15 +75,17 @@ export enum Users {
 
 interface User {
   sub: string;
+  public_sub: string;
   email: string;
 }
 
 export const getUsers = (user: string): User => {
   if (user === "non_existent") {
-    return { sub: "", email: "" };
+    return { sub: "", public_sub: "", email: "" };
   } else {
     return {
       sub: "urn:fdc:gov.uk:default",
+      public_sub: "4c950955-03c3-45a4-a97e-763152c172ff",
       email: "someone@example.com",
     };
   }

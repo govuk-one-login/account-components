@@ -93,7 +93,7 @@ export async function verifyEmailAddressPostHandler(
   );
 
   const result = await accountManagementApiClient.verifyOtpChallenge(
-    request.session.claims.sub,
+    request.session.claims.public_sub,
     body.code,
   );
 
