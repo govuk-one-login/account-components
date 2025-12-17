@@ -20,7 +20,8 @@
     "formErrors": {
       "empty": "TODO empty",
       "tooShort": "TODO tooShort",
-      "notAllDigits": "TODO notAllDigits"
+      "notAllDigits": "TODO notAllDigits",
+      "incorrect": "TODO incorrect"
     }
   },
   "enterPassword": {
