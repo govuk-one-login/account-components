@@ -10,6 +10,7 @@ import { validateJourneyOutcomeJwtClaims } from "./utils/validateJourneyOutcomeJ
 import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
 import { getJourneyOutcome } from "./utils/getJourneyOutcome.js";
 import type { JourneyOutcomePayload } from "./utils/interfaces.js";
+
 export const handler = loggerAPIGatewayProxyHandlerWrapper(
   metricsAPIGatewayProxyHandlerWrapper(
     async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {

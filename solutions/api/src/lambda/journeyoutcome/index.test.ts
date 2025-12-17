@@ -53,8 +53,6 @@ vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
   loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
-
-
 const { handler } = await import("./index.js");
 
 describe("journeyoutcome handler", () => {
