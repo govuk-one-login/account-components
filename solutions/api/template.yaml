@@ -724,7 +724,7 @@ Resources:
       Handler: healthcheck.handler
       Tracing: Active
       Policies:
-        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
     Metadata:
       BuildMethod: esbuild
@@ -773,11 +773,6 @@ Resources:
         - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
-            - Effect: Allow
-              Action:
-                - xray:PutTraceSegments
-                - xray:PutTelemetryRecords
-              Resource: "*"
             - Effect: Allow
               Action:
                 - dynamodb:PutItem
@@ -851,11 +846,6 @@ Resources:
         - Statement:
             - Effect: Allow
               Action:
-                - xray:PutTraceSegments
-                - xray:PutTelemetryRecords
-              Resource: "*"
-            - Effect: Allow
-              Action:
                 - dynamodb:GetItem
               Resource:
                 - !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableArn}}"
@@ -926,11 +916,6 @@ Resources:
         - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
-            - Effect: Allow
-              Action:
-                - xray:PutTraceSegments
-                - xray:PutTelemetryRecords
-              Resource: "*"
             - Effect: Allow
               Action:
                 - kms:DescribeKey
