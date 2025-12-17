@@ -57,4 +57,42 @@ export const accountDelete = function (fastify: FastifyInstance) {
       ).verifyEmailAddressPostHandler(request, reply);
     },
   );
+
+  fastify.get(
+    paths.journeys["account-delete"].NOT_AUTHENTICATED.enterPassword.path,
+    async function (request, reply) {
+      return (
+        await import("./handlers/enterPassword.js")
+      ).enterPasswordGetHandler(request, reply);
+    },
+  );
+
+  fastify.post(
+    paths.journeys["account-delete"].NOT_AUTHENTICATED.enterPassword.path,
+    async function (request, reply) {
+      return (
+        await import("./handlers/enterPassword.js")
+      ).enterPasswordPostHandler(request, reply);
+    },
+  );
+
+  fastify.get(
+    paths.journeys["account-delete"].AUTHENTICATED.confirm.path,
+    async function (request, reply) {
+      return (await import("./handlers/confirm.js")).confirmGetHandler(
+        request,
+        reply,
+      );
+    },
+  );
+
+  fastify.post(
+    paths.journeys["account-delete"].AUTHENTICATED.confirm.path,
+    async function (request, reply) {
+      return (await import("./handlers/confirm.js")).confirmPostHandler(
+        request,
+        reply,
+      );
+    },
+  );
 };

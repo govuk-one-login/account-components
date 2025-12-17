@@ -43,17 +43,10 @@ export const handler = loggerAPIGatewayProxyHandlerWrapper(
 
           validateJourneyOutcomeJwtClaims(payload);
           const outcome = await getJourneyOutcome(payload);
-          if (outcome) {
-            return {
-              statusCode: 200,
-              body: JSON.stringify(outcome),
-            };
-          } else {
-            errorManager.throwError(
-              "MissingOutcome",
-              `Missing outcome with outcome_id: ${payload.outcome_id ?? "undefined"} and jti: ${payload.jti ?? "undefined"}`,
-            );
-          }
+          return {
+            statusCode: 200,
+            body: JSON.stringify(outcome),
+          };
         } else {
           errorManager.throwError(
             "InvalidAuthorizationHeader",

@@ -1,24 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 
-// @ts-expect-error
-vi.mock(import("../../../utils/paths.js"), () => ({
-  paths: {
-    journeys: {
-      "account-delete": {
-        EMAIL_NOT_VERIFIED: {
-          resendEmailVerificationCode: {
-            path: "/delete-account/resend-verification-code",
-          },
-        },
-        EMAIL_VERIFIED: {
-          TODO: { path: "/delete-account/TODO" },
-        },
-      },
-    },
-  },
-}));
-
 const mockVerifyOtpChallenge = vi.fn();
 const mockRedirectToClientRedirectUri = vi.fn();
 
@@ -133,9 +115,11 @@ describe("verifyEmailAddress handlers", () => {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         mockReply.journeyStates?.["account-delete"]?.send,
       ).toHaveBeenCalledWith({
-        type: "emailVerified",
+        type: "notAuthenticated",
       });
-      expect(mockReply.redirect).toHaveBeenCalledWith("/delete-account/TODO");
+      expect(mockReply.redirect).toHaveBeenCalledWith(
+        "/delete-account/enter-password",
+      );
       expect(result).toBe(mockReply);
     });
 

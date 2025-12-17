@@ -67,7 +67,6 @@ export async function confirmPostHandler(
   return await completeJourney(request, reply, request.session.claims, [
     {
       testingJourneyComplete: true,
-      timestamp: Date.now(),
     },
   ]);
 }

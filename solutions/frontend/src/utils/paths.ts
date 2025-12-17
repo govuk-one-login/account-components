@@ -34,9 +34,16 @@ export const paths = {
           path: "/delete-account/resend-verification-code",
         },
       },
-      [AcountDeleteJourneyState.emailVerified]: {
-        TODO: {
-          path: "/delete-account/TODO",
+      [AcountDeleteJourneyState.notAuthenticated]: {
+        // TODO check these paths with UCD
+        enterPassword: {
+          path: "/delete-account/enter-password",
+        },
+      },
+      [AcountDeleteJourneyState.authenticated]: {
+        // TODO check these paths with UCD
+        confirm: {
+          path: "/delete-account/confirm",
         },
       },
     },

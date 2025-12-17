@@ -17,6 +17,16 @@ vi.mock(import("./handlers/verifyEmailAddress.js"), () => ({
   verifyEmailAddressPostHandler: vi.fn(),
 }));
 
+vi.mock(import("./handlers/enterPassword.js"), () => ({
+  enterPasswordGetHandler: vi.fn(),
+  enterPasswordPostHandler: vi.fn(),
+}));
+
+vi.mock(import("./handlers/confirm.js"), () => ({
+  confirmGetHandler: vi.fn(),
+  confirmPostHandler: vi.fn(),
+}));
+
 describe("accountDelete", () => {
   let mockFastify: FastifyInstance;
   let mockGet: ReturnType<typeof vi.fn>;
@@ -35,8 +45,8 @@ describe("accountDelete", () => {
   it("registers all routes", () => {
     accountDelete(mockFastify);
 
-    expect(mockGet).toHaveBeenCalledTimes(3);
-    expect(mockPost).toHaveBeenCalledTimes(3);
+    expect(mockGet).toHaveBeenCalledTimes(5);
+    expect(mockPost).toHaveBeenCalledTimes(5);
   });
 
   it("registers introduction routes", () => {
@@ -74,6 +84,32 @@ describe("accountDelete", () => {
     );
     expect(mockPost).toHaveBeenCalledWith(
       "/delete-account/verify-email-address",
+      expect.any(Function),
+    );
+  });
+
+  it("registers enterPassword routes", () => {
+    accountDelete(mockFastify);
+
+    expect(mockGet).toHaveBeenCalledWith(
+      "/delete-account/enter-password",
+      expect.any(Function),
+    );
+    expect(mockPost).toHaveBeenCalledWith(
+      "/delete-account/enter-password",
+      expect.any(Function),
+    );
+  });
+
+  it("registers confirm routes", () => {
+    accountDelete(mockFastify);
+
+    expect(mockGet).toHaveBeenCalledWith(
+      "/delete-account/confirm",
+      expect.any(Function),
+    );
+    expect(mockPost).toHaveBeenCalledWith(
+      "/delete-account/confirm",
       expect.any(Function),
     );
   });

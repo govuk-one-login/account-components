@@ -4,22 +4,31 @@ import { createJourneyStateMachine } from "./index.js";
 
 export enum AcountDeleteJourneyState {
   emailNotVerified = "EMAIL_NOT_VERIFIED",
-  emailVerified = "EMAIL_VERIFIED",
+  notAuthenticated = "NOT_AUTHENTICATED",
+  authenticated = "AUTHENTICATED",
 }
 
 export const accountDeleteStateMachine = createJourneyStateMachine<
   MachineContext,
-  {
-    type: "emailVerified";
-  }
+  | {
+      type: "notAuthenticated";
+    }
+  | {
+      type: "authenticated";
+    }
 >(Scope.accountDelete, {
   initial: AcountDeleteJourneyState.emailNotVerified,
   states: {
     [AcountDeleteJourneyState.emailNotVerified]: {
       on: {
-        emailVerified: AcountDeleteJourneyState.emailVerified,
+        notAuthenticated: AcountDeleteJourneyState.notAuthenticated,
       },
     },
-    [AcountDeleteJourneyState.emailVerified]: {},
+    [AcountDeleteJourneyState.notAuthenticated]: {
+      on: {
+        authenticated: AcountDeleteJourneyState.authenticated,
+      },
+    },
+    [AcountDeleteJourneyState.authenticated]: {},
   },
 });

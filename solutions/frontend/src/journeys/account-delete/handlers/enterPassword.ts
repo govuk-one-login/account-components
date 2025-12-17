@@ -2,40 +2,26 @@ import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
 import {
+  getFormErrors,
   getFormErrorsFromValueAndSchema,
   getFormErrorsList,
 } from "../../../utils/formErrorsHelpers.js";
 import * as v from "valibot";
-import type { FastifySessionObject } from "@fastify/session";
 import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
 
-const getRenderOptions = (claims: FastifySessionObject["claims"]) => {
-  assert.ok(claims?.email);
-
-  return {
-    resendCodeLinkUrl:
-      paths.journeys["account-delete"].EMAIL_NOT_VERIFIED
-        .resendEmailVerificationCode.path,
-    emailAddress: claims.email,
-  };
-};
-
-export async function verifyEmailAddressGetHandler(
-  request: FastifyRequest,
+export async function enterPasswordGetHandler(
+  _request: FastifyRequest,
   reply: FastifyReply,
 ) {
   assert.ok(reply.render);
 
-  await reply.render(
-    "journeys/account-delete/templates/verifyEmailAddress.njk",
-    getRenderOptions(request.session.claims),
-  );
+  await reply.render("journeys/account-delete/templates/enterPassword.njk");
   return reply;
 }
 
-export async function verifyEmailAddressPostHandler(
+export async function enterPasswordPostHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
@@ -45,28 +31,15 @@ export async function verifyEmailAddressPostHandler(
     assert.ok(reply.render);
 
     await reply.render(
-      "journeys/account-delete/templates/verifyEmailAddress.njk",
-      {
-        ...options,
-        ...getRenderOptions(request.session.claims),
-      },
+      "journeys/account-delete/templates/enterPassword.njk",
+      options,
     );
   };
 
   const bodySchema = v.object({
-    code: v.pipe(
+    password: v.pipe(
       v.string(),
-      v.minLength(
-        1,
-        request.i18n.t("journey:verifyEmailAddress.formErrors.empty"),
-      ),
-      v.length(
-        6,
-        request.i18n.t("journey:verifyEmailAddress.formErrors.tooShort"),
-      ),
-      v.digits(
-        request.i18n.t("journey:verifyEmailAddress.formErrors.notAllDigits"),
-      ),
+      v.minLength(1, request.i18n.t("journey:enterPassword.formErrors.empty")),
     ),
   });
   const bodyFormErrors = getFormErrorsFromValueAndSchema(
@@ -91,20 +64,40 @@ export async function verifyEmailAddressPostHandler(
     request.awsLambda?.event,
   );
 
-  const result = await accountManagementApiClient.verifyOtpChallenge(
+  const result = await accountManagementApiClient.authenticate(
     request.session.claims.email,
-    body.code,
+    body.password,
   );
 
   if (!result.success) {
-    type SendOtpChallengeError = (typeof result)["error"];
+    if (result.error === "InvalidLoginCredentials") {
+      const formErrors = getFormErrors([
+        {
+          msg: request.i18n.t("journey:enterPassword.formErrors.incorrect"),
+          fieldId: "password",
+        },
+      ]);
+
+      await renderPage({
+        errors: formErrors,
+        errorList: getFormErrorsList(formErrors),
+      });
+      return reply;
+    }
+
+    type AuthenticateError = (typeof result)["error"];
     const errorMap: Record<
-      SendOtpChallengeError,
+      Exclude<AuthenticateError, "InvalidLoginCredentials">,
       (typeof authorizeErrors)[keyof typeof authorizeErrors]
     > = {
       RequestIsMissingParameters: authorizeErrors.tempErrorTODORemoveLater,
-      TooManyEmailCodesEntered: authorizeErrors.tempErrorTODORemoveLater,
-      InvalidOTPCode: authorizeErrors.tempErrorTODORemoveLater,
+      AccountDoesNotExist: authorizeErrors.tempErrorTODORemoveLater,
+      UserAccountBlocked: authorizeErrors.tempErrorTODORemoveLater,
+      UserAccountSuspended: authorizeErrors.tempErrorTODORemoveLater,
+      AccountInterventionsUnexpectedError:
+        authorizeErrors.tempErrorTODORemoveLater,
+      ExceededIncorrectPasswordSubmissionLimit:
+        authorizeErrors.tempErrorTODORemoveLater,
       ErrorValidatingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
       ErrorParsingResponseBodyJson: authorizeErrors.tempErrorTODORemoveLater,
       ErrorValidatingErrorResponseBody:
@@ -125,11 +118,9 @@ export async function verifyEmailAddressPostHandler(
   }
 
   reply.journeyStates["account-delete"].send({
-    type: "notAuthenticated",
+    type: "authenticated",
   });
 
-  reply.redirect(
-    paths.journeys["account-delete"].NOT_AUTHENTICATED.enterPassword.path,
-  );
+  reply.redirect(paths.journeys["account-delete"].AUTHENTICATED.confirm.path);
   return reply;
 }

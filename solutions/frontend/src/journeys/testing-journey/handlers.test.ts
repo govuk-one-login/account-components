@@ -214,8 +214,6 @@ describe("testing-journey handlers", () => {
         [
           {
             testingJourneyComplete: true,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            timestamp: expect.any(Number),
           },
         ],
       );

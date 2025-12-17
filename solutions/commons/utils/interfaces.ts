@@ -8,5 +8,3 @@ export type APIGatewayProxyHandler = (
   event: APIGatewayProxyEvent,
   context: Context,
 ) => Promise<APIGatewayProxyResult>;
-
-export type JourneyOutcome = object[];
