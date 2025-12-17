@@ -772,6 +772,10 @@ Resources:
               journeyOutcomeEndpointUrl,
             ]
           JWT_SIGNING_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyAlias}}"
+          POWERTOOLS_TRACE_ENABLED: true
+          POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS: true
+          POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
+          POWERTOOLS_TRACER_CAPTURE_ERROR: true
       Policies:
         - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
@@ -843,6 +847,10 @@ Resources:
               journeyOutcomeEndpointUrl,
             ]
           JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableName}}"
+          POWERTOOLS_TRACE_ENABLED: true
+          POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS: true
+          POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
+          POWERTOOLS_TRACER_CAPTURE_ERROR: true
       Policies:
         - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
@@ -915,6 +923,10 @@ Resources:
             ]
           FRONTEND_URL:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendUrl]
+          POWERTOOLS_TRACE_ENABLED: true
+          POWERTOOLS_TRACER_CAPTURE_HTTPS_REQUESTS: true
+          POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
+          POWERTOOLS_TRACER_CAPTURE_ERROR: true
       Policies:
         - arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
