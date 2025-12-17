@@ -722,6 +722,7 @@ Resources:
       LoggingConfig:
         LogGroup: !Ref HealthcheckLambdaLogGroup
       Handler: healthcheck.handler
+      Tracing: Active
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
@@ -750,6 +751,7 @@ Resources:
       LoggingConfig:
         LogGroup: !Ref TokenLambdaLogGroup
       Handler: index.handler
+      Tracing: Active
       Environment:
         Variables:
           AUTH_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableName}}"
@@ -771,6 +773,11 @@ Resources:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
+            - Effect: Allow
+              Action:
+                - xray:PutTraceSegments
+                - xray:PutTelemetryRecords
+              Resource: "*"
             - Effect: Allow
               Action:
                 - dynamodb:PutItem
@@ -821,6 +828,7 @@ Resources:
       LoggingConfig:
         LogGroup: !Ref JourneyOutcomeLambdaLogGroup
       Handler: index.handler
+      Tracing: Active
       Environment:
         Variables:
           JWT_SIGNING_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyAlias}}"
@@ -841,6 +849,11 @@ Resources:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
+            - Effect: Allow
+              Action:
+                - xray:PutTraceSegments
+                - xray:PutTelemetryRecords
+              Resource: "*"
             - Effect: Allow
               Action:
                 - dynamodb:GetItem
@@ -883,6 +896,7 @@ Resources:
       LoggingConfig:
         LogGroup: !Ref AuthorizeLambdaLogGroup
       Handler: index.handler
+      Tracing: Active
       Environment:
         Variables:
           AUTHORIZE_ERROR_PAGE_URL:
@@ -912,6 +926,11 @@ Resources:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
+            - Effect: Allow
+              Action:
+                - xray:PutTraceSegments
+                - xray:PutTelemetryRecords
+              Resource: "*"
             - Effect: Allow
               Action:
                 - kms:DescribeKey
