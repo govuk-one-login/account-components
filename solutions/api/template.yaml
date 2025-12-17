@@ -724,6 +724,7 @@ Resources:
       Handler: healthcheck.handler
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -768,6 +769,7 @@ Resources:
           JWT_SIGNING_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyAlias}}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
             - Effect: Allow
               Action:
@@ -837,6 +839,7 @@ Resources:
           JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableName}}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
             - Effect: Allow
               Action:
@@ -907,6 +910,7 @@ Resources:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendUrl]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
             - Effect: Allow
               Action:
