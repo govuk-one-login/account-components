@@ -47,7 +47,7 @@ jobs:
           SESSIONS_SIGNER=localsessionsignerwhichmustbeatleast32chars  
           SESSIONS_TABLE_NAME=components-main-SessionStore
           ROOT_COOKIE_DOMAIN=localhost
-          AWS_REGION=eu-west-2
+          AWS_REGION=local
           LOCALSTACK_ENDPOINT=http://localhost:4566
           LOCAL_KMS_ENDPOINT=http://localhost:4567
           LOCALSTACK_ACCESS_KEY_ID=test
@@ -75,7 +75,7 @@ jobs:
           DEFAULT_AUDIENCE=http://localhost:6004/authorize
           ACCESS_TOKEN_ISSUER=http://localhost:6003
           AUTHORIZE_URL=http://localhost:6004/authorize
-          AWS_REGION=eu-west-2
+          AWS_REGION=local
           LOCALSTACK_ENDPOINT=http://localhost:4566
           LOCAL_KMS_ENDPOINT=http://localhost:4567
           LOCALSTACK_ACCESS_KEY_ID=test
