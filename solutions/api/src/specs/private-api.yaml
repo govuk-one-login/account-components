@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components Private API
-  version: 0.0.7
+  version: 0.0.8
   description: |
     OAuth 2.0 provider endpoints, including:
     - POST /token (supports client assertions via private_key_jwt)
@@ -375,23 +375,35 @@ components:
       type: object
       description: Provides the outcomes of the Account Component journeys undertaken by the user
       properties:
+        outcome_id:
+          description: The journey outcome's unique ID
+          type: string
+          example: 9cd4c45f8f33cced99cfaa48394e1acf5e90f6e2616bba40 # pragma: allowlist-secret
         sub:
           description: The internal pairwise identifier of the user
           type: string
           example: urn:fdc:gov.uk:2022:JG0RJI1pYbnanbvPs-j4j5-a-PFcmhry9Qu9NCEp5d4
+        email:
+          type: string
+          format: email
+          example: someone@something.com
         outcome:
           type: array
           minItems: 1
           items:
             type: object
             description: The outcome of a journey
-            example:
-              account-delete: true
-              timestamp: 1760718467
-        email:
-          type: string
-          format: email
-          example: someone@something.com
+            properties:
+              timestamp:
+                type: integer
+                description: Epoch timestamp in milliseconds
+                example: 1760718467000
+              scope:
+                type: string
+                enum: ["account-delete", "testing-journey"]
+                description: The scope of the journey
+            required: [timestamp, scope]
+            additionalProperties: true
       required: [sub, email, outcome]
 
     JWK:

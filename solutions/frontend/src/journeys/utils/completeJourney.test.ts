@@ -71,6 +71,7 @@ describe("completeJourney", () => {
     mockClaims = {
       scope: "testing-journey",
       sub: "test-sub",
+      email: "test@example.com",
       client_id: "test-client-id",
       redirect_uri: "https://example.com/callback",
       state: "test-state",
@@ -115,10 +116,11 @@ describe("completeJourney", () => {
               outcome: mockJourneyOutcome.map((outcome) => ({
                 ...outcome,
                 scope: mockClaims.scope,
-                sub: mockClaims.sub,
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 timestamp: expect.any(Number),
               })),
+              sub: mockClaims.sub,
+              email: mockClaims.email,
             },
           },
         },

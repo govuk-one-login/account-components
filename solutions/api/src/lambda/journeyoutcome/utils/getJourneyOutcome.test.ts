@@ -27,10 +27,14 @@ const mockPayload: JourneyOutcomePayload = {
   sub: "test-sub-789",
 };
 
-const mockOutcomeData = [
-  { step: 1, action: "start", sub: "test-sub-789" },
-  { step: 2, action: "complete", sub: "test-sub-789" },
-];
+const mockJourneyOutcome = {
+  sub: "test-sub-789",
+  email: "test@example.com",
+  outcome: [
+    { scope: "test-scope", timestamp: 1234567890 },
+    { scope: "another-scope", timestamp: 1234567891 },
+  ],
+};
 
 describe("getJourneyOutcome", () => {
   beforeEach(() => {
@@ -46,19 +50,14 @@ describe("getJourneyOutcome", () => {
     delete process.env["JOURNEY_OUTCOME_TABLE_NAME"];
   });
 
-  it("should return the outcome array when the item is found", async () => {
+  it("should return the journey outcome when the item is found and sub matches", async () => {
     mockDynamoDbGet.mockResolvedValueOnce({
-      Item: {
-        outcome_id: mockPayload.outcome_id,
-        outcome: mockOutcomeData,
-        scope: "test-scope",
-        sub: "test-sub",
-      },
+      Item: mockJourneyOutcome,
     });
 
     const result = await getJourneyOutcome(mockPayload);
 
-    expect(result).toStrictEqual(mockOutcomeData);
+    expect(result).toStrictEqual(mockJourneyOutcome);
     expect(mockDynamoDbGet).toHaveBeenCalledWith({
       TableName: "TestTable",
       Key: {
@@ -103,16 +102,13 @@ describe("getJourneyOutcome", () => {
   });
 
   it("should throw OutcomeSubDoesNotMatchPayload error if outcome sub does not match payload sub", async () => {
-    const mismatchedOutcomeData = [
-      { step: 1, action: "start", sub: "different-sub" },
-      { step: 2, action: "complete", sub: "test-sub-789" },
-    ];
+    const mismatchedJourneyOutcome = {
+      ...mockJourneyOutcome,
+      sub: "different-sub",
+    };
 
     mockDynamoDbGet.mockResolvedValueOnce({
-      Item: {
-        outcome_id: mockPayload.outcome_id,
-        outcome: mismatchedOutcomeData,
-      },
+      Item: mismatchedJourneyOutcome,
     });
 
     await expect(getJourneyOutcome(mockPayload)).rejects.toThrowError(

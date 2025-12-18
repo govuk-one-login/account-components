@@ -33,9 +33,10 @@ export const completeJourney = async (
               outcome: journeyOutcome.map((outcome) => ({
                 ...outcome,
                 scope: claims.scope,
-                sub: claims.sub,
                 timestamp: Date.now(),
               })),
+              sub: claims.sub,
+              email: claims.email,
             },
           },
         },
