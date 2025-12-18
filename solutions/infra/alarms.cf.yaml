@@ -1,0 +1,163 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: CloudFormation template for SNS topics, SSM parameters, Chatbot configuration, and PagerDuty integration.
+
+Parameters:
+  AlarmSnsTopicName:
+    Type: String
+    Description: The base name for the SNS alarm topics.
+    Default: "account-components-alarms"
+  Environment:
+    Type: String
+    Description: The environment (e.g., dev, test, production).
+    AllowedValues:
+      - dev
+      - build
+      - staging
+      - integration
+      - production
+    Default: dev
+  AlarmSlackChannelId:
+    Type: String
+    Description: The Slack channel ID for high severity alarms.
+  AlarmSlackWorkspaceId:
+    Type: String
+    Description: The Slack workspace ID for the Chatbot configuration.
+  PagerdutyIntegrationEndpoint:
+    Type: String
+    Description: The PagerDuty integration endpoint URL for high severity alarms.
+    Default: "" # Set to empty string if not used, or provide a valid URL.
+
+Conditions:
+  # Condition to check if the environment is 'prod' AND PagerdutyIntegrationEndpoint is provided
+  CreatePagerdutySubscription: !And
+    - !Equals [!Ref Environment, "production"]
+    - !Not [!Equals [!Ref PagerdutyIntegrationEndpoint, ""]]
+
+Resources:
+  SnsSSEKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for encrypting SNS topics
+      EnableKeyRotation: true
+      KeyUsage: ENCRYPT_DECRYPT
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: sns.amazonaws.com
+            Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:GenerateDataKey*
+              - kms:ReEncrypt*
+              - kms:CreateGrant
+            Resource: "*"
+            Condition:
+              StringEquals:
+                kms:ViaService: !Sub "sns.${AWS::Region}.amazonaws.com"
+              ArnLike:
+                aws:SourceArn: !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-SnsSSEKey"
+
+  SnsSSEKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-SnsSSEKey"
+      TargetKeyId: !GetAtt SnsSSEKey.Arn
+
+  HighSeveritySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${AlarmSnsTopicName}-high"
+      KmsMasterKeyId: !Ref SnsSSEKey
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Severity
+          Value: high
+
+  LowSeveritySNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "${AlarmSnsTopicName}-low"
+      KmsMasterKeyId: !Ref SnsSSEKey
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Severity
+          Value: low
+
+  HighSeverityTopicArnSSMParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/alarms/high-severity/topic-arn"
+      Type: String
+      Value: !Ref HighSeveritySNSTopic
+
+  LowSeverityTopicArnSSMParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: "/alarms/low-severity/topic-arn"
+      Type: String
+      Value: !Ref LowSeveritySNSTopic
+
+  HighSeveritySlackChatbotIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "chatbot-${Environment}-high"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: "chatbot.amazonaws.com"
+            Action: "sts:AssumeRole"
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess" # This policy grants read-only access to CloudWatch, which is often sufficient for Chatbot to display alarm details.
+
+  HighSeverityChatbotSlackChannelConfiguration:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Properties:
+      ConfigurationName: !Sub "alarms-${Environment}-high"
+      IamRoleArn: !GetAtt HighSeveritySlackChatbotIAMRole.Arn
+      SlackChannelId: !Ref AlarmSlackChannelId
+      SlackWorkspaceId: !Ref AlarmSlackWorkspaceId
+      SnsTopicArns:
+        - !Ref HighSeveritySNSTopic
+
+  PagerdutySNSSubscription:
+    Type: AWS::SNS::Subscription
+    Condition: CreatePagerdutySubscription # This resource will only be created if the condition is met
+    Properties:
+      Protocol: https
+      Endpoint: !Ref PagerdutyIntegrationEndpoint
+      TopicArn: !Ref HighSeveritySNSTopic
+      DeliveryPolicy:
+        healthyRetryPolicy:
+          minDelayTarget: 20
+          maxDelayTarget: 20
+          numRetries: 3
+          numNoDelayRetries: 0
+          numMinDelayRetries: 1
+          backoffFunction: linear
+
+Outputs:
+  HighSeveritySNSTopicArn:
+    Description: The ARN of the high severity SNS topic.
+    Value: !Ref HighSeveritySNSTopic
+  LowSeveritySNSTopicArn:
+    Description: The ARN of the low severity SNS topic.
+    Value: !Ref LowSeveritySNSTopic
+  HighSeverityChatbotIAMRoleArn:
+    Description: The ARN of the IAM Role for the high severity Slack Chatbot.
+    Value: !GetAtt HighSeveritySlackChatbotIAMRole.Arn
