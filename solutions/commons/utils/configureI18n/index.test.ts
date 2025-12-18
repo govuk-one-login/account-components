@@ -73,7 +73,7 @@ describe("configureI18n", () => {
         caches: ["cookie"],
         cookieSecure: false,
         cookieDomain: "account.gov.uk",
-        cookieSameSite: "lax",
+        cookieSameSite: "none",
       },
     });
   });

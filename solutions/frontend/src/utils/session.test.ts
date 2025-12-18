@@ -67,7 +67,7 @@ describe("session utils", () => {
 
       expect(options.secret).toBe("test-signer");
       expect(options.cookie?.secure).toBe(true);
-      expect(options.cookie?.sameSite).toBe("lax");
+      expect(options.cookie?.sameSite).toBe("strict");
       expect(options.cookie?.httpOnly).toBe(true);
       expect(options.rolling).toBe(false);
       expect(options.saveUninitialized).toBe(false);

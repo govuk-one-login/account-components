@@ -19,7 +19,7 @@ export const getSessionOptions = async (): Promise<FastifySessionOptions> => {
     // Purposely no maxAge or expires as we want it to be a session cookie
     cookie: {
       secure: getEnvironment() !== "local",
-      sameSite: "lax",
+      sameSite: "strict",
       httpOnly: true,
     },
     rolling: false,

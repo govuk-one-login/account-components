@@ -28,7 +28,7 @@ export const configureI18n = async (translations: Record<Lang, object>) => {
       caches: ["cookie"],
       cookieSecure: getEnvironment() !== "local",
       cookieDomain: rootCookieDomain,
-      cookieSameSite: "lax",
+      cookieSameSite: "none",
     },
   });
 };
