@@ -24,9 +24,9 @@ export const getJourneyOutcome = async (
     }
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const outcome = result.Item["outcome"] as JourneyOutcome;
+    const outcome = result.Item as JourneyOutcome;
 
-    if (outcome.some((anOutcome) => anOutcome.sub !== payload.sub)) {
+    if (outcome.sub !== payload.sub) {
       errorManager.throwError(
         "OutcomeSubDoesNotMatchPayload",
         `Outcome sub does not match payload sub with outcome_id: ${payload.outcome_id ?? "undefined"} and jti: ${payload.jti ?? "undefined"}`,

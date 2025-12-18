@@ -5,9 +5,13 @@ export interface JourneyOutcomePayload extends JWTPayload {
   outcome_id?: string;
 }
 
-export type JourneyOutcome = {
-  scope: Scope;
+export interface JourneyOutcome {
+  outcome_id: string;
   sub: string;
-  timestamp: number;
-  [key: string]: unknown;
-}[];
+  email: string;
+  outcome: {
+    scope: Scope;
+    timestamp: number;
+    [key: string]: unknown;
+  }[];
+}
