@@ -6,6 +6,7 @@ export interface JourneyOutcomePayload extends JWTPayload {
 }
 
 export interface JourneyOutcome {
+  outcome_id: string;
   sub: string;
   email: string;
   outcome: {

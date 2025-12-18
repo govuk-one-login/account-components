@@ -28,6 +28,7 @@ const mockPayload: JourneyOutcomePayload = {
 };
 
 const mockJourneyOutcome = {
+  outcome_id: "test-outcome-123",
   sub: "test-sub-789",
   email: "test@example.com",
   outcome: [
