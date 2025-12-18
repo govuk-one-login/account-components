@@ -1,48 +1,33 @@
-<html>
-    <head>
-        <title>AMC Journey Initiator Stub</title>
-        <style type='text/css' nonce='{{ styleNonce }}'>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 40px;
-            }
-            .button {
-                padding: 10px 20px;
-                background-color: #4CAF50;
-                color: white;
-                border: none;
-                cursor: pointer;
-                text-decoration: none;
-                font-size: 14px;
-                display: inline-block;
-                margin-bottom: 10px;
-            }
-            pre {
-                white-space: pre-wrap;
-            }
-        </style>
-    </head>
-    <body>
-        <h1>Client callback</h1>
-        <a href="/" class="button">Start Again</a>
-        {% if client %}        
-            <p><strong>Client:</strong> {{ client }}</p>
-        {% endif %}
-        {% if errorDetails %}
-            <p>Client callback called with the following error parameters:</p>
-            <ul>
-                <li><strong>Error:</strong> {{ errorDetails.error }}</li>
-                <li><strong>Error description:</strong> {{ errorDetails.error_description }}</li>
-                <li><strong>State:</strong> {{ errorDetails.state }}</li>
-            </ul>
-        {% endif %}
-        {% if journeyOutcomeDetails %}
-            <p>Journey outcome details:</p>
-            <pre>{{ journeyOutcomeDetails | dump(2) | safe }}</pre>
-        {% endif %}        
-        {% if exception %}
-            <p>An error occurred:</p>
-            <pre>{{ exception | dump(2) | safe }}</pre>
-        {% endif %}
-    </body>
-</html>
+{% extends "templates/base-page.njk" %}
+
+{% block pageContent %}
+    <h1>Client callback</h1>
+
+    <style type='text/css' nonce='{{ styleNonce }}'>
+    .startAgainButton {
+        display: inline-block;
+        margin-bottom: 10px;
+    }
+    </style>
+
+    <a href="/" class="button startAgainButton">Start Again</a>
+    {% if client %}        
+        <p><strong>Client:</strong> {{ client }}</p>
+    {% endif %}
+    {% if errorDetails %}
+        <p>Client callback called with the following error parameters:</p>
+        <ul>
+            <li><strong>Error:</strong> {{ errorDetails.error }}</li>
+            <li><strong>Error description:</strong> {{ errorDetails.error_description }}</li>
+            <li><strong>State:</strong> {{ errorDetails.state }}</li>
+        </ul>
+    {% endif %}
+    {% if journeyOutcomeDetails %}
+        <p>Journey outcome details:</p>
+        <pre>{{ journeyOutcomeDetails | dump(2) | safe }}</pre>
+    {% endif %}        
+    {% if exception %}
+        <p>An error occurred:</p>
+        <pre>{{ exception | dump(2) | safe }}</pre>
+    {% endif %}
+{% endblock %}
