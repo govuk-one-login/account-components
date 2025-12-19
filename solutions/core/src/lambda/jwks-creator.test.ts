@@ -1,13 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { MockInstance } from "vitest";
-import { handler, putContentToS3 } from "./jwks-creator.js";
+import { handler } from "./jwks-creator.js";
 import type { CryptoKey } from "jose";
 import { exportJWK, importSPKI } from "jose";
-import type { Context } from "aws-lambda";
+import type {
+  Context,
+  CloudFormationCustomResourceEvent,
+  CloudFormationCustomResourceDeleteEvent,
+} from "aws-lambda";
 
 const mockGetPublicKey = vi.fn();
 const mockDescribeKey = vi.fn();
 const mockPutObject = vi.fn();
+const mockFetch = vi.fn();
+
+global.fetch = mockFetch;
 
 // @ts-expect-error
 vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
@@ -70,17 +77,37 @@ const context: Context = {
   succeed: vi.fn(),
 };
 
+const createEvent = (
+  requestType: "Create" | "Update" | "Delete",
+): CloudFormationCustomResourceEvent =>
+  ({
+    RequestType: requestType,
+    ResponseURL:
+      "https://cloudformation-custom-resource-response-useast1.s3.amazonaws.com/test",
+    StackId:
+      "arn:aws:cloudformation:us-east-1:123456789012:stack/test-stack/12345678-1234-1234-1234-123456789012",
+    RequestId: "test-request-id",
+    ResourceType: "Custom::JWKSCreator",
+    LogicalResourceId: "JWKSCreator",
+    ResourceProperties: {
+      ServiceToken:
+        "arn:aws:lambda:us-east-1:123456789012:function:test-function",
+    },
+  }) as unknown as CloudFormationCustomResourceDeleteEvent;
+
 describe("handler", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mockGetPublicKey.mockReset();
     mockDescribeKey.mockReset();
     mockPutObject.mockReset();
+    mockFetch.mockReset();
     process.env["BUCKET_NAME"] = "test-bucket";
     process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"] = "alias/test-key";
+    mockFetch.mockResolvedValue({ ok: true, statusText: "OK" });
   });
 
-  it("successfully generates JWKS and uploads to S3", async () => {
+  it("successfully generates JWKS and uploads to S3 on Create", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
     const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
     const fakeJwk = { kty: "RSA" };
@@ -93,7 +120,8 @@ describe("handler", () => {
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
     mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
 
-    await expect(handler({}, context)).resolves.not.toThrowError();
+    const event = createEvent("Create");
+    await handler(event, context);
 
     expect(mockGetPublicKey).toHaveBeenCalledWith({
       KeyId: "alias/test-key",
@@ -110,9 +138,72 @@ describe("handler", () => {
       ),
       ContentType: "application/json",
     });
+    expect(mockFetch).toHaveBeenCalledWith(
+      event.ResponseURL,
+      expect.objectContaining({
+        method: "PUT",
+        headers: { "Content-Type": "" },
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        body: expect.stringContaining('"Status":"SUCCESS"'),
+      }),
+    );
   });
 
-  it("throws if BUCKET_NAME is not set", async () => {
+  it("successfully generates JWKS and uploads to S3 on Update", async () => {
+    const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
+    const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
+    const fakeJwk = { kty: "RSA" };
+
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey.mockResolvedValueOnce({
+      KeyMetadata: { KeyId: "test-key-id" },
+    });
+    (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
+    (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
+    mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
+
+    const event = createEvent("Update");
+    await handler(event, context);
+
+    expect(mockGetPublicKey).toHaveBeenCalledWith({
+      KeyId: "alias/test-key",
+    });
+    expect(mockPutObject).toHaveBeenCalledWith({
+      Bucket: "test-bucket",
+      Key: "jwks.json",
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      Body: expect.stringMatching(
+        /"kid":"test-key-id".*"alg":"RSA-OAEP-256".*"use":"enc"/,
+      ),
+      ContentType: "application/json",
+    });
+    expect(mockFetch).toHaveBeenCalledWith(
+      event.ResponseURL,
+      expect.objectContaining({
+        method: "PUT",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        body: expect.stringContaining('"Status":"SUCCESS"'),
+      }),
+    );
+  });
+
+  it("skips JWKS generation on Delete and sends success response", async () => {
+    const event = createEvent("Delete");
+    await handler(event, context);
+
+    expect(mockGetPublicKey).not.toHaveBeenCalled();
+    expect(mockPutObject).not.toHaveBeenCalled();
+    expect(mockFetch).toHaveBeenCalledWith(
+      event.ResponseURL,
+      expect.objectContaining({
+        method: "PUT",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        body: expect.stringContaining('"Status":"SUCCESS"'),
+      }),
+    );
+  });
+
+  it("sends FAILED response if BUCKET_NAME is not set", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
     const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
     const fakeJwk = { kty: "RSA" };
@@ -126,39 +217,71 @@ describe("handler", () => {
 
     delete process.env["BUCKET_NAME"];
 
-    await expect(handler({}, context)).rejects.toThrowError(
-      "BUCKET_NAME not set",
+    const event = createEvent("Create");
+    await handler(event, context);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      event.ResponseURL,
+      expect.objectContaining({
+        method: "PUT",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        body: expect.stringContaining('"Status":"FAILED"'),
+      }),
     );
   });
 
-  it("throws if JAR_RSA_ENCRYPTION_KEY_ALIAS is not set", async () => {
+  it("sends FAILED response if JAR_RSA_ENCRYPTION_KEY_ALIAS is not set", async () => {
     delete process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"];
 
-    await expect(handler({}, context)).rejects.toThrowError(
-      "JAR_RSA_ENCRYPTION_KEY_ALIAS not set",
+    const event = createEvent("Create");
+    await handler(event, context);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      event.ResponseURL,
+      expect.objectContaining({
+        method: "PUT",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        body: expect.stringContaining('"Status":"FAILED"'),
+      }),
     );
   });
 
-  it("throws if public key is missing", async () => {
+  it("sends FAILED response if public key is missing", async () => {
     mockGetPublicKey.mockResolvedValueOnce({ PublicKey: undefined });
 
-    await expect(handler({}, context)).rejects.toThrowError(
-      "Public key not found for KMS Key Alias: alias/test-key",
+    const event = createEvent("Create");
+    await handler(event, context);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      event.ResponseURL,
+      expect.objectContaining({
+        method: "PUT",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        body: expect.stringContaining('"Status":"FAILED"'),
+      }),
     );
   });
 
-  it("throws if key metadata is missing", async () => {
+  it("sends FAILED response if key metadata is missing", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
 
     mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
     mockDescribeKey.mockResolvedValueOnce({ KeyMetadata: undefined });
 
-    await expect(handler({}, context)).rejects.toThrowError(
-      "Key ID not found for KMS Key Alias: alias/test-key",
+    const event = createEvent("Create");
+    await handler(event, context);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      event.ResponseURL,
+      expect.objectContaining({
+        method: "PUT",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        body: expect.stringContaining('"Status":"FAILED"'),
+      }),
     );
   });
 
-  it("throws if KeyId is missing in metadata", async () => {
+  it("sends FAILED response if KeyId is missing in metadata", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
     const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
     const fakeJwk = { kty: "RSA" };
@@ -168,29 +291,55 @@ describe("handler", () => {
     (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
 
-    await expect(handler({}, context)).rejects.toThrowError(
-      "KeyMetadata.KeyId not defined",
+    const event = createEvent("Create");
+    await handler(event, context);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      event.ResponseURL,
+      expect.objectContaining({
+        method: "PUT",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        body: expect.stringContaining('"Status":"FAILED"'),
+      }),
     );
   });
 
-  it("handles error in KMS getPublicKey", async () => {
+  it("sends FAILED response on KMS getPublicKey error", async () => {
     mockGetPublicKey.mockRejectedValueOnce(new Error("KMS failure"));
 
-    await expect(handler({}, context)).rejects.toThrowError("KMS failure");
+    const event = createEvent("Create");
+    await handler(event, context);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      event.ResponseURL,
+      expect.objectContaining({
+        method: "PUT",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        body: expect.stringContaining('"Status":"FAILED"'),
+      }),
+    );
   });
 
-  it("handles error in KMS describeKey", async () => {
+  it("sends FAILED response on KMS describeKey error", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
 
     mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
     mockDescribeKey.mockRejectedValueOnce(new Error("KMS describe failure"));
 
-    await expect(handler({}, context)).rejects.toThrowError(
-      "KMS describe failure",
+    const event = createEvent("Create");
+    await handler(event, context);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      event.ResponseURL,
+      expect.objectContaining({
+        method: "PUT",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        body: expect.stringContaining('"Status":"FAILED"'),
+      }),
     );
   });
 
-  it("handles error in JOSE operations", async () => {
+  it("sends FAILED response on JOSE operations error", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
 
     mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
@@ -201,10 +350,20 @@ describe("handler", () => {
       new Error("JOSE failure"),
     );
 
-    await expect(handler({}, context)).rejects.toThrowError("JOSE failure");
+    const event = createEvent("Create");
+    await handler(event, context);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      event.ResponseURL,
+      expect.objectContaining({
+        method: "PUT",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        body: expect.stringContaining('"Status":"FAILED"'),
+      }),
+    );
   });
 
-  it("handles error in S3 upload", async () => {
+  it("sends FAILED response on S3 upload error", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
     const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
     const fakeJwk = { kty: "RSA" };
@@ -217,47 +376,27 @@ describe("handler", () => {
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
     mockPutObject.mockRejectedValueOnce(new Error("S3 upload failed"));
 
-    await expect(handler({}, context)).rejects.toThrowError("S3 upload failed");
-  });
-});
+    const event = createEvent("Create");
+    await handler(event, context);
 
-describe("putContentToS3", () => {
-  beforeEach(() => {
-    vi.resetAllMocks();
-    mockPutObject.mockReset();
-    process.env["BUCKET_NAME"] = "test-bucket";
-  });
-
-  it("uploads successfully", async () => {
-    const mockResponse = {
-      ETag: "etag123",
-      $metadata: { httpStatusCode: 200 },
-    };
-
-    mockPutObject.mockResolvedValueOnce(mockResponse);
-
-    const response = await putContentToS3('{"data":"ok"}');
-
-    expect(mockPutObject).toHaveBeenCalledWith({
-      Bucket: "test-bucket",
-      Key: "jwks.json",
-      Body: '{"data":"ok"}',
-      ContentType: "application/json",
-    });
-    expect(response).toStrictEqual(mockResponse);
+    expect(mockFetch).toHaveBeenCalledWith(
+      event.ResponseURL,
+      expect.objectContaining({
+        method: "PUT",
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        body: expect.stringContaining('"Status":"FAILED"'),
+      }),
+    );
   });
 
-  it("throws on S3 upload error", async () => {
-    mockPutObject.mockRejectedValueOnce(new Error("S3 upload failed"));
+  it("throws error if CloudFormation response fails", async () => {
+    // Mock fetch to fail for both SUCCESS and FAILED response attempts
+    mockFetch.mockResolvedValue({ ok: false, statusText: "Bad Request" });
 
-    await expect(putContentToS3("{}")).rejects.toThrowError("S3 upload failed");
-  });
+    const event = createEvent("Delete");
 
-  it("throws if BUCKET_NAME is not set", async () => {
-    delete process.env["BUCKET_NAME"];
-
-    await expect(putContentToS3("{}")).rejects.toThrowError(
-      "BUCKET_NAME not set",
+    await expect(handler(event, context)).rejects.toThrowError(
+      "Failed to send response: Bad Request",
     );
   });
 });
