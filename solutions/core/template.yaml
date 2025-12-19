@@ -536,6 +536,7 @@ Resources:
     Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt JwksGeneratorLambda.Arn
+      ForceUpdate: !Ref JwksGeneratorLambda
 
   ApiSessionsTable:
     Type: AWS::DynamoDB::Table
