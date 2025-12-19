@@ -387,24 +387,6 @@ Resources:
         - MetricsEnabled: true
           ResourcePath: /*
           HttpMethod: "*"
-      DefinitionBody:
-        openapi: 3.0.3
-        info:
-          title: Account Components Public API
-          version: 1.0.0
-        paths:
-          /healthcheck:
-            get:
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Arn}/invocations"
-          /authorize:
-            get:
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizeLambda.Arn}/invocations"
 
   ApiGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup
@@ -608,24 +590,6 @@ Resources:
           title: Account Components Private API
           version: 1.0.0
         paths:
-          /healthcheck:
-            get:
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Arn}/invocations"
-          /token:
-            post:
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TokenLambda.Arn}/invocations"
-          /journeyoutcome:
-            get:
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JourneyOutcomeLambda.Arn}/invocations"
           /.well-known/jwks.json:
             get:
               responses:
@@ -728,6 +692,19 @@ Resources:
       Handler: healthcheck.handler
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      Events:
+        HealthcheckPublicApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /healthcheck
+            Method: GET
+        HealthcheckPrivateApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PrivateApiGateway
+            Path: /healthcheck
+            Method: GET
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -796,6 +773,13 @@ Resources:
                 - appconfig:GetLatestConfiguration
                 - appconfig:StartConfigurationSession
               Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
+      Events:
+        TokenPrivateApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PrivateApiGateway
+            Path: /token
+            Method: POST
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -856,7 +840,13 @@ Resources:
                 - kms:DescribeKey
                 - kms:GetPublicKey
               Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyArn}}"
-
+      Events:
+        JourneyOutcomePrivateApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref PrivateApiGateway
+            Path: /journeyoutcome
+            Method: GET
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -933,6 +923,13 @@ Resources:
                 - kms:Decrypt
                 - kms:GenerateDataKey
               Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
+      Events:
+        AuthorizePublicApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiGateway
+            Path: /authorize
+            Method: GET
     Metadata:
       BuildMethod: esbuild
       BuildProperties:
@@ -946,46 +943,6 @@ Resources:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:
           - solutions/api/src/lambda/authorize/index.ts
-
-  HealthcheckLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref HealthcheckLambda
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
-
-  PrivateHealthcheckLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref HealthcheckLambda
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
-
-  PrivateTokenLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref TokenLambda
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
-
-  PrivateJourneyOutcomeLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref JourneyOutcomeLambda
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
-
-  AuthorizeLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref AuthorizeLambda
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
 
   ReplayAttackTable:
     Type: AWS::DynamoDB::Table
