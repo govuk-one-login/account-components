@@ -551,6 +551,18 @@ Resources:
       RetentionInDays: 30
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
+  JwksGeneratorLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref JwksGeneratorLambda
+      Action: lambda:InvokeFunction
+      Principal: cloudformation.amazonaws.com
+
+  JwksGeneratorTrigger:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt JwksGeneratorLambda.Arn
+
   CodeDeployServiceRole:
     Type: AWS::IAM::Role
     Properties:
