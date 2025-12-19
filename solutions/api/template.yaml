@@ -387,6 +387,24 @@ Resources:
         - MetricsEnabled: true
           ResourcePath: /*
           HttpMethod: "*"
+      DefinitionBody:
+        openapi: 3.0.3
+        info:
+          title: Account Components Public API
+          version: 1.0.0
+        paths:
+          /healthcheck:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Alias}/invocations"
+          /authorize:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizeLambda.Alias}/invocations"
 
   ApiGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup
@@ -590,6 +608,24 @@ Resources:
           title: Account Components Private API
           version: 1.0.0
         paths:
+          /healthcheck:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Alias}/invocations"
+          /token:
+            post:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TokenLambda.Alias}/invocations"
+          /journeyoutcome:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JourneyOutcomeLambda.Alias}/invocations"
           /.well-known/jwks.json:
             get:
               responses:
@@ -669,24 +705,6 @@ Resources:
                 requestTemplates:
                   application/json: '{"statusCode": 200}'
                 type: mock
-          /token:
-            post:
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TokenLambda.Alias}/invocations"
-          /healthcheck:
-            get:
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Alias}/invocations"
-          /journeyoutcome:
-            get:
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JourneyOutcomeLambda.Alias}/invocations"
 
   PrivateApiGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup
@@ -710,6 +728,9 @@ Resources:
       Handler: healthcheck.handler
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
       Events:
         HealthcheckPublicApi:
           Type: Api
@@ -791,6 +812,9 @@ Resources:
                 - appconfig:GetLatestConfiguration
                 - appconfig:StartConfigurationSession
               Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
       Events:
         TokenPrivateApi:
           Type: Api
@@ -858,6 +882,9 @@ Resources:
                 - kms:DescribeKey
                 - kms:GetPublicKey
               Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyArn}}"
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
       Events:
         JourneyOutcomePrivateApi:
           Type: Api
@@ -941,6 +968,9 @@ Resources:
                 - kms:Decrypt
                 - kms:GenerateDataKey
               Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
       Events:
         AuthorizePublicApi:
           Type: Api
@@ -961,6 +991,14 @@ Resources:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
         EntryPoints:
           - solutions/api/src/lambda/authorize/index.ts
+
+  HealthcheckLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref HealthcheckLambda.Alias
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
 
   PrivateHealthcheckLambdaPermission:
     Type: AWS::Lambda::Permission
@@ -985,6 +1023,14 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
+
+  AuthorizeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AuthorizeLambda.Alias
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
 
   ReplayAttackTable:
     Type: AWS::DynamoDB::Table
