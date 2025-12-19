@@ -669,6 +669,24 @@ Resources:
                 requestTemplates:
                   application/json: '{"statusCode": 200}'
                 type: mock
+          /token:
+            post:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TokenLambda}/invocations"
+          /healthcheck:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda}/invocations"
+          /journeyoutcome:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${JourneyOutcomeLambda}/invocations"
 
   PrivateApiGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup
