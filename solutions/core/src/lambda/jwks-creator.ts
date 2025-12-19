@@ -1,6 +1,6 @@
 import { exportJWK, importSPKI } from "jose";
 import type { JWK } from "jose";
-import type { Context } from "aws-lambda";
+import type { Context, CloudFormationCustomResourceEvent } from "aws-lambda";
 import { createPublicKey } from "node:crypto";
 import assert from "node:assert";
 import { getS3Client } from "../../../commons/utils/awsClient/s3Client/index.js";
@@ -9,21 +9,62 @@ import { jarKeyEncryptionAlgorithm } from "../../../commons/utils/constants.js";
 import { logger } from "../../../commons/utils/logger/index.js";
 
 export const handler = async (
-  _event: unknown,
+  event: CloudFormationCustomResourceEvent,
   context: Context,
 ): Promise<void> => {
   logger.addContext(context);
-  assert.ok(
-    process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
-    "JAR_RSA_ENCRYPTION_KEY_ALIAS not set",
-  );
 
-  const jwks = await generateJwksFromKmsPublicKey(
-    process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
-  );
+  try {
+    if (event.RequestType === "Create" || event.RequestType === "Update") {
+      assert.ok(
+        process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+        "JAR_RSA_ENCRYPTION_KEY_ALIAS not set",
+      );
 
-  await putContentToS3(JSON.stringify(jwks));
+      const jwks = await generateJwksFromKmsPublicKey(
+        process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+      );
+
+      await putContentToS3(JSON.stringify(jwks));
+    }
+
+    await sendResponse(event, context, "SUCCESS");
+  } catch (error) {
+    logger.error("Error in handler:", { error });
+    await sendResponse(
+      event,
+      context,
+      "FAILED",
+      error instanceof Error ? error : undefined,
+    );
+  }
 };
+
+async function sendResponse(
+  event: CloudFormationCustomResourceEvent,
+  context: Context,
+  status: "SUCCESS" | "FAILED",
+  error?: Error,
+): Promise<void> {
+  const responseBody = JSON.stringify({
+    Status: status,
+    Reason: error?.message,
+    PhysicalResourceId: context.logStreamName,
+    StackId: event.StackId,
+    RequestId: event.RequestId,
+    LogicalResourceId: event.LogicalResourceId,
+  });
+
+  const response = await fetch(event.ResponseURL, {
+    method: "PUT",
+    headers: { "Content-Type": "" },
+    body: responseBody,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to send response: ${response.statusText}`);
+  }
+}
 
 async function generateJwksFromKmsPublicKey(
   keyAlias: string,
@@ -87,7 +128,7 @@ async function generateJwksFromKmsPublicKey(
   }
 }
 
-export async function putContentToS3(content: string) {
+async function putContentToS3(content: string) {
   assert.ok(process.env["BUCKET_NAME"], "BUCKET_NAME not set");
 
   const key = "jwks.json";

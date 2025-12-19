@@ -88,8 +88,6 @@ resource "aws_cloudformation_stack" "core_pipeline_stack" {
     SlackNotificationType                   = var.environment == "production" ? "All" : (var.environment == "dev" ? "None" : "Failures")
     ProgrammaticPermissionsBoundary         = "True"
     AllowedServiceOne                       = "EC2"
-    AllowedServiceTwo                       = "Lambda"
-    LambdaCanaryDeployment                  = "AllAtOnce"
   }
 
   capabilities = var.capabilities
@@ -144,8 +142,6 @@ resource "aws_cloudformation_stack" "mocks_pipeline_stack" {
     AllowedServiceOne                = "AppConfig"
     AllowedServiceTwo                = "SSM"
     AllowedServiceThree              = "EC2"
-    AllowedServiceFour               = "Lambda"
-    LambdaCanaryDeployment           = "AllAtOnce"
   }
 
   capabilities = var.capabilities
