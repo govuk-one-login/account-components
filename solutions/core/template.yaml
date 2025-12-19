@@ -29,16 +29,6 @@ Parameters:
     Type: String
     Description: >
       The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
-  LambdaDeploymentPreference:
-    Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
-    Type: String
-    Default: "Canary10Percent10Minutes"
-    AllowedValues:
-      - AllAtOnce
-      - Canary10Percent5Minutes
-      - Canary10Percent10Minutes
-      - Canary10Percent15Minutes
-      - Canary10Percent30Minutes
 
 Conditions:
   UseCodeSigning:
@@ -51,44 +41,28 @@ Conditions:
       - Fn::Equals:
           - !Ref PermissionsBoundary
           - "none"
-  CanariesEnabled: !Equals
-    - !FindInMap [EnvConfig, !Ref Environment, UseCanary]
-    - true
 
 Mappings:
   EnvConfig:
     dev:
       LambdaLogLevel: DEBUG
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
-      UseCanary: false
     build:
       LambdaLogLevel: INFO
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
-      UseCanary: false
     staging:
       LambdaLogLevel: INFO
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
-      UseCanary: true
     integration:
       LambdaLogLevel: INFO
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
-      UseCanary: true
     production:
       LambdaLogLevel: INFO
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables #pragma: allowlist secret
-      UseCanary: true
 
 Globals:
   Function:
-    DeploymentPreference:
-      Type: !If
-        - CanariesEnabled
-        - !Ref LambdaDeploymentPreference
-        - AllAtOnce
-      Alarms: []
-      Role: !GetAtt CodeDeployServiceRole.Arn
     Tracing: Active
-    AutoPublishAlias: live
     KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
     Layers:
       - "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_323_2_20250822-051314_with_collector_nodejs:1"
@@ -562,27 +536,6 @@ Resources:
     Type: AWS::CloudFormation::CustomResource
     Properties:
       ServiceToken: !GetAtt JwksGeneratorLambda.Arn
-
-  CodeDeployServiceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Action:
-              - sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service:
-                - codedeploy.amazonaws.com
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
-      PermissionsBoundary:
-        !If [
-          UsePermissionsBoundary,
-          !Ref PermissionsBoundary,
-          !Ref AWS::NoValue,
-        ]
 
   ApiSessionsTable:
     Type: AWS::DynamoDB::Table

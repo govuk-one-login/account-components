@@ -26,16 +26,6 @@ Parameters:
   CoreStackName:
     Type: String
     Default: "components-core"
-  LambdaDeploymentPreference:
-    Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
-    Type: String
-    Default: "Canary10Percent10Minutes"
-    AllowedValues:
-      - AllAtOnce
-      - Canary10Percent5Minutes
-      - Canary10Percent10Minutes
-      - Canary10Percent15Minutes
-      - Canary10Percent30Minutes
 
 Mappings:
   EnvironmentConfiguration:
@@ -43,14 +33,12 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       stubsDomain: stubs.manage.dev.account.gov.uk
       LambdaLogLevel: DEBUG
-      UseCanary: false
       apiTokenEndpointUrl: https://internal.manage.dev.account.gov.uk/token
       apiJourneyOutcomeEndpointUrl: https://internal.manage.dev.account.gov.uk/journeyoutcome
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       stubsDomain: stubs.manage.build.account.gov.uk
       LambdaLogLevel: INFO
-      UseCanary: false
       apiTokenEndpointUrl: https://internal.manage.build.account.gov.uk/token
       apiJourneyOutcomeEndpointUrl: https://internal.manage.build.account.gov.uk/journeyoutcome
 
@@ -65,21 +53,10 @@ Conditions:
       - Fn::Equals:
           - !Ref PermissionsBoundary
           - "none"
-  CanariesEnabled: !Equals
-    - !FindInMap [EnvironmentConfiguration, !Ref Environment, UseCanary]
-    - true
 
 Globals:
   Function:
-    DeploymentPreference:
-      Type: !If
-        - CanariesEnabled
-        - !Ref LambdaDeploymentPreference
-        - AllAtOnce
-      Alarms: []
-      Role: !GetAtt CodeDeployServiceRole.Arn
     Tracing: Active
-    AutoPublishAlias: live
     KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyArn}}"
     Layers:
       - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1
@@ -163,27 +140,6 @@ Globals:
         DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
 
 Resources:
-  CodeDeployServiceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Action:
-              - sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service:
-                - codedeploy.amazonaws.com
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
-      PermissionsBoundary:
-        !If [
-          UsePermissionsBoundary,
-          !Ref PermissionsBoundary,
-          !Ref AWS::NoValue,
-        ]
-
   MockClientECPrivateKeySSM:
     Type: AWS::SSM::Parameter
     Properties:
