@@ -59,7 +59,6 @@ export interface RequestBody {
   iat?: string;
   exp?: string;
   access_token?: string;
-  refresh_token?: string;
   sub?: string;
   public_sub?: string;
   email?: string;
