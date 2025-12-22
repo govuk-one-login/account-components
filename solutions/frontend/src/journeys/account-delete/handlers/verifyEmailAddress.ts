@@ -44,7 +44,6 @@ export async function verifyEmailAddressGetHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  reply.analytics = analytics;
   await renderPage(request, reply);
   return reply;
 }
