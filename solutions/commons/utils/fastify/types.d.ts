@@ -5,6 +5,7 @@ import type { Actor, AnyMachineSnapshot } from "xstate";
 import type { accountDeleteStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/account-delete.ts";
 import type { testingJourneyStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/testing-journey.ts";
 import type { ClientEntry } from "../../../config/schema/types.ts";
+import type { authorizeErrors } from "../authorize/authorizeErrors.ts";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -26,7 +27,9 @@ declare module "fastify" {
       htmlLang?: string | undefined;
       authFrontEndUrl?: string | undefined;
       analyticsCookieDomain?: string | undefined;
-      exitJourneyUrl?: string | undefined;
+      getRedirectToClientRedirectUri?: (
+        error?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
+      ) => string;
     };
     journeyStates?: {
       [Scope.testingJourney]?: Actor<typeof testingJourneyStateMachine>;

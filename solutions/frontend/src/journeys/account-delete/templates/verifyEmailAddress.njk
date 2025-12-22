@@ -1,20 +1,32 @@
-{% extends "templates/layout/journey-base-page.njk" %}
+{% extends "templates/layout/base-page.njk" %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 
 {% set pageTitleName = 'journey:verifyEmailAddress.pageTitle' | translate %}
 
-{% block journeyPageContent %}
+{% block pageContent %}
   <h1 class="govuk-heading-l">{{ 'journey:verifyEmailAddress.heading' | translate }}</h1>
+
+  <p class="govuk-body">{{ 'journey:verifyEmailAddress.paragraph1' | translate }}</p>
+
+  {{ govukInsetText({
+      text: 'journey:verifyEmailAddress.emailAddress' | translate({
+        emailAddress: emailAddress
+      }) | safe
+  })}}
+
+  <h2 class="govuk-heading-m">{{ 'journey:verifyEmailAddress.heading2' | translate }}</h2>
+
+  {% set paragraphs2 = 'journey:verifyEmailAddress.paragraphs2' | translate({ returnObjects: true }) %}
+
+  {% for paragraph in paragraphs2 %}
+    <p class="govuk-body">{{ paragraph }}</p>
+  {% endfor %}
+
   <form method="post">
     <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
-
-    {{ govukInsetText({
-        text: 'journey:verifyEmailAddress.emailAddress' | translate({
-          emailAddress: emailAddress
-        }) | safe
-    })}}
 
     {{ govukInput({
         label: {
@@ -35,5 +47,15 @@
       preventDoubleClick: true
     }) }}
   </form>
-  <p class="govuk-body"><a href="{{ resendCodeLinkUrl }}" class="govuk-link govuk-link--no-visited-state">{{ 'journey:verifyEmailAddress.resendCodeLinkText' | translate }}</a></p>
+
+  {% set detailsHTML %}
+    <p class="govuk-body">{{ 'journey:verifyEmailAddress.problemsWithTheCode' | translate({
+      resendCodeLinkUrl: resendCodeLinkUrl
+    }) | safe }}</p>
+  {% endset %}
+
+  {{ govukDetails({
+    summaryText: 'journey:verifyEmailAddress.problemsWithTheCodeSummary' | translate,
+    html: detailsHTML
+}) }}
 {% endblock %}

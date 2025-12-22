@@ -2,6 +2,8 @@ import { getEnvironment } from "../../getEnvironment/index.js";
 import type { FastifyReply } from "fastify";
 import { addLanguageParam, contactUsUrl } from "@govuk-one-login/frontend-ui";
 import * as path from "node:path";
+import { getQueryParamsFromUrl } from "../../getQueryParamsFromUrl/index.js";
+import { authorizeErrors } from "../../authorize/authorizeErrors.js";
 
 export const render = async function (
   this: FastifyReply,
@@ -34,6 +36,9 @@ export const render = async function (
   env.addGlobal("govukRebrand", true);
   env.addGlobal("addLanguageParam", addLanguageParam);
   env.addGlobal("contactUsUrl", contactUsUrl);
+
+  env.addFilter("getQueryParamsFromUrl", getQueryParamsFromUrl);
+  env.addGlobal("authorizeErrors", authorizeErrors);
 
   const html = nunjucks.render(templatePath, props);
   this.type("text/html").send(html);
