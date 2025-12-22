@@ -35,7 +35,7 @@
     }) }}
   </form>
 
-  {% set exitJourneyUrl = globals.getRedirectToClientRedirectUri(authorizeErrors.TODO) %}
+  {% set exitJourneyUrl = globals.getRedirectToClientRedirectUri(authorizeErrors.userAborted) %}
   {% set exitJourneyUrlQueryParams = exitJourneyUrl | getQueryParamsFromUrl %}
 
   <form action="{{ exitJourneyUrl }}">
@@ -50,5 +50,5 @@
     }) }}
   </form>  
 
-  <p class="govuk-body"><a href="{{ contactUrl }}" target="_blank" class="govuk-link govuk-link--no-visited-state">{{ 'journey:confirm.contactLinkText' | translate }}</a></p>
+  <p class="govuk-body"><a href="{{ contactUsUrl }}" target="_blank" class="govuk-link govuk-link--no-visited-state">{{ 'journey:confirm.contactLinkText' | translate }}</a></p>
 {% endblock %}

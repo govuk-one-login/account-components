@@ -36,6 +36,19 @@ declare module "fastify" {
       [Scope.accountDelete]?: Actor<typeof accountDeleteStateMachine>;
     };
     client?: ClientEntry;
+    analytics?:
+      | Partial<{
+          contentId?: string;
+          isPageDataSensitive?: boolean;
+          taxonomyLevel1?: string;
+          taxonomyLevel2?: string;
+          taxonomyLevel3?: string;
+          loggedInStatus?: boolean;
+          dynamic?: boolean;
+          isSelectContentTrackingEnabled?: boolean;
+          isGa4Enabled?: boolean;
+        }>
+      | undefined;
   }
 }
 

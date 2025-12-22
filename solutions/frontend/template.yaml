@@ -53,7 +53,6 @@ Mappings:
       authFrontendUrl: https://signin.dev.account.gov.uk
       analyticsCookieDomain: dev.account.gov.uk
       accountManagementApiUrl: https://am-stub.home.dev.account.gov.uk
-      contactUrl: https://home.dev.account.gov.uk/contact-gov-uk-one-login
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
@@ -65,7 +64,6 @@ Mappings:
       authFrontendUrl: https://signin.build.account.gov.uk
       analyticsCookieDomain: build.account.gov.uk
       accountManagementApiUrl: https://am-stub.home.build.account.gov.uk
-      contactUrl: https://home.build.account.gov.uk/contact-gov-uk-one-login
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
@@ -77,7 +75,6 @@ Mappings:
       authFrontendUrl: https://signin.staging.account.gov.uk
       analyticsCookieDomain: staging.account.gov.uk
       accountManagementApiUrl: "https://cgh8nx4500-vpce-0c9ce65be09f99db7.execute-api.eu-west-2.amazonaws.com/staging"
-      contactUrl: https://home.staging.account.gov.uk/contact-gov-uk-one-login
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
@@ -89,7 +86,6 @@ Mappings:
       authFrontendUrl: https://signin.integration.account.gov.uk
       analyticsCookieDomain: integration.account.gov.uk
       accountManagementApiUrl: "https://z7lornzyy5-vpce-0e594accb3d775457.execute-api.eu-west-2.amazonaws.com/integration"
-      contactUrl: https://home.integration.account.gov.uk/contact-gov-uk-one-login
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
@@ -101,7 +97,6 @@ Mappings:
       authFrontendUrl: https://signin.account.gov.uk
       analyticsCookieDomain: account.gov.uk
       accountManagementApiUrl: "https://63qq2dsjo5-vpce-0d7972874707185a0.execute-api.eu-west-2.amazonaws.com/production"
-      contactUrl: https://home.account.gov.uk/contact-gov-uk-one-login
 
 Conditions:
   UseCodeSigning:
@@ -468,8 +463,6 @@ Resources:
               !Ref Environment,
               accountManagementApiUrl,
             ]
-          CONTACT_URL:
-            !FindInMap [EnvironmentConfiguration, !Ref Environment, contactUrl]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:

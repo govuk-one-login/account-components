@@ -20,7 +20,7 @@
     }) }}
   </form>
 
-  {% set exitJourneyUrl = globals.getRedirectToClientRedirectUri(authorizeErrors.TODO) %}
+  {% set exitJourneyUrl = globals.getRedirectToClientRedirectUri(authorizeErrors.userAborted) %}
 
   <p class="govuk-body"><a href="{{ exitJourneyUrl }}" class="govuk-link govuk-link--no-visited-state">{{ 'journey:introduction.exitJourneyLinkText' | translate }}</a></p>
 {% endblock %}
