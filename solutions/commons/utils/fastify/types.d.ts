@@ -34,7 +34,6 @@ declare module "fastify" {
       getRedirectToClientRedirectUri?: (
         error?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
       ) => string;
-      getQueryParamsFromUrl?: typeof getQueryParamsFromUrl | undefined;
     };
     journeyStates?: {
       [Scope.testingJourney]?: Actor<typeof testingJourneyStateMachine>;
