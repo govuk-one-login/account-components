@@ -48,10 +48,8 @@ declare module "fastify" {
           taxonomyLevel1?: string;
           taxonomyLevel2?: string;
           taxonomyLevel3?: string;
-          loggedInStatus?: boolean;
           dynamic?: boolean;
           isSelectContentTrackingEnabled?: boolean;
-          enabled?: boolean;
         }>
       | undefined;
   }

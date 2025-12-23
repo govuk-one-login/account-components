@@ -1,8 +1,10 @@
-import { expect, it, describe } from "vitest";
+import { describe, it, expect } from "vitest";
+import type { FastifyReply } from "fastify";
+
 import { getAnalyticsSettings } from "./getAnalyticsSettings.js";
 
 describe("getAnalyticsSettings", () => {
-  it("returns default analytics settings", () => {
+  it("should return default taxonomy values when no settings provided", () => {
     const result = getAnalyticsSettings({});
 
     expect(result).toStrictEqual({
@@ -12,51 +14,34 @@ describe("getAnalyticsSettings", () => {
     });
   });
 
-  it("merges provided settings with defaults", () => {
-    const result = getAnalyticsSettings({
-      taxonomyLevel1: "Account",
-      loggedInStatus: true,
-    });
+  it("should merge provided settings with defaults", () => {
+    const settings: Partial<NonNullable<FastifyReply["analytics"]>> = {
+      taxonomyLevel1: "custom-level-1",
+      taxonomyLevel3: "custom-level-3",
+    };
+
+    const result = getAnalyticsSettings(settings);
 
     expect(result).toStrictEqual({
-      taxonomyLevel1: "Account",
+      taxonomyLevel1: "custom-level-1",
       taxonomyLevel2: "TODO",
-      taxonomyLevel3: "TODO",
-      loggedInStatus: true,
+      taxonomyLevel3: "custom-level-3",
     });
   });
 
-  it("overrides all default values when provided", () => {
-    const result = getAnalyticsSettings({
-      enabled: false,
-      taxonomyLevel1: "Custom1",
-      taxonomyLevel2: "Custom2",
-      taxonomyLevel3: "Custom3",
-      isPageDataSensitive: false,
-      loggedInStatus: true,
-    });
+  it("should override all default values when all settings provided", () => {
+    const settings: Partial<NonNullable<FastifyReply["analytics"]>> = {
+      taxonomyLevel1: "level-1",
+      taxonomyLevel2: "level-2",
+      taxonomyLevel3: "level-3",
+    };
+
+    const result = getAnalyticsSettings(settings);
 
     expect(result).toStrictEqual({
-      taxonomyLevel1: "Custom1",
-      taxonomyLevel2: "Custom2",
-      taxonomyLevel3: "Custom3",
-      enabled: false,
-      isPageDataSensitive: false,
-      loggedInStatus: true,
-    });
-  });
-
-  it("handles partial overrides correctly", () => {
-    const result = getAnalyticsSettings({
-      enabled: false,
-      taxonomyLevel2: "Delete",
-    });
-
-    expect(result).toStrictEqual({
-      taxonomyLevel1: "TODO",
-      taxonomyLevel2: "Delete",
-      taxonomyLevel3: "TODO",
-      enabled: false,
+      taxonomyLevel1: "level-1",
+      taxonomyLevel2: "level-2",
+      taxonomyLevel3: "level-3",
     });
   });
 });
