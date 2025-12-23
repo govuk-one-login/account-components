@@ -2,20 +2,19 @@ import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
 import { handleSendOtpChallenge } from "../utils/handleSendOtpChallenge.js";
-import { sharedAnalyticsSettings } from "../utils/sharedAnalyticsSettings.js";
-
-const analytics = {
-  ...sharedAnalyticsSettings,
-  contentId: "TODO",
-};
+import { getAnalyticsSettings } from "../utils/getAnalyticsSettings.js";
 
 export async function resendEmailVerificationCodeGetHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {
   assert.ok(reply.render);
+  assert.ok(reply.client);
 
-  reply.analytics = analytics;
+  reply.analytics = getAnalyticsSettings({
+    contentId: "TODO",
+    loggedInStatus: reply.client.consider_user_logged_in,
+  });
   await reply.render(
     "journeys/account-delete/templates/resendEmailVerificationCode.njk",
     {

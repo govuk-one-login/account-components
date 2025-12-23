@@ -61,6 +61,7 @@ jobs:
           ANALYTICS_COOKIE_DOMAIN=localhost       
           ACCOUNT_MANAGEMENT_API_URL=https://am-stub.home.build.account.gov.uk
           GA4_CONTAINER_ID=TODO
+          ANALYTICS_ENABLED=1
           EOF
 
       - name: Configure stubs environment

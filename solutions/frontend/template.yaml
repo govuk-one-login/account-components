@@ -53,6 +53,7 @@ Mappings:
       authFrontendUrl: https://signin.dev.account.gov.uk
       analyticsCookieDomain: dev.account.gov.uk
       ga4ContainerId: "TODO"
+      analyticsEnabled: "1"
       accountManagementApiUrl: https://am-stub.home.dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
@@ -65,6 +66,7 @@ Mappings:
       authFrontendUrl: https://signin.build.account.gov.uk
       analyticsCookieDomain: build.account.gov.uk
       ga4ContainerId: "TODO"
+      analyticsEnabled: "1"
       accountManagementApiUrl: https://am-stub.home.build.account.gov.uk
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
@@ -77,6 +79,7 @@ Mappings:
       authFrontendUrl: https://signin.staging.account.gov.uk
       analyticsCookieDomain: staging.account.gov.uk
       ga4ContainerId: "TODO"
+      analyticsEnabled: "1"
       accountManagementApiUrl: "https://cgh8nx4500-vpce-0c9ce65be09f99db7.execute-api.eu-west-2.amazonaws.com/staging"
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
@@ -89,6 +92,7 @@ Mappings:
       authFrontendUrl: https://signin.integration.account.gov.uk
       analyticsCookieDomain: integration.account.gov.uk
       ga4ContainerId: "TODO"
+      analyticsEnabled: "0"
       accountManagementApiUrl: "https://z7lornzyy5-vpce-0e594accb3d775457.execute-api.eu-west-2.amazonaws.com/integration"
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
@@ -101,6 +105,7 @@ Mappings:
       authFrontendUrl: https://signin.account.gov.uk
       analyticsCookieDomain: account.gov.uk
       ga4ContainerId: "TODO"
+      analyticsEnabled: "1"
       accountManagementApiUrl: "https://63qq2dsjo5-vpce-0d7972874707185a0.execute-api.eu-west-2.amazonaws.com/production"
 
 Conditions:
@@ -473,6 +478,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               accountManagementApiUrl,
+            ]
+          ANALYTICS_ENABLED:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              analyticsEnabled,
             ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess

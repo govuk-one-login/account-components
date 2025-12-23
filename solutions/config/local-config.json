@@ -5,14 +5,16 @@
       "scope": "testing-journey account-delete",
       "redirect_uris": ["http://localhost:6003/auth/callback"],
       "client_name": "Auth",
-      "jwks_uri": "http://host.docker.internal:6003/auth/.well-known/jwks.json"
+      "jwks_uri": "http://host.docker.internal:6003/auth/.well-known/jwks.json",
+      "consider_user_logged_in": false
     },
     {
       "client_id": "23456789012345678901234567890123",
       "scope": "testing-journey account-delete",
       "redirect_uris": ["http://localhost:6003/home/callback"],
       "client_name": "Home",
-      "jwks_uri": "http://host.docker.internal:6003/home/.well-known/jwks.json"
+      "jwks_uri": "http://host.docker.internal:6003/home/.well-known/jwks.json",
+      "consider_user_logged_in": true
     }
   ],
   "jti_nonce_ttl_in_seconds": 7200,

@@ -3,6 +3,7 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockVerifyOtpChallenge = vi.fn();
 const mockRedirectToClientRedirectUri = vi.fn();
+const mockGetAnalyticsSettings = vi.fn();
 
 // @ts-expect-error
 vi.mock(
@@ -18,6 +19,10 @@ vi.mock(
 
 vi.mock(import("../../../utils/redirectToClientRedirectUri.js"), () => ({
   redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
+}));
+
+vi.mock(import("../utils/getAnalyticsSettings.js"), () => ({
+  getAnalyticsSettings: mockGetAnalyticsSettings,
 }));
 
 const { verifyEmailAddressGetHandler, verifyEmailAddressPostHandler } =
@@ -45,12 +50,25 @@ describe("verifyEmailAddress handlers", () => {
     mockReply = {
       render: vi.fn().mockResolvedValue(undefined),
       redirect: vi.fn().mockReturnThis(),
+      client: {
+        consider_user_logged_in: false,
+      },
       journeyStates: {
         "account-delete": {
           send: vi.fn(),
         },
       } as unknown as FastifyReply["journeyStates"],
     } as unknown as FastifyReply;
+
+    mockGetAnalyticsSettings.mockReturnValue({
+      enabled: true,
+      taxonomyLevel1: "TODO",
+      taxonomyLevel2: "TODO",
+      taxonomyLevel3: "TODO",
+      isPageDataSensitive: true,
+      loggedInStatus: false,
+      contentId: "TODO",
+    });
   });
 
   describe("verifyEmailAddressGetHandler", () => {
@@ -60,6 +78,19 @@ describe("verifyEmailAddress handlers", () => {
         mockReply as FastifyReply,
       );
 
+      expect(mockGetAnalyticsSettings).toHaveBeenCalledWith({
+        contentId: "TODO",
+        loggedInStatus: false,
+      });
+      expect(mockReply.analytics).toStrictEqual({
+        enabled: true,
+        taxonomyLevel1: "TODO",
+        taxonomyLevel2: "TODO",
+        taxonomyLevel3: "TODO",
+        isPageDataSensitive: true,
+        loggedInStatus: false,
+        contentId: "TODO",
+      });
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/verifyEmailAddress.njk",
         {
@@ -83,9 +114,21 @@ describe("verifyEmailAddress handlers", () => {
       ).rejects.toThrowError();
     });
 
-    it("should throw if session claims email is not available", async () => {
+    it("should throw if reply.client is not available", async () => {
+      delete mockReply.client;
+
+      await expect(
+        verifyEmailAddressGetHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+        // eslint-disable-next-line vitest/require-to-throw-message
+      ).rejects.toThrowError();
+    });
+
+    it("should throw if session claims is not available", async () => {
       // @ts-expect-error
-      mockRequest.session = { claims: {} };
+      mockRequest.session = { claims: null };
 
       await expect(
         verifyEmailAddressGetHandler(

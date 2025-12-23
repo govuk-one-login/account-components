@@ -10,12 +10,7 @@ import * as v from "valibot";
 import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
-import { sharedAnalyticsSettings } from "../utils/sharedAnalyticsSettings.js";
-
-const analytics = {
-  ...sharedAnalyticsSettings,
-  contentId: "TODO",
-};
+import { getAnalyticsSettings } from "../utils/getAnalyticsSettings.js";
 
 const renderPage = async (
   request: FastifyRequest,
@@ -24,8 +19,12 @@ const renderPage = async (
 ) => {
   assert.ok(reply.render);
   assert.ok(request.session.claims);
+  assert.ok(reply.client);
 
-  reply.analytics = analytics;
+  reply.analytics = getAnalyticsSettings({
+    contentId: "TODO",
+    loggedInStatus: reply.client.consider_user_logged_in,
+  });
   await reply.render(
     "journeys/account-delete/templates/verifyEmailAddress.njk",
     {

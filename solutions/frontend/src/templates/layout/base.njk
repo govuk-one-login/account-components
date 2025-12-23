@@ -134,12 +134,11 @@
         if (window.DI && window.DI.analyticsGa4) {
             window.DI.analyticsGa4.pageViewTracker.trackOnPageLoad({
                 statusCode: {{ reply.statusCode | default(200) | dump | safe }},
-                englishPageTitle: {{ pageTitleName | default("") | dump | safe }},
                 taxonomy_level1: {{ reply.analytics.taxonomyLevel1 | default("") | dump | safe }},
                 taxonomy_level2: {{ reply.analytics.taxonomyLevel2 | default("") | dump | safe }},
                 taxonomy_level3: {{ reply.analytics.taxonomyLevel3 | default("") | dump | safe }},
                 content_id: {{ reply.analytics.contentId | default("") | dump | safe }},
-                logged_in_status: {{ reply.analytics.loggedInStatus | default(true) | dump | safe }},
+                logged_in_status: {{ reply.analytics.loggedInStatus | default(false) | dump | safe }},
                 dynamic: {{ reply.analytics.dynamic | default(true) | dump | safe }}
             });
         }
