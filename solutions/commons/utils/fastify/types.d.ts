@@ -27,6 +27,7 @@ declare module "fastify" {
       htmlLang?: string | undefined;
       authFrontEndUrl?: string | undefined;
       analyticsCookieDomain?: string | undefined;
+      ga4ContainerId?: string | undefined;
       getRedirectToClientRedirectUri?: (
         error?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
       ) => string;
@@ -46,7 +47,7 @@ declare module "fastify" {
           loggedInStatus?: boolean;
           dynamic?: boolean;
           isSelectContentTrackingEnabled?: boolean;
-          isGa4Enabled?: boolean;
+          enabled?: boolean;
         }>
       | undefined;
   }

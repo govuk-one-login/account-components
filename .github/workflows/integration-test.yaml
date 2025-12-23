@@ -59,7 +59,8 @@ jobs:
           JOURNEY_OUTCOME_TABLE_NAME=components-core-JourneyOutcome    
           AUTH_FRONTEND_URL=https://signin.account.gov.uk
           ANALYTICS_COOKIE_DOMAIN=localhost       
-          ACCOUNT_MANAGEMENT_API_URL=https://am-stub.home.build.account.gov.uk        
+          ACCOUNT_MANAGEMENT_API_URL=https://am-stub.home.build.account.gov.uk
+          GA4_CONTAINER_ID=TODO
           EOF
 
       - name: Configure stubs environment

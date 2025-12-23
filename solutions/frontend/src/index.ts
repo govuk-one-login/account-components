@@ -70,6 +70,7 @@ export const initFrontend = async function () {
       htmlLang: request.i18n.language,
       authFrontEndUrl: process.env["AUTH_FRONTEND_URL"],
       analyticsCookieDomain: process.env["ANALYTICS_COOKIE_DOMAIN"],
+      ga4ContainerId: process.env["GA4_CONTAINER_ID"],
     };
   });
   fastify.decorateReply("render", render);

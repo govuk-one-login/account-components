@@ -116,7 +116,7 @@
       window.DI.appInit({
         ga4ContainerId: {{ globals.ga4ContainerId | default("") | dump | safe }}
       }, {
-        enableGa4Tracking: {{ reply.analytics.isGa4Enabled | default(false) | dump | safe }},
+        enableGa4Tracking: {{ reply.analytics.enabled | default(false) | dump | safe }},
         cookieDomain: {{ globals.analyticsCookieDomain | default("") | dump | safe }},
         isDataSensitive: false,
         isPageDataSensitive: {{ reply.analytics.isPageDataSensitive | default(true) | dump | safe }},
