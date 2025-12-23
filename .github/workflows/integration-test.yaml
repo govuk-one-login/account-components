@@ -60,6 +60,7 @@ jobs:
           AUTH_FRONTEND_URL=https://signin.account.gov.uk
           ANALYTICS_COOKIE_DOMAIN=localhost       
           ACCOUNT_MANAGEMENT_API_URL=https://am-stub.home.build.account.gov.uk
+          CONTACT_URL=https://home.dev.account.gov.uk/contact-gov-uk-one-login          
           GA4_CONTAINER_ID=TODO
           ANALYTICS_ENABLED=1
           EOF

@@ -15,7 +15,9 @@ export async function confirmGetHandler(
   reply.analytics = getAnalyticsSettings({
     contentId: "TODO",
   });
-  await reply.render("journeys/account-delete/templates/confirm.njk");
+  await reply.render("journeys/account-delete/templates/confirm.njk", {
+    contactUrl: process.env["CONTACT_URL"],
+  });
   return reply;
 }
 
