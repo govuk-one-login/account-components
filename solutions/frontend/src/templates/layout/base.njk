@@ -116,7 +116,7 @@
       window.DI.appInit({
         ga4ContainerId: {{ globals.ga4ContainerId | default("") | dump | safe }}
       }, {
-        enableGa4Tracking: {{ reply.analytics.enabled | default(false) | dump | safe }},
+        enableGa4Tracking: {{ globals.analyticsEnabled | default(false) | dump | safe }},
         cookieDomain: {{ globals.analyticsCookieDomain | default("") | dump | safe }},
         isDataSensitive: false,
         isPageDataSensitive: {{ reply.analytics.isPageDataSensitive | default(true) | dump | safe }},
@@ -138,7 +138,7 @@
                 taxonomy_level2: {{ reply.analytics.taxonomyLevel2 | default("") | dump | safe }},
                 taxonomy_level3: {{ reply.analytics.taxonomyLevel3 | default("") | dump | safe }},
                 content_id: {{ reply.analytics.contentId | default("") | dump | safe }},
-                logged_in_status: {{ reply.analytics.loggedInStatus | default(false) | dump | safe }},
+                logged_in_status: {{ reply.client.consider_user_logged_in | default(false) | dump | safe }},
                 dynamic: {{ reply.analytics.dynamic | default(true) | dump | safe }}
             });
         }

@@ -35,7 +35,7 @@
     }) }}
   </form>
 
-  {% set exitJourneyUrl = globals.getRedirectToClientRedirectUri(authorizeErrors.userAborted) %}
+  {% set exitJourneyUrl = globals.getRedirectToClientRedirectUri(globals.authorizeErrors.userAborted) %}
   {% set exitJourneyUrlQueryParams = exitJourneyUrl | getQueryParamsFromUrl %}
 
   <form action="{{ exitJourneyUrl }}">

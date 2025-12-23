@@ -1,23 +1,14 @@
-import { expect, it, describe, vi } from "vitest";
+import { expect, it, describe } from "vitest";
 import { getAnalyticsSettings } from "./getAnalyticsSettings.js";
 
-vi.mock(
-  import("../../../../../commons/utils/resolveEnvVarToBool/index.js"),
-  () => ({
-    resolveEnvVarToBool: vi.fn(() => true),
-  }),
-);
-
 describe("getAnalyticsSettings", () => {
-  it("returns default analytics settings with required loggedInStatus", () => {
-    const result = getAnalyticsSettings({ loggedInStatus: false });
+  it("returns default analytics settings", () => {
+    const result = getAnalyticsSettings({});
 
     expect(result).toStrictEqual({
-      enabled: true,
       taxonomyLevel1: "TODO",
       taxonomyLevel2: "TODO",
       taxonomyLevel3: "TODO",
-      loggedInStatus: false,
     });
   });
 
@@ -28,7 +19,6 @@ describe("getAnalyticsSettings", () => {
     });
 
     expect(result).toStrictEqual({
-      enabled: true,
       taxonomyLevel1: "Account",
       taxonomyLevel2: "TODO",
       taxonomyLevel3: "TODO",
@@ -47,10 +37,10 @@ describe("getAnalyticsSettings", () => {
     });
 
     expect(result).toStrictEqual({
-      enabled: false,
       taxonomyLevel1: "Custom1",
       taxonomyLevel2: "Custom2",
       taxonomyLevel3: "Custom3",
+      enabled: false,
       isPageDataSensitive: false,
       loggedInStatus: true,
     });
@@ -60,15 +50,13 @@ describe("getAnalyticsSettings", () => {
     const result = getAnalyticsSettings({
       enabled: false,
       taxonomyLevel2: "Delete",
-      loggedInStatus: true,
     });
 
     expect(result).toStrictEqual({
-      enabled: false,
       taxonomyLevel1: "TODO",
       taxonomyLevel2: "Delete",
       taxonomyLevel3: "TODO",
-      loggedInStatus: true,
+      enabled: false,
     });
   });
 });

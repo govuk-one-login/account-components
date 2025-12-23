@@ -52,9 +52,6 @@ describe("confirm handlers", () => {
     };
     mockReply = {
       render: vi.fn().mockResolvedValue(undefined),
-      client: {
-        consider_user_logged_in: false,
-      },
       journeyStates: {
         "account-delete": {
           send: vi.fn(),
@@ -82,7 +79,6 @@ describe("confirm handlers", () => {
 
       expect(mockGetAnalyticsSettings).toHaveBeenCalledWith({
         contentId: "TODO",
-        loggedInStatus: false,
       });
       expect(mockReply.analytics).toStrictEqual({
         enabled: true,
@@ -101,18 +97,6 @@ describe("confirm handlers", () => {
 
     it("should throw if reply.render is not available", async () => {
       delete mockReply.render;
-
-      await expect(
-        confirmGetHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-        // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
-    });
-
-    it("should throw if reply.client is not available", async () => {
-      delete mockReply.client;
 
       await expect(
         confirmGetHandler(

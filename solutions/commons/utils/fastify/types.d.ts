@@ -6,6 +6,7 @@ import type { accountDeleteStateMachine } from "../../../frontend/src/journeys/u
 import type { testingJourneyStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/testing-journey.ts";
 import type { ClientEntry } from "../../../config/schema/types.ts";
 import type { authorizeErrors } from "../authorize/authorizeErrors.ts";
+import type { getQueryParamsFromUrl } from "../getQueryParamsFromUrl/index.ts";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -28,9 +29,12 @@ declare module "fastify" {
       authFrontEndUrl?: string | undefined;
       analyticsCookieDomain?: string | undefined;
       ga4ContainerId?: string | undefined;
+      analyticsEnabled?: boolean | undefined;
+      authorizeErrors?: typeof authorizeErrors | undefined;
       getRedirectToClientRedirectUri?: (
         error?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
       ) => string;
+      getQueryParamsFromUrl?: typeof getQueryParamsFromUrl | undefined;
     };
     journeyStates?: {
       [Scope.testingJourney]?: Actor<typeof testingJourneyStateMachine>;

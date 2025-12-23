@@ -3,7 +3,6 @@ import type { FastifyReply } from "fastify";
 import { addLanguageParam, contactUsUrl } from "@govuk-one-login/frontend-ui";
 import * as path from "node:path";
 import { getQueryParamsFromUrl } from "../../getQueryParamsFromUrl/index.js";
-import { authorizeErrors } from "../../authorize/authorizeErrors.js";
 
 export const render = async function (
   this: FastifyReply,
@@ -33,7 +32,6 @@ export const render = async function (
   env.addGlobal("globals", this.globals);
   env.addGlobal("reply", this);
   env.addFilter("getQueryParamsFromUrl", getQueryParamsFromUrl);
-  env.addGlobal("authorizeErrors", authorizeErrors);
 
   // Required by templates in external packages
   env.addGlobal("govukRebrand", true);

@@ -49,9 +49,6 @@ describe("enterPassword handlers", () => {
     mockReply = {
       render: vi.fn().mockResolvedValue(undefined),
       redirect: vi.fn().mockReturnThis(),
-      client: {
-        consider_user_logged_in: false,
-      },
       journeyStates: {
         "account-delete": {
           send: vi.fn(),
@@ -79,7 +76,6 @@ describe("enterPassword handlers", () => {
 
       expect(mockGetAnalyticsSettings).toHaveBeenCalledWith({
         contentId: "TODO",
-        loggedInStatus: false,
       });
       expect(mockReply.analytics).toStrictEqual({
         enabled: true,
@@ -99,18 +95,6 @@ describe("enterPassword handlers", () => {
 
     it("should throw if reply.render is not available", async () => {
       delete mockReply.render;
-
-      await expect(
-        enterPasswordGetHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-        // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
-    });
-
-    it("should throw if reply.client is not available", async () => {
-      delete mockReply.client;
 
       await expect(
         enterPasswordGetHandler(
