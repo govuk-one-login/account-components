@@ -25,9 +25,10 @@ export const onRequest = async (
 
   const claims = request.session.claims;
 
-  metrics.addDimensions({ client_id: claims.client_id });
+  metrics.addDimensions({ client_id: claims.client_id, scope: claims.scope });
   logger.appendKeys({
     client_id: claims.client_id,
+    scope: claims.scope,
   });
 
   const clientRegistry = await getClientRegistry();
