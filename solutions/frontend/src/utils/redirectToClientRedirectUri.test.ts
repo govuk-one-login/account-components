@@ -2,14 +2,14 @@ import { expect, it, describe, vi, beforeEach } from "vitest";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { authorizeErrors } from "../../../commons/utils/authorize/authorizeErrors.js";
 
-const mockGetRedirectToClientRedirectUri = vi.fn();
+const mockBuildRedirectToClientRedirectUri = vi.fn();
 const mockDestroySession = vi.fn();
 const mockDestroyApiSession = vi.fn();
 
 vi.mock(
-  import("../../../commons/utils/authorize/getRedirectToClientRedirectUri.js"),
+  import("../../../commons/utils/authorize/buildRedirectToClientRedirectUri.js"),
   () => ({
-    getRedirectToClientRedirectUri: mockGetRedirectToClientRedirectUri,
+    buildRedirectToClientRedirectUri: mockBuildRedirectToClientRedirectUri,
   }),
 );
 
@@ -34,7 +34,7 @@ describe("redirectToClientRedirectUri", () => {
       redirect: vi.fn().mockReturnThis(),
     } as unknown as FastifyReply;
 
-    mockGetRedirectToClientRedirectUri.mockReturnValue(
+    mockBuildRedirectToClientRedirectUri.mockReturnValue(
       "https://example.com/callback",
     );
     mockDestroySession.mockResolvedValue(undefined);
@@ -52,7 +52,7 @@ describe("redirectToClientRedirectUri", () => {
 
     expect(mockDestroyApiSession).toHaveBeenCalledWith(mockRequest, mockReply);
     expect(mockDestroySession).toHaveBeenCalledWith(mockRequest);
-    expect(mockGetRedirectToClientRedirectUri).toHaveBeenCalledWith(
+    expect(mockBuildRedirectToClientRedirectUri).toHaveBeenCalledWith(
       redirectUri,
       undefined,
       undefined,
@@ -76,7 +76,7 @@ describe("redirectToClientRedirectUri", () => {
       error,
     );
 
-    expect(mockGetRedirectToClientRedirectUri).toHaveBeenCalledWith(
+    expect(mockBuildRedirectToClientRedirectUri).toHaveBeenCalledWith(
       redirectUri,
       error,
       undefined,
@@ -96,7 +96,7 @@ describe("redirectToClientRedirectUri", () => {
       state,
     );
 
-    expect(mockGetRedirectToClientRedirectUri).toHaveBeenCalledWith(
+    expect(mockBuildRedirectToClientRedirectUri).toHaveBeenCalledWith(
       redirectUri,
       undefined,
       state,
@@ -117,7 +117,7 @@ describe("redirectToClientRedirectUri", () => {
       code,
     );
 
-    expect(mockGetRedirectToClientRedirectUri).toHaveBeenCalledWith(
+    expect(mockBuildRedirectToClientRedirectUri).toHaveBeenCalledWith(
       redirectUri,
       undefined,
       undefined,
@@ -140,7 +140,7 @@ describe("redirectToClientRedirectUri", () => {
       code,
     );
 
-    expect(mockGetRedirectToClientRedirectUri).toHaveBeenCalledWith(
+    expect(mockBuildRedirectToClientRedirectUri).toHaveBeenCalledWith(
       redirectUri,
       error,
       state,

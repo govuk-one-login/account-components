@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { authorizeErrors } from "./authorizeErrors.js";
-import { getRedirectToClientRedirectUri } from "./getRedirectToClientRedirectUri.js";
+import { buildRedirectToClientRedirectUri } from "./buildRedirectToClientRedirectUri.js";
 
-describe("getRedirectToClientRedirectUri", () => {
+describe("buildRedirectToClientRedirectUri", () => {
   it("should add code parameter when code is provided", () => {
-    const result = getRedirectToClientRedirectUri(
+    const result = buildRedirectToClientRedirectUri(
       "https://example.com/callback",
       undefined,
       undefined,
@@ -15,7 +15,7 @@ describe("getRedirectToClientRedirectUri", () => {
   });
 
   it("should add error parameters when error is provided", () => {
-    const result = getRedirectToClientRedirectUri(
+    const result = buildRedirectToClientRedirectUri(
       "https://example.com/callback",
       authorizeErrors.userAborted,
     );
@@ -26,7 +26,7 @@ describe("getRedirectToClientRedirectUri", () => {
   });
 
   it("should add state parameter when state is provided", () => {
-    const result = getRedirectToClientRedirectUri(
+    const result = buildRedirectToClientRedirectUri(
       "https://example.com/callback",
       undefined,
       "state_123",
@@ -36,7 +36,7 @@ describe("getRedirectToClientRedirectUri", () => {
   });
 
   it("should add both code and state parameters", () => {
-    const result = getRedirectToClientRedirectUri(
+    const result = buildRedirectToClientRedirectUri(
       "https://example.com/callback",
       undefined,
       "state_123",
@@ -49,7 +49,7 @@ describe("getRedirectToClientRedirectUri", () => {
   });
 
   it("should add error, error_description and state parameters", () => {
-    const result = getRedirectToClientRedirectUri(
+    const result = buildRedirectToClientRedirectUri(
       "https://example.com/callback",
       authorizeErrors.jwksTimeout,
       "state_123",
@@ -61,7 +61,7 @@ describe("getRedirectToClientRedirectUri", () => {
   });
 
   it("should preserve existing query parameters", () => {
-    const result = getRedirectToClientRedirectUri(
+    const result = buildRedirectToClientRedirectUri(
       "https://example.com/callback?existing=param",
       undefined,
       undefined,
@@ -74,7 +74,7 @@ describe("getRedirectToClientRedirectUri", () => {
   });
 
   it("should return original URL when no parameters are provided", () => {
-    const result = getRedirectToClientRedirectUri(
+    const result = buildRedirectToClientRedirectUri(
       "https://example.com/callback",
     );
 
@@ -82,7 +82,7 @@ describe("getRedirectToClientRedirectUri", () => {
   });
 
   it("should handle relative redirect URI with code parameter", () => {
-    const result = getRedirectToClientRedirectUri(
+    const result = buildRedirectToClientRedirectUri(
       "/callback",
       undefined,
       undefined,
@@ -93,7 +93,7 @@ describe("getRedirectToClientRedirectUri", () => {
   });
 
   it("should handle relative redirect URI with error parameters", () => {
-    const result = getRedirectToClientRedirectUri(
+    const result = buildRedirectToClientRedirectUri(
       "/callback",
       authorizeErrors.userAborted,
     );
@@ -104,7 +104,7 @@ describe("getRedirectToClientRedirectUri", () => {
   });
 
   it("should handle relative redirect URI with state parameter", () => {
-    const result = getRedirectToClientRedirectUri(
+    const result = buildRedirectToClientRedirectUri(
       "/callback",
       undefined,
       "state_123",
@@ -114,7 +114,7 @@ describe("getRedirectToClientRedirectUri", () => {
   });
 
   it("should handle relative redirect URI with no parameters", () => {
-    const result = getRedirectToClientRedirectUri("/callback");
+    const result = buildRedirectToClientRedirectUri("/callback");
 
     expect(result).toBe("/callback");
   });

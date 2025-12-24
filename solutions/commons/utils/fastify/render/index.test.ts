@@ -1,8 +1,6 @@
 import { expect, it, describe, vi, beforeEach, afterEach } from "vitest";
 import { render } from "./index.js";
 import { getEnvironment } from "../../getEnvironment/index.js";
-import { getQueryParamsFromUrl } from "../../getQueryParamsFromUrl/index.js";
-import { authorizeErrors } from "../../authorize/authorizeErrors.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type i18next from "i18next";
 
@@ -12,10 +10,6 @@ vi.mock(import("../../getEnvironment/index.js"), () => ({
 
 vi.mock(import("../getCurrentUrl/index.js"), () => ({
   getCurrentUrl: vi.fn().mockReturnValue(new URL("http://example.com/current")),
-}));
-
-vi.mock(import("../../getQueryParamsFromUrl/index.js"), () => ({
-  getQueryParamsFromUrl: vi.fn(),
 }));
 
 const mockEnv = {
@@ -107,14 +101,7 @@ describe("render", () => {
       "translate",
       reply.request?.i18n.t,
     );
-    expect(mockEnv.addFilter).toHaveBeenCalledWith(
-      "getQueryParamsFromUrl",
-      getQueryParamsFromUrl,
-    );
-    expect(mockEnv.addGlobal).toHaveBeenCalledWith(
-      "authorizeErrors",
-      authorizeErrors,
-    );
+    expect(mockEnv.addGlobal).toHaveBeenCalledWith("reply", reply);
     expect(nunjucks.render).toHaveBeenCalledExactlyOnceWith("template.html", {
       currentUrl: new URL("http://example.com/current"),
       htmlLang: "en",

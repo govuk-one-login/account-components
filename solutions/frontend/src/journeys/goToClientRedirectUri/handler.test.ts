@@ -8,9 +8,9 @@ vi.mock(import("../../utils/redirectToClientRedirectUri.js"), () => ({
   redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
 }));
 
-const { goToClientCallback } = await import("./handler.js");
+const { goToClientRedirectUriGet } = await import("./handler.js");
 
-describe("goToClientCallback", () => {
+describe("goToClientRedirectUriGet", () => {
   let mockRequest: FastifyRequest;
   let mockReply: FastifyReply;
 
@@ -41,7 +41,7 @@ describe("goToClientCallback", () => {
     it("redirects with auth code when code is provided", async () => {
       mockRequest.query = { code: "auth-code-123" };
 
-      const result = await goToClientCallback(mockRequest, mockReply);
+      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
 
       expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
         mockRequest,
@@ -60,7 +60,7 @@ describe("goToClientCallback", () => {
         error_description: "E1001",
       };
 
-      const result = await goToClientCallback(mockRequest, mockReply);
+      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
 
       expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
         mockRequest,
@@ -79,7 +79,7 @@ describe("goToClientCallback", () => {
         state: "query-state",
       };
 
-      await goToClientCallback(mockRequest, mockReply);
+      await goToClientRedirectUriGet(mockRequest, mockReply);
 
       expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
         mockRequest,
@@ -97,7 +97,7 @@ describe("goToClientCallback", () => {
       // @ts-expect-error
       mockRequest.session.claims = undefined;
 
-      const result = await goToClientCallback(mockRequest, mockReply);
+      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
 
       // eslint-disable-next-line vitest/prefer-called-with
       expect(mockRequest.log.error).toHaveBeenCalled();
@@ -109,7 +109,7 @@ describe("goToClientCallback", () => {
     it("redirects to authorize error when neither code nor valid error is provided", async () => {
       mockRequest.query = {};
 
-      const result = await goToClientCallback(mockRequest, mockReply);
+      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
 
       // eslint-disable-next-line vitest/prefer-called-with
       expect(mockRequest.log.error).toHaveBeenCalled();
@@ -124,7 +124,7 @@ describe("goToClientCallback", () => {
         error_description: "E9999",
       };
 
-      const result = await goToClientCallback(mockRequest, mockReply);
+      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
 
       // eslint-disable-next-line vitest/prefer-called-with
       expect(mockRequest.log.error).toHaveBeenCalled();
@@ -139,7 +139,7 @@ describe("goToClientCallback", () => {
         new Error("Redirect failed"),
       );
 
-      const result = await goToClientCallback(mockRequest, mockReply);
+      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
 
       // eslint-disable-next-line vitest/prefer-called-with
       expect(mockRequest.log.error).toHaveBeenCalled();
@@ -158,7 +158,7 @@ describe("goToClientCallback", () => {
         error_description: undefined,
       };
 
-      await goToClientCallback(mockRequest, mockReply);
+      await goToClientRedirectUriGet(mockRequest, mockReply);
 
       expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
         mockRequest,
@@ -196,7 +196,7 @@ describe("goToClientCallback", () => {
           error_description: testCase.error_description,
         };
 
-        await goToClientCallback(mockRequest, mockReply);
+        await goToClientRedirectUriGet(mockRequest, mockReply);
 
         expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
           mockRequest,
@@ -215,7 +215,7 @@ describe("goToClientCallback", () => {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.session = undefined as any;
 
-      const result = await goToClientCallback(mockRequest, mockReply);
+      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
 
       // eslint-disable-next-line vitest/prefer-called-with
       expect(mockRequest.log.error).toHaveBeenCalled();
@@ -227,7 +227,7 @@ describe("goToClientCallback", () => {
     it("handles empty query object", async () => {
       mockRequest.query = {};
 
-      const result = await goToClientCallback(mockRequest, mockReply);
+      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
 
       // eslint-disable-next-line vitest/prefer-called-with
       expect(mockRequest.log.error).toHaveBeenCalled();

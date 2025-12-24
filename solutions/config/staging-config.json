@@ -14,7 +14,8 @@
       "redirect_uris": ["https://home.staging.account.gov.uk/home/callback"],
       "client_name": "dummy_home",
       "jwks_uri": "https://home.build.staging.gov.uk/.well-known/jwks.json",
-      "consider_user_logged_in": true
+      "consider_user_logged_in": true,
+      "homepage_url": "https://home.staging.account.gov.uk/your-services"
     }
   ],
   "jti_nonce_ttl_in_seconds": 7200,

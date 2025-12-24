@@ -13,7 +13,7 @@ import { createActor } from "xstate";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
 import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
-import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
+import { buildRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/buildRedirectToClientRedirectUri.js";
 import type { ClientEntry } from "../../../../config/schema/types.js";
 import { logger } from "../../../../commons/utils/logger/index.js";
 
@@ -22,7 +22,7 @@ vi.mock(import("../../utils/paths.js"), () => ({
   paths: {
     journeys: {
       others: {
-        goToClientCallback: { path: "/go-to-client-callback" },
+        goToClientRedirectUri: { path: "/go-to-client-redirect-uri" },
       },
       "test-scope": {
         "test-state": {
@@ -102,9 +102,9 @@ vi.mock(
 );
 
 vi.mock(
-  import("../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js"),
+  import("../../../../commons/utils/authorize/buildRedirectToClientRedirectUri.js"),
   () => ({
-    getRedirectToClientRedirectUri: vi
+    buildRedirectToClientRedirectUri: vi
       .fn()
       .mockReturnValue("/exit-journey-url"),
   }),
@@ -146,7 +146,7 @@ describe("onRequest", () => {
         currentUrl: {
           pathname: "/test-path",
         } as URL,
-        getRedirectToClientRedirectUri: undefined,
+        buildRedirectToClientRedirectUri: undefined,
       },
     } as unknown as FastifyReply;
 
@@ -268,7 +268,7 @@ describe("onRequest", () => {
     it("should not redirect when URL matches others journey paths", async () => {
       mockReply.globals = {
         currentUrl: {
-          pathname: "/go-to-client-callback",
+          pathname: "/go-to-client-redirect-uri",
         } as URL,
       };
 
@@ -330,7 +330,7 @@ describe("onRequest", () => {
         client_id: "test-client-id",
       });
       expect(mockReply.client).toStrictEqual({ client_id: "test-client-id" });
-      expect(mockReply.globals?.getRedirectToClientRedirectUri).toBeTypeOf(
+      expect(mockReply.globals?.buildRedirectToClientRedirectUri).toBeTypeOf(
         "function",
       );
       expect(journeys["test-scope" as Scope]).toHaveBeenCalledWith();
@@ -348,10 +348,10 @@ describe("onRequest", () => {
       });
     });
 
-    it("should set getRedirectToClientRedirectUri function on globals", async () => {
+    it("should set buildRedirectToClientRedirectUri function on globals", async () => {
       await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-      expect(mockReply.globals?.getRedirectToClientRedirectUri).toBeTypeOf(
+      expect(mockReply.globals?.buildRedirectToClientRedirectUri).toBeTypeOf(
         "function",
       );
 
@@ -359,10 +359,10 @@ describe("onRequest", () => {
         description: "E1001",
         type: "access_denied",
       } as const;
-      mockReply.globals?.getRedirectToClientRedirectUri?.(testError);
+      mockReply.globals?.buildRedirectToClientRedirectUri?.(testError);
 
-      expect(getRedirectToClientRedirectUri).toHaveBeenCalledWith(
-        "/go-to-client-callback",
+      expect(buildRedirectToClientRedirectUri).toHaveBeenCalledWith(
+        "/go-to-client-redirect-uri",
         testError,
         undefined,
       );

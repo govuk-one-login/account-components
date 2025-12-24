@@ -3,7 +3,7 @@ import { testingJourney } from "./testing-journey/index.js";
 import { accountDelete } from "./account-delete/index.js";
 import { onRequest } from "./utils/onRequest.js";
 import { onSend } from "./utils/onSend.js";
-import { goToClientCallback } from "./goToClientCallback/handler.js";
+import { goToClientRedirectUriGet } from "./goToClientRedirectUri/handler.js";
 import { paths } from "../utils/paths.js";
 
 export const journeyRoutes = function (fastify: FastifyInstance) {
@@ -16,8 +16,8 @@ export const journeyRoutes = function (fastify: FastifyInstance) {
   });
 
   fastify.get(
-    paths.journeys.others.goToClientCallback.path,
-    goToClientCallback,
+    paths.journeys.others.goToClientRedirectUri.path,
+    goToClientRedirectUriGet,
   );
   fastify.register(testingJourney);
   fastify.register(accountDelete);
