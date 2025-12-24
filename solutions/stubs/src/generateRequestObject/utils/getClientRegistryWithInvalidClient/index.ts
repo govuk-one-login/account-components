@@ -10,6 +10,7 @@ const invalidClient: ClientEntry = {
   redirect_uris: ["https://nowhere"],
   client_name: "Invalid",
   jwks_uri: "https://nowhere/.well-known/jwks.json",
+  consider_user_logged_in: false,
 };
 
 export async function getClientRegistryWithInvalidClient(): Promise<

@@ -10,14 +10,25 @@ import * as v from "valibot";
 import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
+import { getAnalyticsSettings } from "../utils/getAnalyticsSettings.js";
+
+const renderPage = async (reply: FastifyReply, options?: object) => {
+  assert.ok(reply.render);
+
+  reply.analytics = getAnalyticsSettings({
+    contentId: "TODO",
+  });
+  await reply.render(
+    "journeys/account-delete/templates/enterPassword.njk",
+    options,
+  );
+};
 
 export async function enterPasswordGetHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(reply.render);
-
-  await reply.render("journeys/account-delete/templates/enterPassword.njk");
+  await renderPage(reply);
   return reply;
 }
 
@@ -26,15 +37,6 @@ export async function enterPasswordPostHandler(
   reply: FastifyReply,
 ) {
   assert.ok(reply.journeyStates?.["account-delete"]);
-
-  const renderPage = async (options: object) => {
-    assert.ok(reply.render);
-
-    await reply.render(
-      "journeys/account-delete/templates/enterPassword.njk",
-      options,
-    );
-  };
 
   const bodySchema = v.object({
     password: v.pipe(
@@ -48,7 +50,7 @@ export async function enterPasswordPostHandler(
   );
 
   if (bodyFormErrors) {
-    await renderPage({
+    await renderPage(reply, {
       errors: bodyFormErrors,
       errorList: getFormErrorsList(bodyFormErrors),
     });
@@ -78,7 +80,7 @@ export async function enterPasswordPostHandler(
         },
       ]);
 
-      await renderPage({
+      await renderPage(reply, {
         errors: formErrors,
         errorList: getFormErrorsList(formErrors),
       });

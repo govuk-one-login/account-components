@@ -16,6 +16,7 @@ describe("getClientRegistryWithInvalidClient", () => {
     redirect_uris: ["https://valid.com"],
     client_name: "Valid Client",
     jwks_uri: "https://valid.com/.well-known/jwks.json",
+    consider_user_logged_in: false,
   };
 
   const invalidClient: ClientEntry = {
@@ -24,6 +25,7 @@ describe("getClientRegistryWithInvalidClient", () => {
     redirect_uris: ["https://nowhere"],
     client_name: "Invalid",
     jwks_uri: "https://nowhere/.well-known/jwks.json",
+    consider_user_logged_in: false,
   };
 
   it("adds invalid client to existing registry", async () => {

@@ -2,6 +2,7 @@ import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
 import { handleSendOtpChallenge } from "../utils/handleSendOtpChallenge.js";
+import { getAnalyticsSettings } from "../utils/getAnalyticsSettings.js";
 
 export async function resendEmailVerificationCodeGetHandler(
   _request: FastifyRequest,
@@ -9,6 +10,9 @@ export async function resendEmailVerificationCodeGetHandler(
 ) {
   assert.ok(reply.render);
 
+  reply.analytics = getAnalyticsSettings({
+    contentId: "TODO",
+  });
   await reply.render(
     "journeys/account-delete/templates/resendEmailVerificationCode.njk",
     {

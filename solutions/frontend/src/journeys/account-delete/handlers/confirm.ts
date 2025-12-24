@@ -4,6 +4,7 @@ import { AccountManagementApiClient } from "../../../../../commons/utils/account
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
 import { completeJourney } from "../../utils/completeJourney.js";
+import { getAnalyticsSettings } from "../utils/getAnalyticsSettings.js";
 
 export async function confirmGetHandler(
   _request: FastifyRequest,
@@ -11,6 +12,9 @@ export async function confirmGetHandler(
 ) {
   assert.ok(reply.render);
 
+  reply.analytics = getAnalyticsSettings({
+    contentId: "TODO",
+  });
   await reply.render("journeys/account-delete/templates/confirm.njk", {
     contactUrl: process.env["CONTACT_URL"],
   });

@@ -6,9 +6,6 @@
 {%- if isUserLoggedIn %} govuk-header--with-signout {%- endif -%}
 {%- endset-%}
 
-{% set isGa4Enabled = false %}
-{% set isSelectContentTrackingEnabled = false %}
-
 {% block pageTitle %}
   {%- if error or errors %} {{ 'general.errorTitlePrefix' | translate }} - {% endif -%}
   {%- if pageTitleName -%}
@@ -117,19 +114,35 @@
     <script type="text/javascript" nonce='{{ cspNonce }}'>
     if (window.DI) {
       window.DI.appInit({
-        ga4ContainerId: "{{ga4ContainerId}}"
+        ga4ContainerId: {{ globals.ga4ContainerId | default("") | dump | safe }}
       }, {
-        enableGa4Tracking: {{isGa4Enabled}},
-        cookieDomain: "{{ globals.analyticsCookieDomain }}",
+        enableGa4Tracking: {{ globals.analyticsEnabled | default(false) | dump | safe }},
+        cookieDomain: {{ globals.analyticsCookieDomain | default("") | dump | safe }},
         isDataSensitive: false,
-        isPageDataSensitive: {{ opl.isPageDataSensitive | default("true") }},
+        isPageDataSensitive: {{ reply.analytics.isPageDataSensitive | default(true) | dump | safe }},
         enablePageViewTracking: true,
         enableFormResponseTracking: true,
         enableFormChangeTracking: true,
         enableFormErrorTracking: true,
         enableNavigationTracking: true,
-        enableSelectContentTracking: {{isSelectContentTrackingEnabled}}
+        enableSelectContentTracking: {{ reply.analytics.isSelectContentTrackingEnabled | default(false) | dump | safe }}
       });
     }
+
+    {% if reply.analytics %}
+      window.addEventListener('load', function () {
+        if (window.DI && window.DI.analyticsGa4) {
+            window.DI.analyticsGa4.pageViewTracker.trackOnPageLoad({
+                statusCode: {{ reply.statusCode | default(200) | dump | safe }},
+                taxonomy_level1: {{ reply.analytics.taxonomyLevel1 | default("") | dump | safe }},
+                taxonomy_level2: {{ reply.analytics.taxonomyLevel2 | default("") | dump | safe }},
+                taxonomy_level3: {{ reply.analytics.taxonomyLevel3 | default("") | dump | safe }},
+                content_id: {{ reply.analytics.contentId | default("") | dump | safe }},
+                logged_in_status: {{ reply.client.consider_user_logged_in | default(false) | dump | safe }},
+                dynamic: {{ reply.analytics.dynamic | default(true) | dump | safe }}
+            });
+        }
+      });
+    {% endif %}
   </script>
 {% endblock %}
