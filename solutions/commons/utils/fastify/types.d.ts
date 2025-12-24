@@ -29,7 +29,6 @@ declare module "fastify" {
       analyticsCookieDomain?: string | undefined;
       ga4ContainerId?: string | undefined;
       analyticsEnabled?: boolean | undefined;
-      authorizeErrors?: typeof authorizeErrors | undefined;
       getRedirectToClientRedirectUri?: (
         error?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
       ) => string;
