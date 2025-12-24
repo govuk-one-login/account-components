@@ -20,6 +20,8 @@ const getRenderOptions = (claims: FastifySessionObject["claims"]) => {
       paths.journeys["account-delete"].EMAIL_NOT_VERIFIED
         .resendEmailVerificationCode.path,
     emailAddress: claims.email,
+    backLink:
+      paths.journeys["account-delete"].EMAIL_NOT_VERIFIED.introduction.path,
   };
 };
 

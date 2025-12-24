@@ -1,9 +1,0 @@
-{% extends "templates/layout/base-page.njk" %}
-{% block pageContent %}
-  {% block journeyPageContent %}{% endblock %}
-  {% if globals.exitJourneyUrl and not dontShowExitJourneyLink %}
-    <p class="govuk-body">
-      <a href="{{ globals.exitJourneyUrl }}" class="govuk-link">{{ 'general.exitJourneyLinkText' | translate }}</a>
-    </p>
-  {% endif %}
-{% endblock %}

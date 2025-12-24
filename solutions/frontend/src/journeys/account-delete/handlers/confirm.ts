@@ -11,7 +11,9 @@ export async function confirmGetHandler(
 ) {
   assert.ok(reply.render);
 
-  await reply.render("journeys/account-delete/templates/confirm.njk");
+  await reply.render("journeys/account-delete/templates/confirm.njk", {
+    contactUrl: process.env["CONTACT_URL"],
+  });
   return reply;
 }
 

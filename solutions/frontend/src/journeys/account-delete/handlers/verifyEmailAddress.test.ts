@@ -65,6 +65,7 @@ describe("verifyEmailAddress handlers", () => {
         {
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
           emailAddress: "test@example.com",
+          backLink: "/delete-account/introduction",
         },
       );
       expect(result).toBe(mockReply);
@@ -160,6 +161,7 @@ describe("verifyEmailAddress handlers", () => {
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
           emailAddress: "test@example.com",
+          backLink: "/delete-account/introduction",
         }),
       );
       expect(result).toBe(mockReply);
@@ -197,6 +199,7 @@ describe("verifyEmailAddress handlers", () => {
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
           emailAddress: "test@example.com",
+          backLink: "/delete-account/introduction",
         }),
       );
       expect(result).toBe(mockReply);
@@ -234,6 +237,7 @@ describe("verifyEmailAddress handlers", () => {
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
           emailAddress: "test@example.com",
+          backLink: "/delete-account/introduction",
         }),
       );
       expect(result).toBe(mockReply);
@@ -273,6 +277,7 @@ describe("verifyEmailAddress handlers", () => {
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
           emailAddress: "test@example.com",
+          backLink: "/delete-account/introduction",
         }),
       );
       expect(result).toBe(mockReply);
@@ -310,6 +315,7 @@ describe("verifyEmailAddress handlers", () => {
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
           emailAddress: "test@example.com",
+          backLink: "/delete-account/introduction",
         }),
       );
       expect(result).toBe(mockReply);
@@ -351,6 +357,7 @@ describe("verifyEmailAddress handlers", () => {
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
           emailAddress: "test@example.com",
+          backLink: "/delete-account/introduction",
         }),
       );
       expect(result).toBe(mockReply);
@@ -420,6 +427,7 @@ describe("verifyEmailAddress handlers", () => {
           ]),
           resendCodeLinkUrl: "/delete-account/resend-verification-code",
           emailAddress: "test@example.com",
+          backLink: "/delete-account/introduction",
         }),
       );
       expect(result).toBe(mockReply);
