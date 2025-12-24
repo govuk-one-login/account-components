@@ -78,6 +78,7 @@ export const initFrontend = async function () {
       contactUrl: process.env["CONTACT_URL"],
       yourServicesUrl: process.env["YOUR_SERVICES_URL"],
       securityUrl: process.env["SECURITY_URL"],
+      dynatraceRumUrl: process.env["DYNATRACE_RUM_URL"],
     };
   });
   fastify.decorateReply("render", render);

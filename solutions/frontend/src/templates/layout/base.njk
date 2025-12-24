@@ -20,7 +20,6 @@
 {% endblock %}
 
 {% block head %}
-  {# TODO: add Dynatrace RUM config #}
   {% if globals.dynatraceRumUrl %}
     <script src='{{ globals.dynatraceRumUrl }}' crossorigin="anonymous" nonce='{{ cspNonce }}'></script>
   {% endif %}

@@ -58,6 +58,7 @@ Mappings:
       contactUrl: https://home.dev.account.gov.uk/contact-gov-uk-one-login
       yourServicesUrl: https://home.dev.account.gov.uk/your-services
       securityUrl: https://home.dev.account.gov.uk/security
+      dynatraceRumUrl: ""
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
@@ -74,6 +75,7 @@ Mappings:
       contactUrl: https://home.build.account.gov.uk/contact-gov-uk-one-login
       yourServicesUrl: https://home.build.account.gov.uk/your-services
       securityUrl: https://home.build.account.gov.uk/security
+      dynatraceRumUrl: ""
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
@@ -90,6 +92,7 @@ Mappings:
       contactUrl: https://home.staging.account.gov.uk/contact-gov-uk-one-login
       yourServicesUrl: https://home.staging.account.gov.uk/your-services
       securityUrl: https://home.staging.account.gov.uk/security
+      dynatraceRumUrl: TODO
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
@@ -106,6 +109,7 @@ Mappings:
       contactUrl: https://home.integration.account.gov.uk/contact-gov-uk-one-login
       yourServicesUrl: https://home.integration.account.gov.uk/your-services
       securityUrl: https://home.integration.account.gov.uk/security
+      dynatraceRumUrl: TODO
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
@@ -122,6 +126,7 @@ Mappings:
       contactUrl: https://home.account.gov.uk/contact-gov-uk-one-login
       yourServicesUrl: https://home.account.gov.uk/your-services
       securityUrl: https://home.account.gov.uk/security
+      dynatraceRumUrl: TODO
 
 Conditions:
   UseCodeSigning:
@@ -509,6 +514,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               analyticsEnabled,
+            ]
+          DYNATRACE_RUM_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              dynatraceRumUrl,
             ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
