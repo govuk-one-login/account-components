@@ -56,6 +56,8 @@ Mappings:
       analyticsEnabled: "1"
       accountManagementApiUrl: https://am-stub.home.dev.account.gov.uk
       contactUrl: https://home.dev.account.gov.uk/contact-gov-uk-one-login
+      yourServicesUrl: https://home.dev.account.gov.uk/your-services
+      securityUrl: https://home.dev.account.gov.uk/security
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
@@ -70,6 +72,8 @@ Mappings:
       analyticsEnabled: "1"
       accountManagementApiUrl: https://am-stub.home.build.account.gov.uk
       contactUrl: https://home.build.account.gov.uk/contact-gov-uk-one-login
+      yourServicesUrl: https://home.build.account.gov.uk/your-services
+      securityUrl: https://home.build.account.gov.uk/security
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
@@ -84,6 +88,8 @@ Mappings:
       analyticsEnabled: "1"
       accountManagementApiUrl: "https://cgh8nx4500-vpce-0c9ce65be09f99db7.execute-api.eu-west-2.amazonaws.com/staging"
       contactUrl: https://home.staging.account.gov.uk/contact-gov-uk-one-login
+      yourServicesUrl: https://home.staging.account.gov.uk/your-services
+      securityUrl: https://home.staging.account.gov.uk/security
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
@@ -98,6 +104,8 @@ Mappings:
       analyticsEnabled: "0"
       accountManagementApiUrl: "https://z7lornzyy5-vpce-0e594accb3d775457.execute-api.eu-west-2.amazonaws.com/integration"
       contactUrl: https://home.integration.account.gov.uk/contact-gov-uk-one-login
+      yourServicesUrl: https://home.integration.account.gov.uk/your-services
+      securityUrl: https://home.integration.account.gov.uk/security
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
@@ -112,6 +120,8 @@ Mappings:
       analyticsEnabled: "1"
       accountManagementApiUrl: "https://63qq2dsjo5-vpce-0d7972874707185a0.execute-api.eu-west-2.amazonaws.com/production"
       contactUrl: https://home.account.gov.uk/contact-gov-uk-one-login
+      yourServicesUrl: https://home.account.gov.uk/your-services
+      securityUrl: https://home.account.gov.uk/security
 
 Conditions:
   UseCodeSigning:
@@ -486,6 +496,14 @@ Resources:
             ]
           CONTACT_URL:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, contactUrl]
+          YOUR_SERVICES_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              yourServicesUrl,
+            ]
+          SECURITY_URL:
+            !FindInMap [EnvironmentConfiguration, !Ref Environment, securityUrl]
           ANALYTICS_ENABLED:
             !FindInMap [
               EnvironmentConfiguration,

@@ -6,7 +6,7 @@ import type { FastifyInstance } from "fastify";
 import { testingJourney } from "./testing-journey/index.js";
 import { onRequest } from "./utils/onRequest.js";
 import { onSend } from "./utils/onSend.js";
-import { goToClientCallback } from "./goToClientCallback/handler.js";
+import { goToClientRedirectUriGet } from "./goToClientRedirectUri/handler.js";
 import { paths } from "../utils/paths.js";
 
 vi.mock(import("./utils/onRequest.js"), () => ({
@@ -15,8 +15,8 @@ vi.mock(import("./utils/onRequest.js"), () => ({
 vi.mock(import("./utils/onSend.js"), () => ({
   onSend: vi.fn(),
 }));
-vi.mock(import("./goToClientCallback/handler.js"), () => ({
-  goToClientCallback: vi.fn(),
+vi.mock(import("./goToClientRedirectUri/handler.js"), () => ({
+  goToClientRedirectUriGet: vi.fn(),
 }));
 
 describe("journeyRoutes plugin", () => {
@@ -94,12 +94,12 @@ describe("journeyRoutes plugin", () => {
     expect(mockRegister).toHaveBeenCalledWith(accountDelete);
   });
 
-  it("registers goToClientCallback route", () => {
+  it("registers goToClientRedirectUriGet route", () => {
     journeyRoutes(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      paths.journeys.others.goToClientCallback.path,
-      goToClientCallback,
+      paths.journeys.others.goToClientRedirectUri.path,
+      goToClientRedirectUriGet,
     );
   });
 });
