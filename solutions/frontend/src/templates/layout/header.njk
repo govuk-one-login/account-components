@@ -34,20 +34,11 @@
         </div>
 
         {% if reply.client.consider_user_logged_in and globals.buildRedirectToClientRedirectUri %}
-
-        {% set signOutUrl = globals.buildRedirectToClientRedirectUri(globals.authorizeErrors.userSignedOut) %}
-        {% set signOutUrlQueryParams = signOutUrl | getQueryParamsFromUrl %}
-
           <div class="govuk-header__content">
             <nav class="account-header-navigation" aria-label="{{ 'general.header.signOutLink' | translate }}">
-              <form class="account-header-navigation__form" action="{{ signOutUrl }}">
-
-                {% for key, value in signOutUrlQueryParams %}
-                  <input type="hidden" name="{{ key }}" value="{{ value }}">
-                {% endfor %}
-
-                <button class="account-header-navigation__button" type="submit"><span class="govuk-!-font-weight-bold account-header-navigation__button-content">{{ 'general.header.signOutLink' | translate }}</span></button>
-              </form>
+              <a class="account-header-navigation__link" href="{{ globals.buildRedirectToClientRedirectUri(globals.authorizeErrors.userSignedOut) }}">
+                {{ 'general.header.signOutLink' | translate }}
+              </a>
             </nav>
           </div>
         {% endif %}

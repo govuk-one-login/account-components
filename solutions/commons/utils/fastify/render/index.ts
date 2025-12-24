@@ -2,7 +2,6 @@ import { getEnvironment } from "../../getEnvironment/index.js";
 import type { FastifyReply } from "fastify";
 import { addLanguageParam, contactUsUrl } from "@govuk-one-login/frontend-ui";
 import * as path from "node:path";
-import { getQueryParamsFromUrl } from "../../getQueryParamsFromUrl/index.js";
 
 export const render = async function (
   this: FastifyReply,
@@ -31,7 +30,6 @@ export const render = async function (
   env.addGlobal("styleNonce", this.cspNonce.style);
   env.addGlobal("globals", this.globals);
   env.addGlobal("reply", this);
-  env.addFilter("getQueryParamsFromUrl", getQueryParamsFromUrl);
 
   // Required by templates in external packages
   env.addGlobal("govukRebrand", true);
