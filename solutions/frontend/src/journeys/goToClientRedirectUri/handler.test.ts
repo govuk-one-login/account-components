@@ -10,9 +10,9 @@ vi.mock(import("../../utils/redirectToClientRedirectUri.js"), () => ({
   redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
 }));
 
-const { goToClientRedirectUriPost } = await import("./handler.js");
+const { goToClientRedirectUriHandler } = await import("./handler.js");
 
-describe("goToClientRedirectUriPost", () => {
+describe("goToClientRedirectUriHandler", () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
   let mockClaims: Claims;
@@ -49,7 +49,7 @@ describe("goToClientRedirectUriPost", () => {
     it("should redirect with authorization code when provided", async () => {
       mockRequest.body = { code: "auth-code-123" };
 
-      const result = await goToClientRedirectUriPost(
+      const result = await goToClientRedirectUriHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -71,7 +71,7 @@ describe("goToClientRedirectUriPost", () => {
         error_description: "E1001",
       };
 
-      await goToClientRedirectUriPost(
+      await goToClientRedirectUriHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -93,7 +93,7 @@ describe("goToClientRedirectUriPost", () => {
         error_description: "E1001",
       };
 
-      await goToClientRedirectUriPost(
+      await goToClientRedirectUriHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -114,7 +114,7 @@ describe("goToClientRedirectUriPost", () => {
       mockRequest.session = {} as FastifySessionObject;
       mockRequest.body = { code: "auth-code-123" };
 
-      const result = await goToClientRedirectUriPost(
+      const result = await goToClientRedirectUriHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -129,7 +129,7 @@ describe("goToClientRedirectUriPost", () => {
       delete mockRequest.session;
       mockRequest.body = { code: "auth-code-123" };
 
-      const result = await goToClientRedirectUriPost(
+      const result = await goToClientRedirectUriHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -143,7 +143,7 @@ describe("goToClientRedirectUriPost", () => {
     it("should redirect to authorize error when neither code nor valid error provided", async () => {
       mockRequest.body = {};
 
-      const result = await goToClientRedirectUriPost(
+      const result = await goToClientRedirectUriHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -160,7 +160,7 @@ describe("goToClientRedirectUriPost", () => {
         error_description: "E9999",
       };
 
-      const result = await goToClientRedirectUriPost(
+      const result = await goToClientRedirectUriHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -176,7 +176,7 @@ describe("goToClientRedirectUriPost", () => {
         code: 123,
       };
 
-      const result = await goToClientRedirectUriPost(
+      const result = await goToClientRedirectUriHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -193,7 +193,7 @@ describe("goToClientRedirectUriPost", () => {
         new Error("Redirect failed"),
       );
 
-      const result = await goToClientRedirectUriPost(
+      const result = await goToClientRedirectUriHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -211,7 +211,7 @@ describe("goToClientRedirectUriPost", () => {
         error_description: "E5001",
       };
 
-      await goToClientRedirectUriPost(
+      await goToClientRedirectUriHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -232,7 +232,7 @@ describe("goToClientRedirectUriPost", () => {
         error_description: "E2002",
       };
 
-      await goToClientRedirectUriPost(
+      await goToClientRedirectUriHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -253,7 +253,7 @@ describe("goToClientRedirectUriPost", () => {
         error_description: "E4001",
       };
 
-      await goToClientRedirectUriPost(
+      await goToClientRedirectUriHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );

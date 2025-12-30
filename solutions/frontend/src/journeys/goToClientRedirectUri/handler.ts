@@ -5,7 +5,7 @@ import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeEr
 import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
 
-export const goToClientRedirectUriPost = async (
+export const goToClientRedirectUriHandler = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
