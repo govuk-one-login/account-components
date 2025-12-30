@@ -21,6 +21,21 @@
   </form>
 
   {% set exitJourneyUrl = globals.buildRedirectToClientRedirectUri(globals.authorizeErrors.userAborted) %}
+  {% set exitJourneyUrlQueryParams = exitJourneyUrl | getQueryParamsFromUrl %}
+
+  <form action="{{ exitJourneyUrl }}" method="post">
+    <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
+
+    {% for key, value in exitJourneyUrlQueryParams %}
+      <input type="hidden" name="{{ key }}" value="{{ value }}">
+    {% endfor %}
+
+    {{ govukButton({
+      text: 'journey:introduction.exitJourneyLinkText' | translate,
+      classes: "govuk-button--secondary",
+      preventDoubleClick: true
+    }) }}
+  </form>  
 
   <p class="govuk-body"><a href="{{ exitJourneyUrl }}" class="govuk-link govuk-link--no-visited-state">{{ 'journey:introduction.exitJourneyLinkText' | translate }}</a></p>
 {% endblock %}

@@ -89,31 +89,46 @@ $nav-active-border-thickness: 5px;
 $nav-link-padding-left: $nav-link-padding - 2;
 $nav-button-padding-bottom: $nav-link-padding + $nav-link-outline-thickness;
 
-.account-header-navigation__link {
-  @include govuk-font($size: 16, $weight: bold);
+/* Combined styles for buttons */
+.account-header-navigation__button {
+  border: 0 none;
+  cursor: pointer;
+  background-color: transparent;
+  padding: 0;
+  margin: 0;
 
+  &:focus {
+    outline: none;
+    span {
+      @include govuk-focused-text;
+    }
+  }
+}
+
+/* Specific styles for .account-header-navigation__button */
+.account-header-navigation__button-content {
+  @include govuk-font($size: 16);
   color: govuk-colour("white");
   @include govuk-link-style-inverse;
 
   &:not(:hover) {
     text-decoration: none;
   }
-
   &:hover {
     text-decoration: underline;
     text-decoration-thickness: 3px;
-
     @if $govuk-link-underline-offset {
       text-underline-offset: $govuk-link-underline-offset;
     }
   }
-
   &:focus {
     @include govuk-focused-text;
   }
 }
 
-.account-header-navigation {
+// /* Positioning for the navigation form */
+
+.account-header-navigation__form {
   position: absolute;
   padding: govuk-spacing(2) 0 govuk-spacing(2) 0;
   right: 0;

@@ -1,5 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { expect, it, describe, vi, beforeEach } from "vitest";
 import type { FastifyReply, FastifyRequest } from "fastify";
+import type { FastifySessionObject } from "@fastify/session";
+import type { Claims } from "../../../../commons/utils/authorize/getClaimsSchema.js";
 import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 
 const mockRedirectToClientRedirectUri = vi.fn();
@@ -8,40 +10,49 @@ vi.mock(import("../../utils/redirectToClientRedirectUri.js"), () => ({
   redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
 }));
 
-const { goToClientRedirectUriGet } = await import("./handler.js");
+const { goToClientRedirectUriPost } = await import("./handler.js");
 
-describe("goToClientRedirectUriGet", () => {
-  let mockRequest: FastifyRequest;
-  let mockReply: FastifyReply;
+describe("goToClientRedirectUriPost", () => {
+  let mockRequest: Partial<FastifyRequest>;
+  let mockReply: Partial<FastifyReply>;
+  let mockClaims: Claims;
 
   beforeEach(() => {
     vi.clearAllMocks();
 
+    mockClaims = {
+      redirect_uri: "https://client.example.com/callback",
+      state: "test-state",
+    } as Claims;
+
     mockRequest = {
-      session: {
-        claims: {
-          redirect_uri: "https://client.example.com/callback",
-          state: "test-state",
-        },
-      },
+      method: "POST",
+      body: {},
       query: {},
+      session: {
+        claims: mockClaims,
+      } as FastifySessionObject,
+      // @ts-expect-error
       log: {
         error: vi.fn(),
       },
-    } as unknown as FastifyRequest;
+    };
 
     mockReply = {
       redirect: vi.fn().mockReturnThis(),
-    } as unknown as FastifyReply;
+    };
 
     mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
   });
 
   describe("successful scenarios", () => {
-    it("redirects with auth code when code is provided", async () => {
-      mockRequest.query = { code: "auth-code-123" };
+    it("should redirect with authorization code when provided", async () => {
+      mockRequest.body = { code: "auth-code-123" };
 
-      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
+      const result = await goToClientRedirectUriPost(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
 
       expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
         mockRequest,
@@ -54,13 +65,16 @@ describe("goToClientRedirectUriGet", () => {
       expect(result).toBe(mockReply);
     });
 
-    it("redirects with error when valid error params are provided", async () => {
-      mockRequest.query = {
+    it("should redirect with error when valid error params provided", async () => {
+      mockRequest.body = {
         error: "access_denied",
         error_description: "E1001",
       };
 
-      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
+      await goToClientRedirectUriPost(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
 
       expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
         mockRequest,
@@ -70,22 +84,25 @@ describe("goToClientRedirectUriGet", () => {
         "test-state",
         undefined,
       );
-      expect(result).toBe(mockReply);
     });
 
-    it("handles state parameter from query", async () => {
-      mockRequest.query = {
+    it("should handle both code and error params", async () => {
+      mockRequest.body = {
         code: "auth-code-123",
-        state: "query-state",
+        error: "access_denied",
+        error_description: "E1001",
       };
 
-      await goToClientRedirectUriGet(mockRequest, mockReply);
+      await goToClientRedirectUriPost(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
 
       expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
         mockRequest,
         mockReply,
         "https://client.example.com/callback",
-        undefined,
+        authorizeErrors.userAborted,
         "test-state",
         "auth-code-123",
       );
@@ -93,147 +110,162 @@ describe("goToClientRedirectUriGet", () => {
   });
 
   describe("error scenarios", () => {
-    it("redirects to authorize error when claims are not defined", async () => {
-      // @ts-expect-error
-      mockRequest.session.claims = undefined;
+    it("should redirect to authorize error when claims are not defined", async () => {
+      mockRequest.session = {} as FastifySessionObject;
+      mockRequest.body = { code: "auth-code-123" };
 
-      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
+      const result = await goToClientRedirectUriPost(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
 
-      // eslint-disable-next-line vitest/prefer-called-with
-      expect(mockRequest.log.error).toHaveBeenCalled();
-      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(mockRequest.log?.error).toHaveBeenCalledWith(expect.any(Error));
       expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockRedirectToClientRedirectUri).not.toHaveBeenCalled();
       expect(result).toBe(mockReply);
     });
 
-    it("redirects to authorize error when neither code nor valid error is provided", async () => {
-      mockRequest.query = {};
+    it("should redirect to authorize error when session is not defined", async () => {
+      delete mockRequest.session;
+      mockRequest.body = { code: "auth-code-123" };
 
-      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
+      const result = await goToClientRedirectUriPost(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
 
-      // eslint-disable-next-line vitest/prefer-called-with
-      expect(mockRequest.log.error).toHaveBeenCalled();
-      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(mockRequest.log?.error).toHaveBeenCalledWith(expect.any(Error));
       expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockRedirectToClientRedirectUri).not.toHaveBeenCalled();
       expect(result).toBe(mockReply);
     });
 
-    it("redirects to authorize error when invalid error params are provided", async () => {
-      mockRequest.query = {
+    it("should redirect to authorize error when neither code nor valid error provided", async () => {
+      mockRequest.body = {};
+
+      const result = await goToClientRedirectUriPost(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockRequest.log?.error).toHaveBeenCalledWith(expect.any(Error));
+      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockRedirectToClientRedirectUri).not.toHaveBeenCalled();
+      expect(result).toBe(mockReply);
+    });
+
+    it("should redirect to authorize error when invalid error params provided", async () => {
+      mockRequest.body = {
         error: "invalid_error",
         error_description: "E9999",
       };
 
-      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
+      const result = await goToClientRedirectUriPost(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
 
-      // eslint-disable-next-line vitest/prefer-called-with
-      expect(mockRequest.log.error).toHaveBeenCalled();
-      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(mockRequest.log?.error).toHaveBeenCalledWith(expect.any(Error));
       expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockRedirectToClientRedirectUri).not.toHaveBeenCalled();
       expect(result).toBe(mockReply);
     });
 
-    it("redirects to authorize error when redirectToClientRedirectUri throws", async () => {
-      mockRequest.query = { code: "auth-code-123" };
+    it("should redirect to authorize error when validation fails", async () => {
+      mockRequest.body = {
+        code: 123,
+      };
+
+      const result = await goToClientRedirectUriPost(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockRequest.log?.error).toHaveBeenCalledWith(expect.any(Error));
+      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockRedirectToClientRedirectUri).not.toHaveBeenCalled();
+      expect(result).toBe(mockReply);
+    });
+
+    it("should handle redirectToClientRedirectUri throwing an error", async () => {
+      mockRequest.body = { code: "auth-code-123" };
       mockRedirectToClientRedirectUri.mockRejectedValue(
         new Error("Redirect failed"),
       );
 
-      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
+      const result = await goToClientRedirectUriPost(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
 
-      // eslint-disable-next-line vitest/prefer-called-with
-      expect(mockRequest.log.error).toHaveBeenCalled();
-      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(mockRequest.log?.error).toHaveBeenCalledWith(expect.any(Error));
       expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
       expect(result).toBe(mockReply);
     });
   });
 
-  describe("query parameter validation", () => {
-    it("handles optional query parameters correctly", async () => {
-      mockRequest.query = {
-        code: "auth-code-123",
-        state: "optional-state",
-        error: undefined,
-        error_description: undefined,
+  describe("different error types", () => {
+    it("should handle server_error type", async () => {
+      mockRequest.body = {
+        error: "server_error",
+        error_description: "E5001",
       };
 
-      await goToClientRedirectUriGet(mockRequest, mockReply);
+      await goToClientRedirectUriPost(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
 
       expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
         mockRequest,
         mockReply,
         "https://client.example.com/callback",
-        undefined,
+        authorizeErrors.failedToCheckJtiUnusedAndSetUpSession,
         "test-state",
-        "auth-code-123",
+        undefined,
       );
     });
 
-    it("handles various authorize errors correctly", async () => {
-      const testCases = [
-        {
-          error: "access_denied",
-          error_description: "E1002",
-          expectedError: authorizeErrors.accountDeletePasswordIncorrect,
-        },
-        {
-          error: "invalid_request",
-          error_description: "E2001",
-          expectedError: authorizeErrors.algNotAllowed,
-        },
-        {
-          error: "server_error",
-          error_description: "E5001",
-          expectedError: authorizeErrors.failedToCheckJtiUnusedAndSetUpSession,
-        },
-      ];
+    it("should handle invalid_request type", async () => {
+      mockRequest.body = {
+        error: "invalid_request",
+        error_description: "E2002",
+      };
 
-      for (const testCase of testCases) {
-        vi.clearAllMocks();
-        mockRequest.query = {
-          error: testCase.error,
-          error_description: testCase.error_description,
-        };
+      await goToClientRedirectUriPost(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
 
-        await goToClientRedirectUriGet(mockRequest, mockReply);
-
-        expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
-          mockRequest,
-          mockReply,
-          "https://client.example.com/callback",
-          testCase.expectedError,
-          "test-state",
-          undefined,
-        );
-      }
-    });
-  });
-
-  describe("edge cases", () => {
-    it("handles missing session object", async () => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-      mockRequest.session = undefined as any;
-
-      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
-
-      // eslint-disable-next-line vitest/prefer-called-with
-      expect(mockRequest.log.error).toHaveBeenCalled();
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
-      expect(result).toBe(mockReply);
+      expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+        "https://client.example.com/callback",
+        authorizeErrors.jwsInvalid,
+        "test-state",
+        undefined,
+      );
     });
 
-    it("handles empty query object", async () => {
-      mockRequest.query = {};
+    it("should handle unauthorized_client type", async () => {
+      mockRequest.body = {
+        error: "unauthorized_client",
+        error_description: "E4001",
+      };
 
-      const result = await goToClientRedirectUriGet(mockRequest, mockReply);
+      await goToClientRedirectUriPost(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
 
-      // eslint-disable-next-line vitest/prefer-called-with
-      expect(mockRequest.log.error).toHaveBeenCalled();
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
-      expect(result).toBe(mockReply);
+      expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+        "https://client.example.com/callback",
+        authorizeErrors.jwksTimeout,
+        "test-state",
+        undefined,
+      );
     });
   });
 });
