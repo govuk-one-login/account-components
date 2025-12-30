@@ -86,6 +86,26 @@ describe("goToClientRedirectUriHandler", () => {
       );
     });
 
+    it("should handle GET request with query parameters", async () => {
+      // @ts-expect-error
+      mockRequest.method = "GET";
+      mockRequest.query = { code: "auth-code-456" };
+
+      await goToClientRedirectUriHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+        "https://client.example.com/callback",
+        undefined,
+        "test-state",
+        "auth-code-456",
+      );
+    });
+
     it("should handle both code and error params", async () => {
       mockRequest.body = {
         code: "auth-code-123",

@@ -114,13 +114,16 @@ $nav-button-padding-bottom: $nav-link-padding + $nav-link-outline-thickness;
   &:not(:hover) {
     text-decoration: none;
   }
+
   &:hover {
     text-decoration: underline;
     text-decoration-thickness: 3px;
+
     @if $govuk-link-underline-offset {
       text-underline-offset: $govuk-link-underline-offset;
     }
   }
+
   &:focus {
     @include govuk-focused-text;
   }

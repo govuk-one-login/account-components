@@ -19,7 +19,8 @@ export const goToClientRedirectUriHandler = async (
         code: v.optional(v.string()),
         state: v.optional(v.string()),
       }),
-      request.body,
+      // TODO is uppercase get correct?
+      request.method === "GET" ? request.query : request.body,
     );
 
     const authorizeError = Object.values(authorizeErrors).find(
