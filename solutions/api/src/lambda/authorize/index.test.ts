@@ -188,7 +188,7 @@ describe("authorize handler", () => {
     };
     const client = { client_id: "test-client" };
     const signedJwt = "signed-jwt-string";
-    const claims = { jti: "jwt-id-123" };
+    const claims = { jti: "jwt-id-123", scope: "test-scope" };
     const errorResponse = new ErrorResponse({
       statusCode: 302,
       headers: { location: "https://example.com/error" },
@@ -214,9 +214,15 @@ describe("authorize handler", () => {
     expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
       client_id: "test-client",
     });
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
+      scope: "test-scope",
+    });
     expect(mockLogger.appendKeys).toHaveBeenCalledWith({ client_id: "" });
     expect(mockLogger.appendKeys).toHaveBeenCalledWith({
       client_id: "test-client",
+    });
+    expect(mockLogger.appendKeys).toHaveBeenCalledWith({
+      scope: "test-scope",
     });
   });
 
@@ -229,7 +235,7 @@ describe("authorize handler", () => {
     };
     const client = { client_id: "test-client" };
     const signedJwt = "signed-jwt-string";
-    const claims = { jti: "jwt-id-123", sub: "user123" };
+    const claims = { jti: "jwt-id-123", sub: "user123", scope: "test-scope" };
     const successResponse = {
       statusCode: 302,
       headers: {
@@ -260,9 +266,15 @@ describe("authorize handler", () => {
     expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
       client_id: "test-client",
     });
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
+      scope: "test-scope",
+    });
     expect(mockLogger.appendKeys).toHaveBeenCalledWith({ client_id: "" });
     expect(mockLogger.appendKeys).toHaveBeenCalledWith({
       client_id: "test-client",
+    });
+    expect(mockLogger.appendKeys).toHaveBeenCalledWith({
+      scope: "test-scope",
     });
   });
 

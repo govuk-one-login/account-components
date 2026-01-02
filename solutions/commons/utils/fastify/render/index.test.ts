@@ -111,6 +111,7 @@ describe("render", () => {
       "getQueryParamsFromUrl",
       getQueryParamsFromUrl,
     );
+    expect(mockEnv.addGlobal).toHaveBeenCalledWith("reply", reply);
     expect(nunjucks.render).toHaveBeenCalledExactlyOnceWith("template.html", {
       currentUrl: new URL("http://example.com/current"),
       htmlLang: "en",

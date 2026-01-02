@@ -3,7 +3,6 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockAuthenticate = vi.fn();
 const mockRedirectToClientRedirectUri = vi.fn();
-const mockGetAnalyticsSettings = vi.fn();
 
 // @ts-expect-error
 vi.mock(
@@ -19,10 +18,6 @@ vi.mock(
 
 vi.mock(import("../../../utils/redirectToClientRedirectUri.js"), () => ({
   redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
-}));
-
-vi.mock(import("../utils/getAnalyticsSettings.js"), () => ({
-  getAnalyticsSettings: mockGetAnalyticsSettings,
 }));
 
 const { enterPasswordGetHandler, enterPasswordPostHandler } =
@@ -55,16 +50,6 @@ describe("enterPassword handlers", () => {
         },
       } as unknown as FastifyReply["journeyStates"],
     } as unknown as FastifyReply;
-
-    mockGetAnalyticsSettings.mockReturnValue({
-      enabled: true,
-      taxonomyLevel1: "TODO",
-      taxonomyLevel2: "TODO",
-      taxonomyLevel3: "TODO",
-      isPageDataSensitive: true,
-      loggedInStatus: false,
-      contentId: "TODO",
-    });
   });
 
   describe("enterPasswordGetHandler", () => {
@@ -74,18 +59,6 @@ describe("enterPassword handlers", () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockGetAnalyticsSettings).toHaveBeenCalledWith({
-        contentId: "TODO",
-      });
-      expect(mockReply.analytics).toStrictEqual({
-        enabled: true,
-        taxonomyLevel1: "TODO",
-        taxonomyLevel2: "TODO",
-        taxonomyLevel3: "TODO",
-        isPageDataSensitive: true,
-        loggedInStatus: false,
-        contentId: "TODO",
-      });
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/enterPassword.njk",
         undefined,

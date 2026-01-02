@@ -3,7 +3,6 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockVerifyOtpChallenge = vi.fn();
 const mockRedirectToClientRedirectUri = vi.fn();
-const mockGetAnalyticsSettings = vi.fn();
 
 // @ts-expect-error
 vi.mock(
@@ -19,10 +18,6 @@ vi.mock(
 
 vi.mock(import("../../../utils/redirectToClientRedirectUri.js"), () => ({
   redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
-}));
-
-vi.mock(import("../utils/getAnalyticsSettings.js"), () => ({
-  getAnalyticsSettings: mockGetAnalyticsSettings,
 }));
 
 const { verifyEmailAddressGetHandler, verifyEmailAddressPostHandler } =
@@ -56,16 +51,6 @@ describe("verifyEmailAddress handlers", () => {
         },
       } as unknown as FastifyReply["journeyStates"],
     } as unknown as FastifyReply;
-
-    mockGetAnalyticsSettings.mockReturnValue({
-      enabled: true,
-      taxonomyLevel1: "TODO",
-      taxonomyLevel2: "TODO",
-      taxonomyLevel3: "TODO",
-      isPageDataSensitive: true,
-      loggedInStatus: false,
-      contentId: "TODO",
-    });
   });
 
   describe("verifyEmailAddressGetHandler", () => {
@@ -75,18 +60,6 @@ describe("verifyEmailAddress handlers", () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockGetAnalyticsSettings).toHaveBeenCalledWith({
-        contentId: "TODO",
-      });
-      expect(mockReply.analytics).toStrictEqual({
-        enabled: true,
-        taxonomyLevel1: "TODO",
-        taxonomyLevel2: "TODO",
-        taxonomyLevel3: "TODO",
-        isPageDataSensitive: true,
-        loggedInStatus: false,
-        contentId: "TODO",
-      });
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/verifyEmailAddress.njk",
         {
@@ -110,9 +83,9 @@ describe("verifyEmailAddress handlers", () => {
       ).rejects.toThrowError();
     });
 
-    it("should throw if session claims is not available", async () => {
+    it("should throw if session claims email is not available", async () => {
       // @ts-expect-error
-      mockRequest.session = { claims: null };
+      mockRequest.session = { claims: {} };
 
       await expect(
         verifyEmailAddressGetHandler(

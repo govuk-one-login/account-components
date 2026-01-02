@@ -10,14 +10,9 @@ import * as v from "valibot";
 import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
-import { getAnalyticsSettings } from "../utils/getAnalyticsSettings.js";
 
-const renderPage = async (reply: FastifyReply, options?: object) => {
+const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
-
-  reply.analytics = getAnalyticsSettings({
-    contentId: "TODO",
-  });
   await reply.render(
     "journeys/account-delete/templates/enterPassword.njk",
     options,
@@ -28,7 +23,7 @@ export async function enterPasswordGetHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  await renderPage(reply);
+  await render(reply);
   return reply;
 }
 
@@ -50,7 +45,7 @@ export async function enterPasswordPostHandler(
   );
 
   if (bodyFormErrors) {
-    await renderPage(reply, {
+    await render(reply, {
       errors: bodyFormErrors,
       errorList: getFormErrorsList(bodyFormErrors),
     });
@@ -80,7 +75,7 @@ export async function enterPasswordPostHandler(
         },
       ]);
 
-      await renderPage(reply, {
+      await render(reply, {
         errors: formErrors,
         errorList: getFormErrorsList(formErrors),
       });

@@ -2,25 +2,25 @@ import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
 import { handleSendOtpChallenge } from "../utils/handleSendOtpChallenge.js";
-import { getAnalyticsSettings } from "../utils/getAnalyticsSettings.js";
 
-export async function resendEmailVerificationCodeGetHandler(
-  _request: FastifyRequest,
-  reply: FastifyReply,
-) {
+const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
-
-  reply.analytics = getAnalyticsSettings({
-    contentId: "TODO",
-  });
   await reply.render(
     "journeys/account-delete/templates/resendEmailVerificationCode.njk",
     {
       verifyCodeLinkUrl:
         paths.journeys["account-delete"].EMAIL_NOT_VERIFIED.verifyEmailAddress
           .path,
+      ...options,
     },
   );
+};
+
+export async function resendEmailVerificationCodeGetHandler(
+  _request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  await render(reply);
   return reply;
 }
 

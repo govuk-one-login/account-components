@@ -4,18 +4,20 @@ import { AccountManagementApiClient } from "../../../../../commons/utils/account
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
 import { completeJourney } from "../../utils/completeJourney.js";
-import { getAnalyticsSettings } from "../utils/getAnalyticsSettings.js";
+
+const render = async (reply: FastifyReply, options?: object) => {
+  assert.ok(reply.render);
+  await reply.render("journeys/account-delete/templates/confirm.njk", {
+    contactUrl: process.env["CONTACT_URL"],
+    ...options,
+  });
+};
 
 export async function confirmGetHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(reply.render);
-
-  reply.analytics = getAnalyticsSettings({
-    contentId: "TODO",
-  });
-  await reply.render("journeys/account-delete/templates/confirm.njk");
+  await render(reply);
   return reply;
 }
 

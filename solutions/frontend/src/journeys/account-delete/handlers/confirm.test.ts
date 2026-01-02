@@ -4,7 +4,6 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 const mockDeleteAccount = vi.fn();
 const mockRedirectToClientRedirectUri = vi.fn();
 const mockCompleteJourney = vi.fn();
-const mockGetAnalyticsSettings = vi.fn();
 
 // @ts-expect-error
 vi.mock(
@@ -24,10 +23,6 @@ vi.mock(import("../../../utils/redirectToClientRedirectUri.js"), () => ({
 
 vi.mock(import("../../utils/completeJourney.js"), () => ({
   completeJourney: mockCompleteJourney,
-}));
-
-vi.mock(import("../utils/getAnalyticsSettings.js"), () => ({
-  getAnalyticsSettings: mockGetAnalyticsSettings,
 }));
 
 const { confirmGetHandler, confirmPostHandler } = await import("./confirm.js");
@@ -58,16 +53,6 @@ describe("confirm handlers", () => {
         },
       } as unknown as FastifyReply["journeyStates"],
     } as unknown as FastifyReply;
-
-    mockGetAnalyticsSettings.mockReturnValue({
-      enabled: true,
-      taxonomyLevel1: "TODO",
-      taxonomyLevel2: "TODO",
-      taxonomyLevel3: "TODO",
-      isPageDataSensitive: true,
-      loggedInStatus: false,
-      contentId: "TODO",
-    });
   });
 
   describe("confirmGetHandler", () => {
@@ -79,20 +64,11 @@ describe("confirm handlers", () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockGetAnalyticsSettings).toHaveBeenCalledWith({
-        contentId: "TODO",
-      });
-      expect(mockReply.analytics).toStrictEqual({
-        enabled: true,
-        taxonomyLevel1: "TODO",
-        taxonomyLevel2: "TODO",
-        taxonomyLevel3: "TODO",
-        isPageDataSensitive: true,
-        loggedInStatus: false,
-        contentId: "TODO",
-      });
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/confirm.njk",
+        {
+          contactUrl: "https://example.com/contact",
+        },
       );
       expect(result).toBe(mockReply);
     });

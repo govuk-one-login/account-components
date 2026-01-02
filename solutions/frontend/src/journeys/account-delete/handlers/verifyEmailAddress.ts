@@ -10,29 +10,25 @@ import * as v from "valibot";
 import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
-import { getAnalyticsSettings } from "../utils/getAnalyticsSettings.js";
 
-const renderPage = async (
+const render = async (
   request: FastifyRequest,
   reply: FastifyReply,
   options?: object,
 ) => {
   assert.ok(reply.render);
-  assert.ok(request.session.claims);
+  assert.ok(request.session.claims?.email);
 
-  reply.analytics = getAnalyticsSettings({
-    contentId: "TODO",
-  });
   await reply.render(
     "journeys/account-delete/templates/verifyEmailAddress.njk",
     {
-      ...options,
       resendCodeLinkUrl:
         paths.journeys["account-delete"].EMAIL_NOT_VERIFIED
           .resendEmailVerificationCode.path,
       emailAddress: request.session.claims.email,
       backLink:
         paths.journeys["account-delete"].EMAIL_NOT_VERIFIED.introduction.path,
+      ...options,
     },
   );
 };
@@ -41,7 +37,7 @@ export async function verifyEmailAddressGetHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  await renderPage(request, reply);
+  await render(request, reply);
   return reply;
 }
 
@@ -73,7 +69,7 @@ export async function verifyEmailAddressPostHandler(
   );
 
   if (bodyFormErrors) {
-    await renderPage(request, reply, {
+    await render(request, reply, {
       errors: bodyFormErrors,
       errorList: getFormErrorsList(bodyFormErrors),
     });
@@ -105,7 +101,7 @@ export async function verifyEmailAddressPostHandler(
         },
       ]);
 
-      await renderPage(request, reply, {
+      await render(request, reply, {
         errors: formErrors,
         errorList: getFormErrorsList(formErrors),
       });

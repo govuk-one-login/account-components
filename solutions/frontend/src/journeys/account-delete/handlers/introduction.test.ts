@@ -15,14 +15,9 @@ vi.mock(import("../../../utils/paths.js"), () => ({
 }));
 
 const mockHandleSendOtpChallenge = vi.fn();
-const mockGetAnalyticsSettings = vi.fn();
 
 vi.mock(import("../utils/handleSendOtpChallenge.js"), () => ({
   handleSendOtpChallenge: mockHandleSendOtpChallenge,
-}));
-
-vi.mock(import("../utils/getAnalyticsSettings.js"), () => ({
-  getAnalyticsSettings: mockGetAnalyticsSettings,
 }));
 
 const { introductionGetHandler, introductionPostHandler } =
@@ -40,16 +35,6 @@ describe("introduction handlers", () => {
       render: vi.fn().mockResolvedValue(undefined),
       redirect: vi.fn().mockReturnThis(),
     };
-
-    mockGetAnalyticsSettings.mockReturnValue({
-      enabled: true,
-      taxonomyLevel1: "TODO",
-      taxonomyLevel2: "TODO",
-      taxonomyLevel3: "TODO",
-      isPageDataSensitive: true,
-      loggedInStatus: false,
-      contentId: "TODO",
-    });
   });
 
   describe("introductionGetHandler", () => {
@@ -59,20 +44,9 @@ describe("introduction handlers", () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockGetAnalyticsSettings).toHaveBeenCalledWith({
-        contentId: "TODO",
-      });
-      expect(mockReply.analytics).toStrictEqual({
-        enabled: true,
-        taxonomyLevel1: "TODO",
-        taxonomyLevel2: "TODO",
-        taxonomyLevel3: "TODO",
-        isPageDataSensitive: true,
-        loggedInStatus: false,
-        contentId: "TODO",
-      });
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/introduction.njk",
+        undefined,
       );
       expect(result).toBe(mockReply);
     });
