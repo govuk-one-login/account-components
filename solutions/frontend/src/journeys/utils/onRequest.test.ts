@@ -22,7 +22,7 @@ vi.mock(import("../../utils/paths.js"), () => ({
   paths: {
     journeys: {
       others: {
-        goToClientCallback: { 
+        goToClientCallback: {
           path: "/go-to-client-callback",
           analytics: {
             taxonomyLevel1: "others",
@@ -33,7 +33,7 @@ vi.mock(import("../../utils/paths.js"), () => ({
       },
       "test-scope": {
         "test-state": {
-          page: { 
+          page: {
             path: "/test-path",
             analytics: {
               taxonomyLevel1: "test",

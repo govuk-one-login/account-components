@@ -11,20 +11,13 @@ import { AccountManagementApiClient } from "../../../../../commons/utils/account
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
 
-const renderPage = async (reply: FastifyReply, options?: object) => {
-  assert.ok(reply.render);
-
-  await reply.render(
-    "journeys/account-delete/templates/enterPassword.njk",
-    options,
-  );
-};
-
 export async function enterPasswordGetHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  await renderPage(reply);
+  assert.ok(reply.render);
+
+  await reply.render("journeys/account-delete/templates/enterPassword.njk");
   return reply;
 }
 
@@ -33,6 +26,15 @@ export async function enterPasswordPostHandler(
   reply: FastifyReply,
 ) {
   assert.ok(reply.journeyStates?.["account-delete"]);
+
+  const renderPage = async (options: object) => {
+    assert.ok(reply.render);
+
+    await reply.render(
+      "journeys/account-delete/templates/enterPassword.njk",
+      options,
+    );
+  };
 
   const bodySchema = v.object({
     password: v.pipe(
@@ -46,7 +48,7 @@ export async function enterPasswordPostHandler(
   );
 
   if (bodyFormErrors) {
-    await renderPage(reply, {
+    await renderPage({
       errors: bodyFormErrors,
       errorList: getFormErrorsList(bodyFormErrors),
     });
@@ -76,7 +78,7 @@ export async function enterPasswordPostHandler(
         },
       ]);
 
-      await renderPage(reply, {
+      await renderPage({
         errors: formErrors,
         errorList: getFormErrorsList(formErrors),
       });

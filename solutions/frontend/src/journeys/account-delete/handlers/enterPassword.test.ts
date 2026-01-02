@@ -61,7 +61,6 @@ describe("enterPassword handlers", () => {
 
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/enterPassword.njk",
-        undefined,
       );
       expect(result).toBe(mockReply);
     });

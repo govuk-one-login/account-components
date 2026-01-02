@@ -83,9 +83,9 @@ describe("verifyEmailAddress handlers", () => {
       ).rejects.toThrowError();
     });
 
-    it("should throw if session claims is not available", async () => {
+    it("should throw if session claims email is not available", async () => {
       // @ts-expect-error
-      mockRequest.session = { claims: null };
+      mockRequest.session = { claims: {} };
 
       await expect(
         verifyEmailAddressGetHandler(
