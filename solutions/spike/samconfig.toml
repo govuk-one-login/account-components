@@ -1,0 +1,14 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "tk-test"
+resolve_s3 = true
+s3_prefix = "tk-test"
+region = "eu-west-2"
+profile = "di-account-components-dev-admin"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Environment=\"dev\" VpcStackName=\"vpc\" ApiStageName=\"v1\" LambdaArchitecture=\"arm64\""
+image_repositories = []
+
+[default.global.parameters]
+region = "eu-west-2"
