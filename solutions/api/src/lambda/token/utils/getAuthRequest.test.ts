@@ -71,13 +71,13 @@ describe("getAuthRequest", () => {
     };
     mockGet.mockResolvedValueOnce({ Item: item });
 
-    await expect(async () => {
-      await getAuthRequest(
+    await expect(
+      getAuthRequest(
         "valid-code",
         "https://example.com/callback",
         "client-abc",
-      );
-    }).rejects.toThrowError(
+      ),
+    ).rejects.toThrowError(
       "Auth request data is invalid for code: valid-code, auth redirect=https://example.com/other-callback, request redirect=https://example.com/callback",
     );
   });
@@ -93,13 +93,13 @@ describe("getAuthRequest", () => {
     };
     mockGet.mockResolvedValueOnce({ Item: item });
 
-    await expect(async () => {
-      await getAuthRequest(
+    await expect(
+      getAuthRequest(
         "valid-code",
         "https://example.com/callback",
         "client-abc",
-      );
-    }).rejects.toThrowError(
+      ),
+    ).rejects.toThrowError(
       "Auth request data is invalid for code: valid-code, Auth request has expired",
     );
   });
