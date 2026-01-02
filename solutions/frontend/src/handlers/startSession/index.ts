@@ -82,9 +82,13 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       }
 
       claims = claimsResult.output;
-      metrics.addDimensions({ client_id: claims.client_id });
+      metrics.addDimensions({
+        client_id: claims.client_id,
+        scope: claims.scope,
+      });
       logger.appendKeys({
         client_id: claims.client_id,
+        scope: claims.scope,
       });
 
       await request.session.regenerate();

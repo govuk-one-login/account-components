@@ -324,10 +324,12 @@ describe("onRequest", () => {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(metrics.addDimensions).toHaveBeenCalledWith({
         client_id: "test-client-id",
+        scope: "test-scope",
       });
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(logger.appendKeys).toHaveBeenCalledWith({
         client_id: "test-client-id",
+        scope: "test-scope",
       });
       expect(mockReply.client).toStrictEqual({ client_id: "test-client-id" });
       expect(mockReply.globals?.exitJourneyUrl).toBe("/exit-journey-url");

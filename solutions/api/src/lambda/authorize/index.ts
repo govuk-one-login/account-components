@@ -65,6 +65,12 @@ export const handler = loggerAPIGatewayProxyHandlerWrapper(
         if (claims instanceof ErrorResponse) {
           return claims.errorResponse;
         }
+        metrics.addDimensions({
+          scope: claims.scope,
+        });
+        logger.appendKeys({
+          scope: claims.scope,
+        });
 
         const saveJtiAndSetupSessionResult =
           await checkJtiUnusedAndSetUpSession(
