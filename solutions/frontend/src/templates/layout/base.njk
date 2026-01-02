@@ -2,6 +2,9 @@
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 {% from "frontend-ui/build/components/footer/macro.njk" import frontendUiFooter %}
 {% from "frontend-ui/build/components/language-select/macro.njk" import frontendUiLanguageSelect %}
+
+{% set htmlLang = globals.htmlLang %}
+
 {%- set headerClasses -%}
 {%- if reply.client.consider_user_logged_in %} govuk-header--with-signout {%- endif -%}
 {%- endset-%}
