@@ -48,11 +48,14 @@ export const onRequest = async (
   }
 
   reply.client = client;
-  reply.globals.exitJourneyUrl = getRedirectToClientRedirectUri(
-    paths.journeys.others.goToClientCallback.path,
-    authorizeErrors.userAborted,
-    claims.state,
-  );
+  reply.globals.getRedirectToClientRedirectUri = (
+    authorizeError?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
+  ) =>
+    getRedirectToClientRedirectUri(
+      paths.journeys.others.goToClientCallback.path,
+      authorizeError,
+      claims.state,
+    );
 
   const journey = await journeys[claims.scope]();
 

@@ -11,20 +11,19 @@ import { AccountManagementApiClient } from "../../../../../commons/utils/account
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
 
-const getRenderOptions = () => ({
-  dontShowExitJourneyLink: true,
-});
+const render = async (reply: FastifyReply, options?: object) => {
+  assert.ok(reply.render);
+  await reply.render(
+    "journeys/account-delete/templates/enterPassword.njk",
+    options,
+  );
+};
 
 export async function enterPasswordGetHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(reply.render);
-
-  await reply.render(
-    "journeys/account-delete/templates/enterPassword.njk",
-    getRenderOptions(),
-  );
+  await render(reply);
   return reply;
 }
 
@@ -33,15 +32,6 @@ export async function enterPasswordPostHandler(
   reply: FastifyReply,
 ) {
   assert.ok(reply.journeyStates?.["account-delete"]);
-
-  const renderPage = async (options: object) => {
-    assert.ok(reply.render);
-
-    await reply.render("journeys/account-delete/templates/enterPassword.njk", {
-      ...getRenderOptions(),
-      ...options,
-    });
-  };
 
   const bodySchema = v.object({
     password: v.pipe(
@@ -55,7 +45,7 @@ export async function enterPasswordPostHandler(
   );
 
   if (bodyFormErrors) {
-    await renderPage({
+    await render(reply, {
       errors: bodyFormErrors,
       errorList: getFormErrorsList(bodyFormErrors),
     });
@@ -85,7 +75,7 @@ export async function enterPasswordPostHandler(
         },
       ]);
 
-      await renderPage({
+      await render(reply, {
         errors: formErrors,
         errorList: getFormErrorsList(formErrors),
       });

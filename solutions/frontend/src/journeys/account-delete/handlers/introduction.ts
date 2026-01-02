@@ -3,13 +3,19 @@ import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
 import { handleSendOtpChallenge } from "../utils/handleSendOtpChallenge.js";
 
+const render = async (reply: FastifyReply, options?: object) => {
+  assert.ok(reply.render);
+  await reply.render(
+    "journeys/account-delete/templates/introduction.njk",
+    options,
+  );
+};
+
 export async function introductionGetHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(reply.render);
-
-  await reply.render("journeys/account-delete/templates/introduction.njk");
+  await render(reply);
   return reply;
 }
 

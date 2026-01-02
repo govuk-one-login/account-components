@@ -1,9 +1,9 @@
-{% extends "templates/layout/journey-base-page.njk" %}
+{% extends "templates/layout/base-page.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% set pageTitleName = 'journey:resendEmailVerificationCode.pageTitle' | translate %}
 
-{% block journeyPageContent %}
+{% block pageContent %}
   <h1 class="govuk-heading-l">{{ 'journey:resendEmailVerificationCode.heading' | translate }}</h1>
   <form method="post">
     <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">

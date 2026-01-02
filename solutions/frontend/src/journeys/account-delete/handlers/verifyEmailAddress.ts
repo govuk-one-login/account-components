@@ -7,32 +7,37 @@ import {
   getFormErrorsList,
 } from "../../../utils/formErrorsHelpers.js";
 import * as v from "valibot";
-import type { FastifySessionObject } from "@fastify/session";
 import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
 
-const getRenderOptions = (claims: FastifySessionObject["claims"]) => {
-  assert.ok(claims?.email);
+const render = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+  options?: object,
+) => {
+  assert.ok(reply.render);
+  assert.ok(request.session.claims?.email);
 
-  return {
-    resendCodeLinkUrl:
-      paths.journeys["account-delete"].EMAIL_NOT_VERIFIED
-        .resendEmailVerificationCode.path,
-    emailAddress: claims.email,
-  };
+  await reply.render(
+    "journeys/account-delete/templates/verifyEmailAddress.njk",
+    {
+      resendCodeLinkUrl:
+        paths.journeys["account-delete"].EMAIL_NOT_VERIFIED
+          .resendEmailVerificationCode.path,
+      emailAddress: request.session.claims.email,
+      backLink:
+        paths.journeys["account-delete"].EMAIL_NOT_VERIFIED.introduction.path,
+      ...options,
+    },
+  );
 };
 
 export async function verifyEmailAddressGetHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(reply.render);
-
-  await reply.render(
-    "journeys/account-delete/templates/verifyEmailAddress.njk",
-    getRenderOptions(request.session.claims),
-  );
+  await render(request, reply);
   return reply;
 }
 
@@ -41,18 +46,6 @@ export async function verifyEmailAddressPostHandler(
   reply: FastifyReply,
 ) {
   assert.ok(reply.journeyStates?.["account-delete"]);
-
-  const renderPage = async (options: object) => {
-    assert.ok(reply.render);
-
-    await reply.render(
-      "journeys/account-delete/templates/verifyEmailAddress.njk",
-      {
-        ...options,
-        ...getRenderOptions(request.session.claims),
-      },
-    );
-  };
 
   const bodySchema = v.object({
     code: v.pipe(
@@ -76,7 +69,7 @@ export async function verifyEmailAddressPostHandler(
   );
 
   if (bodyFormErrors) {
-    await renderPage({
+    await render(request, reply, {
       errors: bodyFormErrors,
       errorList: getFormErrorsList(bodyFormErrors),
     });
@@ -108,7 +101,7 @@ export async function verifyEmailAddressPostHandler(
         },
       ]);
 
-      await renderPage({
+      await render(request, reply, {
         errors: formErrors,
         errorList: getFormErrorsList(formErrors),
       });
