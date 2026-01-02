@@ -22,57 +22,54 @@ const createDynamoDbClient = () => {
   const dynamoDbClient = new DynamoDBClient(config);
   logger.info("client created", { dynamoDbClient });
   
-  const docClient = DynamoDBDocumentClient.from(dynamoDbClient);
-  logger.info("docClient created", { docClient });
-
-  let wrappedClient: DynamoDBDocumentClient;
+  let wrappedBaseClient: DynamoDBClient;
   logger.info("env", getEnvironment())
-  if (getEnvironment() === "local") {
-    wrappedClient = docClient;
-    logger.info("Without X Ray")
-  } else {
-    wrappedClient = AWSXRay.captureAWSv3Client(docClient);
-    logger.info("With X Ray")
-  }
+  // Force X-Ray wrapping for testing
+  wrappedBaseClient = AWSXRay.captureAWSv3Client(dynamoDbClient);
+  logger.info("With X Ray (forced)");
+  
+  const docClient = DynamoDBDocumentClient.from(wrappedBaseClient);
+  const finalWrappedClient = AWSXRay.captureAWSv3Client(docClient);
+  logger.info("docClient created and wrapped", { docClient: finalWrappedClient });
 
   const client = {
-    client: wrappedClient,
-    config: wrappedClient.config,
+    client: finalWrappedClient,
+    config: finalWrappedClient.config,
     put: async (params: PutCommandInput) => {
       const { PutCommand } = await import("@aws-sdk/lib-dynamodb");
-      return await wrappedClient.send(new PutCommand(params));
+      return await finalWrappedClient.send(new PutCommand(params));
     },
     get: async (params: GetCommandInput) => {
       const { GetCommand } = await import("@aws-sdk/lib-dynamodb");
-      return await wrappedClient.send(new GetCommand(params));
+      return await finalWrappedClient.send(new GetCommand(params));
     },
     delete: async (params: DeleteCommandInput) => {
       const { DeleteCommand } = await import("@aws-sdk/lib-dynamodb");
-      return await wrappedClient.send(new DeleteCommand(params));
+      return await finalWrappedClient.send(new DeleteCommand(params));
     },
     update: async (params: UpdateCommandInput) => {
       const { UpdateCommand } = await import("@aws-sdk/lib-dynamodb");
-      return await wrappedClient.send(new UpdateCommand(params));
+      return await finalWrappedClient.send(new UpdateCommand(params));
     },
     query: async (params: QueryCommandInput) => {
       const { QueryCommand } = await import("@aws-sdk/client-dynamodb");
-      return await wrappedClient.send(new QueryCommand(params));
+      return await finalWrappedClient.send(new QueryCommand(params));
     },
     scan: async (params: ScanCommandInput) => {
       const { ScanCommand } = await import("@aws-sdk/client-dynamodb");
-      return await wrappedClient.send(new ScanCommand(params));
+      return await finalWrappedClient.send(new ScanCommand(params));
     },
     batchWrite: async (params: BatchWriteCommandInput) => {
       const { BatchWriteCommand } = await import("@aws-sdk/lib-dynamodb");
-      return await wrappedClient.send(new BatchWriteCommand(params));
+      return await finalWrappedClient.send(new BatchWriteCommand(params));
     },
     batchGet: async (params: BatchGetCommandInput) => {
       const { BatchGetCommand } = await import("@aws-sdk/lib-dynamodb");
-      return await wrappedClient.send(new BatchGetCommand(params));
+      return await finalWrappedClient.send(new BatchGetCommand(params));
     },
     transactWrite: async (params: TransactWriteCommandInput) => {
       const { TransactWriteCommand } = await import("@aws-sdk/lib-dynamodb");
-      return await wrappedClient.send(new TransactWriteCommand(params));
+      return await finalWrappedClient.send(new TransactWriteCommand(params));
     },
   };
   return client;
