@@ -56,7 +56,7 @@ describe("confirm handlers", () => {
   });
 
   describe("confirmGetHandler", () => {
-    it("should render confirm template with contactUrl", async () => {
+    it("should render confirm template", async () => {
       process.env["CONTACT_URL"] = "https://example.com/contact";
 
       const result = await confirmGetHandler(
@@ -66,9 +66,7 @@ describe("confirm handlers", () => {
 
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/confirm.njk",
-        {
-          contactUrl: "https://example.com/contact",
-        },
+        undefined,
       );
       expect(result).toBe(mockReply);
     });

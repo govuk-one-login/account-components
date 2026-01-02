@@ -1,7 +1,7 @@
 import type { authorizeErrors } from "./authorizeErrors.js";
 import * as v from "valibot";
 
-export const getRedirectToClientRedirectUri = (
+export const buildRedirectToClientRedirectUri = (
   redirectUri: string,
   error?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
   state?: string,

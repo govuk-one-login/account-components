@@ -9,7 +9,10 @@
     },
     "header": {
       "productName": "One Login",
-      "signOutLink": "Allgofnodi"
+      "signOutLink": "Allgofnodi",
+      "accountNavLabel": "Llywio cyfrif",
+      "accountNavHomeLinkText": "Eich gwasanaethau",
+      "accountNavSecurityLinkText": "Diogelwch"
     },
     "passwordInput": {
       "show": "Dangos",
@@ -23,12 +26,13 @@
   "error": {
     "error404": {
       "title": "Tudalen heb ei darganfod",
-      "header": "Tudalen heb ei darganfod",
-      "content": {
-        "paragraph1": "Os ydych wedi teipio’r cyfeiriad gwe, edrychwch i weld ei fod yn gywir.",
-        "paragraph2": "Os ydych wedi gludo’r cyfeiriad gwe, edrychwch i weld eich bod wedi copïo’r cyfeiriad cyfan.",
-        "buttonText": "Mewngofnodi i GOV.UK One Login"
-      }
+      "heading1": "Tudalen heb ei darganfod",
+      "paragraph1": "Ni allwn ddod o hyd i’r dudalen rydych chi’n chwilio amdani.",
+      "heading2": "Beth allwch chi ei wneud",
+      "paragraph2": "Os ydych wedi teipio’r cyfeiriad gwe, edrychwch i weld ei fod yn gywir.",
+      "paragraph3": "Os ydych wedi gludo’r cyfeiriad gwe, edrychwch i weld eich bod wedi copïo’r cyfeiriad cyfan.",
+      "paragraph4": "Gallwch hefyd fynd i hafan GOV.UK i ddod o hyd i’r gwasanaeth roeddech yn ceisio ei ddefnyddio, neu edrych amdano drwy ddefnyddio eich peiriant chwilio.",
+      "buttonText": "Ewch i hafan GOV.UK"
     },
     "error500": {
       "title": "Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth",

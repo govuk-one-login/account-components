@@ -2,8 +2,11 @@
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 {% from "frontend-ui/build/components/footer/macro.njk" import frontendUiFooter %}
 {% from "frontend-ui/build/components/language-select/macro.njk" import frontendUiLanguageSelect %}
+
+{% set htmlLang = globals.htmlLang %}
+
 {%- set headerClasses -%}
-{%- if isUserLoggedIn %} govuk-header--with-signout {%- endif -%}
+{%- if reply.client.consider_user_logged_in %} govuk-header--with-signout {%- endif -%}
 {%- endset-%}
 
 {% block pageTitle %}
@@ -20,9 +23,8 @@
 {% endblock %}
 
 {% block head %}
-  {# TODO: add Dynatrace RUM config #}
-  {% if dynatraceRumUrl %}
-  <script src='{{ dynatraceRumUrl }}' crossorigin="anonymous" nonce='{{ cspNonce }}'></script>
+  {% if globals.dynatraceRumUrl %}
+    <script src='{{ globals.dynatraceRumUrl }}' crossorigin="anonymous" nonce='{{ cspNonce }}'></script>
   {% endif %}
  <link href="/static/application.css?{{ globals.staticHash }}" rel="stylesheet" nonce='{{ styleNonce }}'>
 {% endblock %}
@@ -36,6 +38,9 @@
 
 {% block header %}
     {% include 'templates/layout/header.njk' %}
+    {% if reply.client.consider_user_logged_in %}
+      {% include 'templates/layout/navigation.njk' %}
+    {% endif %}    
 {% endblock %}
 
 {% block main %}

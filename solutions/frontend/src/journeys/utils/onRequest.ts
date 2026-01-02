@@ -10,7 +10,7 @@ import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeEr
 import assert from "node:assert";
 import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
-import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
+import { buildRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/buildRedirectToClientRedirectUri.js";
 import { logger } from "../../../../commons/utils/logger/index.js";
 
 export const onRequest = async (
@@ -48,11 +48,11 @@ export const onRequest = async (
   }
 
   reply.client = client;
-  reply.globals.getRedirectToClientRedirectUri = (
+  reply.globals.buildRedirectToClientRedirectUri = (
     authorizeError?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
   ) =>
-    getRedirectToClientRedirectUri(
-      paths.journeys.others.goToClientCallback.path,
+    buildRedirectToClientRedirectUri(
+      paths.journeys.others.goToClientRedirectUri.path,
       authorizeError,
       claims.state,
     );

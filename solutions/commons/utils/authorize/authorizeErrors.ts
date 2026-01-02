@@ -49,6 +49,10 @@ export const authorizeErrors = {
     description: "E1006",
     type: "access_denied",
   },
+  userSignedOut: {
+    description: "E1007",
+    type: "access_denied",
+  },
   algNotAllowed: {
     description: "E2001",
     type: "invalid_request",

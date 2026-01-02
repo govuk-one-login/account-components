@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { authorizeErrors } from "../../../commons/utils/authorize/authorizeErrors.js";
-import { getRedirectToClientRedirectUri } from "../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
+import { buildRedirectToClientRedirectUri } from "../../../commons/utils/authorize/buildRedirectToClientRedirectUri.js";
 import { destroySession } from "./session.js";
 import { destroyApiSession } from "./apiSession.js";
 
@@ -16,7 +16,7 @@ export const redirectToClientRedirectUri = async (
   await destroySession(request);
 
   reply.redirect(
-    getRedirectToClientRedirectUri(redirectUri, error, state, code),
+    buildRedirectToClientRedirectUri(redirectUri, error, state, code),
   );
 
   return reply;

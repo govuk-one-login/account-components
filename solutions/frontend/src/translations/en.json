@@ -9,7 +9,10 @@
     },
     "header": {
       "productName": "One Login",
-      "signOutLink": "Sign out"
+      "signOutLink": "Sign out",
+      "accountNavLabel": "Account navigation",
+      "accountNavHomeLinkText": "Your services",
+      "accountNavSecurityLinkText": "Security"
     },
     "passwordInput": {
       "show": "Show",
@@ -23,12 +26,13 @@
   "error": {
     "error404": {
       "title": "Page not found",
-      "header": "Page not found",
-      "content": {
-        "paragraph1": "If you typed the web address, check it is correct.",
-        "paragraph2": "If you pasted the web address, check you copied the entire address.",
-        "buttonText": "Sign in to GOV.UK One Login"
-      }
+      "heading1": "Page not found",
+      "paragraph1": "We cannot find the page you’re looking for.",
+      "heading2": "What you can do",
+      "paragraph2": "If you typed the web address, check it is correct.",
+      "paragraph3": "If you pasted the web address, check you copied the entire address.",
+      "paragraph4": "You can also go to the GOV.UK homepage to find the service you were trying to use, or look for it using your search engine.",
+      "buttonText": "Go to the GOV.UK homepage"
     },
     "error500": {
       "title": "Sorry, there is a problem with the service",
