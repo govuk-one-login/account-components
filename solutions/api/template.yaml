@@ -172,6 +172,7 @@ Globals:
       Role: !GetAtt CodeDeployServiceRole.Arn
     Tracing: Active
     AutoPublishAlias: live
+
     KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyArn}}"
     Layers:
       - !If [
@@ -946,6 +947,7 @@ Resources:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendUrl]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         - Statement:
             - Effect: Allow
               Action:
@@ -983,6 +985,7 @@ Resources:
       BuildProperties:
         Minify: true
         Format: "esm"
+        Platform: node
         OutExtension:
           - .js=.mjs
         Target: "es2024"
