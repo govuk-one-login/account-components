@@ -66,6 +66,7 @@ describe("confirm handlers", () => {
 
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/confirm.njk",
+        undefined,
       );
       expect(result).toBe(mockReply);
     });
