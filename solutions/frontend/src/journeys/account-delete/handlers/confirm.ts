@@ -5,15 +5,19 @@ import { authorizeErrors } from "../../../../../commons/utils/authorize/authoriz
 import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
 import { completeJourney } from "../../utils/completeJourney.js";
 
+const render = async (reply: FastifyReply, options?: object) => {
+  assert.ok(reply.render);
+  await reply.render("journeys/account-delete/templates/confirm.njk", {
+    contactUrl: process.env["CONTACT_URL"],
+    ...options,
+  });
+};
+
 export async function confirmGetHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(reply.render);
-
-  await reply.render("journeys/account-delete/templates/confirm.njk", {
-    contactUrl: process.env["CONTACT_URL"],
-  });
+  await render(reply);
   return reply;
 }
 
