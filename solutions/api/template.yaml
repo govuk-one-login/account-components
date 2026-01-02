@@ -909,7 +909,7 @@ Resources:
   AuthorizeLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/AuthorizeLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-AuthorizeLambda"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
