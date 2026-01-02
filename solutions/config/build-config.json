@@ -7,7 +7,8 @@
         "https://stubs.manage.build.account.gov.uk/auth/callback"
       ],
       "client_name": "Auth",
-      "jwks_uri": "https://stubs.manage.build.account.gov.uk/auth/.well-known/jwks.json"
+      "jwks_uri": "https://stubs.manage.build.account.gov.uk/auth/.well-known/jwks.json",
+      "consider_user_logged_in": false
     },
     {
       "client_id": "23456789012345678901234567890123",
@@ -16,7 +17,8 @@
         "https://stubs.manage.build.account.gov.uk/home/callback"
       ],
       "client_name": "Home",
-      "jwks_uri": "https://stubs.manage.build.account.gov.uk/home/.well-known/jwks.json"
+      "jwks_uri": "https://stubs.manage.build.account.gov.uk/home/.well-known/jwks.json",
+      "consider_user_logged_in": true
     }
   ],
   "jti_nonce_ttl_in_seconds": 7200,
