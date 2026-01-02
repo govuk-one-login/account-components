@@ -111,22 +111,42 @@ export const onRequest = async (
 
     assert.ok(pathsForCurrentState[0], "pathsForCurrentState has no entries");
 
-    assert.ok(
-      reply.globals.currentUrl?.pathname,
-      "reply.globals.currentUrl is not defined",
+    const pathObjectForCurrentState = Object.values(
+      // @ts-expect-error
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+      paths.journeys[claims.scope][currentState],
+    ).find((val) => {
+      assert.ok(
+        reply.globals.currentUrl?.pathname,
+        "reply.globals.currentUrl is not defined",
+      );
+      // @ts-expect-error
+      return val.path === reply.globals.currentUrl.pathname;
+    });
+
+    const otherJourneyPathObject = Object.values(paths.journeys.others).find(
+      (val) => {
+        assert.ok(
+          reply.globals.currentUrl?.pathname,
+          "reply.globals.currentUrl is not defined",
+        );
+        return val.path === reply.globals.currentUrl.pathname;
+      },
     );
 
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    const otherJourneyPaths = Object.values(paths.journeys.others).map(
-      (val) => val.path,
-    ) as string[];
-
-    if (
-      !otherJourneyPaths.includes(reply.globals.currentUrl.pathname) &&
-      !pathsForCurrentState.includes(reply.globals.currentUrl.pathname)
-    ) {
+    if (!pathObjectForCurrentState && !otherJourneyPathObject) {
       reply.redirect(pathsForCurrentState[0]);
       return await reply;
+    }
+
+    if (pathObjectForCurrentState) {
+      // @ts-expect-error
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      reply.analytics = pathObjectForCurrentState.analytics;
+    } else if (otherJourneyPathObject) {
+      // @ts-expect-error
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      reply.analytics = otherJourneyPathObject.analytics;
     }
 
     reply.journeyStates = {

@@ -10,14 +10,10 @@ import * as v from "valibot";
 import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
-import { getAnalyticsSettings } from "../utils/getAnalyticsSettings.js";
 
 const renderPage = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
 
-  reply.analytics = getAnalyticsSettings({
-    contentId: "TODO",
-  });
   await reply.render(
     "journeys/account-delete/templates/enterPassword.njk",
     options,

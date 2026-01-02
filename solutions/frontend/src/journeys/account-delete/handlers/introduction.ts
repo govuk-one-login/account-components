@@ -2,7 +2,6 @@ import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
 import { handleSendOtpChallenge } from "../utils/handleSendOtpChallenge.js";
-import { getAnalyticsSettings } from "../utils/getAnalyticsSettings.js";
 
 export async function introductionGetHandler(
   _request: FastifyRequest,
@@ -10,9 +9,6 @@ export async function introductionGetHandler(
 ) {
   assert.ok(reply.render);
 
-  reply.analytics = getAnalyticsSettings({
-    contentId: "TODO",
-  });
   await reply.render("journeys/account-delete/templates/introduction.njk");
   return reply;
 }

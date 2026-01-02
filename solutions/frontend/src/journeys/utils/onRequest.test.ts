@@ -22,11 +22,25 @@ vi.mock(import("../../utils/paths.js"), () => ({
   paths: {
     journeys: {
       others: {
-        goToClientCallback: { path: "/go-to-client-callback" },
+        goToClientCallback: { 
+          path: "/go-to-client-callback",
+          analytics: {
+            taxonomyLevel1: "others",
+            taxonomyLevel2: "callback",
+            contentId: "callback-page",
+          },
+        },
       },
       "test-scope": {
         "test-state": {
-          page: { path: "/test-path" },
+          page: { 
+            path: "/test-path",
+            analytics: {
+              taxonomyLevel1: "test",
+              taxonomyLevel2: "scope",
+              contentId: "test-page",
+            },
+          },
         },
       },
     },
@@ -265,7 +279,7 @@ describe("onRequest", () => {
       expect(mockReply.redirect).toHaveBeenCalledWith("/test-path");
     });
 
-    it("should not redirect when URL matches others journey paths", async () => {
+    it("should not redirect when URL matches others journey paths and set analytics", async () => {
       mockReply.globals = {
         currentUrl: {
           pathname: "/go-to-client-callback",
@@ -277,6 +291,11 @@ describe("onRequest", () => {
       expect(mockReply.redirect).not.toHaveBeenCalled();
       expect(mockReply.journeyStates).toStrictEqual({
         "test-scope": mockActor,
+      });
+      expect(mockReply.analytics).toStrictEqual({
+        taxonomyLevel1: "others",
+        taxonomyLevel2: "callback",
+        contentId: "callback-page",
       });
     });
 
@@ -346,6 +365,29 @@ describe("onRequest", () => {
       expect(mockReply.journeyStates).toStrictEqual({
         "test-scope": mockActor,
       });
+    });
+
+    it("should set analytics from path configuration for journey paths", async () => {
+      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockReply.analytics).toStrictEqual({
+        taxonomyLevel1: "test",
+        taxonomyLevel2: "scope",
+        contentId: "test-page",
+      });
+    });
+
+    it("should not set analytics when path has no analytics configuration", async () => {
+      // Test with a path that has no analytics in the mock
+      mockReply.globals = {
+        currentUrl: {
+          pathname: "/authorize-error",
+        } as URL,
+      };
+
+      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockReply.analytics).toBeUndefined();
     });
 
     it("should set getRedirectToClientRedirectUri function on globals", async () => {
