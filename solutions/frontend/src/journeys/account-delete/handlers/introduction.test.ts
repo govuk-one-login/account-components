@@ -46,6 +46,7 @@ describe("introduction handlers", () => {
 
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/introduction.njk",
+        undefined,
       );
       expect(result).toBe(mockReply);
     });
