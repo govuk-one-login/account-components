@@ -7,7 +7,12 @@ const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
   await reply.render(
     "journeys/account-delete/templates/resendEmailVerificationCode.njk",
-    options,
+    {
+      verifyCodeLinkUrl:
+        paths.journeys["account-delete"].EMAIL_NOT_VERIFIED.verifyEmailAddress
+          .path,
+      ...options,
+    },
   );
 };
 
@@ -15,11 +20,7 @@ export async function resendEmailVerificationCodeGetHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  await render(reply, {
-    verifyCodeLinkUrl:
-      paths.journeys["account-delete"].EMAIL_NOT_VERIFIED.verifyEmailAddress
-        .path,
-  });
+  await render(reply);
   return reply;
 }
 
