@@ -14,16 +14,26 @@ import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import * as AWSXRay from "aws-xray-sdk";
 import { getEnvironment } from "../../getEnvironment/index.js";
 import { getAwsClientConfig } from "../getAwsClientConfig/index.js";
+import { logger } from "../../logger/index.js";
 
 const createDynamoDbClient = () => {
-  const dynamoDbClient = new DynamoDBClient(getAwsClientConfig());
+  const config = getAwsClientConfig();
+  logger.info("client config", config)
+  const dynamoDbClient = new DynamoDBClient(config);
+  logger.info("client created", { dynamoDbClient });
 
-  const wrappedClient =
-    getEnvironment() === "local"
-      ? dynamoDbClient
-      : AWSXRay.captureAWSv3Client(dynamoDbClient);
+  let wrappedClient: DynamoDBClient;
+  logger.info("env", getEnvironment())
+  if (getEnvironment() === "local") {
+    wrappedClient = dynamoDbClient;
+    logger.info("Without X Ray")
+  } else {
+    wrappedClient = AWSXRay.captureAWSv3Client(dynamoDbClient);
+    logger.info("With X Ray")
+  }
 
   const docClient = DynamoDBDocumentClient.from(wrappedClient);
+  logger.info("docClient created", { docClient });
 
   const client = {
     client: docClient,
