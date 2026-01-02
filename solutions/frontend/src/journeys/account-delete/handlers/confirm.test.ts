@@ -66,9 +66,6 @@ describe("confirm handlers", () => {
 
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/confirm.njk",
-        {
-          contactUrl: "https://example.com/contact",
-        },
       );
       expect(result).toBe(mockReply);
     });

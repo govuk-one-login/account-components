@@ -7,10 +7,7 @@ import { completeJourney } from "../../utils/completeJourney.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
-  await reply.render("journeys/account-delete/templates/confirm.njk", {
-    contactUrl: process.env["CONTACT_URL"],
-    ...options,
-  });
+  await reply.render("journeys/account-delete/templates/confirm.njk", options);
 };
 
 export async function confirmGetHandler(
