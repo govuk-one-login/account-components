@@ -82,7 +82,6 @@ Globals:
           - '{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}' #pragma: allowlist secret
           - SecretArn: !FindInMap [ EnvironmentConfiguration, !Ref Environment, dynatraceSecretArn ]
         DT_LOGGING_NODEJS_FLAGS: Exporter=true,LambdaSensor=false
-        MAX_ATTEMPTS: 2
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: true
         DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
         ENVIRONMENT: !Ref Environment
@@ -135,7 +134,6 @@ Resources:
         Sourcemap: false
         EntryPoints:
           - handler.ts
-        Platform: node
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url);
 
