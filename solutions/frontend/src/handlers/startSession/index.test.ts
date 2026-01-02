@@ -358,10 +358,12 @@ describe("startSession handler", () => {
       );
       expect(mockAddDimensions).toHaveBeenCalledWith({
         client_id: "test-client",
+        scope: "testing-journey",
       });
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(logger.appendKeys).toHaveBeenCalledWith({
         client_id: "test-client",
+        scope: "testing-journey",
       });
     });
   });
@@ -422,10 +424,12 @@ describe("startSession handler", () => {
       });
       expect(mockAddDimensions).toHaveBeenCalledWith({
         client_id: "test-client",
+        scope: "testing-journey",
       });
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(logger.appendKeys).toHaveBeenCalledWith({
         client_id: "test-client",
+        scope: "testing-journey",
       });
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockRequest.session?.regenerate).toHaveBeenCalledWith();
