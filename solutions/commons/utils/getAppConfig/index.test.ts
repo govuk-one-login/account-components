@@ -64,7 +64,7 @@ describe("getAppConfig", () => {
       application: "account-components",
       environment: "dev",
       transform: "json",
-      awsSdkV3Client: { client: {}, config: {} },
+      awsSdkV3Client: {},
     });
     expect(result).toStrictEqual(mockConfig);
   });
@@ -95,7 +95,7 @@ describe("getAppConfig", () => {
       application: "account-components",
       environment: "production",
       transform: "json",
-      awsSdkV3Client: { client: {}, config: {} },
+      awsSdkV3Client: {},
     });
   });
 });
