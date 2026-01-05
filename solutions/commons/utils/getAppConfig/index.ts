@@ -14,7 +14,7 @@ export async function getAppConfig(): Promise<AppConfigSchema> {
       application: "account-components",
       environment: getEnvironment(),
       transform: "json",
-      awsSdkV3Client: getAppConfigClient(),
+      awsSdkV3Client: getAppConfigClient().client,
     });
   }
 
