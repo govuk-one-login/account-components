@@ -3,15 +3,9 @@ import { handler } from "./healthcheck.js";
 import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 // @ts-expect-error
-vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
+vi.mock(import("../../../commons/utils/observability/index.js"), () => ({
   logger: {},
-  loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../commons/utils/metrics/index.js"), () => ({
-  metrics: {},
-  metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
+  observabilityAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
 describe("healthcheck handler", () => {

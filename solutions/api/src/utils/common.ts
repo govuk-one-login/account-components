@@ -1,5 +1,4 @@
-import { logger } from "../../../commons/utils/logger/index.js";
-import { metrics } from "../../../commons/utils/metrics/index.js";
+import { logger, metrics } from "../../../commons/utils/observability/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
 export const getHeader = (

@@ -13,13 +13,9 @@ import type { getQueryParams as getQueryParamsForType } from "./getQueryParams.j
 const ORIGINAL_ENV = { ...process.env };
 
 // @ts-expect-error
-vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
-  logger: { warn: vi.fn() },
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
+vi.mock(import("../../../../../commons/utils/observability/index.js"), () => ({
   metrics: { addMetric: vi.fn() },
+  logger: { warn: vi.fn() },
 }));
 
 const createMockEvent = (

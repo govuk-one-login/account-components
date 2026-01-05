@@ -1,5 +1,5 @@
 import * as v from "valibot";
-import { logger } from "../logger/index.js";
+import { logger } from "../observability/index.js";
 import { getPropsForLoggingFromEvent } from "../getPropsForLoggingFromEvent/index.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import { getTxmaAuditEncodedFromEvent } from "../getTxmaAuditEncodedFromEvent/index.js";

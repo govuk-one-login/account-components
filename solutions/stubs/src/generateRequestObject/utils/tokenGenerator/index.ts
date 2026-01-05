@@ -15,7 +15,7 @@ import {
   Scope,
   SignatureTypes,
 } from "../../../types/common.js";
-import { logger } from "../../../../../commons/utils/logger/index.js";
+import { logger } from "../../../../../commons/utils/observability/index.js";
 import type { JWTPayload } from "jose";
 import { randomBytes } from "node:crypto";
 import assert from "node:assert";

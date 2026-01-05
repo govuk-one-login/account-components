@@ -6,7 +6,6 @@ import type {
   Claims,
   Scope,
 } from "../../../../commons/utils/authorize/getClaimsSchema.js";
-import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { journeys } from "./config.js";
 import type { Actor, AnyActorLogic, AnyMachineSnapshot } from "xstate";
 import { createActor } from "xstate";
@@ -15,7 +14,10 @@ import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirec
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
 import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
 import type { ClientEntry } from "../../../../config/schema/types.js";
-import { logger } from "../../../../commons/utils/logger/index.js";
+import {
+  metrics,
+  setObservabilityAttributes,
+} from "../../../../commons/utils/observability/index.js";
 
 // @ts-expect-error
 vi.mock(import("../../utils/paths.js"), () => ({
@@ -37,17 +39,12 @@ vi.mock(import("../../utils/paths.js"), () => ({
 }));
 
 // @ts-expect-error
-vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
+vi.mock(import("../../../../commons/utils/observability/index.js"), () => ({
+  setObservabilityAttributes: vi.fn(),
+  observabilityAPIGatewayProxyHandlerWrapper: vi.fn(),
   metrics: {
     addMetric: vi.fn(),
-    addDimensions: vi.fn(),
   },
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
-  logger: { appendKeys: vi.fn() },
-  loggerAPIGatewayProxyHandlerWrapper: vi.fn(),
 }));
 
 // @ts-expect-error
@@ -321,13 +318,7 @@ describe("onRequest", () => {
     it("should set up journey state and add translations", async () => {
       await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(metrics.addDimensions).toHaveBeenCalledWith({
-        client_id: "test-client-id",
-        scope: "test-scope",
-      });
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(logger.appendKeys).toHaveBeenCalledWith({
+      expect(setObservabilityAttributes).toHaveBeenCalledWith({
         client_id: "test-client-id",
         scope: "test-scope",
       });

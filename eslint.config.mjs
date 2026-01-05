@@ -47,7 +47,13 @@ export default defineConfig(
       "no-restricted-imports": [
         "error",
         {
-          patterns: ["@aws-lambda-powertools/logger"],
+          paths: [
+            {
+              name: "@aws-lambda-powertools/metrics",
+              allowImportNames: ["MetricUnit"],
+            },
+          ],
+          patterns: ["@aws-lambda-powertools/logger", "@opentelemetry/api"],
         },
       ],
       "@typescript-eslint/consistent-type-imports": "error",

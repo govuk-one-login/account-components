@@ -1,5 +1,4 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { metricsAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/metrics/index.js";
 import { verifyClientAssertion } from "./utils/verifyClientAssertion.js";
 import { errorManager } from "./utils/errors.js";
 import type { TokenAppError } from "./utils/errors.js";
@@ -8,47 +7,45 @@ import { assertTokenRequest } from "./utils/assertTokenRequest.js";
 import * as querystring from "node:querystring";
 import { getAuthRequest } from "./utils/getAuthRequest.js";
 import { verifyJti } from "./utils/verifyJti.js";
-import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
+import { observabilityAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/observability/index.js";
 import { createAccessToken } from "./utils/createAccessToken.js";
 
-export const handler = loggerAPIGatewayProxyHandlerWrapper(
-  metricsAPIGatewayProxyHandlerWrapper(
-    async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-      try {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        const request = querystring.parse(
-          e.body ?? "{}",
-        ) as unknown as TokenRequest;
+export const handler = observabilityAPIGatewayProxyHandlerWrapper(
+  async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+    try {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const request = querystring.parse(
+        e.body ?? "{}",
+      ) as unknown as TokenRequest;
 
-        assertTokenRequest(request);
+      assertTokenRequest(request);
 
-        const assertion = await verifyClientAssertion(request.client_assertion);
+      const assertion = await verifyClientAssertion(request.client_assertion);
 
-        const authRequest = await getAuthRequest(
-          request.code,
-          request.redirect_uri,
-          String(assertion.iss),
-        );
+      const authRequest = await getAuthRequest(
+        request.code,
+        request.redirect_uri,
+        String(assertion.iss),
+      );
 
-        await verifyJti(assertion.jti);
+      await verifyJti(assertion.jti);
 
-        const accessToken = await createAccessToken(authRequest);
+      const accessToken = await createAccessToken(authRequest);
 
-        return {
-          statusCode: 200,
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            access_token: accessToken,
-            token_type: "Bearer",
-            expires_in: 3600,
-          }),
-        };
-      } catch (error) {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        return errorManager.handleError(error as TokenAppError | Error);
-      }
-    },
-  ),
+      return {
+        statusCode: 200,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          access_token: accessToken,
+          token_type: "Bearer",
+          expires_in: 3600,
+        }),
+      };
+    } catch (error) {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      return errorManager.handleError(error as TokenAppError | Error);
+    }
+  },
 );

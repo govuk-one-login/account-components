@@ -1,6 +1,8 @@
 import * as v from "valibot";
-import { logger } from "../../../../../commons/utils/logger/index.js";
-import { metrics } from "../../../../../commons/utils/metrics/index.js";
+import {
+  metrics,
+  logger,
+} from "../../../../../commons/utils/observability/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import {
   ErrorResponse,
@@ -26,6 +28,7 @@ import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { getClaimsSchema } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
+import { setObservabilityAttributes } from "../../../../../commons/utils/observability/index.js";
 
 const verify = async (
   signedJwt: string,
@@ -185,7 +188,7 @@ const verify = async (
         jose_error_cause: error.cause,
         jose_error_stack: error.stack,
       });
-      metrics.addDimensions({ jose_error_code: error.code });
+      setObservabilityAttributes({ jose_error_code: error.code });
       metrics.addMetric("JOSEError", MetricUnit.Count, 1);
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(

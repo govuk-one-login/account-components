@@ -1,6 +1,5 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { paths } from "../../utils/paths.js";
-import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { journeys } from "./config.js";
 import type { AnyActor } from "xstate";
@@ -11,7 +10,10 @@ import assert from "node:assert";
 import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
 import { getRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
-import { logger } from "../../../../commons/utils/logger/index.js";
+import {
+  metrics,
+  setObservabilityAttributes,
+} from "../../../../commons/utils/observability/index.js";
 
 export const onRequest = async (
   request: FastifyRequest,
@@ -25,8 +27,7 @@ export const onRequest = async (
 
   const claims = request.session.claims;
 
-  metrics.addDimensions({ client_id: claims.client_id, scope: claims.scope });
-  logger.appendKeys({
+  setObservabilityAttributes({
     client_id: claims.client_id,
     scope: claims.scope,
   });

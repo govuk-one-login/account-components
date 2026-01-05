@@ -11,7 +11,7 @@ vi.mock(import("jose"));
 vi.mock(import("../../../commons/utils/awsClient/ssmClient/index.js"), () => ({
   getParametersProvider: vi.fn(),
 }));
-vi.mock(import("../../../commons/utils/logger/index.js"));
+vi.mock(import("../../../commons/utils/observability/index.js"));
 
 const mockGet = vi.fn();
 const mockParametersProvider = {

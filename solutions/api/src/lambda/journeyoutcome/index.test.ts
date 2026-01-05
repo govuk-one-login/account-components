@@ -11,11 +11,11 @@ const mockContext = {} as unknown as Context;
 
 const mockMetrics = {
   addMetric: vi.fn(),
-  addDimensions: vi.fn(),
 };
 
 const mockLogger = {
-  appendKeys: vi.fn(),
+  warn: vi.fn(),
+  debug: vi.fn(),
 };
 
 const mockOutcomeData = [
@@ -42,21 +42,10 @@ vi.mock(import("./utils/getKmsKey.js"));
 const mockGetKmsKey = vi.mocked(await import("./utils/getKmsKey.js")).getKMSKey;
 
 // @ts-expect-error
-vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
-  metrics: mockMetrics,
-  metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
+vi.mock(import("../../../../commons/utils/observability/index.js"), () => ({
   logger: mockLogger,
-  loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
-  logger: { warn: vi.fn(), debug: vi.fn() },
-  loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
+  observabilityAPIGatewayProxyHandlerWrapper: (fn) => fn,
+  metrics: mockMetrics,
 }));
 
 const { handler } = await import("./index.js");

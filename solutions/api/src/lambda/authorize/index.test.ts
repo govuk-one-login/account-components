@@ -10,12 +10,11 @@ const verifyJwt = vi.fn();
 const checkJtiUnusedAndSetUpSession = vi.fn();
 const mockLogger = {
   error: vi.fn(),
-  appendKeys: vi.fn(),
 };
 const mockMetrics = {
   addMetric: vi.fn(),
-  addDimensions: vi.fn(),
 };
+const mockSetObservabilityAttributes = vi.fn();
 const mockContext = {} as unknown as Context;
 
 vi.mock(import("./utils/getQueryParams.js"), () => ({
@@ -39,15 +38,11 @@ vi.mock(import("./utils/checkJtiUnusedAndSetUpSession.js"), () => ({
 }));
 
 // @ts-expect-error
-vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
+vi.mock(import("../../../../commons/utils/observability/index.js"), () => ({
   logger: mockLogger,
-  loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
+  observabilityAPIGatewayProxyHandlerWrapper: (fn) => fn,
   metrics: mockMetrics,
-  metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
+  setObservabilityAttributes: mockSetObservabilityAttributes,
 }));
 
 const { handler } = await import("./index.js");
@@ -71,8 +66,9 @@ describe("authorize handler", () => {
     const result = await handler(mockEvent, mockContext);
 
     expect(result).toBe(errorResponse.errorResponse);
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({ client_id: "" });
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
+      client_id: "",
+    });
   });
 
   it("returns error when getClient fails", async () => {
@@ -93,12 +89,10 @@ describe("authorize handler", () => {
 
     expect(result).toBe(errorResponse.errorResponse);
     expect(getClient).toHaveBeenCalledWith("test-client", "http://test.com");
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
-      client_id: "test-client",
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
+      client_id: "",
     });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({ client_id: "" });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
       client_id: "test-client",
     });
   });
@@ -130,12 +124,10 @@ describe("authorize handler", () => {
       "http://test.com",
       "test-state",
     );
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
-      client_id: "test-client",
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
+      client_id: "",
     });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({ client_id: "" });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
       client_id: "test-client",
     });
   });
@@ -169,12 +161,10 @@ describe("authorize handler", () => {
       "http://test.com",
       "test-state",
     );
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
-      client_id: "test-client",
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
+      client_id: "",
     });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({ client_id: "" });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
       client_id: "test-client",
     });
   });
@@ -210,18 +200,13 @@ describe("authorize handler", () => {
       "http://test.com",
       "test-state",
     );
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
+      client_id: "",
+    });
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
       client_id: "test-client",
     });
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
-      scope: "test-scope",
-    });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({ client_id: "" });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({
-      client_id: "test-client",
-    });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
       scope: "test-scope",
     });
   });
@@ -262,18 +247,13 @@ describe("authorize handler", () => {
       "http://test.com",
       "test-state",
     );
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
+      client_id: "",
+    });
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
       client_id: "test-client",
     });
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
-      scope: "test-scope",
-    });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({ client_id: "" });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({
-      client_id: "test-client",
-    });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
       scope: "test-scope",
     });
   });
@@ -295,7 +275,8 @@ describe("authorize handler", () => {
       "Count",
       1,
     );
-    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({ client_id: "" });
-    expect(mockLogger.appendKeys).toHaveBeenCalledWith({ client_id: "" });
+    expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
+      client_id: "",
+    });
   });
 });

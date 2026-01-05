@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { flushMetrics } from "./index.js";
-import { metrics } from "../../metrics/index.js";
+import { metrics } from "../../observability/index.js";
 
 describe("flushMetrics", () => {
   beforeEach(() => {

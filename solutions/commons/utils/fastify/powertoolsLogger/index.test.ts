@@ -15,7 +15,7 @@ interface mockLogger {
 }
 
 // @ts-expect-error
-vi.mock(import("../../logger/index.js"), () => ({
+vi.mock(import("../../observability/index.js"), () => ({
   logger: {
     getLevelName: vi.fn(),
     createChild: vi.fn(),
@@ -31,7 +31,7 @@ vi.mock(import("../../logger/index.js"), () => ({
 
 const { logger: mockedLogger } = await vi.importMock<{
   logger: mockLogger;
-}>("../../logger/index.js");
+}>("../../observability/index.js");
 
 describe("fastifyPowertoolsLogger", () => {
   beforeEach(() => {

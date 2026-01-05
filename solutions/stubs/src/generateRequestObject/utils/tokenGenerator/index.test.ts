@@ -26,7 +26,7 @@ vi.mock(import("../../../utils/jwt-adapter.js"), () => ({
   }),
 }));
 // @ts-expect-error
-vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
+vi.mock(import("../../../../../commons/utils/observability/index.js"), () => ({
   logger: {
     debug: vi.fn(),
     error: vi.fn(),

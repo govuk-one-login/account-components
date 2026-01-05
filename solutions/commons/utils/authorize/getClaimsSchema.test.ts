@@ -13,13 +13,9 @@ import { getClaimsSchema } from "./getClaimsSchema.js";
 const ORIGINAL_ENV = { ...process.env };
 
 // @ts-expect-error
-vi.mock(import("../logger/index.js"), () => ({
-  logger: { warn: vi.fn() },
-}));
-
-// @ts-expect-error
-vi.mock(import("../metrics/index.js"), () => ({
+vi.mock(import("../observability/index.js"), () => ({
   metrics: { addMetric: vi.fn() },
+  logger: { warn: vi.fn() },
 }));
 
 describe("getClaimsSchema", () => {

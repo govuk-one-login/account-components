@@ -6,7 +6,7 @@ import assert from "node:assert";
 import { getS3Client } from "../../../commons/utils/awsClient/s3Client/index.js";
 import { getKmsClient } from "../../../commons/utils/awsClient/kmsClient/index.js";
 import { jarKeyEncryptionAlgorithm } from "../../../commons/utils/constants.js";
-import { logger } from "../../../commons/utils/logger/index.js";
+import { logger } from "../../../commons/utils/observability/index.js";
 
 export const handler = async (
   event: CloudFormationCustomResourceEvent,

@@ -1,7 +1,9 @@
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import * as v from "valibot";
-import { logger } from "../../../../../commons/utils/logger/index.js";
-import { metrics } from "../../../../../commons/utils/metrics/index.js";
+import {
+  metrics,
+  logger,
+} from "../../../../../commons/utils/observability/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { badRequestResponse, ErrorResponse } from "./common.js";
 

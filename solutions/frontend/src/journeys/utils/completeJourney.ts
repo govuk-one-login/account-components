@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 import { getAppConfig } from "../../../../commons/utils/getAppConfig/index.js";
 import type { getClaimsSchema } from "../../../../commons/utils/authorize/getClaimsSchema.js";
 import type * as v from "valibot";
-import { metrics } from "../../../../commons/utils/metrics/index.js";
+import { metrics } from "../../../../commons/utils/observability/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";

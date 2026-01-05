@@ -11,7 +11,7 @@ const mockGetPropsForLoggingFromEvent = vi.hoisted(() => vi.fn());
 const mockGetTxmaAuditEncodedFromEvent = vi.hoisted(() => vi.fn());
 
 // @ts-expect-error
-vi.mock(import("../logger/index.js"), () => ({
+vi.mock(import("../observability/index.js"), () => ({
   logger: mockLogger,
 }));
 

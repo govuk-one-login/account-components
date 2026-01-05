@@ -3,7 +3,7 @@ import type { JWTPayload } from "jose";
 import { base64url, importPKCS8, SignJWT } from "jose";
 import type { JwtHeader } from "../types/common.js";
 import { ALG, Algorithms, SignatureTypes } from "../types/common.js";
-import { logger } from "../../../commons/utils/logger/index.js";
+import { logger } from "../../../commons/utils/observability/index.js";
 import { getParametersProvider } from "../../../commons/utils/awsClient/ssmClient/index.js";
 
 const getPrivateKeyName = (keyType: SignatureTypes): string => {

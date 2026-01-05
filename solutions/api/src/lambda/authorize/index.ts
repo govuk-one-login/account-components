@@ -5,92 +5,79 @@ import { getClient } from "./utils/getClient.js";
 import { decryptJar } from "./utils/decryptJar.js";
 import { verifyJwt } from "./utils/verifyJwt.js";
 import {
-  loggerAPIGatewayProxyHandlerWrapper,
+  observabilityAPIGatewayProxyHandlerWrapper,
   logger,
-} from "../../../../commons/utils/logger/index.js";
-import { MetricUnit } from "@aws-lambda-powertools/metrics";
-import {
-  metricsAPIGatewayProxyHandlerWrapper,
+  setObservabilityAttributes,
   metrics,
-} from "../../../../commons/utils/metrics/index.js";
+} from "../../../../commons/utils/observability/index.js";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { checkJtiUnusedAndSetUpSession } from "./utils/checkJtiUnusedAndSetUpSession.js";
 
-export const handler = loggerAPIGatewayProxyHandlerWrapper(
-  metricsAPIGatewayProxyHandlerWrapper(
-    async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-      try {
-        metrics.addDimensions({
-          client_id: event.queryStringParameters?.["client_id"] ?? "",
-        });
-        logger.appendKeys({
-          client_id: event.queryStringParameters?.["client_id"] ?? "",
-        });
+export const handler = observabilityAPIGatewayProxyHandlerWrapper(
+  async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+    try {
+      setObservabilityAttributes({
+        client_id: event.queryStringParameters?.["client_id"] ?? "",
+      });
 
-        const queryParams = getQueryParams(event);
-        if (queryParams instanceof ErrorResponse) {
-          return queryParams.errorResponse;
-        }
-
-        metrics.addDimensions({
-          client_id: queryParams.client_id,
-        });
-        logger.appendKeys({
-          client_id: queryParams.client_id,
-        });
-
-        const client = await getClient(
-          queryParams.client_id,
-          queryParams.redirect_uri,
-        );
-        if (client instanceof ErrorResponse) {
-          return client.errorResponse;
-        }
-
-        const signedJwt = await decryptJar(
-          queryParams.request,
-          queryParams.client_id,
-          queryParams.redirect_uri,
-          queryParams.state,
-        );
-        if (signedJwt instanceof ErrorResponse) {
-          return signedJwt.errorResponse;
-        }
-
-        const claims = await verifyJwt(
-          signedJwt,
-          client,
-          queryParams.redirect_uri,
-          queryParams.state,
-        );
-        if (claims instanceof ErrorResponse) {
-          return claims.errorResponse;
-        }
-        metrics.addDimensions({
-          scope: claims.scope,
-        });
-        logger.appendKeys({
-          scope: claims.scope,
-        });
-
-        const saveJtiAndSetupSessionResult =
-          await checkJtiUnusedAndSetUpSession(
-            claims,
-            client.client_id,
-            queryParams.redirect_uri,
-            queryParams.state,
-          );
-        if (saveJtiAndSetupSessionResult instanceof ErrorResponse) {
-          return saveJtiAndSetupSessionResult.errorResponse;
-        }
-
-        return saveJtiAndSetupSessionResult;
-      } catch (error) {
-        logger.error("Authorize error", {
-          error,
-        });
-        metrics.addMetric("InvalidAuthorizeRequest", MetricUnit.Count, 1);
-        return badRequestResponse;
+      const queryParams = getQueryParams(event);
+      if (queryParams instanceof ErrorResponse) {
+        return queryParams.errorResponse;
       }
-    },
-  ),
+
+      setObservabilityAttributes({
+        client_id: queryParams.client_id,
+      });
+
+      const client = await getClient(
+        queryParams.client_id,
+        queryParams.redirect_uri,
+      );
+      if (client instanceof ErrorResponse) {
+        return client.errorResponse;
+      }
+
+      const signedJwt = await decryptJar(
+        queryParams.request,
+        queryParams.client_id,
+        queryParams.redirect_uri,
+        queryParams.state,
+      );
+      if (signedJwt instanceof ErrorResponse) {
+        return signedJwt.errorResponse;
+      }
+
+      const claims = await verifyJwt(
+        signedJwt,
+        client,
+        queryParams.redirect_uri,
+        queryParams.state,
+      );
+      if (claims instanceof ErrorResponse) {
+        return claims.errorResponse;
+      }
+
+      setObservabilityAttributes({
+        scope: claims.scope,
+      });
+
+      const saveJtiAndSetupSessionResult = await checkJtiUnusedAndSetUpSession(
+        claims,
+        client.client_id,
+        queryParams.redirect_uri,
+        queryParams.state,
+      );
+      if (saveJtiAndSetupSessionResult instanceof ErrorResponse) {
+        return saveJtiAndSetupSessionResult.errorResponse;
+      }
+
+      return saveJtiAndSetupSessionResult;
+    } catch (error) {
+      logger.error("Authorize error", {
+        error,
+      });
+      metrics.addMetric("InvalidAuthorizeRequest", MetricUnit.Count, 1);
+      return badRequestResponse;
+    }
+  },
 );

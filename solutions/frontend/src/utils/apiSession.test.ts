@@ -16,7 +16,7 @@ vi.mock(
 );
 
 // @ts-expect-error
-vi.mock(import("../../../commons/utils/metrics/index.js"), () => ({
+vi.mock(import("../../../commons/utils/observability/index.js"), () => ({
   metrics: mockMetrics,
 }));
 

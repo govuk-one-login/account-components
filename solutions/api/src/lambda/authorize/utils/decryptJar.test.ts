@@ -20,13 +20,9 @@ vi.mock(import("./common.js"), async () => {
 });
 
 // @ts-expect-error
-vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
-  logger: { warn: vi.fn(), error: vi.fn() },
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
+vi.mock(import("../../../../../commons/utils/observability/index.js"), () => ({
   metrics: { addMetric: vi.fn() },
+  logger: { warn: vi.fn(), error: vi.fn() },
 }));
 
 const mockKmsClient = {

@@ -2,7 +2,7 @@
 import type { LogLevel } from "@aws-lambda-powertools/logger/types";
 import type { FastifyBaseLogger } from "fastify";
 import type { Bindings, ChildLoggerOptions, LevelOrString } from "pino";
-import { logger } from "../../logger/index.js";
+import { logger } from "../../observability/index.js";
 // eslint-disable-next-line no-restricted-imports
 import type { Logger } from "@aws-lambda-powertools/logger";
 

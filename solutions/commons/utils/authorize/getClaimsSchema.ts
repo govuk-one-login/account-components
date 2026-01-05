@@ -1,6 +1,5 @@
 import * as v from "valibot";
-import { logger } from "../logger/index.js";
-import { metrics } from "../metrics/index.js";
+import { logger, metrics } from "../observability/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import assert from "node:assert";
 import type { ClientEntry } from "../../../config/schema/types.js";

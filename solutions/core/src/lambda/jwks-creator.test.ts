@@ -17,7 +17,7 @@ const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
 // @ts-expect-error
-vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
+vi.mock(import("../../../commons/utils/observability/index.js"), () => ({
   logger: {
     info: vi.fn(),
     warn: vi.fn(),

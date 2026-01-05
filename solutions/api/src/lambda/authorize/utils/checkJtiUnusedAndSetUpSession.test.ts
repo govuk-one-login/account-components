@@ -35,13 +35,9 @@ vi.mock(import("../../../../../commons/utils/getAppConfig/index.js"), () => ({
 }));
 
 // @ts-expect-error
-vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
-  logger: mockLogger,
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
+vi.mock(import("../../../../../commons/utils/observability/index.js"), () => ({
   metrics: mockMetrics,
+  logger: mockLogger,
 }));
 
 vi.mock(import("node:crypto"), () => ({

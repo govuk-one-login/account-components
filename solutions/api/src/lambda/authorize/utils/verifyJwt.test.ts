@@ -34,13 +34,10 @@ vi.mock(import("./common.js"), async () => {
 });
 
 // @ts-expect-error
-vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
+vi.mock(import("../../../../../commons/utils/observability/index.js"), () => ({
+  metrics: { addMetric: vi.fn() },
+  setObservabilityAttributes: vi.fn(),
   logger: { warn: vi.fn(), error: vi.fn() },
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
-  metrics: { addMetric: vi.fn(), addDimensions: vi.fn() },
 }));
 
 const mockJwtVerify = vi.fn();

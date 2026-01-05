@@ -2,11 +2,9 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { FastifyRequest, FastifyReply, FastifyBaseLogger } from "fastify";
 import type { FastifySessionObject } from "@fastify/session";
 import type { ClientEntry } from "../../../../config/schema/types.js";
-import { logger } from "../../../../commons/utils/logger/index.js";
 
 const mockGet = vi.fn();
 const mockAddMetric = vi.fn();
-const mockAddDimensions = vi.fn();
 const mockGetClientRegistry = vi.fn();
 const mockGetClaimsSchema = vi.fn();
 const mockParse = vi.fn();
@@ -15,19 +13,15 @@ const mockGetDotPath = vi.fn();
 const mockDestroyApiSession = vi.fn();
 const mockRedirectToAuthorizeErrorPage = vi.fn();
 const mockDecodeJwt = vi.fn();
+const mockSetObservabilityAttributes = vi.fn();
 
 // @ts-expect-error
-vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
+vi.mock(import("../../../../commons/utils/observability/index.js"), () => ({
   metrics: {
-    addMetric: mockAddMetric,
-    addDimensions: mockAddDimensions,
+    addMetric: vi.fn(),
   },
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
-  logger: { appendKeys: vi.fn() },
-  loggerAPIGatewayProxyHandlerWrapper: vi.fn(),
+  observabilityAPIGatewayProxyHandlerWrapper: vi.fn(),
+  setObservabilityAttributes: vi.fn(),
 }));
 
 // @ts-expect-error
@@ -95,10 +89,19 @@ describe("startSession handler", () => {
   let mockReply: Partial<FastifyReply>;
   let mockClient: ClientEntry;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2024-01-01T12:00:00Z"));
+
+    // Wire up the mocks
+    const { setObservabilityAttributes, metrics } =
+      await import("../../../../commons/utils/observability/index.js");
+    vi.mocked(setObservabilityAttributes).mockImplementation(
+      mockSetObservabilityAttributes,
+    );
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    vi.mocked(metrics.addMetric).mockImplementation(mockAddMetric);
 
     process.env["API_SESSIONS_TABLE_NAME"] = "test-sessions-table";
     process.env["SESSIONS_TABLE_NAME"] = "test-sessions-table";
@@ -356,12 +359,7 @@ describe("startSession handler", () => {
         "https://client.com/callback",
         "test-state",
       );
-      expect(mockAddDimensions).toHaveBeenCalledWith({
-        client_id: "test-client",
-        scope: "testing-journey",
-      });
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(logger.appendKeys).toHaveBeenCalledWith({
+      expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
         client_id: "test-client",
         scope: "testing-journey",
       });
@@ -422,12 +420,7 @@ describe("startSession handler", () => {
         Key: { id: "test-session-id" },
         ConsistentRead: true,
       });
-      expect(mockAddDimensions).toHaveBeenCalledWith({
-        client_id: "test-client",
-        scope: "testing-journey",
-      });
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(logger.appendKeys).toHaveBeenCalledWith({
+      expect(mockSetObservabilityAttributes).toHaveBeenCalledWith({
         client_id: "test-client",
         scope: "testing-journey",
       });

@@ -1,4 +1,4 @@
-import { metrics } from "../../metrics/index.js";
+import { metrics } from "../../observability/index.js";
 
 export const flushMetrics = async () => {
   metrics.captureColdStartMetric();

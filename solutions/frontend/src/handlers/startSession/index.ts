@@ -1,5 +1,4 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
-import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import * as v from "valibot";
@@ -9,7 +8,10 @@ import { getClaimsSchema } from "../../../../commons/utils/authorize/getClaimsSc
 import { destroyApiSession } from "../../utils/apiSession.js";
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
 import { decodeJwt } from "jose";
-import { logger } from "../../../../commons/utils/logger/index.js";
+import {
+  metrics,
+  setObservabilityAttributes,
+} from "../../../../commons/utils/observability/index.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -82,11 +84,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       }
 
       claims = claimsResult.output;
-      metrics.addDimensions({
-        client_id: claims.client_id,
-        scope: claims.scope,
-      });
-      logger.appendKeys({
+      setObservabilityAttributes({
         client_id: claims.client_id,
         scope: claims.scope,
       });

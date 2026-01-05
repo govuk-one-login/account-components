@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { getDynamoDbClient } from "../../../commons/utils/awsClient/dynamodbClient/index.js";
-import { metrics } from "../../../commons/utils/metrics/index.js";
+import { metrics } from "../../../commons/utils/observability/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import assert from "node:assert";
 import {
