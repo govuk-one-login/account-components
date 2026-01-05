@@ -1,8 +1,15 @@
 {
   "introduction": {
-    "pageTitle": "TODO introduction",
-    "heading": "TODO introduction",
-    "buttonLabel": "TODO continue"
+    "pageTitle": "You’ll need to delete your GOV.UK One Login",
+    "heading": "You’ll need to delete your GOV.UK One Login",
+    "paragraphs": [
+      "We cannot be sure it’s you trying to sign in.",
+      "You’ll need to delete your GOV.UK One Login and will no longer be able to access the services you’ve used with it.",
+      "After you delete your GOV.UK One Login, you can create a new one.",
+      "But first, we need you to confirm some details."
+    ],
+    "buttonLabel": "Start",
+    "exitJourneyLinkText": "Go back and try entering a security code again"
   },
   "resendEmailVerificationCode": {
     "pageTitle": "TODO resendEmailVerificationCode",
@@ -11,12 +18,20 @@
     "verifyCodeLinkText": "TODO verifyCode"
   },
   "verifyEmailAddress": {
-    "pageTitle": "TODO verifyEmailAddress",
-    "heading": "TODO verifyEmailAddress",
-    "emailAddress": "TODO <strong>{{emailAddress}}</strong>",
-    "codeInputLabel": "TODO code",
-    "buttonLabel": "TODO verify",
-    "resendCodeLinkText": "TODO resendCode",
+    "pageTitle": "Enter the code sent to your email address",
+    "heading": "Enter the code sent to your email address",
+    "paragraph1": "You need to confirm that this is your email address before you can delete your GOV.UK One Login.",
+    "emailAddress": "We have sent an email to <strong>{{emailAddress}}</strong>",
+    "heading2": "Check your email",
+    "paragraphs2": [
+      "The email contains a 6 digit security code.",
+      "Your email might take a few minutes to arrive. If you do not get an email, check your spam folder.",
+      "The code will expire after 15 minutes."
+    ],
+    "codeInputLabel": "Enter the 6 digit code",
+    "buttonLabel": "Continue",
+    "problemsWithTheCodeSummary": "Problems with the code?",
+    "problemsWithTheCode": "We can <a href=\"{{resendCodeLinkUrl}}\" class=\"govuk-link govuk-link--no-visited-state\">send the code again</a> if the code is not working or you did not receive it.",
     "formErrors": {
       "empty": "TODO empty",
       "tooShort": "TODO tooShort",
@@ -25,18 +40,32 @@
     }
   },
   "enterPassword": {
-    "pageTitle": "TODO enterPassword",
-    "heading": "TODO enterPassword",
-    "pwInputLabel": "TODO password",
-    "buttonLabel": "TODO continue",
+    "pageTitle": "Enter your password",
+    "inputLabel": "Enter your password",
+    "buttonLabel": "Continue",
     "formErrors": {
       "empty": "TODO empty",
       "incorrect": "TODO incorrect"
     }
   },
   "confirm": {
-    "pageTitle": "TODO confirm",
-    "heading": "TODO confirm",
-    "buttonLabel": "TODO delete account"
+    "pageTitle": "Delete your GOV.UK One Login",
+    "heading": "Delete your GOV.UK One Login",
+    "paragraphs1": [
+      "You can now delete your GOV.UK One Login.",
+      "You’ll no longer be able to access the services you’ve used with it.",
+      "This will permanently delete your:"
+    ],
+    "listItems": [
+      "sign in details",
+      "the record of which services you’ve accessed with GOV.UK One Login and when"
+    ],
+    "paragraphs2": [
+      "It will not affect government accounts that you do not access with GOV.UK One Login, such as Government Gateway or Universal Credit.",
+      "After deleting your GOV.UK One Login, you can create a new one using the same email address."
+    ],
+    "deleteButtonLabel": "Delete your GOV.UK One Login",
+    "cancelButtonLabel": "Cancel and try signing in again",
+    "contactLinkText": "Contact the GOV.UK One Login team (opens in a new tab)."
   }
 }

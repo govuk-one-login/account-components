@@ -146,7 +146,7 @@ describe("onRequest", () => {
         currentUrl: {
           pathname: "/test-path",
         } as URL,
-        exitJourneyUrl: undefined,
+        getRedirectToClientRedirectUri: undefined,
       },
     } as unknown as FastifyReply;
 
@@ -332,7 +332,9 @@ describe("onRequest", () => {
         scope: "test-scope",
       });
       expect(mockReply.client).toStrictEqual({ client_id: "test-client-id" });
-      expect(mockReply.globals?.exitJourneyUrl).toBe("/exit-journey-url");
+      expect(mockReply.globals?.getRedirectToClientRedirectUri).toBeTypeOf(
+        "function",
+      );
       expect(journeys["test-scope" as Scope]).toHaveBeenCalledWith();
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockRequest.i18n?.addResourceBundle).toHaveBeenCalledWith(
@@ -348,15 +350,22 @@ describe("onRequest", () => {
       });
     });
 
-    it("should call getRedirectToClientRedirectUri with correct parameters", async () => {
+    it("should set getRedirectToClientRedirectUri function on globals", async () => {
       await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockReply.globals?.getRedirectToClientRedirectUri).toBeTypeOf(
+        "function",
+      );
+
+      const testError = {
+        description: "E1001",
+        type: "access_denied",
+      } as const;
+      mockReply.globals?.getRedirectToClientRedirectUri?.(testError);
 
       expect(getRedirectToClientRedirectUri).toHaveBeenCalledWith(
         "/go-to-client-callback",
-        {
-          description: "E1001",
-          type: "access_denied",
-        },
+        testError,
         undefined,
       );
     });
