@@ -2,6 +2,7 @@ import * as v from "valibot";
 import {
   metrics,
   logger,
+  setObservabilityAttributes,
 } from "../../../../../commons/utils/observability/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import {
@@ -28,7 +29,6 @@ import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { getClaimsSchema } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
-import { setObservabilityAttributes } from "../../../../../commons/utils/observability/index.js";
 
 const verify = async (
   signedJwt: string,
