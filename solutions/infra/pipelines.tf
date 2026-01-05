@@ -26,6 +26,7 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
     AllowedServiceTwo                       = "DynamoDB"
     AllowedServiceThree                     = "Lambda"
     AllowedServiceFour                      = "AppConfig"
+    AllowedServiceFive                      = "Xray"
     LambdaCanaryDeployment                  = contains(["production", "integration"], var.environment) ? "Canary10Percent30Minutes" : "AllAtOnce"
   }
 
@@ -58,6 +59,7 @@ resource "aws_cloudformation_stack" "api_pipeline_stack" {
     AllowedServiceTwo                       = "EC2"
     AllowedServiceThree                     = "DynamoDB"
     AllowedServiceFour                      = "Lambda"
+    AllowedServiceFive                      = "Xray"
     LambdaCanaryDeployment                  = contains(["production", "integration"], var.environment) ? "Canary10Percent30Minutes" : "AllAtOnce"
   }
 
@@ -88,6 +90,7 @@ resource "aws_cloudformation_stack" "core_pipeline_stack" {
     SlackNotificationType                   = var.environment == "production" ? "All" : (var.environment == "dev" ? "None" : "Failures")
     ProgrammaticPermissionsBoundary         = "True"
     AllowedServiceOne                       = "EC2"
+    AllowedServiceTwo                       = "Xray"
   }
 
   capabilities = var.capabilities
