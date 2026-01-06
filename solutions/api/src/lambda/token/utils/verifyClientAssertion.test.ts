@@ -58,6 +58,7 @@ describe("verifyClientAssertion", () => {
     expect(mockDecodeJwt).toHaveBeenCalledWith(mockClientAssertion);
     expect(mockCreateRemoteJWKSet).toHaveBeenCalledWith(
       new URL(mockClientRegistry[0].jwks_uri),
+      { cacheMaxAge: 60000, timeoutDuration: 2500 },
     );
   });
 

@@ -22,9 +22,10 @@ const mockGetDynamoDbClient = vi.mocked(getDynamoDbClient);
 describe("createAccessToken", () => {
   const ORIGINAL_ENV = process.env;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
+    vi.resetModules();
 
     process.env = {
       ...ORIGINAL_ENV,

@@ -18,6 +18,26 @@ import { authorizeErrors } from "../../../../../commons/utils/authorize/authoriz
 
 let keyId: string | undefined = undefined;
 
+const getKeyId = async (): Promise<string> => {
+  if (keyId) return keyId;
+  assert.ok(
+    process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+    "JAR_RSA_ENCRYPTION_KEY_ALIAS is not set",
+  );
+
+  const kmsClient = getKmsClient();
+  const result = await kmsClient.describeKey({
+    KeyId: process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
+  });
+
+  assert.ok(
+    result.KeyMetadata?.KeyId,
+    "Failed to get keyId for JAR_RSA_ENCRYPTION_KEY_ALIAS",
+  );
+  keyId = result.KeyMetadata.KeyId;
+  return keyId;
+};
+
 export const decryptJar = async (
   jar: string,
   clientId: string,
@@ -35,20 +55,7 @@ export const decryptJar = async (
 
     const [protectedHeader, encryptedKey, iv, ciphertext, tag] = jarComponents;
 
-    const kmsClient = getKmsClient();
-
-    assert.ok(
-      process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
-      "JAR_RSA_ENCRYPTION_KEY_ALIAS is not set",
-    );
-
-    keyId ??= (
-      await kmsClient.describeKey({
-        KeyId: process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"],
-      })
-    ).KeyMetadata?.KeyId;
-
-    assert.ok(keyId, "Failed to get keyId for JAR_RSA_ENCRYPTION_KEY_ALIAS");
+    const keyId = await getKeyId();
 
     const headerComponents = v.parse(
       v.message(
@@ -70,6 +77,7 @@ export const decryptJar = async (
     );
 
     try {
+      const kmsClient = getKmsClient();
       const kmsResult = await kmsClient.decrypt({
         KeyId: keyId,
         CiphertextBlob: Buffer.from(encryptedKey, "base64"),

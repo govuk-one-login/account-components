@@ -7,6 +7,8 @@ import type { AuthRequestT } from "./getAuthRequest.js";
 import { derToJose } from "ecdsa-sig-formatter";
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
 
+const keyIdCache = new Map<string, string>();
+
 export const createAccessToken = async (authRequest: AuthRequestT) => {
   assert(
     process.env["TOKEN_ENDPOINT_URL"],
@@ -30,11 +32,17 @@ export const createAccessToken = async (authRequest: AuthRequestT) => {
   const kmsClient = getKmsClient();
   const ddbClient = getDynamoDbClient();
 
-  const keyId = (
-    await kmsClient.describeKey({
-      KeyId: keyAlias,
-    })
-  ).KeyMetadata?.KeyId;
+  let keyId = keyIdCache.get(keyAlias);
+  if (!keyId) {
+    keyId = (
+      await kmsClient.describeKey({
+        KeyId: keyAlias,
+      })
+    ).KeyMetadata?.KeyId;
+    if (keyId) {
+      keyIdCache.set(keyAlias, keyId);
+    }
+  }
 
   const { Item: AuthCodeItem } = await ddbClient.get({
     TableName: authTableName,

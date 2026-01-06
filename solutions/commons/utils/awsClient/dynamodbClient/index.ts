@@ -1,14 +1,14 @@
-import type { ScanCommandInput } from "@aws-sdk/client-dynamodb";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import type {
-  PutCommandInput,
-  GetCommandInput,
-  DeleteCommandInput,
-  UpdateCommandInput,
-  QueryCommandInput,
   BatchGetCommandInput,
   BatchWriteCommandInput,
+  DeleteCommandInput,
+  GetCommandInput,
+  PutCommandInput,
+  QueryCommandInput,
+  ScanCommandInput,
   TransactWriteCommandInput,
+  UpdateCommandInput,
 } from "@aws-sdk/lib-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
 import * as AWSXRay from "aws-xray-sdk";
@@ -23,7 +23,11 @@ const createDynamoDbClient = () => {
       ? dynamoDbClient
       : AWSXRay.captureAWSv3Client(dynamoDbClient);
 
-  const docClient = DynamoDBDocumentClient.from(wrappedClient);
+  const docClient = DynamoDBDocumentClient.from(wrappedClient, {
+    marshallOptions: {
+      removeUndefinedValues: true,
+    },
+  });
 
   const client = {
     client: docClient,
