@@ -8,6 +8,7 @@ import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { authorizeErrors } from "../../../../commons/utils/authorize/authorizeErrors.js";
 import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
+import { logger } from "../../../../commons/utils/logger/index.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -23,7 +24,7 @@ export const completeJourney = async (
 
     const appConfig = await getAppConfig();
 
-    await dynamoDbClient.transactWrite({
+    const transaction = {
       TransactItems: [
         {
           Put: {
@@ -56,7 +57,11 @@ export const completeJourney = async (
           },
         },
       ],
-    });
+    };
+
+    logger.info("Transaction", transaction);
+
+    await dynamoDbClient.transactWrite(transaction);
 
     return await redirectToClientRedirectUri(
       request,

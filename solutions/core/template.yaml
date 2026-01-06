@@ -598,6 +598,8 @@ Resources:
 
   JourneyOutcomeTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
     Properties:
       TableName: !Sub ${AWS::StackName}-JourneyOutcome
       AttributeDefinitions:
@@ -612,7 +614,7 @@ Resources:
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: false
       TimeToLiveSpecification:
-        AttributeName: expires
+        AttributeName: "expires"
         Enabled: true
       SSESpecification:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
