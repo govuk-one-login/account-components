@@ -12,7 +12,10 @@ export const getJourneyOutcome = async (
       Key: {
         outcome_id: payload.outcome_id,
       },
-      ProjectionExpression: "outcome_id, outcome, sub, email",
+      ProjectionExpression: "outcome_id, outcome, #sub, email",
+      ExpressionAttributeNames: {
+        "#sub": "sub",
+      },
     });
 
     if (!result.Item) {
