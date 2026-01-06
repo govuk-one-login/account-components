@@ -15,6 +15,7 @@ import type { ClientEntry } from "../../../../../config/schema/types.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { getClaimsSchema } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
 import assert from "node:assert";
+import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 
 const handleJwtError = (
   error: unknown,
@@ -200,10 +201,12 @@ const verify = async (
 ) => {
   let payload: JWTPayload | undefined = undefined;
 
+  const appConfig = await getAppConfig();
+
   try {
     const jwks = createRemoteJWKSet(new URL(client.jwks_uri), {
-      cacheMaxAge: 900000,
-      timeoutDuration: 2000,
+      cacheMaxAge: appConfig.jwks_cache_max_age,
+      timeoutDuration: appConfig.jwks_http_timeout,
     });
 
     payload = (
