@@ -19,12 +19,9 @@ export const handler = loggerAPIGatewayProxyHandlerWrapper(
   metricsAPIGatewayProxyHandlerWrapper(
     async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
       try {
-        metrics.addDimensions({
-          client_id: event.queryStringParameters?.["client_id"] ?? "",
-        });
-        logger.appendKeys({
-          client_id: event.queryStringParameters?.["client_id"] ?? "",
-        });
+        const client_id = event.queryStringParameters?.["client_id"] ?? "";
+        metrics.addDimensions({ client_id });
+        logger.appendKeys({ client_id });
 
         const queryParams = getQueryParams(event);
         if (queryParams instanceof ErrorResponse) {
