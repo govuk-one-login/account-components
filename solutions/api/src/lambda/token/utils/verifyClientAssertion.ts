@@ -4,11 +4,13 @@ import { getClientRegistry } from "../../../../../commons/utils/getClientRegistr
 import { errorManager } from "./errors.js";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import assert from "node:assert";
+import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 
 export const verifyClientAssertion = async (
   clientAssertion: string,
 ): Promise<JWTPayload> => {
   const clientRegistry = await getClientRegistry();
+  const appConfig = await getAppConfig();
   const decodedJwt = decodeJwt(clientAssertion);
   const { iss, iat, aud } = decodedJwt;
 
@@ -68,8 +70,11 @@ export const verifyClientAssertion = async (
 
   try {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const JWKS = createRemoteJWKSet(new URL(client!.jwks_uri));
-    const { payload } = await jwtVerify(clientAssertion, JWKS, {
+    const jwks = createRemoteJWKSet(new URL(client!.jwks_uri), {
+      cacheMaxAge: appConfig.jwks_cache_max_age,
+      timeoutDuration: appConfig.jwks_http_timeout,
+    });
+    const { payload } = await jwtVerify(clientAssertion, jwks, {
       algorithms: [jwtSigningAlgorithm],
     });
 
