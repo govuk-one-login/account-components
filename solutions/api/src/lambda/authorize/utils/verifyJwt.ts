@@ -14,6 +14,7 @@ import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { getClaimsSchema } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
+import assert from "node:assert";
 
 const handleJwtError = (
   error: unknown,
@@ -21,8 +22,8 @@ const handleJwtError = (
   redirectUri: string,
   state?: string,
 ) => {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const errorName = (error as Error).constructor.name;
+  assert.ok(error instanceof Error);
+  const errorName = error.constructor.name;
 
   switch (errorName) {
     case "JWKSTimeout":
