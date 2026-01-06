@@ -8,44 +8,27 @@ import {
 } from "./common.js";
 import type { JWTPayload } from "jose";
 import { jwtVerify, createRemoteJWKSet } from "jose";
-import {
-  JOSEAlgNotAllowed,
-  JOSEError,
-  JWKInvalid,
-  JWKSInvalid,
-  JWKSMultipleMatchingKeys,
-  JWKSNoMatchingKey,
-  JWKSTimeout,
-  JWSInvalid,
-  JWSSignatureVerificationFailed,
-  JWTClaimValidationFailed,
-  JWTExpired,
-  JWTInvalid,
-} from "jose/errors";
+import type { JWTExpired } from "jose/errors";
+import { JOSEError } from "jose/errors";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import { getClaimsSchema } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
+import assert from "node:assert";
+import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 
-const verify = async (
-  signedJwt: string,
+const handleJwtError = (
+  error: unknown,
   client: ClientEntry,
   redirectUri: string,
   state?: string,
 ) => {
-  let payload: JWTPayload | undefined = undefined;
+  assert.ok(error instanceof Error);
+  const errorName = error.constructor.name;
 
-  try {
-    payload = (
-      await jwtVerify(signedJwt, createRemoteJWKSet(new URL(client.jwks_uri)), {
-        algorithms: [jwtSigningAlgorithm],
-      })
-    ).payload;
-  } catch (error) {
-    if (error instanceof JWKSTimeout) {
-      logger.warn("JWKSTimeout", {
-        client_id: client.client_id,
-      });
+  switch (errorName) {
+    case "JWKSTimeout":
+      logger.warn("JWKSTimeout", { client_id: client.client_id });
       metrics.addMetric("JWKSTimeout", MetricUnit.Count, 1);
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
@@ -54,10 +37,9 @@ const verify = async (
           state,
         ),
       );
-    } else if (error instanceof JWKSInvalid) {
-      logger.warn("JWKSInvalid", {
-        client_id: client.client_id,
-      });
+
+    case "JWKSInvalid":
+      logger.warn("JWKSInvalid", { client_id: client.client_id });
       metrics.addMetric("JWKSInvalid", MetricUnit.Count, 1);
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
@@ -66,10 +48,9 @@ const verify = async (
           state,
         ),
       );
-    } else if (error instanceof JWKSNoMatchingKey) {
-      logger.warn("JWKSNoMatchingKey", {
-        client_id: client.client_id,
-      });
+
+    case "JWKSNoMatchingKey":
+      logger.warn("JWKSNoMatchingKey", { client_id: client.client_id });
       metrics.addMetric("JWKSNoMatchingKey", MetricUnit.Count, 1);
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
@@ -78,10 +59,9 @@ const verify = async (
           state,
         ),
       );
-    } else if (error instanceof JWKSMultipleMatchingKeys) {
-      logger.warn("JWKSMultipleMatchingKeys", {
-        client_id: client.client_id,
-      });
+
+    case "JWKSMultipleMatchingKeys":
+      logger.warn("JWKSMultipleMatchingKeys", { client_id: client.client_id });
       metrics.addMetric("JWKSMultipleMatchingKeys", MetricUnit.Count, 1);
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
@@ -90,10 +70,9 @@ const verify = async (
           state,
         ),
       );
-    } else if (error instanceof JWKInvalid) {
-      logger.warn("JWKInvalid", {
-        client_id: client.client_id,
-      });
+
+    case "JWKInvalid":
+      logger.warn("JWKInvalid", { client_id: client.client_id });
       metrics.addMetric("JWKInvalid", MetricUnit.Count, 1);
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
@@ -102,10 +81,9 @@ const verify = async (
           state,
         ),
       );
-    } else if (error instanceof JOSEAlgNotAllowed) {
-      logger.warn("JOSEAlgNotAllowed", {
-        client_id: client.client_id,
-      });
+
+    case "JOSEAlgNotAllowed":
+      logger.warn("JOSEAlgNotAllowed", { client_id: client.client_id });
       metrics.addMetric("JOSEAlgNotAllowed", MetricUnit.Count, 1);
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
@@ -114,10 +92,9 @@ const verify = async (
           state,
         ),
       );
-    } else if (error instanceof JWSInvalid) {
-      logger.warn("JWSInvalid", {
-        client_id: client.client_id,
-      });
+
+    case "JWSInvalid":
+      logger.warn("JWSInvalid", { client_id: client.client_id });
       metrics.addMetric("JWSInvalid", MetricUnit.Count, 1);
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
@@ -126,7 +103,8 @@ const verify = async (
           state,
         ),
       );
-    } else if (error instanceof JWSSignatureVerificationFailed) {
+
+    case "JWSSignatureVerificationFailed":
       logger.warn("JWSSignatureVerificationFailed", {
         client_id: client.client_id,
       });
@@ -138,10 +116,9 @@ const verify = async (
           state,
         ),
       );
-    } else if (error instanceof JWTInvalid) {
-      logger.warn("JWTInvalid", {
-        client_id: client.client_id,
-      });
+
+    case "JWTInvalid":
+      logger.warn("JWTInvalid", { client_id: client.client_id });
       metrics.addMetric("JWTInvalid", MetricUnit.Count, 1);
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
@@ -150,10 +127,13 @@ const verify = async (
           state,
         ),
       );
-    } else if (error instanceof JWTExpired) {
+
+    case "JWTExpired": {
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      const expiredError = error as JWTExpired;
       logger.warn("JWTExpired", {
         client_id: client.client_id,
-        exp: new Date(Number(error.payload.exp) * 1000).toISOString(),
+        exp: new Date(Number(expiredError.payload.exp) * 1000).toISOString(),
         current_datetime: new Date().toISOString(),
       });
       metrics.addMetric("JWTExpired", MetricUnit.Count, 1);
@@ -164,10 +144,10 @@ const verify = async (
           state,
         ),
       );
-    } else if (error instanceof JWTClaimValidationFailed) {
-      logger.warn("JWTClaimValidationFailed", {
-        client_id: client.client_id,
-      });
+    }
+
+    case "JWTClaimValidationFailed":
+      logger.warn("JWTClaimValidationFailed", { client_id: client.client_id });
       metrics.addMetric("JWTClaimValidationFailed", MetricUnit.Count, 1);
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
@@ -176,25 +156,28 @@ const verify = async (
           state,
         ),
       );
-    } else if (error instanceof JOSEError) {
-      logger.warn("JOSEError", {
-        client_id: client.client_id,
-        jose_error_code: error.code,
-        jose_error_message: error.message,
-        jose_error_name: error.name,
-        jose_error_cause: error.cause,
-        jose_error_stack: error.stack,
-      });
-      metrics.addDimensions({ jose_error_code: error.code });
-      metrics.addMetric("JOSEError", MetricUnit.Count, 1);
-      return new ErrorResponse(
-        getRedirectToClientRedirectUriResponse(
-          redirectUri,
-          authorizeErrors.verifyJwtError,
-          state,
-        ),
-      );
-    } else {
+
+    default:
+      if (error instanceof JOSEError) {
+        logger.warn("JOSEError", {
+          client_id: client.client_id,
+          jose_error_code: error.code,
+          jose_error_message: error.message,
+          jose_error_name: error.name,
+          jose_error_cause: error.cause,
+          jose_error_stack: error.stack,
+        });
+        metrics.addDimensions({ jose_error_code: error.code });
+        metrics.addMetric("JOSEError", MetricUnit.Count, 1);
+        return new ErrorResponse(
+          getRedirectToClientRedirectUriResponse(
+            redirectUri,
+            authorizeErrors.verifyJwtError,
+            state,
+          ),
+        );
+      }
+
       logger.warn("VerifyJwtUnknownError", {
         client_id: client.client_id,
         error,
@@ -207,7 +190,32 @@ const verify = async (
           state,
         ),
       );
-    }
+  }
+};
+
+const verify = async (
+  signedJwt: string,
+  client: ClientEntry,
+  redirectUri: string,
+  state?: string,
+) => {
+  let payload: JWTPayload | undefined = undefined;
+
+  const appConfig = await getAppConfig();
+
+  try {
+    const jwks = createRemoteJWKSet(new URL(client.jwks_uri), {
+      cacheMaxAge: appConfig.jwks_cache_max_age,
+      timeoutDuration: appConfig.jwks_http_timeout,
+    });
+
+    payload = (
+      await jwtVerify(signedJwt, jwks, {
+        algorithms: [jwtSigningAlgorithm],
+      })
+    ).payload;
+  } catch (error) {
+    return handleJwtError(error, client, redirectUri, state);
   }
 
   return payload;
