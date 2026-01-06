@@ -29,13 +29,25 @@
       "description": "Time-to-live in seconds for auth code",
       "type": "integer",
       "minimum": 1
+    },
+    "jwks_cache_max_age": {
+      "description": "Max Age (ms) to cache JWKS",
+      "type": "integer",
+      "minimum": 1000
+    },
+    "jwks_http_timeout": {
+      "description": "JWKS fetch HTTP Timeout (ms)",
+      "type": "integer",
+      "minimum": 1000
     }
   },
   "required": [
     "client_registry",
     "jti_nonce_ttl_in_seconds",
     "api_session_ttl_in_seconds",
-    "auth_code_ttl"
+    "auth_code_ttl",
+    "jwks_cache_max_age",
+    "jwks_http_timeout"
   ],
   "$defs": {
     "clientEntry": {
