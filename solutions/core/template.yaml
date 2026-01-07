@@ -598,19 +598,29 @@ Resources:
 
   JourneyOutcomeTable:
     Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
     Properties:
       TableName: !Sub ${AWS::StackName}-JourneyOutcome
-      BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: outcome_id
           AttributeType: S
       KeySchema:
         - AttributeName: outcome_id
           KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      TimeToLiveSpecification:
+        AttributeName: "expires"
+        Enabled: true
       SSESpecification:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
         SSEEnabled: true
         SSEType: KMS
+      TableClass: STANDARD
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-journey_outcome"

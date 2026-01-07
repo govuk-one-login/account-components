@@ -28,6 +28,7 @@ describe("getClientRegistry", () => {
       auth_code_ttl: 300,
       jwks_cache_max_age: 1000,
       jwks_http_timeout: 1000,
+      journey_outcome_ttl: 60,
     };
 
     const { getAppConfig } = await import("../getAppConfig/index.js");
