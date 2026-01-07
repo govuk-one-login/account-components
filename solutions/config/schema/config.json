@@ -39,6 +39,11 @@
       "description": "JWKS fetch HTTP Timeout (ms)",
       "type": "integer",
       "minimum": 1000
+    },
+    "journey_outcome_ttl": {
+      "description": "Time-to-live in seconds for journey outcome",
+      "type": "integer",
+      "minimum": 1
     }
   },
   "required": [
@@ -47,7 +52,8 @@
     "api_session_ttl_in_seconds",
     "auth_code_ttl",
     "jwks_cache_max_age",
-    "jwks_http_timeout"
+    "jwks_http_timeout",
+    "journey_outcome_ttl"
   ],
   "$defs": {
     "clientEntry": {

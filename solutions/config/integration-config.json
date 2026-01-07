@@ -15,5 +15,6 @@
   "api_session_ttl_in_seconds": 300,
   "auth_code_ttl": 300,
   "jwks_cache_max_age": 900000,
-  "jwks_http_timeout": 2500
+  "jwks_http_timeout": 2500,
+  "journey_outcome_ttl": 60
 }

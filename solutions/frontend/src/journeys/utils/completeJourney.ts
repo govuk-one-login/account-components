@@ -37,6 +37,8 @@ export const completeJourney = async (
               })),
               sub: claims.sub,
               email: claims.email,
+              expires:
+                Math.floor(Date.now() / 1000) + appConfig.journey_outcome_ttl,
             },
           },
         },
