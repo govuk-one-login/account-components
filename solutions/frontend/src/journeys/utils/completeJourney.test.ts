@@ -121,6 +121,8 @@ describe("completeJourney", () => {
               })),
               sub: mockClaims.sub,
               email: mockClaims.email,
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+              expires: expect.any(Number),
             },
           },
         },

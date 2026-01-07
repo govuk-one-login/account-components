@@ -64,7 +64,10 @@ describe("getJourneyOutcome", () => {
       Key: {
         outcome_id: "test-outcome-123",
       },
-      ConsistentRead: true,
+      ProjectionExpression: "outcome_id, outcome, #sub, email",
+      ExpressionAttributeNames: {
+        "#sub": "sub",
+      },
     });
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
