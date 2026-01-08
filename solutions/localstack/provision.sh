@@ -115,7 +115,7 @@ create_kms_keys() {
     --output text)
 
   aws --endpoint-url=http://localhost:4567 kms create-alias \
-    --alias-name alias/components-core/JWTSigningKey \
+    --alias-name alias/components-core-JWTSigningKey \
     --target-key-id "$JWT_SIGNING_KEY_ID"
 
   echo "Finished creating KMS keys"
@@ -134,7 +134,10 @@ create_dynamodb_tables() {
       AttributeName=outcome_id,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
-  # SessionsTable
+  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
+    --table-name "components-core-JourneyOutcome" \
+    --time-to-live-specification "Enabled=true,AttributeName=expires"
+
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
     --table-name "components-main-SessionStore" \
     --attribute-definitions \
@@ -171,7 +174,7 @@ create_dynamodb_tables() {
 
   aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
     --table-name "components-api-ReplayAttack" \
-    --time-to-live-specification "Enabled=true,AttributeName=expires"      
+    --time-to-live-specification "Enabled=true,AttributeName=expires"
 
   # ApiSessionsTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
