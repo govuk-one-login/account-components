@@ -1,0 +1,21 @@
+{
+  "step1": {
+    "pageTitle": "Cam 1 taith brofi",
+    "heading": "Cam 1 taith brofi",
+    "paragraph": "Taith brofi yw hon. Cliciwch y botwm isod i barhau.",
+    "buttonLabel": "Mynd i'r cam nesaf"
+  },
+  "enterPassword": {
+    "pageTitle": "Taith Brofi Rhowch Gyfrinair",
+    "heading": "Taith Brofi Rhowch Gyfrinair",
+    "paragraph": "Taith brofi yw hon. Rhowch eich cyfrinair i barhau.",
+    "inputLabel": "Cyfrinair",
+    "buttonLabel": "Cyflwyno"
+  },
+  "confirm": {
+    "pageTitle": "Cadarnhad taith brofi",
+    "heading": "Cadarnhad taith brofi",
+    "paragraph": "Taith brofi yw hon. Cliciwch y botwm isod i gwblhau'r daith.",
+    "buttonLabel": "Cwblhau'r daith brofi"
+  }
+}

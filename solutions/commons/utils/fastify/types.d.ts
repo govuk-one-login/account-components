@@ -6,6 +6,7 @@ import type { accountDeleteStateMachine } from "../../../frontend/src/journeys/u
 import type { testingJourneyStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/testing-journey.ts";
 import type { ClientEntry } from "../../../config/schema/types.ts";
 import type { authorizeErrors } from "../authorize/authorizeErrors.ts";
+import type { passkeyCreateStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/passkey-create.js";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -34,6 +35,7 @@ declare module "fastify" {
     journeyStates?: {
       [Scope.testingJourney]?: Actor<typeof testingJourneyStateMachine>;
       [Scope.accountDelete]?: Actor<typeof accountDeleteStateMachine>;
+      [Scope.passkeyCreate]?: Actor<typeof passkeyCreateStateMachine>;
     };
     client?: ClientEntry;
   }

@@ -7,7 +7,13 @@ export const onSend = async (request: FastifyRequest, reply: FastifyReply) => {
   reply.headers({ "cache-control": "no-store" });
 
   if (request.session.claims) {
-    const journeyState = reply.journeyStates?.[request.session.claims.scope];
+    const journeyState =
+      reply.journeyStates?.[
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        request.session.claims.scope as keyof NonNullable<
+          typeof reply.journeyStates
+        >
+      ];
 
     if (journeyState) {
       request.session.journeyStateSnapshot = journeyState.getSnapshot();

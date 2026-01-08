@@ -1,6 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { testingJourney } from "./testing-journey/index.js";
 import { accountDelete } from "./account-delete/index.js";
+import { passkeyCreate } from "./passkey-create/index.js";
 import { onRequest } from "./utils/onRequest.js";
 import { onSend } from "./utils/onSend.js";
 import { goToClientCallback } from "./goToClientCallback/handler.js";
@@ -21,4 +22,5 @@ export const journeyRoutes = function (fastify: FastifyInstance) {
   );
   fastify.register(testingJourney);
   fastify.register(accountDelete);
+  fastify.register(passkeyCreate);
 };

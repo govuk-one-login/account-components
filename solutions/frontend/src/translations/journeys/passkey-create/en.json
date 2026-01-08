@@ -1,0 +1,21 @@
+{
+  "step1": {
+    "pageTitle": "Testing journey step 1",
+    "heading": "Testing journey step 1",
+    "paragraph": "This is a testing journey. Click the button below to continue.",
+    "buttonLabel": "Go to next step"
+  },
+  "enterPassword": {
+    "pageTitle": "Testing journey enter password",
+    "heading": "Testing journey enter password",
+    "paragraph": "This is a testing journey. Enter your password to continue.",
+    "inputLabel": "Password",
+    "buttonLabel": "Submit"
+  },
+  "confirm": {
+    "pageTitle": "Testing journey confirmation",
+    "heading": "Testing journey confirmation",
+    "paragraph": "This is a testing journey. Click the button below to complete the journey.",
+    "buttonLabel": "Complete testing journey"
+  }
+}

@@ -1,6 +1,7 @@
 import { Scope } from "../../../commons/utils/authorize/getClaimsSchema.js";
 import { AcountDeleteJourneyState } from "../journeys/utils/stateMachines/account-delete.js";
 import { TestingJourneyState } from "../journeys/utils/stateMachines/testing-journey.js";
+import { PasskeyCreateState } from "../journeys/utils/stateMachines/passkey-create.js";
 
 type PathsMap = Record<string, { path: `/${string}` }>;
 
@@ -47,6 +48,19 @@ export const paths = {
         },
       },
     },
+    [Scope.passkeyCreate]: {
+      [PasskeyCreateState.passwordNotProvided]: {
+        // TODO check these paths with UCD
+        introduction: {
+          path: "/passkey-create/introduction",
+        },
+      },
+      [PasskeyCreateState.passwordProvided]: {
+        confirm: {
+          path: "/testing-journey/confirm",
+        },
+      },
+    },
     others: {
       goToClientCallback: { path: "/go-to-client-callback" },
     },
@@ -60,6 +74,7 @@ export const paths = {
     others: PathsMap;
     [Scope.testingJourney]: Record<TestingJourneyState, PathsMap>;
     [Scope.accountDelete]: Record<AcountDeleteJourneyState, PathsMap>;
+    [Scope.passkeyCreate]: Record<PasskeyCreateState, PathsMap>;
   };
   others: PathsMap;
 };
@@ -69,4 +84,6 @@ export const initialJourneyPaths: Record<Scope, string> = {
     paths.journeys[Scope.testingJourney].PASSWORD_NOT_PROVIDED.step1.path,
   [Scope.accountDelete]:
     paths.journeys[Scope.accountDelete].EMAIL_NOT_VERIFIED.introduction.path,
+  [Scope.passkeyCreate]:
+    paths.journeys[Scope.passkeyCreate].PASSWORD_NOT_PROVIDED.introduction.path,
 } as const;

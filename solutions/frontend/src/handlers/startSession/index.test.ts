@@ -52,6 +52,7 @@ vi.mock(import("../../utils/paths.js"), () => ({
   initialJourneyPaths: {
     "testing-journey": "/testing-journey/step-1",
     "account-delete": "/account-delete/step-1",
+    "passkey-create": "/passkey-create/step-1",
   },
 }));
 
@@ -71,6 +72,7 @@ vi.mock(
     Scope: {
       testingJourney: "testing-journey",
       accountDelete: "account-delete",
+      passkeyCreate: "passkey-create",
     },
   }),
 );
