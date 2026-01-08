@@ -1,9 +1,16 @@
 {% extends "templates/layout/base-page.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 
 {% set pageTitleName = 'journey:introduction.pageTitle' | translate %}
 
+{% set guidanceNoticeHtml %}
+  <p class="govuk-body">{{ 'journey:introduction.guidanceNoticeContent1' | translate }}</p>
+  <p class="govuk-body">{{ 'journey:introduction.guidanceNoticeContent2' | translate }}</p>
+{% endset %}
+
 {% block pageContent %}
+
   <h1 class="govuk-heading-l">{{ 'journey:introduction.heading' | translate }}</h1>
 
   {% set paragraphs = 'journey:introduction.paragraphs' | translate({ returnObjects: true }) %}
@@ -12,15 +19,64 @@
     <p class="govuk-body">{{ paragraph }}</p>
   {% endfor %}
 
-  <form method="post">
+  {{ govukDetails({
+      summaryText: 'journey:introduction.guidanceNoticeTitle' | translate,
+      html: guidanceNoticeHtml
+    })
+  }}
+
+  <form id="passkey-form">
     <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
+    <input type="hidden" name="credential" id="credential-input">
     {{ govukButton({
       text: 'journey:introduction.buttonLabel' | translate,
-      preventDoubleClick: true
+      preventDoubleClick: true,
+      attributes: {
+        id: "create-passkey-btn"
+      }
     }) }}
   </form>
 
   {% set exitJourneyUrl = globals.getRedirectToClientRedirectUri(authorizeErrors.TODO) %}
 
   <p class="govuk-body"><a href="{{ exitJourneyUrl }}" class="govuk-link govuk-link--no-visited-state">{{ 'journey:introduction.exitJourneyLinkText' | translate }}</a></p>
+{% endblock %}
+
+{% block bodyEnd %}
+  <script type="text/javascript" nonce='{{scriptNonce}}'>
+    document.getElementById('create-passkey-btn').addEventListener('click', async function(e) {
+      e.preventDefault();
+      alert("clicked")
+      
+{#       try { #}
+{#         const response = await fetch('/passkey-create/challenge', { #}
+{#           method: 'POST', #}
+{#           headers: { #}
+{#             'Content-Type': 'application/json', #}
+{#             'X-CSRF-Token': '{{ globals.csrfToken }}' #}
+{#           } #}
+{#         }); #}
+{#          #}
+{#         const options = await response.json(); #}
+{#          #}
+{#         const credential = await navigator.credentials.create({ #}
+{#           publicKey: options #}
+{#         }); #}
+{#          #}
+{#         document.getElementById('credential-input').value = JSON.stringify({ #}
+{#           id: credential.id, #}
+{#           rawId: Array.from(new Uint8Array(credential.rawId)), #}
+{#           response: { #}
+{#             attestationObject: Array.from(new Uint8Array(credential.response.attestationObject)), #}
+{#             clientDataJSON: Array.from(new Uint8Array(credential.response.clientDataJSON)) #}
+{#           }, #}
+{#           type: credential.type #}
+{#         }); #}
+{#          #}
+{#         document.getElementById('passkey-form').submit(); #}
+{#       } catch (error) { #}
+{#         console.error('Passkey creation failed:', error); #}
+{#       } #}
+    });
+  </script>
 {% endblock %}

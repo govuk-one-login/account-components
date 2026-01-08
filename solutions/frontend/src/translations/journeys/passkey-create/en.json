@@ -1,21 +1,15 @@
 {
-  "step1": {
-    "pageTitle": "Testing journey step 1",
-    "heading": "Testing journey step 1",
-    "paragraph": "This is a testing journey. Click the button below to continue.",
-    "buttonLabel": "Go to next step"
-  },
-  "enterPassword": {
-    "pageTitle": "Testing journey enter password",
-    "heading": "Testing journey enter password",
-    "paragraph": "This is a testing journey. Enter your password to continue.",
-    "inputLabel": "Password",
-    "buttonLabel": "Submit"
-  },
-  "confirm": {
-    "pageTitle": "Testing journey confirmation",
-    "heading": "Testing journey confirmation",
-    "paragraph": "This is a testing journey. Click the button below to complete the journey.",
-    "buttonLabel": "Complete testing journey"
+  "introduction": {
+    "back": "Back",
+    "pageTitle": "Set up a passkey",
+    "heading": "Set up a passkey",
+    "paragraphs": [
+      "You'll be asked to scan your face or fingerprint, or enter your device passcode, PIN or pattern."
+    ],
+    "buttonLabel": "Continue",
+    "guidanceNoticeTitle": "Where will my passkey be saved?",
+    "guidanceNoticeContent1": "Your passkey will be saved privately to you device or cloud account - such as your password manager.",
+    "guidanceNoticeContent2": "Your biometric data won't be shared with GOV.UK One Login or any services that you access with it.",
+    "exitJourneyLinkText": "Skip for now"
   }
 }
