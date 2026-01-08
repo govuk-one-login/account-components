@@ -114,10 +114,10 @@ jobs:
               "REPLAY_ATTACK_TABLE_NAME": "components-api-ReplayAttack",
               "TOKEN_ENDPOINT_URL": "http://localhost:6004/token",
               "JOURNEY_OUTCOME_ENDPOINT_URL": "http://localhost:6004/journeyoutcome",
-              "JWT_SIGNING_KEY_ALIAS": "alias/components-core/JWTSigningKey"
+              "JWT_SIGNING_KEY_ALIAS": "alias/components-core-JWTSigningKey"
             },
             "JourneyOutcomeLambda": {
-              "JWT_SIGNING_KEY_ALIAS": "alias/components-core/JWTSigningKey",
+              "JWT_SIGNING_KEY_ALIAS": "alias/components-core-JWTSigningKey",
               "TOKEN_ENDPOINT_URL": "http://localhost:6004/token",
               "JOURNEY_OUTCOME_ENDPOINT_URL": "http://localhost:6004/journeyoutcome",
               "JOURNEY_OUTCOME_TABLE_NAME": "components-core-JourneyOutcome"
