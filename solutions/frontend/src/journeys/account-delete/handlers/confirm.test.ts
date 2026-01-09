@@ -47,11 +47,6 @@ describe("confirm handlers", () => {
     };
     mockReply = {
       render: vi.fn().mockResolvedValue(undefined),
-      journeyStates: {
-        "account-delete": {
-          send: vi.fn(),
-        },
-      } as unknown as FastifyReply["journeyStates"],
     } as unknown as FastifyReply;
   });
 
@@ -106,30 +101,6 @@ describe("confirm handlers", () => {
         ],
       );
       expect(result).toBe(mockReply);
-    });
-
-    it("should throw if journey states are not available", async () => {
-      delete mockReply.journeyStates;
-
-      await expect(
-        confirmPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-        // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
-    });
-
-    it("should throw if account-delete journey state is not available", async () => {
-      mockReply.journeyStates = {};
-
-      await expect(
-        confirmPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-        // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
     });
 
     it.each([
