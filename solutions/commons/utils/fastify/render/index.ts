@@ -31,6 +31,7 @@ export const render = async function (
   env.addGlobal("cspNonce", this.cspNonce.script);
   env.addGlobal("styleNonce", this.cspNonce.style);
   env.addGlobal("globals", this.globals);
+  env.addGlobal("reply", this);
 
   // Required by templates in external packages
   env.addGlobal("govukRebrand", true);

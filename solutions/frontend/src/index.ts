@@ -33,6 +33,7 @@ import {
 import { paths } from "./utils/paths.js";
 import { getEnvironment } from "../../commons/utils/getEnvironment/index.js";
 import { FastifyPowertoolsLogger } from "../../commons/utils/fastify/powertoolsLogger/index.js";
+import { resolveEnvVarToBool } from "../../commons/utils/resolveEnvVarToBool/index.js";
 
 await configureI18n({
   [Lang.English]: {
@@ -70,6 +71,8 @@ export const initFrontend = async function () {
       htmlLang: request.i18n.language,
       authFrontEndUrl: process.env["AUTH_FRONTEND_URL"],
       analyticsCookieDomain: process.env["ANALYTICS_COOKIE_DOMAIN"],
+      ga4ContainerId: process.env["GA4_CONTAINER_ID"],
+      analyticsEnabled: resolveEnvVarToBool("ANALYTICS_ENABLED"),
     };
   });
   fastify.decorateReply("render", render);

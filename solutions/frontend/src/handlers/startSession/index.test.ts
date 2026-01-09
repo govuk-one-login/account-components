@@ -109,6 +109,7 @@ describe("startSession handler", () => {
       redirect_uris: ["https://client.com/callback"],
       client_name: "Test Client",
       jwks_uri: "https://client.com/.well-known/jwks.json",
+      consider_user_logged_in: false,
     };
 
     mockParse.mockImplementation((_, data: unknown) => data);

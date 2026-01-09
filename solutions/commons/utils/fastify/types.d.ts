@@ -27,6 +27,8 @@ declare module "fastify" {
       htmlLang?: string | undefined;
       authFrontEndUrl?: string | undefined;
       analyticsCookieDomain?: string | undefined;
+      ga4ContainerId?: string | undefined;
+      analyticsEnabled?: boolean | undefined;
       getRedirectToClientRedirectUri?: (
         error?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
       ) => string;
@@ -36,6 +38,17 @@ declare module "fastify" {
       [Scope.accountDelete]?: Actor<typeof accountDeleteStateMachine>;
     };
     client?: ClientEntry;
+    analytics?:
+      | Partial<{
+          contentId?: string;
+          isPageDataSensitive?: boolean;
+          taxonomyLevel1?: string;
+          taxonomyLevel2?: string;
+          taxonomyLevel3?: string;
+          dynamic?: boolean;
+          isSelectContentTrackingEnabled?: boolean;
+        }>
+      | undefined;
   }
 }
 

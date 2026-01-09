@@ -7,7 +7,8 @@
         "https://signin.integration.account.gov.uk/auth/callback"
       ],
       "client_name": "dummy_auth",
-      "jwks_uri": "https://signin.integration.account.gov.uk/.well-known/jwks.json"
+      "jwks_uri": "https://signin.integration.account.gov.uk/.well-known/jwks.json",
+      "consider_user_logged_in": false
     }
   ],
   "jti_nonce_ttl_in_seconds": 7200,
