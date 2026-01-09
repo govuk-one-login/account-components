@@ -46,6 +46,7 @@ export const paths = {
           path: "/delete-account/verify-email-address",
           analytics: {
             ...accountDeleteAnalyticsDefaults,
+            isPageDataSensitive: false,
             contentId: "bf64f1ae-1016-40f5-bd83-86e63e859507",
           },
         },
@@ -63,6 +64,7 @@ export const paths = {
           path: "/delete-account/enter-password",
           analytics: {
             ...accountDeleteAnalyticsDefaults,
+            isPageDataSensitive: false,
             contentId: "af085f33-01f4-453a-a99b-d82ff1f4144b",
           },
         },
