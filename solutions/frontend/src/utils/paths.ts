@@ -81,7 +81,7 @@ export const paths = {
       },
     },
     others: {
-      goToClientCallback: { path: "/go-to-client-callback" },
+      goToClientRedirectUri: { path: "/go-to-client-redirect-uri" },
     },
   },
   others: {

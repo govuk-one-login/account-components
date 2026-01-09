@@ -29,9 +29,14 @@ declare module "fastify" {
       analyticsCookieDomain?: string | undefined;
       ga4ContainerId?: string | undefined;
       analyticsEnabled?: boolean | undefined;
-      getRedirectToClientRedirectUri?: (
+      authorizeErrors?: typeof authorizeErrors | undefined;
+      buildRedirectToClientRedirectUri?: (
         error?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
       ) => string;
+      contactUrl?: string | undefined;
+      yourServicesUrl?: string | undefined;
+      securityUrl?: string | undefined;
+      dynatraceRumUrl?: string | undefined;
     };
     journeyStates?: {
       [Scope.testingJourney]?: Actor<typeof testingJourneyStateMachine>;

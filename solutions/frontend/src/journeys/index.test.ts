@@ -6,7 +6,7 @@ import type { FastifyInstance } from "fastify";
 import { testingJourney } from "./testing-journey/index.js";
 import { onRequest } from "./utils/onRequest.js";
 import { onSend } from "./utils/onSend.js";
-import { goToClientCallback } from "./goToClientCallback/handler.js";
+import { goToClientRedirectUriHandler } from "./goToClientRedirectUri/handler.js";
 import { paths } from "../utils/paths.js";
 
 vi.mock(import("./utils/onRequest.js"), () => ({
@@ -15,8 +15,8 @@ vi.mock(import("./utils/onRequest.js"), () => ({
 vi.mock(import("./utils/onSend.js"), () => ({
   onSend: vi.fn(),
 }));
-vi.mock(import("./goToClientCallback/handler.js"), () => ({
-  goToClientCallback: vi.fn(),
+vi.mock(import("./goToClientRedirectUri/handler.js"), () => ({
+  goToClientRedirectUriHandler: vi.fn(),
 }));
 
 describe("journeyRoutes plugin", () => {
@@ -24,6 +24,7 @@ describe("journeyRoutes plugin", () => {
   let mockAddHook: Mock;
   let mockRegister: Mock;
   let mockGet: Mock;
+  let mockPost: Mock;
   let mockRequest: any;
   let mockReply: any;
 
@@ -32,6 +33,7 @@ describe("journeyRoutes plugin", () => {
     mockAddHook = vi.fn();
     mockRegister = vi.fn();
     mockGet = vi.fn();
+    mockPost = vi.fn();
     mockRequest = {};
     mockReply = {};
 
@@ -39,6 +41,7 @@ describe("journeyRoutes plugin", () => {
       addHook: mockAddHook,
       register: mockRegister,
       get: mockGet,
+      post: mockPost,
     } as unknown as FastifyInstance;
   });
 
@@ -94,12 +97,16 @@ describe("journeyRoutes plugin", () => {
     expect(mockRegister).toHaveBeenCalledWith(accountDelete);
   });
 
-  it("registers goToClientCallback route", () => {
+  it("registers goToClientRedirectUriHandler routes", () => {
     journeyRoutes(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      paths.journeys.others.goToClientCallback.path,
-      goToClientCallback,
+      paths.journeys.others.goToClientRedirectUri.path,
+      goToClientRedirectUriHandler,
+    );
+    expect(mockPost).toHaveBeenCalledWith(
+      paths.journeys.others.goToClientRedirectUri.path,
+      goToClientRedirectUriHandler,
     );
   });
 });

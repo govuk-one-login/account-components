@@ -31,7 +31,7 @@
         </fieldset>
         <fieldset>
             <legend>Client</legend>
-            <select name="client_id">
+            <select name="client_id" aria-label="Client">
                 {% for client in availableClients %}
                     <option value="{{ client.client_id }}">{{ client.client_name }} ({{ client.client_id }})</option>
                 {% endfor %}

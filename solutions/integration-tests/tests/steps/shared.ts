@@ -95,3 +95,30 @@ Then("the page looks as expected", async ({ page }) => {
 Then("I click the browser's back button", async ({ page }) => {
   await page.goBack();
 });
+
+Given(
+  "I select the option beginning with {string} in the {string} select",
+  async ({ page }, selectOptionPartialLabel: string, label: string) => {
+    const select = page.getByLabel(label);
+
+    await expect(select).toHaveCount(1);
+
+    const options = await select.getByRole("option").all();
+    const optionsTextContent = (
+      await Promise.all(options.map((option) => option.textContent()))
+    ).filter((optionTextContent) => optionTextContent !== null);
+    const optionTextContent = optionsTextContent.find((optionTextContent) => {
+      return optionTextContent.startsWith(selectOptionPartialLabel);
+    });
+
+    if (!optionTextContent) {
+      expect(
+        false,
+        `Option begining with "${selectOptionPartialLabel}" not found in "${label}" select`,
+      ).toBe(true);
+      return;
+    }
+
+    await select.selectOption(optionTextContent);
+  },
+);

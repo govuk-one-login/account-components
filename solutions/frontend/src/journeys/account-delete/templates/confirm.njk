@@ -35,10 +35,12 @@
     }) }}
   </form>
 
-  {% set exitJourneyUrl = globals.getRedirectToClientRedirectUri(authorizeErrors.TODO) %}
+  {% set exitJourneyUrl = globals.buildRedirectToClientRedirectUri(globals.authorizeErrors.userAborted) %}
   {% set exitJourneyUrlQueryParams = exitJourneyUrl | getQueryParamsFromUrl %}
 
-  <form action="{{ exitJourneyUrl }}">
+  <form action="{{ exitJourneyUrl }}" method="post">
+    <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
+
     {% for key, value in exitJourneyUrlQueryParams %}
       <input type="hidden" name="{{ key }}" value="{{ value }}">
     {% endfor %}
@@ -48,7 +50,7 @@
       classes: "govuk-button--secondary",
       preventDoubleClick: true
     }) }}
-  </form>  
+  </form>   
 
-  <p class="govuk-body"><a href="{{ contactUrl }}" target="_blank" class="govuk-link govuk-link--no-visited-state">{{ 'journey:confirm.contactLinkText' | translate }}</a></p>
+  <p class="govuk-body"><a href="{{ globals.contactUrl }}" target="_blank" class="govuk-link govuk-link--no-visited-state">{{ 'journey:confirm.contactLinkText' | translate }}</a></p>
 {% endblock %}
