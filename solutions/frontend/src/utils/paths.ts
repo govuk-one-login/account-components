@@ -39,21 +39,21 @@ export const paths = {
           analytics: {
             ...accountDeleteAnalyticsDefaults,
             isPageDataSensitive: false,
-            contentId: "TODO",
+            contentId: "36280f17-e3ef-4ff7-832a-d22a42a97d1c",
           },
         },
         verifyEmailAddress: {
           path: "/delete-account/verify-email-address",
           analytics: {
             ...accountDeleteAnalyticsDefaults,
-            contentId: "TODO",
+            contentId: "bf64f1ae-1016-40f5-bd83-86e63e859507",
           },
         },
         resendEmailVerificationCode: {
           path: "/delete-account/resend-verification-code",
           analytics: {
             isPageDataSensitive: false,
-            contentId: "TODO",
+            contentId: "a5e9bf87-64bd-4f6e-98bd-87220a638085",
           },
         },
       },
@@ -63,7 +63,7 @@ export const paths = {
           path: "/delete-account/enter-password",
           analytics: {
             ...accountDeleteAnalyticsDefaults,
-            contentId: "TODO",
+            contentId: "af085f33-01f4-453a-a99b-d82ff1f4144b",
           },
         },
       },
@@ -74,7 +74,7 @@ export const paths = {
           analytics: {
             ...accountDeleteAnalyticsDefaults,
             isPageDataSensitive: false,
-            contentId: "TODO",
+            contentId: "9141ea01-aca4-46d6-b48d-044d3ac7ff7a",
           },
         },
       },
