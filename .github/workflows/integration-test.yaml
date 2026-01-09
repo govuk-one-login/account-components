@@ -60,7 +60,10 @@ jobs:
           AUTH_FRONTEND_URL=https://signin.account.gov.uk
           ANALYTICS_COOKIE_DOMAIN=localhost       
           ACCOUNT_MANAGEMENT_API_URL=https://am-stub.home.build.account.gov.uk        
-          CONTACT_URL=https://home.dev.account.gov.uk/contact-gov-uk-one-login               
+          CONTACT_URL=https://home.dev.account.gov.uk/contact-gov-uk-one-login     
+          PASSKEYS_RP_ID=localhost
+          PASSKEYS_RP_NAME="GOV.UK One Login (local)"          
+          PASSKEYS_EXPECTED_ORIGIN=http://localhost:6002                    
           EOF
 
       - name: Configure stubs environment

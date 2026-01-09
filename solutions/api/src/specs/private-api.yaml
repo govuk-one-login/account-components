@@ -269,7 +269,8 @@ paths:
                     response_types_supported: [code]
                     token_endpoint_auth_methods_supported: [private_key_jwt]
                     token_endpoint_auth_signing_alg_values_supported: [ES256]
-                    scopes_supported: [testing-journey, account-delete]
+                    scopes_supported:
+                      [testing-journey, account-delete, passkey-create]
                     grant_types_supported: [authorization_code]
 
 components:
@@ -400,7 +401,7 @@ components:
                 example: 1760718467000
               scope:
                 type: string
-                enum: ["account-delete", "testing-journey"]
+                enum: ["account-delete", "testing-journey", "passkey-create"]
                 description: The scope of the journey
             required: [timestamp, scope]
             additionalProperties: true

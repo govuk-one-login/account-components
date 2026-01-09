@@ -54,6 +54,9 @@ Mappings:
       analyticsCookieDomain: dev.account.gov.uk
       accountManagementApiUrl: https://am-stub.home.dev.account.gov.uk
       contactUrl: https://home.dev.account.gov.uk/contact-gov-uk-one-login
+      passkeysRpId: dev.account.gov.uk
+      passkeysRpName: "GOV.UK One Login (dev)"
+      passkeysExpectedOrigin: https://manage.dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
@@ -66,6 +69,9 @@ Mappings:
       analyticsCookieDomain: build.account.gov.uk
       accountManagementApiUrl: https://am-stub.home.build.account.gov.uk
       contactUrl: https://home.build.account.gov.uk/contact-gov-uk-one-login
+      passkeysRpId: build.account.gov.uk
+      passkeysRpName: "GOV.UK One Login (build)"
+      passkeysExpectedOrigin: https://manage.build.account.gov.uk
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
@@ -78,6 +84,9 @@ Mappings:
       analyticsCookieDomain: staging.account.gov.uk
       accountManagementApiUrl: "https://cgh8nx4500-vpce-0c9ce65be09f99db7.execute-api.eu-west-2.amazonaws.com/staging"
       contactUrl: https://home.staging.account.gov.uk/contact-gov-uk-one-login
+      passkeysRpId: staging.account.gov.uk
+      passkeysRpName: "GOV.UK One Login (staging)"
+      passkeysExpectedOrigin: https://manage.staging.account.gov.uk
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
@@ -90,6 +99,9 @@ Mappings:
       analyticsCookieDomain: integration.account.gov.uk
       accountManagementApiUrl: "https://z7lornzyy5-vpce-0e594accb3d775457.execute-api.eu-west-2.amazonaws.com/integration"
       contactUrl: https://home.integration.account.gov.uk/contact-gov-uk-one-login
+      passkeysRpId: integration.account.gov.uk
+      passkeysRpName: "GOV.UK One Login (integration)"
+      passkeysExpectedOrigin: https://manage.integration.account.gov.uk
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
@@ -102,6 +114,9 @@ Mappings:
       analyticsCookieDomain: account.gov.uk
       accountManagementApiUrl: "https://63qq2dsjo5-vpce-0d7972874707185a0.execute-api.eu-west-2.amazonaws.com/production"
       contactUrl: https://home.account.gov.uk/contact-gov-uk-one-login
+      passkeysRpId: account.gov.uk
+      passkeysRpName: "GOV.UK One Login"
+      passkeysExpectedOrigin: https://manage.account.gov.uk
 
 Conditions:
   UseCodeSigning:
@@ -471,6 +486,24 @@ Resources:
             ]
           CONTACT_URL:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, contactUrl]
+          PASSKEYS_RP_ID:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              passkeysRpId,
+            ]
+          PASSKEYS_RP_NAME:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              passkeysRpName,
+            ]
+          PASSKEYS_EXPECTED_ORIGIN:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              passkeysExpectedOrigin,
+            ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:

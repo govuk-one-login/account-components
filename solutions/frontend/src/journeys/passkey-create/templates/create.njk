@@ -1,0 +1,49 @@
+{% extends "templates/layout/base-page.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set pageTitleName = 'journey:create.pageTitle' | translate %}
+
+{% block pageContent %}
+  <h1 class="govuk-heading-l">{{ 'journey:create.heading' | translate }}</h1>
+
+  {% set paragraphs = 'journey:create.paragraphs' | translate({ returnObjects: true }) %}
+
+  {% for paragraph in paragraphs %}
+    <p class="govuk-body">{{ paragraph }}</p>
+  {% endfor %}
+
+  {{ govukButton({
+    text: 'journey:create.buttonLabel' | translate,
+    preventDoubleClick: true,
+    id: "registerPasskey"
+  }) }}
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.es5.umd.min.js" nonce='{{ cspNonce }}'></script>
+
+<script nonce='{{ cspNonce }}'>
+  async function registerPasskey() {
+    const registrationOptions = {{ registrationOptions | dump | safe }}
+    const registrationResponse = await SimpleWebAuthnBrowser.startRegistration(registrationOptions);
+
+    const formData = new URLSearchParams();
+    formData.append('_csrf', {{ globals.csrfToken | dump | safe }});
+    formData.append('registrationResponse', JSON.stringify(registrationResponse));
+
+    const verifyResponse = await fetch(window.location.href, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: formData
+    });
+
+    // TODOp better error handling
+
+    window.location.href = (await verifyResponse.json()).goTo
+  }
+
+  document.getElementById('registerPasskey').addEventListener('click', registerPasskey);
+</script>
+{% endblock %}

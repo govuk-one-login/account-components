@@ -4,6 +4,7 @@ import type { Scope, getClaimsSchema } from "../authorize/getClaimsSchema.ts";
 import type { Actor, AnyMachineSnapshot } from "xstate";
 import type { accountDeleteStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/account-delete.ts";
 import type { testingJourneyStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/testing-journey.ts";
+import type { passkeyCreateStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/passkey-create.ts";
 import type { ClientEntry } from "../../../config/schema/types.ts";
 import type { authorizeErrors } from "../authorize/authorizeErrors.ts";
 
@@ -34,6 +35,7 @@ declare module "fastify" {
     journeyStates?: {
       [Scope.testingJourney]?: Actor<typeof testingJourneyStateMachine>;
       [Scope.accountDelete]?: Actor<typeof accountDeleteStateMachine>;
+      [Scope.passkeyCreate]?: Actor<typeof passkeyCreateStateMachine>;
     };
     client?: ClientEntry;
   }
