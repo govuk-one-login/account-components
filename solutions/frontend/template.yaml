@@ -534,6 +534,7 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               passkeysExpectedOrigin,
+            ]
           YOUR_SERVICES_URL:
             !FindInMap [
               EnvironmentConfiguration,
