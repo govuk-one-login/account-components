@@ -7,10 +7,16 @@ import {
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
 import * as v from "valibot";
+import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
-  await reply.render("journeys/passkey-create/templates/create.njk", options);
+  await reply.render("journeys/passkey-create/templates/create.njk", {
+    ...options,
+    backLink: reply.globals.getRedirectToClientRedirectUri(
+      authorizeErrors.userAborted,
+    ),
+  });
 };
 
 export async function getHandler(request: FastifyRequest, reply: FastifyReply) {

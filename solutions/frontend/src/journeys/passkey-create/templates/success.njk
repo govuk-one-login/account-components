@@ -1,13 +1,10 @@
 {% extends "templates/layout/base-page.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
-{% from "govuk/components/panel/macro.njk" import govukPanel %}
 
 {% set pageTitleName = 'journey:success.pageTitle' | translate %}
 
 {% block pageContent %}
-  {{ govukPanel({
-      titleText: 'journey:success.heading' | translate
-  }) }}
+  <h1 class="govuk-heading-l">{{ 'journey:success.heading' | translate }}</h1>
 
   {% set paragraphs = 'journey:success.paragraphs' | translate({ returnObjects: true }) %}
 

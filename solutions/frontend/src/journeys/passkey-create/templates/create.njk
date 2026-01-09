@@ -1,5 +1,6 @@
 {% extends "templates/layout/base-page.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
 
 {% set pageTitleName = 'journey:create.pageTitle' | translate %}
 
@@ -12,11 +13,27 @@
     <p class="govuk-body">{{ paragraph }}</p>
   {% endfor %}
 
+  {% set guidanceNoticeParagraphs = 'journey:create.guidanceNoticeParagraphs' | translate({ returnObjects: true }) %}
+
+  {% set guidanceNoticeHtml %}
+    {% for paragraph in guidanceNoticeParagraphs %}
+      <p class="govuk-body">{{ paragraph }}</p>
+    {% endfor %}
+  {% endset %}
+
+  {{ govukDetails({
+    summaryText: 'journey:create.guidanceNoticeTitle' | translate,
+    html: guidanceNoticeHtml
+  }) }}  
+
   {{ govukButton({
     text: 'journey:create.buttonLabel' | translate,
     preventDoubleClick: true,
     id: "registerPasskey"
   }) }}
+
+  {% set exitJourneyUrl = globals.getRedirectToClientRedirectUri(globals.authorizeErrors.userAborted) %}
+  <p class="govuk-body"><a href="{{ exitJourneyUrl }}" class="govuk-link govuk-link--no-visited-state">{{ 'journey:create.exitJourneyLinkText' | translate }}</a></p>  
 {% endblock %}
 
 {% block scripts %}
