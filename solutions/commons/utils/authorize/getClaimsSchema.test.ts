@@ -29,6 +29,7 @@ describe("getClaimsSchema", () => {
     redirect_uris: ["https://example.com/callback"],
     client_name: "Test Client",
     jwks_uri: "https://example.com/jwks",
+    consider_user_logged_in: false,
   };
 
   const redirectUri = "https://example.com/callback";

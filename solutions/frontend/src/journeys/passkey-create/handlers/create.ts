@@ -11,9 +11,11 @@ import { authorizeErrors } from "../../../../../commons/utils/authorize/authoriz
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
+  assert.ok(reply.globals.buildRedirectToClientRedirectUri);
+
   await reply.render("journeys/passkey-create/templates/create.njk", {
     ...options,
-    backLink: reply.globals.getRedirectToClientRedirectUri(
+    backLink: reply.globals.buildRedirectToClientRedirectUri(
       authorizeErrors.userAborted,
     ),
   });

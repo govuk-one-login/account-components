@@ -98,6 +98,18 @@
           "pattern": "^(https|http)://(www\\.)?((localhost(:[0-9]+)?)|[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b)([-a-zA-Z0-9()@:%_+.~#?&/=]*)$",
           "minLength": 1,
           "maxLength": 255
+        },
+        "consider_user_logged_in": {
+          "description": "Boolean flag to determine if the user should be considered logged in",
+          "type": "boolean"
+        },
+        "homepage_url": {
+          "description": "Optional URL for the homepage",
+          "type": "string",
+          "format": "uri",
+          "pattern": "^(https|http)://(www\\.)?((localhost(:[0-9]+)?)|[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b)([-a-zA-Z0-9()@:%_+.~#?&/=]*)$",
+          "minLength": 1,
+          "maxLength": 255
         }
       },
       "required": [
@@ -105,7 +117,8 @@
         "scope",
         "redirect_uris",
         "client_name",
-        "jwks_uri"
+        "jwks_uri",
+        "consider_user_logged_in"
       ]
     }
   }

@@ -23,14 +23,22 @@ declare module "fastify" {
     ) => Promise<void>;
     globals: {
       staticHash?: string;
+      simpleWebAuthNStaticHash?: string;
       csrfToken?: string;
       currentUrl?: URL;
       htmlLang?: string | undefined;
       authFrontEndUrl?: string | undefined;
       analyticsCookieDomain?: string | undefined;
-      getRedirectToClientRedirectUri?: (
+      ga4ContainerId?: string | undefined;
+      analyticsEnabled?: boolean | undefined;
+      authorizeErrors?: typeof authorizeErrors | undefined;
+      buildRedirectToClientRedirectUri?: (
         error?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
       ) => string;
+      contactUrl?: string | undefined;
+      yourServicesUrl?: string | undefined;
+      securityUrl?: string | undefined;
+      dynatraceRumUrl?: string | undefined;
     };
     journeyStates?: {
       [Scope.testingJourney]?: Actor<typeof testingJourneyStateMachine>;
@@ -38,6 +46,17 @@ declare module "fastify" {
       [Scope.passkeyCreate]?: Actor<typeof passkeyCreateStateMachine>;
     };
     client?: ClientEntry;
+    analytics?:
+      | Partial<{
+          contentId?: string;
+          isPageDataSensitive?: boolean;
+          taxonomyLevel1?: string;
+          taxonomyLevel2?: string;
+          taxonomyLevel3?: string;
+          dynamic?: boolean;
+          isSelectContentTrackingEnabled?: boolean;
+        }>
+      | undefined;
   }
 }
 

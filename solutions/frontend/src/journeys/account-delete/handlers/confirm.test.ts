@@ -47,16 +47,11 @@ describe("confirm handlers", () => {
     };
     mockReply = {
       render: vi.fn().mockResolvedValue(undefined),
-      journeyStates: {
-        "account-delete": {
-          send: vi.fn(),
-        },
-      } as unknown as FastifyReply["journeyStates"],
     } as unknown as FastifyReply;
   });
 
   describe("confirmGetHandler", () => {
-    it("should render confirm template with contactUrl", async () => {
+    it("should render confirm template", async () => {
       process.env["CONTACT_URL"] = "https://example.com/contact";
 
       const result = await confirmGetHandler(
@@ -66,9 +61,7 @@ describe("confirm handlers", () => {
 
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/confirm.njk",
-        {
-          contactUrl: "https://example.com/contact",
-        },
+        undefined,
       );
       expect(result).toBe(mockReply);
     });
@@ -108,30 +101,6 @@ describe("confirm handlers", () => {
         ],
       );
       expect(result).toBe(mockReply);
-    });
-
-    it("should throw if journey states are not available", async () => {
-      delete mockReply.journeyStates;
-
-      await expect(
-        confirmPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-        // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
-    });
-
-    it("should throw if account-delete journey state is not available", async () => {
-      mockReply.journeyStates = {};
-
-      await expect(
-        confirmPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-        // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
     });
 
     it.each([

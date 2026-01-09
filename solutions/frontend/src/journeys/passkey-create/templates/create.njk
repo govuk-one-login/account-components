@@ -32,12 +32,12 @@
     id: "registerPasskey"
   }) }}
 
-  {% set exitJourneyUrl = globals.getRedirectToClientRedirectUri(globals.authorizeErrors.userAborted) %}
+  {% set exitJourneyUrl = globals.buildRedirectToClientRedirectUri(globals.authorizeErrors.userAborted) %}
   <p class="govuk-body"><a href="{{ exitJourneyUrl }}" class="govuk-link govuk-link--no-visited-state">{{ 'journey:create.exitJourneyLinkText' | translate }}</a></p>  
 {% endblock %}
 
 {% block scripts %}
-<script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.es5.umd.min.js" nonce='{{ cspNonce }}'></script>
+<script src="/@simplewebauthn/browser/dist/bundle/index.es5.umd.min.js?{{ globals.simpleWebAuthNStaticHash }}" nonce='{{ cspNonce }}'></script>
 
 <script nonce='{{ cspNonce }}'>
   async function registerPasskey() {

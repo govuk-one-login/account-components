@@ -52,11 +52,16 @@ Mappings:
       authorizeEndpointUrl: https://api.manage.dev.account.gov.uk/authorize
       authFrontendUrl: https://signin.dev.account.gov.uk
       analyticsCookieDomain: dev.account.gov.uk
+      ga4ContainerId: "GTM-KD86CMZ"
+      analyticsEnabled: "1"
       accountManagementApiUrl: https://am-stub.home.dev.account.gov.uk
       contactUrl: https://home.dev.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: dev.account.gov.uk
       passkeysRpName: "GOV.UK One Login (dev)"
       passkeysExpectedOrigin: https://manage.dev.account.gov.uk
+      yourServicesUrl: https://home.dev.account.gov.uk/your-services
+      securityUrl: https://home.dev.account.gov.uk/security
+      dynatraceRumUrl: ""
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
@@ -67,11 +72,16 @@ Mappings:
       authorizeEndpointUrl: https://api.manage.build.account.gov.uk/authorize
       authFrontendUrl: https://signin.build.account.gov.uk
       analyticsCookieDomain: build.account.gov.uk
+      ga4ContainerId: "GTM-KD86CMZ"
+      analyticsEnabled: "1"
       accountManagementApiUrl: https://am-stub.home.build.account.gov.uk
       contactUrl: https://home.build.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: build.account.gov.uk
       passkeysRpName: "GOV.UK One Login (build)"
       passkeysExpectedOrigin: https://manage.build.account.gov.uk
+      yourServicesUrl: https://home.build.account.gov.uk/your-services
+      securityUrl: https://home.build.account.gov.uk/security
+      dynatraceRumUrl: ""
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
@@ -82,11 +92,16 @@ Mappings:
       authorizeEndpointUrl: https://api.manage.staging.account.gov.uk/authorize
       authFrontendUrl: https://signin.staging.account.gov.uk
       analyticsCookieDomain: staging.account.gov.uk
+      ga4ContainerId: "GTM-KD86CMZ"
+      analyticsEnabled: "1"
       accountManagementApiUrl: "https://cgh8nx4500-vpce-0c9ce65be09f99db7.execute-api.eu-west-2.amazonaws.com/staging"
       contactUrl: https://home.staging.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: staging.account.gov.uk
       passkeysRpName: "GOV.UK One Login (staging)"
       passkeysExpectedOrigin: https://manage.staging.account.gov.uk
+      yourServicesUrl: https://home.staging.account.gov.uk/your-services
+      securityUrl: https://home.staging.account.gov.uk/security
+      dynatraceRumUrl: TODO
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
@@ -97,11 +112,16 @@ Mappings:
       authorizeEndpointUrl: https://api.manage.integration.account.gov.uk/authorize
       authFrontendUrl: https://signin.integration.account.gov.uk
       analyticsCookieDomain: integration.account.gov.uk
+      ga4ContainerId: "TODO"
+      analyticsEnabled: "0"
       accountManagementApiUrl: "https://z7lornzyy5-vpce-0e594accb3d775457.execute-api.eu-west-2.amazonaws.com/integration"
       contactUrl: https://home.integration.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: integration.account.gov.uk
       passkeysRpName: "GOV.UK One Login (integration)"
       passkeysExpectedOrigin: https://manage.integration.account.gov.uk
+      yourServicesUrl: https://home.integration.account.gov.uk/your-services
+      securityUrl: https://home.integration.account.gov.uk/security
+      dynatraceRumUrl: TODO
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
@@ -112,11 +132,16 @@ Mappings:
       authorizeEndpointUrl: https://api.manage.account.gov.uk/authorize
       authFrontendUrl: https://signin.account.gov.uk
       analyticsCookieDomain: account.gov.uk
+      ga4ContainerId: "GTM-K4PBJH3"
+      analyticsEnabled: "1"
       accountManagementApiUrl: "https://63qq2dsjo5-vpce-0d7972874707185a0.execute-api.eu-west-2.amazonaws.com/production"
       contactUrl: https://home.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: account.gov.uk
       passkeysRpName: "GOV.UK One Login"
       passkeysExpectedOrigin: https://manage.account.gov.uk
+      yourServicesUrl: https://home.account.gov.uk/your-services
+      securityUrl: https://home.account.gov.uk/security
+      dynatraceRumUrl: TODO
 
 Conditions:
   UseCodeSigning:
@@ -478,6 +503,12 @@ Resources:
               !Ref Environment,
               analyticsCookieDomain,
             ]
+          GA4_CONTAINER_ID:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              ga4ContainerId,
+            ]
           ACCOUNT_MANAGEMENT_API_URL:
             !FindInMap [
               EnvironmentConfiguration,
@@ -503,6 +534,25 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               passkeysExpectedOrigin,
+          YOUR_SERVICES_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              yourServicesUrl,
+            ]
+          SECURITY_URL:
+            !FindInMap [EnvironmentConfiguration, !Ref Environment, securityUrl]
+          ANALYTICS_ENABLED:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              analyticsEnabled,
+            ]
+          DYNATRACE_RUM_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              dynatraceRumUrl,
             ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess

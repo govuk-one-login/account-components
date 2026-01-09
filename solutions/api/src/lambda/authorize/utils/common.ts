@@ -1,7 +1,7 @@
 import type { APIGatewayProxyResult } from "aws-lambda";
 import assert from "node:assert";
 import type { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
-import { getRedirectToClientRedirectUri } from "../../../../../commons/utils/authorize/getRedirectToClientRedirectUri.js";
+import { buildRedirectToClientRedirectUri } from "../../../../../commons/utils/authorize/buildRedirectToClientRedirectUri.js";
 
 assert.ok(
   process.env["AUTHORIZE_ERROR_PAGE_URL"],
@@ -32,7 +32,7 @@ export const getRedirectToClientRedirectUriResponse = (
 ): APIGatewayProxyResult => ({
   statusCode: 302,
   headers: {
-    location: getRedirectToClientRedirectUri(redirectUri, error, state, code),
+    location: buildRedirectToClientRedirectUri(redirectUri, error, state, code),
   },
   body: "",
 });
