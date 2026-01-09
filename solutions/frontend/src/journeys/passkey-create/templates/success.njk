@@ -15,12 +15,11 @@
     <p class="govuk-body">{{ paragraph }}</p>
   {% endfor %}
 
-  {{ govukButton({
-    text: 'journey:success.buttonLabel' | translate,
-    href: "TODO",
-    attributes: {
-      "data-nav": true,
-      "data-link": "TODO"
-    }
-  }) }}
+  <form method="post">
+    <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
+    {{ govukButton({
+      text: 'journey:success.buttonLabel' | translate,
+      preventDoubleClick: true
+    }) }}
+  </form>  
 {% endblock %}
