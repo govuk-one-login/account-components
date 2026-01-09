@@ -22,8 +22,8 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
   const registrationOptions = await generateRegistrationOptions({
     rpName: process.env["PASSKEYS_RP_NAME"],
     rpID: process.env["PASSKEYS_RP_ID"],
-    userName: request.session.claims.sub, // TODOp is this the right value to use here?
-    // TODOp set other options?
+    userName: request.session.claims.sub, // TODO is this the right value to use here?
+    // TODO set other options?
   });
 
   reply.journeyStates["passkey-create"].send({
@@ -67,12 +67,12 @@ export async function postHandler(
   });
 
   if (!verification.verified) {
-    // TODOp okay to log whole verification object here?
+    // TODO okay to log whole verification object here?
     request.log.error(verification, "Create passkey verification failed");
     throw new Error("Create passkey verification failed");
   }
 
-  // TODOp send passkey to account management API to save it (https://simplewebauthn.dev/docs/packages/server#3-post-registration-responsibilities)
+  // TODO send passkey to account management API to save it (https://simplewebauthn.dev/docs/packages/server#3-post-registration-responsibilities)
 
   reply.journeyStates["passkey-create"].send({
     type: "created",

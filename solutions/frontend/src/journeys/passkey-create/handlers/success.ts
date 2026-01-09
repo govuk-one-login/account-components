@@ -4,7 +4,7 @@ import { completeJourney } from "../../utils/completeJourney.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
-  await reply.render("journeys/passkey-create/templates/confirm.njk", options);
+  await reply.render("journeys/passkey-create/templates/success.njk", options);
 };
 
 export async function getHandler(

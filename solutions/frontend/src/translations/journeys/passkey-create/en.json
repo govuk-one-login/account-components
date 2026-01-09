@@ -1,4 +1,19 @@
 {
-  "create": {},
-  "success": {}
+  "create": {
+    "pageTitle": "Create a passkey",
+    "heading": "Create a passkey",
+    "paragraphs": [
+      "A passkey is a simple, secure replacement for your password that is stored safely on your device.",
+      "It allows you to sign in using just your fingerprint, face scan, or PIN, meaning you will not need to type in a password or extra verification codes."
+    ],
+    "buttonLabel": "Create passkey"
+  },
+  "success": {
+    "pageTitle": "Passkey successfully created",
+    "heading": "Passkey successfully created",
+    "paragraphs": [
+      "You have successfully created a passkey and it will be available to use next time you sign in."
+    ],
+    "buttonLabel": "Continue"
+  }
 }

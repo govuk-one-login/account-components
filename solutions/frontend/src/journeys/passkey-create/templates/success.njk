@@ -1,54 +1,26 @@
 {% extends "templates/layout/base-page.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/panel/macro.njk" import govukPanel %}
 
-{% set pageTitleName = 'journey:confirm.pageTitle' | translate %}
+{% set pageTitleName = 'journey:success.pageTitle' | translate %}
 
 {% block pageContent %}
-  <h1 class="govuk-heading-l">{{ 'journey:confirm.heading' | translate }}</h1>
+  {{ govukPanel({
+      titleText: 'journey:success.heading' | translate
+  }) }}
 
-  {% set paragraphs1 = 'journey:confirm.paragraphs1' | translate({ returnObjects: true }) %}
+  {% set paragraphs = 'journey:success.paragraphs' | translate({ returnObjects: true }) %}
 
-  {% for paragraph in paragraphs1 %}
+  {% for paragraph in paragraphs %}
     <p class="govuk-body">{{ paragraph }}</p>
   {% endfor %}
 
-  {% set listItems = 'journey:confirm.listItems' | translate({ returnObjects: true }) %}
-
-  <ul class="govuk-list govuk-list--bullet">
-    {% for listItem in listItems %}
-      <li>{{ listItem }}</li>
-    {% endfor %}
-  </ul>
-
-  {% set paragraphs2 = 'journey:confirm.paragraphs2' | translate({ returnObjects: true }) %}
-
-  {% for paragraph in paragraphs2 %}
-    <p class="govuk-body">{{ paragraph }}</p>
-  {% endfor %}
-
-  <form method="post">
-    <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
-    {{ govukButton({
-      text: 'journey:confirm.deleteButtonLabel' | translate,
-      classes: "govuk-button--warning",
-      preventDoubleClick: true
-    }) }}
-  </form>
-
-  {% set exitJourneyUrl = globals.getRedirectToClientRedirectUri(authorizeErrors.TODO) %}
-  {% set exitJourneyUrlQueryParams = exitJourneyUrl | getQueryParamsFromUrl %}
-
-  <form action="{{ exitJourneyUrl }}">
-    {% for key, value in exitJourneyUrlQueryParams %}
-      <input type="hidden" name="{{ key }}" value="{{ value }}">
-    {% endfor %}
-
-    {{ govukButton({
-      text: 'journey:confirm.cancelButtonLabel' | translate,
-      classes: "govuk-button--secondary",
-      preventDoubleClick: true
-    }) }}
-  </form>  
-
-  <p class="govuk-body"><a href="{{ contactUrl }}" target="_blank" class="govuk-link govuk-link--no-visited-state">{{ 'journey:confirm.contactLinkText' | translate }}</a></p>
+  {{ govukButton({
+    text: 'journey:success.buttonLabel' | translate,
+    href: "TODO",
+    attributes: {
+      "data-nav": true,
+      "data-link": "TODO"
+    }
+  }) }}
 {% endblock %}
