@@ -22,8 +22,6 @@ export async function confirmPostHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(reply.journeyStates?.["account-delete"]);
-
   assert.ok(request.session.claims);
   const accountManagementApiClient = new AccountManagementApiClient(
     request.session.claims.access_token,
