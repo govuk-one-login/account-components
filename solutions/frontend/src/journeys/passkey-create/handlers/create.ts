@@ -8,6 +8,10 @@ import {
 } from "@simplewebauthn/server";
 import * as v from "valibot";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
+import {
+  getFormErrorsFromValueAndSchema,
+  getFormErrorsList,
+} from "../../../utils/formErrorsHelpers.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
@@ -30,7 +34,7 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
   const registrationOptions = await generateRegistrationOptions({
     rpName: process.env["PASSKEYS_RP_NAME"],
     rpID: process.env["PASSKEYS_RP_ID"],
-    userName: request.session.claims.sub, // TODO is this the right value to use here?
+    userName: request.session.claims.email,
     // TODO set other options?
   });
 
@@ -47,6 +51,8 @@ export async function postHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
+  // TODO better error handling in this handler
+
   assert.ok(reply.journeyStates?.["passkey-create"]);
 
   const registrationOptions =
@@ -54,10 +60,24 @@ export async function postHandler(
       .registrationOptions;
   assert.ok(registrationOptions);
 
-  const body = v.parse(
-    v.object({ registrationResponse: v.string() }),
+  const bodySchema = v.object({
+    registrationResponse: v.pipe(v.string()),
+  });
+  const bodyFormErrors = getFormErrorsFromValueAndSchema(
     request.body,
+    bodySchema,
   );
+
+  if (bodyFormErrors) {
+    await render(reply, {
+      errors: bodyFormErrors,
+      errorList: getFormErrorsList(bodyFormErrors),
+    });
+    return reply;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+  const body = request.body as v.InferOutput<typeof bodySchema>;
 
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   const registrationResponse = JSON.parse(
@@ -86,8 +106,6 @@ export async function postHandler(
     type: "created",
   });
 
-  reply
-    .header("Content-Type", "application/json")
-    .send({ goTo: paths.journeys["passkey-create"].CREATED.success.path });
+  reply.redirect(paths.journeys["passkey-create"].CREATED.success.path);
   return reply;
 }

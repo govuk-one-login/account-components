@@ -24,12 +24,17 @@
   {{ govukDetails({
     summaryText: 'journey:create.guidanceNoticeTitle' | translate,
     html: guidanceNoticeHtml
-  }) }}  
+  }) }}
+
+  <form method="post" style="display: none;" id="verifyPasskeyForm">
+    <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
+    <input type="hidden" name="registrationResponse">
+  </form>
 
   {{ govukButton({
     text: 'journey:create.buttonLabel' | translate,
     preventDoubleClick: true,
-    id: "registerPasskey"
+    id: "registerPasskeyTrigger"
   }) }}
 
   {% set exitJourneyUrl = globals.buildRedirectToClientRedirectUri(globals.authorizeErrors.userAborted) %}
@@ -43,24 +48,13 @@
   async function registerPasskey() {
     const registrationOptions = {{ registrationOptions | dump | safe }}
     const registrationResponse = await SimpleWebAuthnBrowser.startRegistration(registrationOptions);
-
-    const formData = new URLSearchParams();
-    formData.append('_csrf', {{ globals.csrfToken | dump | safe }});
-    formData.append('registrationResponse', JSON.stringify(registrationResponse));
-
-    const verifyResponse = await fetch(window.location.href, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: formData
-    });
-
     // TODO better error handling
 
-    window.location.href = (await verifyResponse.json()).goTo
+    const verifyPasskeyForm = document.getElementById('verifyPasskeyForm')
+    verifyPasskeyForm.querySelector('input[name="registrationResponse"]').value = JSON.stringify(registrationResponse)
+    verifyPasskeyForm.submit()
   }
 
-  document.getElementById('registerPasskey').addEventListener('click', registerPasskey);
+  document.getElementById('registerPasskeyTrigger').addEventListener('click', registerPasskey);
 </script>
 {% endblock %}
