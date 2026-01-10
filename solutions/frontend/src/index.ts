@@ -14,6 +14,7 @@ import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import { oneYearInSeconds } from "../../commons/utils/constants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
+import simpleWebAuthNStaticHash from "./utils/@simplewebauthn-browser-static-hash.json" with { type: "json" };
 import { csrfProtection } from "../../commons/utils/fastify/csrfProtection/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 import i18next from "i18next";
@@ -68,6 +69,7 @@ export const initFrontend = async function () {
     reply.globals = {
       ...reply.globals,
       staticHash: staticHash.hash,
+      simpleWebAuthNStaticHash: simpleWebAuthNStaticHash.hash,
       currentUrl: getCurrentUrl(request),
       htmlLang: request.i18n.language,
       authFrontEndUrl: process.env["AUTH_FRONTEND_URL"],
@@ -126,6 +128,19 @@ export const initFrontend = async function () {
       path.join(import.meta.dirname, "/node_modules/govuk-frontend/dist/govuk"),
     ],
     prefix: "/public/scripts",
+    decorateReply: false,
+    cacheControl: false,
+    setHeaders: addStaticAssetsCachingHeaders,
+  });
+
+  fastify.register(fastifyStatic, {
+    root: [
+      path.join(
+        import.meta.dirname,
+        "/node_modules/@simplewebauthn/browser/dist/bundle",
+      ),
+    ],
+    prefix: "/@simplewebauthn/browser/dist/bundle",
     decorateReply: false,
     cacheControl: false,
     setHeaders: addStaticAssetsCachingHeaders,
