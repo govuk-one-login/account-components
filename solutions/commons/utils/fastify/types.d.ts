@@ -22,6 +22,8 @@ declare module "fastify" {
     ) => Promise<void>;
     globals: {
       staticHash?: string;
+      assetsHash?: string;
+      publicScriptsHash?: string;
       csrfToken?: string;
       currentUrl?: URL;
       htmlLang?: string | undefined;
