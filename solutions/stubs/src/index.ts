@@ -90,7 +90,9 @@ export const initStubs = async function () {
     prefix: "/static",
     decorateReply: false,
     cacheControl: false,
-    setHeaders: addStaticAssetsCachingHeaders,
+    setHeaders: (res) => {
+      addStaticAssetsCachingHeaders(res);
+    },
   });
 
   fastify.get("/healthcheck", async function (_request, reply) {
