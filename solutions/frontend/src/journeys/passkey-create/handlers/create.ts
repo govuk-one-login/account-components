@@ -34,6 +34,7 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
     rpName: process.env["PASSKEYS_RP_NAME"],
     rpID: process.env["PASSKEYS_RP_ID"],
     userName: request.session.claims.email,
+    userID: Buffer.from(request.session.claims.public_sub), // TODO is this the right value to use here?
     // TODO set other options?
   });
 
