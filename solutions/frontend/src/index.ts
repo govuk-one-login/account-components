@@ -164,7 +164,9 @@ export const initFrontend = async function () {
     prefix: "/@simplewebauthn/browser",
     decorateReply: false,
     cacheControl: false,
-    setHeaders: addStaticAssetsCachingHeaders,
+    setHeaders: (res) => {
+      addStaticAssetsCachingHeaders(res);
+    },
   });
 
   fastify.get("/healthcheck", async function (_request, reply) {
