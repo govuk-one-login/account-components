@@ -16,24 +16,62 @@ describe("addStaticAssetsCachingHeaders", () => {
     vi.clearAllMocks();
   });
 
-  it("should set cache headers when environment is not local", async () => {
-    const { getEnvironment } = await import("../../getEnvironment/index.js");
-    vi.mocked(getEnvironment).mockReturnValue("production");
+  describe("when environment is not local", () => {
+    beforeEach(async () => {
+      const { getEnvironment } = await import("../../getEnvironment/index.js");
+      vi.mocked(getEnvironment).mockReturnValue("production");
+    });
 
-    addStaticAssetsCachingHeaders(mockRes);
+    it("should set cache headers with default cache=true", () => {
+      addStaticAssetsCachingHeaders(mockRes);
 
-    expect(mockSetHeader).toHaveBeenCalledExactlyOnceWith(
-      "cache-control",
-      "public, max-age=86400, immutable",
-    );
+      expect(mockSetHeader).toHaveBeenCalledExactlyOnceWith(
+        "cache-control",
+        "public, max-age=86400, immutable",
+      );
+    });
+
+    it("should set cache headers when cache=true", () => {
+      addStaticAssetsCachingHeaders(mockRes, true);
+
+      expect(mockSetHeader).toHaveBeenCalledExactlyOnceWith(
+        "cache-control",
+        "public, max-age=86400, immutable",
+      );
+    });
+
+    it("should set no-cache headers when cache=false", () => {
+      addStaticAssetsCachingHeaders(mockRes, false);
+
+      expect(mockSetHeader).toHaveBeenCalledExactlyOnceWith(
+        "cache-control",
+        "no-cache",
+      );
+    });
   });
 
-  it("should not set cache headers when environment is local", async () => {
-    const { getEnvironment } = await import("../../getEnvironment/index.js");
-    vi.mocked(getEnvironment).mockReturnValue("local");
+  describe("when environment is local", () => {
+    beforeEach(async () => {
+      const { getEnvironment } = await import("../../getEnvironment/index.js");
+      vi.mocked(getEnvironment).mockReturnValue("local");
+    });
 
-    addStaticAssetsCachingHeaders(mockRes);
+    it("should not set headers with default cache=true", () => {
+      addStaticAssetsCachingHeaders(mockRes);
 
-    expect(mockSetHeader).not.toHaveBeenCalled();
+      expect(mockSetHeader).not.toHaveBeenCalled();
+    });
+
+    it("should not set headers when cache=true", () => {
+      addStaticAssetsCachingHeaders(mockRes, true);
+
+      expect(mockSetHeader).not.toHaveBeenCalled();
+    });
+
+    it("should not set headers when cache=false", () => {
+      addStaticAssetsCachingHeaders(mockRes, false);
+
+      expect(mockSetHeader).not.toHaveBeenCalled();
+    });
   });
 });

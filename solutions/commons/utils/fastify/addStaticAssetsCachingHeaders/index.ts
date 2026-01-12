@@ -4,11 +4,14 @@ import type fastifyStatic from "@fastify/static";
 
 export const addStaticAssetsCachingHeaders = (
   res: fastifyStatic.SetHeadersResponse,
+  cache = true,
 ) => {
   if (getEnvironment() !== "local") {
     res.setHeader(
       "cache-control",
-      `public, max-age=${oneDayInSeconds.toString()}, immutable`,
+      cache
+        ? `public, max-age=${oneDayInSeconds.toString()}, immutable`
+        : "no-cache",
     );
   }
 };
