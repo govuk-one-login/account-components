@@ -23,7 +23,7 @@ declare module "fastify" {
     ) => Promise<void>;
     globals: {
       staticHash?: string;
-      simpleWebAuthNStaticHash?: string;
+      simpleWebAuthNBrowserStaticHash?: string;
       csrfToken?: string;
       currentUrl?: URL;
       htmlLang?: string | undefined;

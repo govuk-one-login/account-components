@@ -41,7 +41,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="/@simplewebauthn/browser/dist/bundle/index.es5.umd.min.js?{{ globals.simpleWebAuthNStaticHash }}" nonce='{{ cspNonce }}'></script>
+<script src="/@simplewebauthn/browser/index.es5.umd.min.js?{{ globals.simpleWebAuthNBrowserStaticHash }}" nonce='{{ cspNonce }}'></script>
 
 <script nonce='{{ cspNonce }}'>
   if (SimpleWebAuthnBrowser.browserSupportsWebAuthn()) {

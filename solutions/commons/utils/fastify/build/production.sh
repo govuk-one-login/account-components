@@ -9,8 +9,8 @@ bash ../commons/utils/fastify/build/shared.sh
 tar cvf - src/static | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > src/utils/static-hash.json
 
 # Create a hash of the node_modules/@simplewebauthn/browser/dist/bundle folder and write it
-# into a JSON object in src/utils/@simplewebauthn-browser-static-hash.json
-tar cvf - node_modules/@simplewebauthn/browser/dist/bundle | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > src/utils/@simplewebauthn-browser-static-hash.json
+# into a JSON object in src/utils/static-hash-simplewebauthn-browser.json
+tar cvf - node_modules/@simplewebauthn/browser/dist/bundle | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > src/utils/static-hash-simplewebauthn-browser.json
 
 # Bundle JavaScript
 rolldown -c rolldown.config.ts
