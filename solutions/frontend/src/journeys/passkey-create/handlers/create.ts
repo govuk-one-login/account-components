@@ -1,7 +1,6 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
-import type { RegistrationResponseJSON } from "@simplewebauthn/server";
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
@@ -51,8 +50,6 @@ export async function postHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  // TODO better error handling in this handler
-
   assert.ok(reply.journeyStates?.["passkey-create"]);
 
   const registrationOptions =
@@ -61,7 +58,7 @@ export async function postHandler(
   assert.ok(registrationOptions);
 
   const bodySchema = v.object({
-    registrationResponse: v.pipe(v.string()),
+    registrationResponse: v.pipe(v.string(), v.parseJson()),
   });
   const bodyFormErrors = getFormErrorsFromValueAndSchema(
     request.body,
@@ -76,26 +73,23 @@ export async function postHandler(
     return reply;
   }
 
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const body = request.body as v.InferOutput<typeof bodySchema>;
-
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const registrationResponse = JSON.parse(
-    body.registrationResponse,
-  ) as RegistrationResponseJSON;
+  const body = v.parse(bodySchema, request.body);
 
   assert.ok(process.env["PASSKEYS_RP_ID"]);
   assert.ok(process.env["PASSKEYS_EXPECTED_ORIGIN"]);
 
   const verification = await verifyRegistrationResponse({
-    response: registrationResponse,
+    // @ts-expect-error - the library's typing is too strict. This function
+    // should accept any type for `response` because it is this function
+    // which does the validation.
+    response: body.registrationResponse,
     expectedChallenge: registrationOptions.challenge,
     expectedOrigin: process.env["PASSKEYS_EXPECTED_ORIGIN"],
     expectedRPID: process.env["PASSKEYS_RP_ID"],
   });
 
   if (!verification.verified) {
-    // TODO okay to log whole verification object here?
+    // TODO okay to log whole verification object here or does it contain PII or senstive information?
     request.log.error(verification, "Create passkey verification failed");
     throw new Error("Create passkey verification failed");
   }

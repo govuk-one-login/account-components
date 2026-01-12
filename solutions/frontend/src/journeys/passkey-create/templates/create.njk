@@ -26,16 +26,15 @@
     html: guidanceNoticeHtml
   }) }}
 
-  <form method="post" style="display: none;" id="verifyPasskeyForm">
+  <form method="post" id="verifyPasskeyForm">
     <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
-    <input type="hidden" name="registrationResponse">
-  </form>
+    <input type="hidden" name="registrationResponse" value='""'>
 
-  {{ govukButton({
-    text: 'journey:create.buttonLabel' | translate,
-    preventDoubleClick: true,
-    id: "registerPasskeyTrigger"
-  }) }}
+    {{ govukButton({
+      text: 'journey:create.buttonLabel' | translate,
+      preventDoubleClick: true
+    }) }}    
+  </form>
 
   {% set exitJourneyUrl = globals.buildRedirectToClientRedirectUri(globals.authorizeErrors.userAborted) %}
   <p class="govuk-body"><a href="{{ exitJourneyUrl }}" class="govuk-link govuk-link--no-visited-state">{{ 'journey:create.exitJourneyLinkText' | translate }}</a></p>  
@@ -45,16 +44,21 @@
 <script src="/@simplewebauthn/browser/dist/bundle/index.es5.umd.min.js?{{ globals.simpleWebAuthNStaticHash }}" nonce='{{ cspNonce }}'></script>
 
 <script nonce='{{ cspNonce }}'>
-  async function registerPasskey() {
-    const registrationOptions = {{ registrationOptions | dump | safe }}
-    const registrationResponse = await SimpleWebAuthnBrowser.startRegistration(registrationOptions);
-    // TODO better error handling
+  if (SimpleWebAuthnBrowser.browserSupportsWebAuthn()) {
+    async function registerPasskey(event) {
+      event.preventDefault();
 
-    const verifyPasskeyForm = document.getElementById('verifyPasskeyForm')
-    verifyPasskeyForm.querySelector('input[name="registrationResponse"]').value = JSON.stringify(registrationResponse)
-    verifyPasskeyForm.submit()
+      const registrationOptions = {{ registrationOptions | dump | safe }};
+      const registrationResponse = await SimpleWebAuthnBrowser.startRegistration(registrationOptions);
+
+      const verifyPasskeyForm = document.getElementById('verifyPasskeyForm');
+      verifyPasskeyForm.querySelector('input[name="registrationResponse"]').value = JSON.stringify(registrationResponse);
+      verifyPasskeyForm.submit();
+    }
+
+    document.getElementById('verifyPasskeyForm').addEventListener('submit', registerPasskey);
+  } else {
+    // TODO do something in this scenario e.g. hide the form and show an error message
   }
-
-  document.getElementById('registerPasskeyTrigger').addEventListener('click', registerPasskey);
 </script>
 {% endblock %}
