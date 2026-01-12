@@ -1,5 +1,6 @@
 Feature: Page not found
 
+  # Should fail because of known accessibility issues
   @failMobile
   Scenario: Visit a page which doesn't exist
     Given I go to the "Non-existent page" page

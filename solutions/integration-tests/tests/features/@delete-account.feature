@@ -1,5 +1,6 @@
 Feature: Delete account
 
+  # Should fail because of known accessibility issues
   @failMobile
   Scenario: Successfully delete account
     Given I go to the journey initiator

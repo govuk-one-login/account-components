@@ -76,8 +76,7 @@ export async function verifyEmailAddressPostHandler(
     return reply;
   }
 
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  const body = request.body as v.InferOutput<typeof bodySchema>;
+  const body = v.parse(bodySchema, request.body);
 
   assert.ok(request.session.claims);
   const accountManagementApiClient = new AccountManagementApiClient(
