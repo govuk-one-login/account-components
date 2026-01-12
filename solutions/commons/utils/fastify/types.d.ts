@@ -24,6 +24,8 @@ declare module "fastify" {
     globals: {
       staticHash?: string;
       simpleWebAuthNBrowserStaticHash?: string;
+      assetsHash?: string;
+      publicScriptsHash?: string;
       csrfToken?: string;
       currentUrl?: URL;
       htmlLang?: string | undefined;

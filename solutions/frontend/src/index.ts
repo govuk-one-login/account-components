@@ -15,6 +15,9 @@ import * as path from "node:path";
 import { oneYearInSeconds } from "../../commons/utils/constants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
 import simpleWebAuthNBrowserStaticHash from "./utils/static-hash-simplewebauthn-browser.json" with { type: "json" };
+import staticHashGovUkFrontendAssets from "./utils/static-hash-govuk-frontend-assets.json" with { type: "json" };
+import staticHashGovUkFrontend from "./utils/static-hash-govuk-frontend.json" with { type: "json" };
+import staticHashGovUkOneLoginFrontendAnalytics from "./utils/static-hash-govuk-one-login-frontend-analytics.json" with { type: "json" };
 import { csrfProtection } from "../../commons/utils/fastify/csrfProtection/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 import i18next from "i18next";
@@ -70,6 +73,10 @@ export const initFrontend = async function () {
       ...reply.globals,
       staticHash: staticHash.hash,
       simpleWebAuthNBrowserStaticHash: simpleWebAuthNBrowserStaticHash.hash,
+      assetsHash: staticHashGovUkFrontendAssets.hash,
+      publicScriptsHash:
+        staticHashGovUkFrontend.hash +
+        staticHashGovUkOneLoginFrontendAnalytics.hash,
       currentUrl: getCurrentUrl(request),
       htmlLang: request.i18n.language,
       authFrontEndUrl: process.env["AUTH_FRONTEND_URL"],
@@ -203,6 +210,11 @@ export const initFrontend = async function () {
           getEnvironment() === "local"
             ? ["'self'", "http://localhost:*"]
             : ["'self'", "https://*.account.gov.uk"],
+        ...(getEnvironment() === "local"
+          ? {
+              upgradeInsecureRequests: null,
+            }
+          : {}),
       },
     },
     dnsPrefetchControl: {

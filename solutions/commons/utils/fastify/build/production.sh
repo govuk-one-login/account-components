@@ -12,6 +12,18 @@ tar cvf - src/static | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > s
 # into a JSON object in src/utils/static-hash-simplewebauthn-browser.json
 tar cvf - node_modules/@simplewebauthn/browser/dist/bundle | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > src/utils/static-hash-simplewebauthn-browser.json
 
+# Create a hash of the node_modules/govuk-frontend/dist/govuk/assets folder and write it
+# into a JSON object in src/utils/static-hash-govuk-frontend-assets.json
+tar cvf - node_modules/govuk-frontend/dist/govuk/assets | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > src/utils/static-hash-govuk-frontend-assets.json
+
+# Create a hash of the node_modules/@govuk-one-login/frontend-analytics/lib folder and write it
+# into a JSON object in src/utils/static-hash-govuk-one-login-frontend-analytics.json
+tar cvf - node_modules/@govuk-one-login/frontend-analytics/lib | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > src/utils/static-hash-govuk-one-login-frontend-analytics.json
+
+# Create a hash of the node_modules/govuk-frontend/dist/govuk folder and write it
+# into a JSON object in src/utils/static-hash-govuk-frontend.json
+tar cvf - node_modules/govuk-frontend/dist/govuk | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > src/utils/static-hash-govuk-frontend.json
+
 # Bundle JavaScript
 rolldown -c rolldown.config.ts
 

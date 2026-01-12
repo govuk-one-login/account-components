@@ -94,13 +94,13 @@
 {% block bodyEnd %}
     {% block scripts %}{% endblock %}
 
-    <script type="module" src="/public/scripts/govuk-frontend.min.js" nonce='{{ cspNonce }}'></script>
+    <script type="module" src="/public/scripts/govuk-frontend.min.js?{{ globals.publicScriptsHash }}" nonce='{{ cspNonce }}'></script>
 
     <script type="module"  nonce='{{ cspNonce }}'>
-      import { initAll } from '/public/scripts/govuk-frontend.min.js'
+      import { initAll } from '/public/scripts/govuk-frontend.min.js?{{ globals.publicScriptsHash }}'
       initAll()
     </script>
-    <script src="/public/scripts/analytics.js" nonce='{{ cspNonce }}'></script>
+    <script src="/public/scripts/analytics.js?{{ globals.publicScriptsHash }}" nonce='{{ cspNonce }}'></script>
     <script nonce='{{ cspNonce }}'>
       {% if backLinkJS %}
         var backLink = document.querySelector('.js-back-link');

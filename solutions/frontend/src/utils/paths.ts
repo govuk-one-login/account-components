@@ -15,7 +15,7 @@ const analyticsDefaults: FastifyReply["analytics"] = {
 
 const accountDeleteAnalyticsDefaults: FastifyReply["analytics"] = {
   ...analyticsDefaults,
-  taxonomyLevel2: "self-deletion",
+  taxonomyLevel2: "SSAD",
   isPageDataSensitive: false,
 };
 

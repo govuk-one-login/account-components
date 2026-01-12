@@ -15,6 +15,7 @@ import { clientJwks } from "./clientJwks/index.js";
 import { clientCallback } from "./clientCallback/index.js";
 import { getCurrentUrl } from "../../commons/utils/fastify/getCurrentUrl/index.js";
 import { FastifyPowertoolsLogger } from "../../commons/utils/fastify/powertoolsLogger/index.js";
+import { getEnvironment } from "../../commons/utils/getEnvironment/index.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
@@ -38,6 +39,11 @@ export const initStubs = async function () {
         objectSrc: ["'none'"],
         connectSrc: ["'self'"],
         formAction: ["'self'"],
+        ...(getEnvironment() === "local"
+          ? {
+              upgradeInsecureRequests: null,
+            }
+          : {}),
       },
     },
     dnsPrefetchControl: {
