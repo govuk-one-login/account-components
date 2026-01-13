@@ -23,6 +23,7 @@
     "@fastify/helmet": "^13.0.2",
     "@fastify/session": "^11.1.1",
     "@fastify/static": "^9.0.0",
+    "@govuk-one-login/frontend-device-intelligence": "^1.2.0",
     "@govuk-one-login/frontend-ui": "^4.2.2",
     "@smithy/node-http-handler": "^4.4.6",
     "aws-xray-sdk": "^3.12.0",

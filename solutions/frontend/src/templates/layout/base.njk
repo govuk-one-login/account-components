@@ -150,4 +150,9 @@
       });
     {% endif %}
   </script>
+  <script type="module" src="/fingerprint/index.js" nonce='{{ cspNonce }}'></script>
+  <script type="module" nonce='{{ cspNonce }}'>
+    import { setFingerprintCookie } from "/fingerprint/index.js";
+    setFingerprintCookie("{{globals.fingerprintCookieDomain}}");
+  </script>
 {% endblock %}

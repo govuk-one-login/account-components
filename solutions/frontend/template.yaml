@@ -59,6 +59,7 @@ Mappings:
       yourServicesUrl: https://home.dev.account.gov.uk/your-services
       securityUrl: https://home.dev.account.gov.uk/security
       dynatraceRumUrl: ""
+      fingerprintCookieDomain: "account.gov.uk"
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
@@ -76,6 +77,7 @@ Mappings:
       yourServicesUrl: https://home.build.account.gov.uk/your-services
       securityUrl: https://home.build.account.gov.uk/security
       dynatraceRumUrl: ""
+      fingerprintCookieDomain: "account.gov.uk"
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
@@ -93,6 +95,7 @@ Mappings:
       yourServicesUrl: https://home.staging.account.gov.uk/your-services
       securityUrl: https://home.staging.account.gov.uk/security
       dynatraceRumUrl: TODO
+      fingerprintCookieDomain: "account.gov.uk"
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
@@ -110,6 +113,7 @@ Mappings:
       yourServicesUrl: https://home.integration.account.gov.uk/your-services
       securityUrl: https://home.integration.account.gov.uk/security
       dynatraceRumUrl: TODO
+      fingerprintCookieDomain: "account.gov.uk"
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
@@ -127,6 +131,7 @@ Mappings:
       yourServicesUrl: https://home.account.gov.uk/your-services
       securityUrl: https://home.account.gov.uk/security
       dynatraceRumUrl: TODO
+      fingerprintCookieDomain: "account.gov.uk"
 
 Conditions:
   UseCodeSigning:
@@ -521,6 +526,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               dynatraceRumUrl,
+            ]
+          FINGERPRINT_COOKIE_DOMAIN:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              fingerprintCookieDomain,
             ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
