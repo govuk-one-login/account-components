@@ -63,7 +63,7 @@ describe("getInactiveUsers handler", () => {
 
     expect(result).toStrictEqual({
       statusCode: 200,
-      body: JSON.stringify([]),
+      body: JSON.stringify({ inactiveUsers: [] }),
     });
   });
 });
