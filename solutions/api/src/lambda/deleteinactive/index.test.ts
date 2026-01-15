@@ -20,13 +20,15 @@ vi.mock("@aws-sdk/client-dynamodb", async (importOriginal) => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-imports
     await importOriginal<typeof import("@aws-sdk/client-dynamodb")>();
 
+  const mockClient = vi.fn(() => ({
+    send: vi.fn(),
+    config: {},
+    destroy: vi.fn(),
+  }));
+
   return {
     ...actual,
-    DynamoDBClient: {
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread,
-      ...actual.DynamoDBClient,
-      send: vi.fn(),
-    },
+    DynamoDBClient: Object.assign(mockClient, actual.DynamoDBClient),
   };
 });
 
