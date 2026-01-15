@@ -4,7 +4,10 @@ import type { APIGatewayProxyEvent, Context } from "aws-lambda";
 
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
-  logger: {},
+  logger: {
+    info: vi.fn(),
+    error: vi.fn(),
+  },
   loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
