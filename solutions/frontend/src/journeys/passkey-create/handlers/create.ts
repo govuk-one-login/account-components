@@ -12,6 +12,7 @@ import {
   getFormErrorsList,
 } from "../../../utils/formErrorsHelpers.js";
 import { isoUint8Array } from "@simplewebauthn/server/helpers";
+import { completeJourney } from "../../utils/completeJourney.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
@@ -99,7 +100,15 @@ export async function postHandler(
   if (!verification.verified) {
     // TODO okay to log whole verification object here or does it contain PII or senstive information?
     request.log.error(verification, "Create passkey verification failed");
-    throw new Error("Create passkey verification failed");
+    assert.ok(request.session.claims);
+
+    // TODO is this the right thing to do here or should we go to the callback with an error code, or allow the user to try again?
+    // If we allow the user to try again then the registration options should be regrenerated and resaved to the session to prevent replay attacks.
+    await completeJourney(request, reply, request.session.claims, [
+      {
+        passkeyCreated: false,
+      },
+    ]);
   }
 
   // TODO send passkey to account management API to save it (https://simplewebauthn.dev/docs/packages/server#3-post-registration-responsibilities)
