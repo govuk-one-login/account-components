@@ -12,7 +12,7 @@ import type { ErrorType } from "../../utils/common.js";
 export const handler = loggerAPIGatewayProxyHandlerWrapper(
   metricsAPIGatewayProxyHandlerWrapper(
     async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-      const dynamodbClient = new DynamoDBClient({});
+      const dynamodbClient = new DynamoDBClient();
       const activityLogClient = DynamoDBDocumentClient.from(dynamodbClient);
       const errorManager = new ErrorManager<Record<"ScanError", ErrorType>>({
         ScanError: {
