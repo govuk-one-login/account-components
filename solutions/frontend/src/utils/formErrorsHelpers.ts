@@ -1,8 +1,10 @@
 import * as v from "valibot";
 
-export const getFormErrorsFromValueAndSchema = (
+export const checkValueForFormErrors = <
+  TSchema extends v.ObjectSchema<v.ObjectEntries, string | undefined>,
+>(
   value: unknown,
-  schema: v.ObjectSchema<v.ObjectEntries, string | undefined>,
+  schema: TSchema,
 ) => {
   const result = v.safeParse(schema, value, {
     abortEarly: false,
@@ -10,15 +12,23 @@ export const getFormErrorsFromValueAndSchema = (
   });
 
   if (!result.success) {
-    return getFormErrors(
-      result.issues.map((issue) => ({
-        msg: issue.message,
-        fieldId: v.getDotPath(issue) ?? "",
-      })),
-    );
+    return {
+      success: false,
+      parsedValue: undefined,
+      formErrors: getFormErrors(
+        result.issues.map((issue) => ({
+          msg: issue.message,
+          fieldId: v.getDotPath(issue) ?? "",
+        })),
+      ),
+    } as const;
   }
 
-  return undefined;
+  return {
+    success: true,
+    parsedValue: result.output,
+    formErrors: undefined,
+  } as const;
 };
 
 export const getFormErrors = (errors: { msg: string; fieldId: string }[]) => {
