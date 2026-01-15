@@ -1,0 +1,64 @@
+{% extends "templates/layout/base-page.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% set pageTitleName = 'journey:create.pageTitle' | translate %}
+
+{% block pageContent %}
+  <h1 class="govuk-heading-l">{{ 'journey:create.heading' | translate }}</h1>
+
+  {% set paragraphs = 'journey:create.paragraphs' | translate({ returnObjects: true }) %}
+
+  {% for paragraph in paragraphs %}
+    <p class="govuk-body">{{ paragraph }}</p>
+  {% endfor %}
+
+  {% set guidanceNoticeParagraphs = 'journey:create.guidanceNoticeParagraphs' | translate({ returnObjects: true }) %}
+
+  {% set guidanceNoticeHtml %}
+    {% for paragraph in guidanceNoticeParagraphs %}
+      <p class="govuk-body">{{ paragraph }}</p>
+    {% endfor %}
+  {% endset %}
+
+  {{ govukDetails({
+    summaryText: 'journey:create.guidanceNoticeTitle' | translate,
+    html: guidanceNoticeHtml
+  }) }}
+
+  <form method="post" id="verifyPasskeyForm">
+    <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
+    <input type="hidden" name="registrationResponse" value='""'>
+
+    {{ govukButton({
+      text: 'journey:create.buttonLabel' | translate,
+      preventDoubleClick: true
+    }) }}    
+  </form>
+
+  {% set exitJourneyUrl = globals.buildRedirectToClientRedirectUri(globals.authorizeErrors.userAborted) %}
+  <p class="govuk-body"><a href="{{ exitJourneyUrl }}" class="govuk-link govuk-link--no-visited-state">{{ 'journey:create.exitJourneyLinkText' | translate }}</a></p>  
+{% endblock %}
+
+{% block scripts %}
+<script src="/@simplewebauthn/browser/index.es5.umd.min.js?{{ globals.simpleWebAuthNBrowserStaticHash }}" nonce='{{ cspNonce }}'></script>
+
+<script nonce='{{ cspNonce }}'>
+  if (SimpleWebAuthnBrowser.browserSupportsWebAuthn()) {
+    async function registerPasskey(event) {
+      event.preventDefault();
+
+      const registrationOptions = {{ registrationOptions | dump | safe }};
+      const registrationResponse = await SimpleWebAuthnBrowser.startRegistration(registrationOptions);
+
+      const verifyPasskeyForm = document.getElementById('verifyPasskeyForm');
+      verifyPasskeyForm.querySelector('input[name="registrationResponse"]').value = JSON.stringify(registrationResponse);
+      verifyPasskeyForm.submit();
+    }
+
+    document.getElementById('verifyPasskeyForm').addEventListener('submit', registerPasskey);
+  } else {
+    // TODO do something in this scenario e.g. hide the form and show an error message
+  }
+</script>
+{% endblock %}

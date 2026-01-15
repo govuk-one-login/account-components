@@ -1,6 +1,7 @@
 import type { FastifyReply } from "fastify";
 import { Scope } from "../../../commons/utils/authorize/getClaimsSchema.js";
 import { AcountDeleteJourneyState } from "../journeys/utils/stateMachines/account-delete.js";
+import { PasskeyCreateState } from "../journeys/utils/stateMachines/passkey-create.js";
 import { TestingJourneyState } from "../journeys/utils/stateMachines/testing-journey.js";
 
 type PathsMap = Record<
@@ -32,6 +33,18 @@ export const paths = {
       [TestingJourneyState.passwordProvided]: {
         confirm: {
           path: "/testing-journey/confirm",
+        },
+      },
+    },
+    [Scope.passkeyCreate]: {
+      [PasskeyCreateState.notCreated]: {
+        setUp: {
+          path: "/passkeys/set-up",
+        },
+      },
+      [PasskeyCreateState.created]: {
+        success: {
+          path: "/passkeys/success",
         },
       },
     },
@@ -93,6 +106,7 @@ export const paths = {
     others: PathsMap;
     [Scope.testingJourney]: Record<TestingJourneyState, PathsMap>;
     [Scope.accountDelete]: Record<AcountDeleteJourneyState, PathsMap>;
+    [Scope.passkeyCreate]: Record<PasskeyCreateState, PathsMap>;
   };
   others: PathsMap;
 };
@@ -102,4 +116,6 @@ export const initialJourneyPaths: Record<Scope, string> = {
     paths.journeys[Scope.testingJourney].PASSWORD_NOT_PROVIDED.step1.path,
   [Scope.accountDelete]:
     paths.journeys[Scope.accountDelete].EMAIL_NOT_VERIFIED.introduction.path,
+  [Scope.passkeyCreate]:
+    paths.journeys[Scope.passkeyCreate].NOT_CREATED.setUp.path,
 } as const;
