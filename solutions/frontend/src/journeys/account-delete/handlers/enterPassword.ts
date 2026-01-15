@@ -3,7 +3,7 @@ import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
 import {
   getFormErrors,
-  getFormErrorsFromValueAndSchema,
+  checkValueForFormErrors,
   getFormErrorsList,
 } from "../../../utils/formErrorsHelpers.js";
 import * as v from "valibot";
@@ -39,20 +39,17 @@ export async function enterPasswordPostHandler(
       v.minLength(1, request.i18n.t("journey:enterPassword.formErrors.empty")),
     ),
   });
-  const bodyFormErrors = getFormErrorsFromValueAndSchema(
-    request.body,
-    bodySchema,
-  );
+  const bodyValidation = checkValueForFormErrors(request.body, bodySchema);
 
-  if (bodyFormErrors) {
+  if (!bodyValidation.success) {
     await render(reply, {
-      errors: bodyFormErrors,
-      errorList: getFormErrorsList(bodyFormErrors),
+      errors: bodyValidation.formErrors,
+      errorList: getFormErrorsList(bodyValidation.formErrors),
     });
     return reply;
   }
 
-  const body = v.parse(bodySchema, request.body);
+  const body = bodyValidation.parsedValue;
 
   assert.ok(request.session.claims);
   const accountManagementApiClient = new AccountManagementApiClient(

@@ -1,7 +1,7 @@
 import { expect, it, describe } from "vitest";
 import * as v from "valibot";
 import {
-  getFormErrorsFromValueAndSchema,
+  checkValueForFormErrors,
   getFormErrors,
   getFormErrorsList,
 } from "./formErrorsHelpers.js";
@@ -88,7 +88,7 @@ describe("formErrorsHelpers", () => {
     });
   });
 
-  describe("getFormErrorsFromValueAndSchema", () => {
+  describe("checkValueForFormErrors", () => {
     const testSchema = v.object({
       email: v.pipe(v.string("emailMustBeString"), v.email("emailMustBeEmail")),
       password: v.pipe(
@@ -97,46 +97,51 @@ describe("formErrorsHelpers", () => {
       ),
     });
 
-    it("returns undefined for valid data", () => {
+    it("returns success with parsed value for valid data", () => {
       const validData = {
         email: "test@example.com",
-        password: "password123",
+        password: "password123", // pragma: allowlist secret
       };
-      const result = getFormErrorsFromValueAndSchema(validData, testSchema);
+      const result = checkValueForFormErrors(validData, testSchema);
 
-      expect(result).toBeUndefined();
+      expect(result.success).toBe(true);
+      expect(result.parsedValue).toStrictEqual(validData);
+      expect(result.formErrors).toBeUndefined();
     });
 
     it("returns formatted errors for invalid data", () => {
       const invalidData = {
         email: "invalid-email",
-        password: "short",
+        password: "short", // pragma: allowlist secret
       };
-      const result = getFormErrorsFromValueAndSchema(invalidData, testSchema);
+      const result = checkValueForFormErrors(invalidData, testSchema);
 
-      expect(result).toBeDefined();
-      expect(result).toHaveProperty("email");
-      expect(result).toHaveProperty("password");
-      expect(result?.["email"]?.href).toBe("#email");
-      expect(result?.["email"]?.text).toBe("emailMustBeEmail");
-      expect(result?.["password"]?.href).toBe("#password");
-      expect(result?.["password"]?.text).toBe("passwordMustBe8Chars");
+      expect(result.success).toBe(false);
+      expect(result.parsedValue).toBeUndefined();
+      expect(result.formErrors).toBeDefined();
+      expect(result.formErrors).toHaveProperty("email");
+      expect(result.formErrors).toHaveProperty("password");
+      expect(result.formErrors?.["email"]?.href).toBe("#email");
+      expect(result.formErrors?.["email"]?.text).toBe("emailMustBeEmail");
+      expect(result.formErrors?.["password"]?.href).toBe("#password");
+      expect(result.formErrors?.["password"]?.text).toBe(
+        "passwordMustBe8Chars",
+      );
     });
 
     it("returns errors for missing required fields", () => {
       const incompleteData = {};
-      const result = getFormErrorsFromValueAndSchema(
-        incompleteData,
-        testSchema,
-      );
+      const result = checkValueForFormErrors(incompleteData, testSchema);
 
-      expect(result).toBeDefined();
-      expect(result).toHaveProperty("email");
-      expect(result).toHaveProperty("password");
-      expect(result?.["email"]?.text).toBe(
+      expect(result.success).toBe(false);
+      expect(result.parsedValue).toBeUndefined();
+      expect(result.formErrors).toBeDefined();
+      expect(result.formErrors).toHaveProperty("email");
+      expect(result.formErrors).toHaveProperty("password");
+      expect(result.formErrors?.["email"]?.text).toBe(
         'Invalid key: Expected "email" but received undefined',
       );
-      expect(result?.["password"]?.text).toBe(
+      expect(result.formErrors?.["password"]?.text).toBe(
         'Invalid key: Expected "password" but received undefined',
       );
     });
@@ -158,15 +163,16 @@ describe("formErrorsHelpers", () => {
         },
       };
 
-      const result = getFormErrorsFromValueAndSchema(
-        invalidNestedData,
-        nestedSchema,
-      );
+      const result = checkValueForFormErrors(invalidNestedData, nestedSchema);
 
-      expect(result).toBeDefined();
-      expect(result).toHaveProperty("user.profile.name");
-      expect(result?.["user.profile.name"]?.href).toBe("#user.profile.name");
-      expect(result?.["user.profile.name"]?.text).toBe(
+      expect(result.success).toBe(false);
+      expect(result.parsedValue).toBeUndefined();
+      expect(result.formErrors).toBeDefined();
+      expect(result.formErrors).toHaveProperty("user.profile.name");
+      expect(result.formErrors?.["user.profile.name"]?.href).toBe(
+        "#user.profile.name",
+      );
+      expect(result.formErrors?.["user.profile.name"]?.text).toBe(
         "Invalid length: Expected >=1 but received 0",
       );
     });
@@ -180,31 +186,27 @@ describe("formErrorsHelpers", () => {
         items: ["valid", "", "also-valid"],
       };
 
-      const result = getFormErrorsFromValueAndSchema(
-        invalidArrayData,
-        arraySchema,
-      );
+      const result = checkValueForFormErrors(invalidArrayData, arraySchema);
 
-      expect(result).toBeDefined();
-      expect(Object.keys(result!)).toContain("items.1");
-      expect(result?.["items.1"]?.text).toBe(
+      expect(result.success).toBe(false);
+      expect(result.parsedValue).toBeUndefined();
+      expect(result.formErrors).toBeDefined();
+      expect(Object.keys(result.formErrors!)).toContain("items.1");
+      expect(result.formErrors?.["items.1"]?.text).toBe(
         "Invalid length: Expected >=1 but received 0",
       );
     });
 
-    it("returns undefined for null/undefined input with optional schema", () => {
+    it("returns errors for null/undefined input with optional schema", () => {
       const optionalSchema = v.object({
         optionalField: v.optional(v.string()),
       });
 
-      const result1 = getFormErrorsFromValueAndSchema(null, optionalSchema);
-      const result2 = getFormErrorsFromValueAndSchema(
-        undefined,
-        optionalSchema,
-      );
+      const result1 = checkValueForFormErrors(null, optionalSchema);
+      const result2 = checkValueForFormErrors(undefined, optionalSchema);
 
-      expect(result1).toBeDefined(); // null/undefined should fail object validation
-      expect(result2).toBeDefined(); // null/undefined should fail object validation
+      expect(result1.success).toBe(false);
+      expect(result2.success).toBe(false);
     });
   });
 });
