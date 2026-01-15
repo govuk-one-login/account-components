@@ -8,7 +8,7 @@ import {
 import * as v from "valibot";
 import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import {
-  getFormErrorsFromValueAndSchema,
+  checkValueForFormErrors,
   getFormErrorsList,
 } from "../../../utils/formErrorsHelpers.js";
 import { isoUint8Array } from "@simplewebauthn/server/helpers";
@@ -69,20 +69,17 @@ export async function postHandler(
   const bodySchema = v.object({
     registrationResponse: v.pipe(v.string(), v.parseJson()),
   });
-  const bodyFormErrors = getFormErrorsFromValueAndSchema(
-    request.body,
-    bodySchema,
-  );
+  const bodyValidation = checkValueForFormErrors(request.body, bodySchema);
 
-  if (bodyFormErrors) {
+  if (!bodyValidation.success) {
     await render(reply, {
-      errors: bodyFormErrors,
-      errorList: getFormErrorsList(bodyFormErrors),
+      errors: bodyValidation.formErrors,
+      errorList: getFormErrorsList(bodyValidation.formErrors),
     });
     return reply;
   }
 
-  const body = v.parse(bodySchema, request.body);
+  const body = bodyValidation.parsedValue;
 
   assert.ok(process.env["PASSKEYS_RP_ID"]);
   assert.ok(process.env["PASSKEYS_EXPECTED_ORIGIN"]);
