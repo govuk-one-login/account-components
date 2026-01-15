@@ -153,6 +153,6 @@
   <script type="module" src="/fingerprint/index.js?{{ globals.deviceIntelligenceHash }}" nonce='{{ cspNonce }}'></script>
   <script type="module" nonce='{{ cspNonce }}'>
     import { setFingerprintCookie } from "/fingerprint/index.js?{{ globals.deviceIntelligenceHash }}";
-    setFingerprintCookie("{{globals.fingerprintCookieDomain}}");
+    setFingerprintCookie({{ globals.fingerprintCookieDomain | dump | safe }});
   </script>
 {% endblock %}
