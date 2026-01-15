@@ -14,11 +14,21 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
   metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
-vi.mock(import("@aws-sdk/client-dynamodb"), () => ({
-  DynamoDBClient: vi.fn().mockImplementation(() => ({
-    send: vi.fn(),
-  })),
-}));
+// eslint-disable-next-line vitest/prefer-import-in-mock
+vi.mock("@aws-sdk/client-dynamodb", async (importOriginal) => {
+  const actual =
+    // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+    await importOriginal<typeof import("@aws-sdk/client-dynamodb")>();
+
+  return {
+    ...actual,
+    DynamoDBClient: {
+      // eslint-disable-next-line @typescript-eslint/no-misused-spread,
+      ...actual.DynamoDBClient,
+      send: vi.fn(),
+    },
+  };
+});
 
 // eslint-disable-next-line vitest/prefer-import-in-mock
 vi.mock("@aws-sdk/lib-dynamodb", async (importOriginal) => {
