@@ -15,7 +15,9 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
 }));
 
 vi.mock(import("@aws-sdk/client-dynamodb"), () => ({
-  DynamoDBClient: vi.fn().mockImplementation(() => ({})),
+  DynamoDBClient: vi.fn().mockImplementation(() => ({
+    send: vi.fn(),
+  })),
 }));
 
 // eslint-disable-next-line vitest/prefer-import-in-mock
