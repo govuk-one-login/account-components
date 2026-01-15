@@ -101,7 +101,7 @@ export async function postHandler(
 
     // TODO is this the right thing to do here or should we go to the callback with an error code, or allow the user to try again?
     // If we allow the user to try again then the registration options should be regrenerated and resaved to the session to prevent replay attacks.
-    await completeJourney(request, reply, request.session.claims, [
+    return await completeJourney(request, reply, request.session.claims, [
       {
         passkeyCreated: false,
       },
