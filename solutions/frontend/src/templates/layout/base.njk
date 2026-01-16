@@ -107,16 +107,16 @@
       window.DI.appInit({
         ga4ContainerId: "{{ globals.ga4ContainerId }}"
       }, {
-        enableGa4Tracking: {% if globals.analyticsEnabled %}{{ globals.analyticsEnabled }}{% else %}false{% endif %},
+        enableGa4Tracking: {% if globals.analyticsEnabled === true %}true{% else %}false{% endif %},
         cookieDomain: "{{ globals.analyticsCookieDomain }}",
         isDataSensitive: false,
-        isPageDataSensitive: {% if reply.analytics.isPageDataSensitive %}{{ reply.analytics.isPageDataSensitive }}{% else %}true{% endif %},
+        isPageDataSensitive: {% if reply.analytics.isPageDataSensitive === false %}false{% else %}true{% endif %},
         enablePageViewTracking: true,
         enableFormResponseTracking: true,
         enableFormChangeTracking: true,
         enableFormErrorTracking: true,
         enableNavigationTracking: true,
-        enableSelectContentTracking: {% if reply.analytics.isSelectContentTrackingEnabled %}{{ reply.analytics.isSelectContentTrackingEnabled }}{% else %}true{% endif %},
+        enableSelectContentTracking: {% if reply.analytics.isSelectContentTrackingEnabled === false %}false{% else %}true{% endif %},
       });
     }
 
@@ -139,6 +139,6 @@
   <script type="module" src="/fingerprint/index.js?{{ globals.fingerprintHash }}" nonce='{{ cspNonce }}'></script>
   <script type="module" nonce='{{ cspNonce }}'>
     import { setFingerprintCookie } from "/fingerprint/index.js?{{ globals.fingerprintHash }}";
-    setFingerprintCookie({% if globals.env == "local" %}"localhost"{% endif %});
+    setFingerprintCookie({% if globals.env === "local" %}"localhost"{% endif %});
   </script>
 {% endblock %}
