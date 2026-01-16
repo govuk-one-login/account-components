@@ -39,7 +39,7 @@ declare module "fastify" {
       yourServicesUrl?: string | undefined;
       securityUrl?: string | undefined;
       dynatraceRumUrl?: string | undefined;
-      fingerprintCookieDomain?: string | undefined;
+      env?: string;
       deviceIntelligenceHash?: string;
     };
     journeyStates?: {

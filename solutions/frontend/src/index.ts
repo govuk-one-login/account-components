@@ -89,8 +89,7 @@ export const initFrontend = async function () {
       yourServicesUrl: process.env["YOUR_SERVICES_URL"],
       securityUrl: process.env["SECURITY_URL"],
       dynatraceRumUrl: process.env["DYNATRACE_RUM_URL"],
-      fingerprintCookieDomain:
-        getEnvironment() === "local" ? "localhost" : "account.gov.uk",
+      env: getEnvironment(),
     };
   });
   fastify.decorateReply("render", render);
