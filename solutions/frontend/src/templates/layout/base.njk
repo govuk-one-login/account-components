@@ -116,7 +116,7 @@
         enableFormChangeTracking: true,
         enableFormErrorTracking: true,
         enableNavigationTracking: true,
-        enableSelectContentTracking: {% if reply.analytics.isSelectContentTrackingEnabled === false %}false{% else %}true{% endif %},
+        enableSelectContentTracking: {% if reply.analytics.isSelectContentTrackingEnabled === true %}true{% else %}false{% endif %},
       });
     }
 
