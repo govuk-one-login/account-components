@@ -32,7 +32,12 @@
         "awk",
         "jsonschema",
       ],
-      "ignoreDependencies": ["csso-cli", "sass", "esbuild"],
+      "ignoreDependencies": [
+        "csso-cli",
+        "sass",
+        "esbuild",
+        "@govuk-one-login/frontend-device-intelligence",
+      ],
     },
     "solutions/integration-tests": {
       "entry": ["tests/**/*.ts"],

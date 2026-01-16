@@ -64,7 +64,7 @@ jobs:
           GA4_CONTAINER_ID=GTM-KD86CMZ
           ANALYTICS_ENABLED=1
           YOUR_SERVICES_URL=https://home.dev.account.gov.uk/your-services
-          SECURITY_URL=https://home.dev.account.gov.uk/security          
+          SECURITY_URL=https://home.dev.account.gov.uk/security
           EOF
 
       - name: Configure stubs environment
