@@ -105,7 +105,7 @@
     <script nonce='{{ cspNonce }}'>
     if (window.DI) {
       window.DI.appInit({
-        ga4ContainerId: "{{ globals.ga4ContainerId }}"
+        ga4ContainerId: "{{ globals.ga4ContainerId }}",
       }, {
         enableGa4Tracking: {% if globals.analyticsEnabled === true %}true{% else %}false{% endif %},
         cookieDomain: "{{ globals.analyticsCookieDomain }}",
@@ -129,8 +129,8 @@
                 taxonomy_level2: "{{ reply.analytics.taxonomyLevel2 }}",
                 taxonomy_level3: "{{ reply.analytics.taxonomyLevel3 }}",
                 content_id: "{{ reply.analytics.contentId }}",
-                logged_in_status: {% if reply.client.consider_user_logged_in %}{{ reply.client.consider_user_logged_in }}{% else %}false{% endif %},
-                dynamic: {% if reply.analytics.dynamic %}{{ reply.analytics.dynamic }}{% else %}true{% endif %},
+                logged_in_status: {% if reply.client.consider_user_logged_in === true %}true{% else %}false{% endif %},
+                dynamic: {% if reply.analytics.dynamic === false %}false{% else %}true{% endif %},
             });
         }
       });
