@@ -53,13 +53,29 @@ Conditions:
       - Fn::Equals:
           - !Ref PermissionsBoundary
           - "none"
+  IsLocal:
+    Fn::Equals:
+      - !Ref "AWS::Region"
+      - "local"
 
 Globals:
   Function:
     Tracing: Active
     KmsKeyArn: !Sub "{{resolve:ssm:/${CoreStackName}/LambdaEnvironmentVariableEncryptionKeyArn}}"
     Layers:
-      - arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1
+      - !If [
+          IsLocal,
+          !Ref AWS::NoValue,
+          !Sub [
+            "{{resolve:secretsmanager:${SecretArn}:SecretString:NODEJS_LAYER}}", # pragma: allowlist-secret
+            SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ],
+          ],
+        ]
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
@@ -111,7 +127,7 @@ Globals:
                 !Ref Environment,
                 dynatraceSecretArn,
               ]
-        DT_CLUSTER_ID: !Sub
+        DT_CLUSTER: !Sub
           - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}" # pragma: allowlist-secret
           - SecretArn:
               !FindInMap [
@@ -136,7 +152,6 @@ Globals:
                 dynatraceSecretArn,
               ]
         DT_LOGGING_NODEJS_FLAGS: Exporter=true,LambdaSensor=false
-        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: true
         DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
 
 Resources:
