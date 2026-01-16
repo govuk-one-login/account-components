@@ -73,7 +73,7 @@
     }}
     {% block backLinkBlock %}
       {% if backLink %}
-        <a href="{{backLink}}" class="govuk-back-link js-back-link">
+        <a href="{{backLink}}" class="govuk-back-link">
           {{ backLinkText }}
           {{'general.back' | translate if not backLinkText}}
         </a>
@@ -97,40 +97,26 @@
     <script type="module" src="/public/scripts/govuk-frontend.min.js?{{ globals.publicScriptsHash }}" nonce='{{ cspNonce }}'></script>
 
     <script type="module"  nonce='{{ cspNonce }}'>
-      import { initAll } from '/public/scripts/govuk-frontend.min.js?{{ globals.publicScriptsHash }}'
-      initAll()
+      import { initAll } from '/public/scripts/govuk-frontend.min.js?{{ globals.publicScriptsHash }}';
+      initAll();
     </script>
     <script src="/public/scripts/analytics.js?{{ globals.publicScriptsHash }}" nonce='{{ cspNonce }}'></script>
-    <script nonce='{{ cspNonce }}'>
-      {% if backLinkJS %}
-        var backLink = document.querySelector('.js-back-link');
-        if (backLink) {
-          backLink.addEventListener('click', function(e) {
-            var referrer = new URL(document.referrer).hostname;
 
-            if (referrer === document.location.hostname && window.history.length > 2) {
-              event.preventDefault();
-              window.history.back();
-            }
-          });
-        }
-      {% endif %}
-    </script>
     <script nonce='{{ cspNonce }}'>
     if (window.DI) {
       window.DI.appInit({
-        ga4ContainerId: {{ globals.ga4ContainerId | default("") | dump | safe }}
+        ga4ContainerId: "{{ globals.ga4ContainerId }}"
       }, {
-        enableGa4Tracking: {{ globals.analyticsEnabled | default(false) | dump | safe }},
-        cookieDomain: {{ globals.analyticsCookieDomain | default("") | dump | safe }},
+        enableGa4Tracking: {% if globals.analyticsEnabled %}{{ globals.analyticsEnabled }}{% else %}false{% endif %},
+        cookieDomain: "{{ globals.analyticsCookieDomain }}",
         isDataSensitive: false,
-        isPageDataSensitive: {{ reply.analytics.isPageDataSensitive | default(true) | dump | safe }},
+        isPageDataSensitive: {% if reply.analytics.isPageDataSensitive %}{{ reply.analytics.isPageDataSensitive }}{% else %}true{% endif %},
         enablePageViewTracking: true,
         enableFormResponseTracking: true,
         enableFormChangeTracking: true,
         enableFormErrorTracking: true,
         enableNavigationTracking: true,
-        enableSelectContentTracking: {{ reply.analytics.isSelectContentTrackingEnabled | default(false) | dump | safe }}
+        enableSelectContentTracking: {% if reply.analytics.isSelectContentTrackingEnabled %}{{ reply.analytics.isSelectContentTrackingEnabled }}{% else %}true{% endif %},
       });
     }
 
@@ -138,21 +124,21 @@
       window.addEventListener('load', function () {
         if (window.DI && window.DI.analyticsGa4) {
             window.DI.analyticsGa4.pageViewTracker.trackOnPageLoad({
-                statusCode: {{ reply.statusCode | default(200) | dump | safe }},
-                taxonomy_level1: {{ reply.analytics.taxonomyLevel1 | default("") | dump | safe }},
-                taxonomy_level2: {{ reply.analytics.taxonomyLevel2 | default("") | dump | safe }},
-                taxonomy_level3: {{ reply.analytics.taxonomyLevel3 | default("") | dump | safe }},
-                content_id: {{ reply.analytics.contentId | default("") | dump | safe }},
-                logged_in_status: {{ reply.client.consider_user_logged_in | default(false) | dump | safe }},
-                dynamic: {{ reply.analytics.dynamic | default(true) | dump | safe }}
+                statusCode: {% if reply.statusCode %}{{ reply.statusCode }}{% else %}200{% endif %},
+                taxonomy_level1: "{{ reply.analytics.taxonomyLevel1 }}",
+                taxonomy_level2: "{{ reply.analytics.taxonomyLevel2 }}",
+                taxonomy_level3: "{{ reply.analytics.taxonomyLevel3 }}",
+                content_id: "{{ reply.analytics.contentId }}",
+                logged_in_status: {% if reply.client.consider_user_logged_in %}{{ reply.client.consider_user_logged_in }}{% else %}false{% endif %},
+                dynamic: {% if reply.analytics.dynamic %}{{ reply.analytics.dynamic }}{% else %}true{% endif %},
             });
         }
       });
     {% endif %}
   </script>
-  <script type="module" src="/fingerprint/index.js?{{ globals.deviceIntelligenceHash }}" nonce='{{ cspNonce }}'></script>
+  <script type="module" src="/fingerprint/index.js?{{ globals.fingerprintHash }}" nonce='{{ cspNonce }}'></script>
   <script type="module" nonce='{{ cspNonce }}'>
-    import { setFingerprintCookie } from "/fingerprint/index.js?{{ globals.deviceIntelligenceHash }}";
+    import { setFingerprintCookie } from "/fingerprint/index.js?{{ globals.fingerprintHash }}";
     setFingerprintCookie({% if globals.env == "local" %}"localhost"{% endif %});
   </script>
 {% endblock %}
