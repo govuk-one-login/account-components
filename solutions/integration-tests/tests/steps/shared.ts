@@ -122,3 +122,9 @@ Given(
     await select.selectOption(optionTextContent);
   },
 );
+
+Then("the {word} cookie has been set", async ({ page }, name) => {
+  const cookies = await page.context().cookies();
+  const expectedCookie = cookies.find((cookie) => cookie.name === name);
+  expect(expectedCookie).toBeDefined();
+});
