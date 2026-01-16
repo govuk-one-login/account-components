@@ -20,7 +20,7 @@ interface AuthorizeErrorServerError {
 }
 
 export const authorizeErrors = {
-  // TODO remove this and it's use before going live with SSAD
+  // TODO remove this and its use before going live with SSAD
   tempErrorTODORemoveLater: {
     description: "E1000",
     type: "access_denied",
