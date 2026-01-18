@@ -74,6 +74,7 @@ describe("session utils", () => {
       expect(options.cookie?.sameSite).toBe("strict");
       expect(options.cookie?.httpOnly).toBe(true);
       expect(options.cookie?.domain).toBe("test.com");
+      expect(options.cookieName).toBe("amc_sess");
       expect(options.rolling).toBe(false);
       expect(options.saveUninitialized).toBe(false);
       expect(options.store).toBeDefined();

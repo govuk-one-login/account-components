@@ -26,6 +26,7 @@ export const getSessionOptions = async (): Promise<FastifySessionOptions> => {
       // Scoped to the root cookie domain to allow it to be deleted on logout in the account management frontend
       domain: rootCookieDomain,
     },
+    cookieName: "amc_sess",
     rolling: false,
     saveUninitialized: false,
     store: new DynamoDbSessionStore(process.env["SESSIONS_TABLE_NAME"]),
