@@ -8,6 +8,10 @@ vi.mock(import("../../../commons/utils/getEnvironment/index.js"), () => ({
   getEnvironment: mockGetEnvironment,
 }));
 
+vi.mock(import("../../../commons/utils/constants.js"), () => ({
+  rootCookieDomain: "test.com",
+}));
+
 vi.mock(import("./dynamoDbSessionStore.js"), () => ({
   DynamoDbSessionStore: vi.fn(),
 }));
@@ -69,6 +73,7 @@ describe("session utils", () => {
       expect(options.cookie?.secure).toBe(true);
       expect(options.cookie?.sameSite).toBe("strict");
       expect(options.cookie?.httpOnly).toBe(true);
+      expect(options.cookie?.domain).toBe("test.com");
       expect(options.rolling).toBe(false);
       expect(options.saveUninitialized).toBe(false);
       expect(options.store).toBeDefined();
