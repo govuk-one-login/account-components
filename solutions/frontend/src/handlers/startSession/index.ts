@@ -96,10 +96,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       const accessTokenExpiry = decodeJwt(claims.access_token).exp ?? 0;
 
       const sessionExpiry = Math.min(
-        Math.max(
-          accessTokenExpiry,
-          Math.floor(Date.now() / 1000) + 1800, // Min session length of half an hour
-        ),
+        accessTokenExpiry,
         Math.floor(Date.now() / 1000) + 7200, // Max session length of 2 hours
       );
 
