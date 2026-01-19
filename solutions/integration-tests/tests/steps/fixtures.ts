@@ -50,12 +50,12 @@ export const test = base.extend<
     await use(!$tags.includes("@noJs"));
   },
 
-  scenarioData: async (_, use) => {
+  scenarioData: async ({}, use) => {
     await use({});
   },
 
   featureData: [
-    async (_, use) => {
+    async ({}, use) => {
       await use({
         id: randomUUID(),
       });
