@@ -40,7 +40,7 @@ declare module "fastify" {
       securityUrl?: string | undefined;
       dynatraceRumUrl?: string | undefined;
       env?: string;
-      deviceIntelligenceHash?: string;
+      fingerprintHash?: string;
     };
     journeyStates?: {
       [Scope.testingJourney]?: Actor<typeof testingJourneyStateMachine>;

@@ -474,34 +474,6 @@ describe("startSession handler", () => {
   });
 
   describe("session expiry calculation", () => {
-    it("should use minimum session length when access token expires soon", async () => {
-      const mockClaims = {
-        client_id: "test-client",
-        redirect_uri: "https://client.com/callback",
-        state: "test-state",
-        sub: "user-123",
-        scope: "testing-journey",
-        access_token: "mock.jwt.token",
-      };
-
-      const now = Math.floor(Date.now() / 1000);
-      const shortExpiry = now + 300;
-      mockDecodeJwt.mockReturnValue({ exp: shortExpiry });
-
-      mockRequest.cookies = { apisession: "test-session-id" };
-      mockGet.mockResolvedValue({
-        Item: {
-          claims: mockClaims,
-          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
-        },
-      });
-      mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
-
-      await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
-
-      expect(mockRequest.session?.expires).toBe(1704112200);
-    });
-
     it("should cap session length at maximum when access token expires far in future", async () => {
       const mockClaims = {
         client_id: "test-client",

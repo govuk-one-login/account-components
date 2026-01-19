@@ -76,8 +76,7 @@ export const initFrontend = async function () {
       publicScriptsHash:
         staticHashGovUkFrontend.hash +
         staticHashGovUkOneLoginFrontendAnalytics.hash,
-      deviceIntelligenceHash:
-        staticHashGovUkOneLoginFrontendDeviceIntelligence.hash,
+      fingerprintHash: staticHashGovUkOneLoginFrontendDeviceIntelligence.hash,
       currentUrl: getCurrentUrl(request),
       htmlLang: request.i18n.language,
       authFrontEndUrl: process.env["AUTH_FRONTEND_URL"],
