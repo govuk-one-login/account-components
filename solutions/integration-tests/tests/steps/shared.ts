@@ -166,7 +166,7 @@ Then("the {word} cookie has been set", async ({ page }, name) => {
 
 Given(
   "I make an API request with the config:",
-  async ({ testData }, configString: string) => {
+  async ({ scenarioData }, configString: string) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const unsafeConfig = yaml.parse(configString);
 
@@ -198,16 +198,16 @@ Given(
         ...(config.output.headers ? { headers: config.output.headers } : {}),
       });
 
-      testData["httpResponse"] = response;
+      scenarioData["httpResponse"] = response;
     }
   },
 );
 
 Then(
   "the response status code should be {string}",
-  async ({ testData }, responseStatusCode: string) => {
+  async ({ scenarioData }, responseStatusCode: string) => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    expect((testData["httpResponse"] as Response).status).toBe(
+    expect((scenarioData["httpResponse"] as Response).status).toBe(
       Number(responseStatusCode),
     );
   },
@@ -215,13 +215,13 @@ Then(
 
 Then(
   "the response body should be:",
-  async ({ testData }, responseBodyString: string) => {
+  async ({ scenarioData }, responseBodyString: string) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const responseBody = yaml.parse(responseBodyString);
 
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    expect(await (testData["httpResponse"] as Response).json()).toStrictEqual(
-      responseBody,
-    );
+    expect(
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      await (scenarioData["httpResponse"] as Response).json(),
+    ).toStrictEqual(responseBody);
   },
 );

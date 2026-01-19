@@ -57,11 +57,11 @@ Feature: Invalid request object
 
   Scenario: Nonce has already been used
     Given I go to the journey initiator
-    And I fill the input with the label beginning with "Nonce" with the text "custom_nonce"
+    And I set the nonce to the feature ID
     And I begin a "testing-journey" journey    
     Then the page title is prefixed with "Testing journey step 1"
     Given I go to the journey initiator
-    And I fill the input with the label beginning with "Nonce" with the text "custom_nonce"
+    And I set the nonce to the feature ID
     And I begin a "testing-journey" journey
     Then the page contains the text "Error: invalid_request"
     And the page contains the text "Error description: E2010"    
