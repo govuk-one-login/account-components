@@ -4,6 +4,7 @@ import { env } from "../../env.js";
 export const test = base.extend<{
   skips: undefined;
   fails: undefined;
+  testData: Record<string, unknown>;
 }>({
   skips: [
     async ({ $test, $tags, isMobile }, use) => {
@@ -37,6 +38,10 @@ export const test = base.extend<{
 
   javaScriptEnabled: async ({ $tags }, use) => {
     await use(!$tags.includes("@noJs"));
+  },
+
+  testData: async ({}, use) => {
+    await use({});
   },
 });
 

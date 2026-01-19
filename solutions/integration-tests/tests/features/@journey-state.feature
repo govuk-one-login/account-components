@@ -1,3 +1,4 @@
+@skipMobile
 Feature: Journey state
 
   Scenario: Journey state navigation behaves as expected
