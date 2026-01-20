@@ -17,6 +17,7 @@ import staticHash from "./utils/static-hash.json" with { type: "json" };
 import simpleWebAuthNBrowserStaticHash from "./utils/static-hash-simplewebauthn-browser.json" with { type: "json" };
 import staticHashGovUkFrontendAssets from "./utils/static-hash-govuk-frontend-assets.json" with { type: "json" };
 import staticHashGovUkFrontend from "./utils/static-hash-govuk-frontend.json" with { type: "json" };
+import staticHashGovUkOneLoginFrontendDeviceIntelligence from "./utils/static-hash-govuk-one-login-frontend-device-intelligence.json" with { type: "json" };
 import staticHashGovUkOneLoginFrontendAnalytics from "./utils/static-hash-govuk-one-login-frontend-analytics.json" with { type: "json" };
 import { csrfProtection } from "../../commons/utils/fastify/csrfProtection/index.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
@@ -77,6 +78,7 @@ export const initFrontend = async function () {
       publicScriptsHash:
         staticHashGovUkFrontend.hash +
         staticHashGovUkOneLoginFrontendAnalytics.hash,
+      fingerprintHash: staticHashGovUkOneLoginFrontendDeviceIntelligence.hash,
       currentUrl: getCurrentUrl(request),
       htmlLang: request.i18n.language,
       authFrontEndUrl: process.env["AUTH_FRONTEND_URL"],
@@ -88,6 +90,7 @@ export const initFrontend = async function () {
       yourServicesUrl: process.env["YOUR_SERVICES_URL"],
       securityUrl: process.env["SECURITY_URL"],
       dynatraceRumUrl: process.env["DYNATRACE_RUM_URL"],
+      env: getEnvironment(),
     };
   });
   fastify.decorateReply("render", render);
@@ -105,6 +108,17 @@ export const initFrontend = async function () {
     ).onError;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return onError.bind(this)(error, request, reply);
+  });
+
+  fastify.register(fastifyStatic, {
+    root: path.join(
+      import.meta.dirname,
+      "/node_modules/@govuk-one-login/frontend-device-intelligence/build/esm",
+    ),
+    prefix: "/fingerprint",
+    setHeaders: (res) => {
+      addStaticAssetsCachingHeaders(res);
+    },
   });
 
   fastify.register(fastifyStatic, {

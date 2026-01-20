@@ -20,6 +20,10 @@ tar cvf - node_modules/govuk-frontend/dist/govuk/assets | sha1sum | head -c 40 |
 # into a JSON object in src/utils/static-hash-govuk-one-login-frontend-analytics.json
 tar cvf - node_modules/@govuk-one-login/frontend-analytics/lib | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > src/utils/static-hash-govuk-one-login-frontend-analytics.json
 
+# Create a hash of the node_modules/@govuk-one-login/frontend-device-intelligence/build/esm folder and write it
+# into a JSON object in src/utils/static-hash-govuk-one-login-frontend-device-intelligence.json
+tar cvf - node_modules/@govuk-one-login/frontend-device-intelligence/build/esm | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > src/utils/static-hash-govuk-one-login-frontend-device-intelligence.json
+
 # Create a hash of the node_modules/govuk-frontend/dist/govuk folder and write it
 # into a JSON object in src/utils/static-hash-govuk-frontend.json
 tar cvf - node_modules/govuk-frontend/dist/govuk | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > src/utils/static-hash-govuk-frontend.json

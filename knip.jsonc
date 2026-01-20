@@ -37,6 +37,7 @@
         "sass",
         "esbuild",
         "@simplewebauthn/browser",
+        "@govuk-one-login/frontend-device-intelligence",
       ],
     },
     "solutions/integration-tests": {

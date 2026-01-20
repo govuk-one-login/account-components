@@ -1,10 +1,21 @@
 import { test as base, createBdd } from "playwright-bdd";
 import { env } from "../../env.js";
+import type { UUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 
-export const test = base.extend<{
-  skips: undefined;
-  fails: undefined;
-}>({
+export const test = base.extend<
+  {
+    skips: undefined;
+    fails: undefined;
+    scenarioData: Record<string, unknown>;
+  },
+  {
+    featureData: {
+      id: UUID;
+      [key: string]: unknown;
+    };
+  }
+>({
   skips: [
     async ({ $test, $tags, isMobile }, use) => {
       $test.skip(
@@ -38,6 +49,19 @@ export const test = base.extend<{
   javaScriptEnabled: async ({ $tags }, use) => {
     await use(!$tags.includes("@noJs"));
   },
+
+  scenarioData: async ({}, use) => {
+    await use({});
+  },
+
+  featureData: [
+    async ({}, use) => {
+      await use({
+        id: randomUUID(),
+      });
+    },
+    { scope: "worker" },
+  ],
 });
 
 export const bdd = createBdd(test);

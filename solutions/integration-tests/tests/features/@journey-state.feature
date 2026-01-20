@@ -1,3 +1,4 @@
+@skipMobile
 Feature: Journey state
 
   Scenario: Journey state navigation behaves as expected
@@ -48,9 +49,14 @@ Feature: Journey state
     Given I go to the "Testing journey - enter password" page
     Then the page title is prefixed with "Testing journey confirmation"
 
-    # Shouldn't be able to access any journey pages after finishing journey
     Given I click the "Complete testing journey" button
-    And I go to the "Testing journey - step 1" page   
+    Then the page contains the text "Client callback"
+    And the page contains the text '"testingJourneyComplete": true'
+    And the page contains the text '"sub": "urn:fdc:gov.uk:default"'
+    And the page contains the text '"scope": "testing-journey"'
+
+    # Shouldn't be able to access any journey pages after finishing journey
+    Given I go to the "Testing journey - step 1" page   
     Then the page path is "Authorize error"
     And I go to the "Testing journey - enter password" page   
     Then the page path is "Authorize error"
