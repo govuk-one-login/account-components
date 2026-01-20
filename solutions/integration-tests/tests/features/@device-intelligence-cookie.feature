@@ -1,3 +1,4 @@
+@skipMobile
 Feature: Device intelligence cookie
 
   Scenario: User has the di-device-intelligence cookie

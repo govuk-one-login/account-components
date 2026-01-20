@@ -3,6 +3,9 @@ import { bdd } from "./fixtures.js";
 import { expect } from "@playwright/test";
 import assert from "node:assert";
 import { getStubsUrl } from "../../utils/getStubsUrl.js";
+import * as v from "valibot";
+import * as yaml from "yaml";
+import { getApiBaseUrl } from "../../utils/getApiBaseUrl.js";
 
 const { Then, Given } = bdd;
 
@@ -123,8 +126,102 @@ Given(
   },
 );
 
+Given(
+  "I select the option beginning with {string} in the {string} radio button group",
+  async (
+    { page },
+    radioButtonGroupOptionPartialLabel: string,
+    inputName: string,
+  ) => {
+    const radioButton = page
+      .getByRole("radio", {
+        name: new RegExp(`^${radioButtonGroupOptionPartialLabel}`),
+      })
+      .and(page.locator(`[name="${inputName}"]`));
+
+    await expect(radioButton).toHaveCount(1);
+
+    await radioButton.check();
+  },
+);
+
+Given(
+  "I fill the input with the label beginning with {string} with the text {string}",
+  async ({ page }, inputPartialLabel: string, text: string) => {
+    const input = page.getByRole("textbox", {
+      name: new RegExp(`^${inputPartialLabel}`),
+    });
+
+    await expect(input).toHaveCount(1);
+
+    await input.fill(text);
+  },
+);
+
 Then("the {word} cookie has been set", async ({ page }, name) => {
   const cookies = await page.context().cookies();
   const expectedCookie = cookies.find((cookie) => cookie.name === name);
   expect(expectedCookie).toBeDefined();
 });
+
+Given(
+  "I make an API request with the config:",
+  async ({ scenarioData }, configString: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const unsafeConfig = yaml.parse(configString);
+
+    const configSchema = v.object({
+      method: v.picklist([
+        "GET",
+        "PUT",
+        "POST",
+        "PATCH",
+        "DELETE",
+        "OPTIONS",
+        "HEAD",
+        "CONNECT",
+        "TRACE",
+      ]),
+      path: v.string(),
+      headers: v.optional(v.record(v.string(), v.string())),
+      body: v.optional(v.record(v.string(), v.any())),
+    });
+
+    const config = v.safeParse(configSchema, unsafeConfig);
+
+    expect(config.success, JSON.stringify(config.issues, null, 2)).toBe(true);
+
+    if (config.success) {
+      const response = await fetch(`${getApiBaseUrl()}${config.output.path}`, {
+        body: JSON.stringify(config.output.body),
+        method: config.output.method,
+        ...(config.output.headers ? { headers: config.output.headers } : {}),
+      });
+
+      scenarioData["httpResponse"] = response;
+    }
+  },
+);
+
+Then(
+  "the response status code should be {string}",
+  async ({ scenarioData }, responseStatusCode: string) => {
+    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    expect((scenarioData["httpResponse"] as Response).status).toBe(
+      Number(responseStatusCode),
+    );
+  },
+);
+
+Then(
+  "the response body should be:",
+  async ({ scenarioData }, responseBodyString: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const responseBody = yaml.parse(responseBodyString);
+
+    expect(
+      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      await (scenarioData["httpResponse"] as Response).json(),
+    ).toStrictEqual(responseBody);
+  },
+);
