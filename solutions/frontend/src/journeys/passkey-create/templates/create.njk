@@ -53,7 +53,7 @@
 
       const verifyPasskeyForm = document.getElementById('verifyPasskeyForm');
       verifyPasskeyForm.querySelector('input[name="registrationResponse"]').value = JSON.stringify(registrationResponse);
-      verifyPasskeyForm.submit();
+      verifyPasskeyForm.requestSubmit();
     }
 
     document.getElementById('verifyPasskeyForm').addEventListener('submit', registerPasskey);
