@@ -15,7 +15,6 @@ const analyticsDefaults: FastifyReply["analytics"] = {
 const accountDeleteAnalyticsDefaults: FastifyReply["analytics"] = {
   ...analyticsDefaults,
   taxonomyLevel2: "SSAD",
-  isPageDataSensitive: false,
 };
 
 export const paths = {

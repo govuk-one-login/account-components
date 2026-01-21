@@ -110,7 +110,7 @@
         enableGa4Tracking: {% if globals.analyticsEnabled === true %}true{% else %}false{% endif %},
         cookieDomain: "{{ globals.analyticsCookieDomain }}",
         isDataSensitive: false,
-        isPageDataSensitive: {% if reply.analytics.isPageDataSensitive === false %}false{% else %}true{% endif %},
+        isPageDataSensitive: {% if reply.analytics.isPageDataSensitive === true %}true{% else %}false{% endif %},
         enablePageViewTracking: true,
         enableFormResponseTracking: true,
         enableFormChangeTracking: true,
