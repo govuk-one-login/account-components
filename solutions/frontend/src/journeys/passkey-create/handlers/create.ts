@@ -51,7 +51,9 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
     registrationOptions,
   });
 
-  await render(reply, { registrationOptions });
+  await render(reply, {
+    registrationOptions: JSON.stringify(registrationOptions),
+  });
   return reply;
 }
 

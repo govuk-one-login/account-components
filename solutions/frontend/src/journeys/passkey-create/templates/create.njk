@@ -28,13 +28,14 @@
 
   <form method="post" id="verifyPasskeyForm">
     <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
-    <input type="hidden" name="registrationResponse" value='""'>
-
-    {{ govukButton({
-      text: 'journey:create.buttonLabel' | translate,
-      preventDoubleClick: true
-    }) }}    
+    <input type="hidden" name="registrationResponse" value='""'> 
   </form>
+
+  {{ govukButton({
+    text: 'journey:create.buttonLabel' | translate,
+    preventDoubleClick: true,
+    id: "verifyPasskeyButton"
+  }) }}
 
   {% set exitJourneyUrl = globals.buildRedirectToClientRedirectUri(globals.authorizeErrors.userAborted) %}
   <p class="govuk-body"><a href="{{ exitJourneyUrl }}" class="govuk-link govuk-link--no-visited-state">{{ 'journey:create.exitJourneyLinkText' | translate }}</a></p>  
@@ -43,12 +44,11 @@
 {% block scripts %}
 <script src="/@simplewebauthn/browser/index.es5.umd.min.js?{{ globals.simpleWebAuthNBrowserStaticHash }}" nonce='{{ cspNonce }}'></script>
 
-<script nonce='{{ cspNonce }}'>
+<script id="verifyPasskeyScript" nonce="{{ cspNonce }}" data-registration-options="{{ registrationOptions }}">
   if (SimpleWebAuthnBrowser.browserSupportsWebAuthn()) {
-    async function registerPasskey(event) {
-      event.preventDefault();
-
-      const registrationOptions = {{ registrationOptions | dump | safe }};
+    async function registerPasskey() {
+      const thisScript = document.getElementById('verifyPasskeyScript');
+      const registrationOptions = JSON.parse(thisScript.dataset.registrationOptions);
       const registrationResponse = await SimpleWebAuthnBrowser.startRegistration(registrationOptions);
 
       const verifyPasskeyForm = document.getElementById('verifyPasskeyForm');
@@ -56,7 +56,7 @@
       verifyPasskeyForm.requestSubmit();
     }
 
-    document.getElementById('verifyPasskeyForm').addEventListener('submit', registerPasskey);
+    document.getElementById('verifyPasskeyButton').addEventListener('click', registerPasskey);
   } else {
     // TODO do something in this scenario e.g. hide the form and show an error message
   }
