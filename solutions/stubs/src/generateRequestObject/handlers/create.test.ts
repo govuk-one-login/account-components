@@ -38,7 +38,7 @@ describe("createRequestObjectGet", () => {
         authorizeUrl: undefined,
         jwtPayload: undefined,
         jwtHeader: undefined,
-        originalRequest: undefined,
+        originalRequestBody: undefined,
       }),
     );
   });
@@ -72,6 +72,10 @@ describe("createRequestObjectPost", () => {
         iss: "issuer.example.com",
         user: "default",
         state: "example-state",
+        account_management_api_authenticate_scenario: "successful",
+        account_management_api_deleteAccount_scenario: "successful",
+        account_management_api_sendOtpChallenge_scenario: "successful",
+        account_management_api_verifyOtpChallenge_scenario: "successful",
       },
     };
 
@@ -101,7 +105,7 @@ describe("createRequestObjectPost", () => {
           "http://localhost:6004/authorize?client_id=23456789012345678901234567890123&scope=account-delete&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%3A6003%2Fhome%2Fcallback&request=mock-request-object",
         jwtPayload: { foo: "bar" },
         jwtHeader: { alg: "ES256" },
-        originalRequest: mockRequest.body,
+        originalRequestBody: mockRequest.body,
       }),
     );
   });

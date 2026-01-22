@@ -22,7 +22,7 @@ const jwtHeader: JWTHeaderParameters = {
 };
 const epochDateNow = (): number => Math.round(Date.now() / 1000);
 
-const tokenBody = (expiresIn = 600) => {
+const tokenBody = (extraClaims?: Record<string, unknown>) => {
   assert(process.env["ACCESS_TOKEN_ISSUER"], "ACCESS_TOKEN_ISSUER is not set");
 
   return {
@@ -31,15 +31,18 @@ const tokenBody = (expiresIn = 600) => {
     iss: process.env["ACCESS_TOKEN_ISSUER"],
     aud: `${Buffer.from(randomBytes(5)).toString("hex")}-${Buffer.from(randomBytes(5)).toString("hex")}-${Buffer.from(randomBytes(5)).toString("hex")}`,
     iat: epochDateNow(),
-    exp: epochDateNow() + expiresIn,
+    exp: epochDateNow() + 600,
     sid: randomUUID(),
     nonce: `${Buffer.from(randomBytes(5)).toString("hex")}-${Buffer.from(randomBytes(5)).toString("hex")}`,
     vot: "Cl.Cm",
+    ...extraClaims,
   };
 };
 
-export const generateAccessToken = async (): Promise<string> => {
-  return await new SignJWT(tokenBody())
+export const generateAccessToken = async (
+  extraClaims?: Record<string, unknown>,
+): Promise<string> => {
+  return await new SignJWT(tokenBody(extraClaims))
     .setProtectedHeader(jwtHeader)
     .sign(privateKey);
 };

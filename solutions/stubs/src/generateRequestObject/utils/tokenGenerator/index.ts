@@ -1,6 +1,9 @@
 import { JwtAdapter } from "../../../utils/jwt-adapter.js";
 import { CustomError } from "../../../utils/errors.js";
-import type { JwtHeader, RequestBody } from "../../../types/common.js";
+import type {
+  JwtHeader,
+  AuthorizeRequestObject,
+} from "../../../types/common.js";
 import {
   Algorithms,
   CONVERT_TO_SECONDS,
@@ -27,11 +30,11 @@ interface GenerateJwtTokenResponse {
 }
 
 export const generateJwtToken = async (
-  requestBody: RequestBody,
+  authorizeRequestObject: AuthorizeRequestObject,
   scenario: MockRequestObjectScenarios,
 ): Promise<GenerateJwtTokenResponse> => {
   const jwtHeader = getJwtHeader(scenario);
-  const jwtPayload = getJwtPayload(scenario, requestBody);
+  const jwtPayload = getJwtPayload(scenario, authorizeRequestObject);
 
   logger.debug("token header & payload", { jwtHeader, jwtPayload });
 
@@ -42,7 +45,9 @@ export const generateJwtToken = async (
   return { token, jwtPayload, jwtHeader };
 };
 
-export function getScenario(body: RequestBody): MockRequestObjectScenarios {
+export function getScenario(
+  body: AuthorizeRequestObject,
+): MockRequestObjectScenarios {
   const retrievedScenario = Object.values(MockRequestObjectScenarios).find(
     (scenario): scenario is MockRequestObjectScenarios =>
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -80,7 +85,9 @@ export function getJwtHeader(scenario: MockRequestObjectScenarios): JwtHeader {
   return header;
 }
 
-const getRequestObjectBuilderOptions = (body: string | RequestBody) => {
+const getRequestObjectBuilderOptions = (
+  body: string | AuthorizeRequestObject,
+) => {
   try {
     const requestObjectOptions: JWTPayload =
       typeof body === "string"
@@ -100,7 +107,7 @@ const getRequestObjectBuilderOptions = (body: string | RequestBody) => {
 
 export function getJwtPayload(
   scenario: MockRequestObjectScenarios,
-  body: string | RequestBody,
+  body: string | AuthorizeRequestObject,
 ): JWTPayload {
   const requestObjectOptions = getRequestObjectBuilderOptions(body);
   const {
