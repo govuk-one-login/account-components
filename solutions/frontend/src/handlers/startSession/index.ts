@@ -93,11 +93,24 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
 
       await request.session.regenerate();
 
-      const accessTokenExpiry = decodeJwt(claims.access_token).exp ?? 0;
+      const now = Math.floor(Date.now() / 1000);
+
+      const accountManagementApiAccessTokenExpiry =
+        claims.account_management_api_access_token
+          ? decodeJwt(claims.account_management_api_access_token).exp
+          : undefined;
+
+      const accountDataApiAccessTokenExpiry =
+        claims.account_data_api_access_token
+          ? decodeJwt(claims.account_data_api_access_token).exp
+          : undefined;
+
+      const defaultSessionExpiry = now + 1800; // Default session length of 30 mins
 
       const sessionExpiry = Math.min(
-        accessTokenExpiry,
-        Math.floor(Date.now() / 1000) + 7200, // Max session length of 2 hours
+        accountManagementApiAccessTokenExpiry ?? defaultSessionExpiry,
+        accountDataApiAccessTokenExpiry ?? defaultSessionExpiry,
+        now + 7200, // Max session length of 2 hours
       );
 
       request.session.claims = claims;

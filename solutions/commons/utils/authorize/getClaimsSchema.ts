@@ -94,7 +94,10 @@ export const getClaimsSchema = (
     ),
     state: state === undefined ? v.undefined() : v.literal(state),
     jti: v.pipe(v.string(), v.nonEmpty()),
-    access_token: v.pipe(v.string(), v.nonEmpty()),
+    account_management_api_access_token: v.optional(
+      v.pipe(v.string(), v.nonEmpty()),
+    ),
+    account_data_api_access_token: v.optional(v.pipe(v.string(), v.nonEmpty())),
     sub: v.pipe(v.string(), v.nonEmpty()),
     public_sub: v.pipe(v.string(), v.nonEmpty()),
     email: v.pipe(v.string(), v.email()),
