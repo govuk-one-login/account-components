@@ -13,7 +13,7 @@ import {
   Kids,
   DEFAULT_SCENARIO,
 } from "../../../types/common.js";
-import type { RequestBody } from "../../../types/common.js";
+import type { AuthorizeRequestObject } from "../../../types/common.js";
 import type { JWTPayload } from "jose";
 
 const ORIGINAL_ENV = { ...process.env };
@@ -39,7 +39,7 @@ describe("generateJwtToken", () => {
     process.env = { ...ORIGINAL_ENV };
   });
 
-  const requestBody: RequestBody = {
+  const requestBody: AuthorizeRequestObject = {
     client_id: "my-client-id",
     iss: "issuer.example.com",
     jti: "nonce-abc-123",

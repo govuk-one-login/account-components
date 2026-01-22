@@ -70,6 +70,48 @@
             <input type="text" name="state" />
             <i>Leave blank to auto-generate</i>
         </fieldset>
+        <fieldset>
+            <legend>Account management API scenarios</legend>
+
+            <div class="api_scenario_selectors">
+                <label class="api_scenario_selector">
+                    Authenticate
+                    <select name="account_management_api_authenticate_scenario">
+                        <option value="successful">Successful</option>
+                    </select>
+                </label>
+
+                <label class="api_scenario_selector">
+                    Delete account
+                    <select name="account_management_api_deleteAccount_scenario">
+                        <option value="successful">Successful</option>
+                    </select>
+                </label> 
+
+                <label class="api_scenario_selector">
+                    Send OTP challenge
+                    <select name="account_management_api_sendOtpChallenge_scenario">
+                        <option value="successful">Successful</option>
+                    </select>
+                </label>  
+
+                <label class="api_scenario_selector">
+                    Verify OTP challenge
+                    <select name="account_management_api_verifyOtpChallenge_scenario">
+                        <option value="successful">Successful</option>
+                        <option value="invalid_otp_code">Invalid OTP code</option>
+                    </select>
+                </label>  
+            </div>                                  
+        </fieldset>
+
+        <fieldset>
+            <legend>Account data API scenarios</legend>
+
+            <div class="api_scenario_selectors">
+  
+            </div>                                  
+        </fieldset>        
         <input type="submit" value="Generate Request Object">
     </form>
     {% endif %}
@@ -77,7 +119,7 @@
         <a href="{{ authorizeUrl }}" class="button">Start AMC Journey</a>
         <a href="/" class="button">Reset</a>
         <h2>Options Chosen</h2>
-        <pre>{{ originalRequest | dump(2) | safe }}</pre>
+        <pre>{{ originalRequestBody | dump(2) | safe }}</pre>
         <h2>JWT Request Object</h2>
         <h3>Header</h3>
         <pre>{{ jwtHeader | dump(2) | safe }}</pre>

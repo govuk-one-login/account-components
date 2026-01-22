@@ -3,7 +3,7 @@ import {
   type FastifyReply,
   type FastifyRequest,
 } from "fastify";
-import type { JwtHeader, RequestBody } from "../../types/common.js";
+import type { JwtHeader } from "../../types/common.js";
 import {
   MockRequestObjectScenarios,
   Scope,
@@ -15,7 +15,7 @@ import assert from "node:assert";
 import * as v from "valibot";
 import type { JWTPayload } from "jose";
 
-const requestBodySchema = v.object({
+export const requestBodySchema = v.object({
   client_id: v.string(),
   scenario: v.string(),
   scope: v.string(),
@@ -24,6 +24,10 @@ const requestBodySchema = v.object({
   iss: v.string(),
   user: v.string(),
   state: v.string(),
+  account_management_api_authenticate_scenario: v.string(),
+  account_management_api_deleteAccount_scenario: v.string(),
+  account_management_api_sendOtpChallenge_scenario: v.string(),
+  account_management_api_verifyOtpChallenge_scenario: v.string(),
 });
 
 export async function createRequestObjectGet(
@@ -32,7 +36,7 @@ export async function createRequestObjectGet(
   authorizeUrl?: string,
   jwtPayload?: JWTPayload,
   jwtHeader?: JwtHeader,
-  originalRequest?: RequestBody,
+  originalRequestBody?: v.InferOutput<typeof requestBodySchema>,
 ) {
   const availableScopes = Object.values(Scope);
   const availableScenarios = Object.values(MockRequestObjectScenarios);
@@ -48,7 +52,7 @@ export async function createRequestObjectGet(
     authorizeUrl,
     jwtPayload,
     jwtHeader,
-    originalRequest,
+    originalRequestBody,
   });
   return reply;
 }
@@ -56,10 +60,12 @@ export async function createRequestObjectGet(
 export function createRequestObjectPost(fastify: FastifyInstance) {
   return async (request: FastifyRequest, reply: FastifyReply) => {
     const requestBody = v.parse(requestBodySchema, request.body);
+
     const redirectUrl = (await getClientRegistryWithInvalidClient()).find(
       (client) => client.client_id === requestBody.client_id,
     )?.redirect_uris[0];
     assert.ok(redirectUrl);
+
     const response = await fastify.inject({
       method: "POST",
       url: paths.requestObjectGenerator,
