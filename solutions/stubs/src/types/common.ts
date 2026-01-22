@@ -58,7 +58,8 @@ export interface RequestBody {
   jti: string;
   iat?: string;
   exp?: string;
-  access_token?: string;
+  account_management_api_access_token?: string;
+  account_data_api_access_token?: string;
   sub?: string;
   public_sub?: string;
   email?: string;

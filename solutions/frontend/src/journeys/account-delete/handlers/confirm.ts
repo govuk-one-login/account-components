@@ -23,8 +23,9 @@ export async function confirmPostHandler(
   reply: FastifyReply,
 ) {
   assert.ok(request.session.claims);
+  assert.ok(request.session.claims.account_management_api_access_token);
   const accountManagementApiClient = new AccountManagementApiClient(
-    request.session.claims.access_token,
+    request.session.claims.account_management_api_access_token,
     request.awsLambda?.event,
   );
 

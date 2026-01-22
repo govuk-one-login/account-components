@@ -33,7 +33,7 @@ describe("handleSendOtpChallenge", () => {
       session: {
         // @ts-expect-error
         claims: {
-          access_token: "test-token",
+          account_management_api_access_token: "test-token",
           public_sub: "test-public_sub-123",
           redirect_uri: "https://example.com/callback",
           state: "test-state",
