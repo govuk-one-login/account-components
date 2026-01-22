@@ -21,10 +21,10 @@ describe("generateRequestObject", () => {
     mockReply = {};
   });
 
-  it("should register POST route with correct path", () => {
+  it("should register routes", () => {
     generateRequestObject(mockApp);
 
-    expect(mockApp.post).toHaveBeenCalledTimes(2);
+    expect(mockApp.post).toHaveBeenCalledTimes(6);
   });
 
   it("should call generateRequestObjectPost handler when route is invoked", async () => {
