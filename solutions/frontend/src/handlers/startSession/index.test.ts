@@ -474,7 +474,31 @@ describe("startSession handler", () => {
   });
 
   describe("session expiry calculation", () => {
-    it("should cap session at 2 hours when tokens expire far in future", async () => {
+    it("should use default 30 mins when no tokens present", async () => {
+      const now = Math.floor(Date.now() / 1000);
+      const mockClaims = {
+        client_id: "test-client",
+        redirect_uri: "https://client.com/callback",
+        state: "test-state",
+        sub: "user-123",
+        scope: "testing-journey",
+      };
+
+      mockRequest.cookies = { apisession: "test-session-id" };
+      mockGet.mockResolvedValue({
+        Item: {
+          claims: mockClaims,
+          expires: now + 60,
+        },
+      });
+      mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
+
+      await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockRequest.session?.expires).toBe(now + 1800);
+    });
+
+    it("should cap at 2 hours when tokens expire far in future", async () => {
       const now = Math.floor(Date.now() / 1000);
       const mockClaims = {
         client_id: "test-client",
@@ -501,7 +525,7 @@ describe("startSession handler", () => {
       expect(mockRequest.session?.expires).toBe(now + 7200);
     });
 
-    it("should use earliest token expiry when within valid range", async () => {
+    it("should use earliest token expiry when within 2 hour limit", async () => {
       const now = Math.floor(Date.now() / 1000);
       const mockClaims = {
         client_id: "test-client",
@@ -530,31 +554,7 @@ describe("startSession handler", () => {
       expect(mockRequest.session?.expires).toBe(now + 3600);
     });
 
-    it("should use default expiry when no tokens present", async () => {
-      const now = Math.floor(Date.now() / 1000);
-      const mockClaims = {
-        client_id: "test-client",
-        redirect_uri: "https://client.com/callback",
-        state: "test-state",
-        sub: "user-123",
-        scope: "testing-journey",
-      };
-
-      mockRequest.cookies = { apisession: "test-session-id" };
-      mockGet.mockResolvedValue({
-        Item: {
-          claims: mockClaims,
-          expires: now + 60,
-        },
-      });
-      mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
-
-      await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
-
-      expect(mockRequest.session?.expires).toBe(now + 1800);
-    });
-
-    it("should use default for missing token and actual expiry for present token", async () => {
+    it("should use token expiry when only one token present", async () => {
       const now = Math.floor(Date.now() / 1000);
       const mockClaims = {
         client_id: "test-client",
