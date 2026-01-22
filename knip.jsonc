@@ -37,7 +37,6 @@
         "sass",
         "esbuild",
         "@govuk-one-login/frontend-device-intelligence",
-        "yaml",
       ],
     },
     "solutions/integration-tests": {
