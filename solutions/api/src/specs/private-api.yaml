@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components Private API
-  version: 0.0.8
+  version: 0.0.9
   description: |
     OAuth 2.0 provider endpoints, including:
     - POST /token (supports client assertions via private_key_jwt)
@@ -387,24 +387,36 @@ components:
           type: string
           format: email
           example: someone@something.com
-        outcome:
+        scope:
+          type: string
+          enum: ["account-delete", "testing-journey"]
+          description: The scope of the journey
+        success:
+          type: boolean
+          description: Whether the main journey was successful
+        journeys:
           type: array
-          minItems: 1
           items:
             type: object
-            description: The outcome of a journey
+            description: The outcomes of the main journey and any sub-journeys
             properties:
-              timestamp:
-                type: integer
-                description: Epoch timestamp in milliseconds
-                example: 1760718467000
-              scope:
+              journey:
                 type: string
                 enum: ["account-delete", "testing-journey"]
                 description: The scope of the journey
-            required: [timestamp, scope]
-            additionalProperties: true
-      required: [sub, email, outcome]
+              timestamp:
+                type: integer
+                description: Epoch timestamp in milliseconds representing when the journey was completed
+                example: 1760718467000
+              success:
+                type: boolean
+                description: Whether the journey was successful
+              details:
+                type: object
+                description: Additional journey details
+                additionalProperties: true
+            required: [journey, timestamp, success, details]
+      required: [outcome_id, sub, email, scope, success, journeys]
 
     JWK:
       type: object

@@ -94,11 +94,6 @@ describe("confirm handlers", () => {
         mockRequest,
         mockReply,
         mockRequest.session?.claims,
-        [
-          {
-            accountDeleted: true,
-          },
-        ],
       );
       expect(result).toBe(mockReply);
     });

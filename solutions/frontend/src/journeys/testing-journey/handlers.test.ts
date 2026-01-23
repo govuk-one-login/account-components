@@ -211,11 +211,6 @@ describe("testing-journey handlers", () => {
         mockRequest,
         mockReply,
         mockClaims,
-        [
-          {
-            testingJourneyComplete: true,
-          },
-        ],
       );
       expect(result).toBe(mockReply);
     });

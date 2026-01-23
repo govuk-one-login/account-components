@@ -60,9 +60,5 @@ export async function confirmPostHandler(
     );
   }
 
-  return await completeJourney(request, reply, request.session.claims, [
-    {
-      accountDeleted: true,
-    },
-  ]);
+  return await completeJourney(request, reply, request.session.claims);
 }
