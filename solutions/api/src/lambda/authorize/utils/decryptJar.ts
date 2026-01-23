@@ -14,7 +14,7 @@ import {
   jarKeyEncryptionAlgorithm,
 } from "../../../../../commons/utils/constants.js";
 import { EncryptionAlgorithmSpec } from "@aws-sdk/client-kms";
-import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
+import { authorizeErrors } from "../../../utils/authorizeErrors.js";
 
 let keyId: string | undefined = undefined;
 

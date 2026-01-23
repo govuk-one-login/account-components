@@ -12,7 +12,7 @@ import type { JWTExpired } from "jose/errors";
 import { JOSEError } from "jose/errors";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
-import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
+import { authorizeErrors } from "../../../utils/authorizeErrors.js";
 import { getClaimsSchema } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
 import assert from "node:assert";
 import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";

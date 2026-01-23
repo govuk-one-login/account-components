@@ -19,5 +19,22 @@ Feature: Page chrome
     And the header logo links to the account management Your Services page  
     And the account navigation is present and contains the expected links
     Given I click the sign out button in the header
-    Then the page contains the text "Error: access_denied"
-    And the page contains the text "Error description: E1007"    
+    Then the page contains the text "Client callback"
+    And the page contains the text '"sub": "urn:fdc:gov.uk:default"'    
+    And the page contains the text:
+    """
+    "success": false,
+    "email": "someone@example.com",
+    "scope": "testing-journey"
+    """
+    And the page contains the text:
+    """
+    "details": {
+      "error": {
+        "description": "UserSignedOut",
+        "code": 1001
+      }
+    },
+    "journey": "testing-journey",
+    "success": false
+    """   

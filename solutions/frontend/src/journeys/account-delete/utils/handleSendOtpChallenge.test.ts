@@ -2,7 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockSendOtpChallenge = vi.fn();
-const mockRedirectToClientRedirectUri = vi.fn();
+const mockCompleteJourney = vi.fn();
+
+vi.mock(import("../../utils/completeJourney.js"), () => ({
+  completeJourney: mockCompleteJourney,
+}));
 
 // @ts-expect-error
 vi.mock(
@@ -15,10 +19,6 @@ vi.mock(
     }),
   }),
 );
-
-vi.mock(import("../../../utils/redirectToClientRedirectUri.js"), () => ({
-  redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
-}));
 
 const { handleSendOtpChallenge } = await import("./handleSendOtpChallenge.js");
 
@@ -93,12 +93,11 @@ describe("handleSendOtpChallenge", () => {
       );
 
       expect(mockSendOtpChallenge).toHaveBeenCalledWith("test-public_sub-123");
-      expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
+      expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
         mockReply,
-        "https://example.com/callback",
-        { description: "E1000", type: "access_denied" },
-        "test-state",
+        { code: 1000, description: "TempErrorTODORemoveLater" },
+        false,
       );
       expect(result).toStrictEqual({ success: false });
     },

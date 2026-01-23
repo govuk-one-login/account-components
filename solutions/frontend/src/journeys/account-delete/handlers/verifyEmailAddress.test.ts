@@ -2,7 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockVerifyOtpChallenge = vi.fn();
-const mockRedirectToClientRedirectUri = vi.fn();
+const mockCompleteJourney = vi.fn();
+
+vi.mock(import("../../utils/completeJourney.js"), () => ({
+  completeJourney: mockCompleteJourney,
+}));
 
 // @ts-expect-error
 vi.mock(
@@ -15,10 +19,6 @@ vi.mock(
     }),
   }),
 );
-
-vi.mock(import("../../../utils/redirectToClientRedirectUri.js"), () => ({
-  redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
-}));
 
 const { verifyEmailAddressGetHandler, verifyEmailAddressPostHandler } =
   await import("./verifyEmailAddress.js");
@@ -452,7 +452,7 @@ describe("verifyEmailAddress handlers", () => {
           success: false,
           error: errorType,
         });
-        mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
+        mockCompleteJourney.mockResolvedValue(mockReply);
 
         const result = await verifyEmailAddressPostHandler(
           mockRequest as FastifyRequest,
@@ -463,12 +463,11 @@ describe("verifyEmailAddress handlers", () => {
           "test-public_sub-123",
           "123456",
         );
-        expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
+        expect(mockCompleteJourney).toHaveBeenCalledWith(
           mockRequest,
           mockReply,
-          "https://example.com/callback",
-          { description: "E1000", type: "access_denied" },
-          "test-state",
+          { code: 1000, description: "TempErrorTODORemoveLater" },
+          false,
         );
         expect(result).toBe(mockReply);
       },

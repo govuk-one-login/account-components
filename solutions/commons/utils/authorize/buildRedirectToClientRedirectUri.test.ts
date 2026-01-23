@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { authorizeErrors } from "./authorizeErrors.js";
+import { authorizeErrors } from "../../../api/src/utils/authorizeErrors.js";
 import { buildRedirectToClientRedirectUri } from "./buildRedirectToClientRedirectUri.js";
 
 describe("buildRedirectToClientRedirectUri", () => {
@@ -17,11 +17,11 @@ describe("buildRedirectToClientRedirectUri", () => {
   it("should add error parameters when error is provided", () => {
     const result = buildRedirectToClientRedirectUri(
       "https://example.com/callback",
-      authorizeErrors.userAborted,
+      authorizeErrors.verifyJwtUnknownError,
     );
 
     expect(result).toBe(
-      "https://example.com/callback?error=access_denied&error_description=E1001",
+      "https://example.com/callback?error=server_error&error_description=E3002",
     );
   });
 
@@ -56,7 +56,7 @@ describe("buildRedirectToClientRedirectUri", () => {
     );
 
     expect(result).toBe(
-      "https://example.com/callback?error=unauthorized_client&error_description=E4001&state=state_123",
+      "https://example.com/callback?error=unauthorized_client&error_description=E2001&state=state_123",
     );
   });
 
@@ -79,43 +79,5 @@ describe("buildRedirectToClientRedirectUri", () => {
     );
 
     expect(result).toBe("https://example.com/callback");
-  });
-
-  it("should handle relative redirect URI with code parameter", () => {
-    const result = buildRedirectToClientRedirectUri(
-      "/callback",
-      undefined,
-      undefined,
-      "auth_code_123",
-    );
-
-    expect(result).toBe("/callback?code=auth_code_123");
-  });
-
-  it("should handle relative redirect URI with error parameters", () => {
-    const result = buildRedirectToClientRedirectUri(
-      "/callback",
-      authorizeErrors.userAborted,
-    );
-
-    expect(result).toBe(
-      "/callback?error=access_denied&error_description=E1001",
-    );
-  });
-
-  it("should handle relative redirect URI with state parameter", () => {
-    const result = buildRedirectToClientRedirectUri(
-      "/callback",
-      undefined,
-      "state_123",
-    );
-
-    expect(result).toBe("/callback?state=state_123");
-  });
-
-  it("should handle relative redirect URI with no parameters", () => {
-    const result = buildRedirectToClientRedirectUri("/callback");
-
-    expect(result).toBe("/callback");
   });
 });

@@ -210,33 +210,10 @@ describe("testing-journey handlers", () => {
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
         mockReply,
-        mockClaims,
+        {},
+        true,
       );
       expect(result).toBe(mockReply);
-    });
-
-    it("should throw if session claims are not available", async () => {
-      mockRequest.session = {} as FastifySessionObject;
-
-      await expect(
-        confirmPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-        // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
-    });
-
-    it("should throw if session is not available", async () => {
-      delete mockRequest.session;
-
-      await expect(
-        confirmPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-        // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
     });
   });
 });

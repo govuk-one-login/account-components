@@ -14,7 +14,7 @@ import { randomBytes } from "node:crypto";
 import assert from "node:assert";
 import { paths } from "../../../../../frontend/src/utils/paths.js";
 import type { APIGatewayProxyResult } from "aws-lambda";
-import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
+import { authorizeErrors } from "../../../utils/authorizeErrors.js";
 import { serialize } from "cookie";
 import {
   apiSessionCookieName,

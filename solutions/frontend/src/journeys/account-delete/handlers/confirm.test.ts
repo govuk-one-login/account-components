@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockDeleteAccount = vi.fn();
-const mockRedirectToClientRedirectUri = vi.fn();
 const mockCompleteJourney = vi.fn();
 
 // @ts-expect-error
@@ -16,10 +15,6 @@ vi.mock(
     }),
   }),
 );
-
-vi.mock(import("../../../utils/redirectToClientRedirectUri.js"), () => ({
-  redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
-}));
 
 vi.mock(import("../../utils/completeJourney.js"), () => ({
   completeJourney: mockCompleteJourney,
@@ -93,7 +88,8 @@ describe("confirm handlers", () => {
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
         mockReply,
-        mockRequest.session?.claims,
+        {},
+        true,
       );
       expect(result).toBe(mockReply);
     });
@@ -114,7 +110,7 @@ describe("confirm handlers", () => {
           success: false,
           error: errorType,
         });
-        mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
+        mockCompleteJourney.mockResolvedValue(mockReply);
 
         const result = await confirmPostHandler(
           mockRequest as FastifyRequest,
@@ -122,12 +118,11 @@ describe("confirm handlers", () => {
         );
 
         expect(mockDeleteAccount).toHaveBeenCalledWith("test@example.com");
-        expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
+        expect(mockCompleteJourney).toHaveBeenCalledWith(
           mockRequest,
           mockReply,
-          "https://example.com/callback",
-          { description: "E1000", type: "access_denied" },
-          "test-state",
+          { code: 1000, description: "TempErrorTODORemoveLater" },
+          false,
         );
         expect(result).toBe(mockReply);
       },

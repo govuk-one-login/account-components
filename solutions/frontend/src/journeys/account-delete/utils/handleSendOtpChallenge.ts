@@ -1,8 +1,8 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
-import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
-import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
 import assert from "node:assert";
+import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
+import { completeJourney } from "../../utils/completeJourney.js";
 
 export async function handleSendOtpChallenge(
   request: FastifyRequest,
@@ -24,32 +24,27 @@ export async function handleSendOtpChallenge(
     type SendOtpChallengeError = (typeof result)["error"];
     const errorMap: Record<
       SendOtpChallengeError,
-      (typeof authorizeErrors)[keyof typeof authorizeErrors]
+      (typeof failedJourneyErrors)[keyof typeof failedJourneyErrors]
     > = {
-      RequestIsMissingParameters: authorizeErrors.tempErrorTODORemoveLater,
+      RequestIsMissingParameters: failedJourneyErrors.tempErrorTODORemoveLater,
       BlockedForEmailVerificationCodes:
-        authorizeErrors.tempErrorTODORemoveLater,
-      TooManyEmailCodesEntered: authorizeErrors.tempErrorTODORemoveLater,
-      InvalidPrincipalInRequest: authorizeErrors.tempErrorTODORemoveLater,
+        failedJourneyErrors.tempErrorTODORemoveLater,
+      TooManyEmailCodesEntered: failedJourneyErrors.tempErrorTODORemoveLater,
+      InvalidPrincipalInRequest: failedJourneyErrors.tempErrorTODORemoveLater,
       AccountManagementApiUnexpectedError:
-        authorizeErrors.tempErrorTODORemoveLater,
-      ErrorValidatingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
-      ErrorParsingResponseBodyJson: authorizeErrors.tempErrorTODORemoveLater,
+        failedJourneyErrors.tempErrorTODORemoveLater,
+      ErrorValidatingResponseBody: failedJourneyErrors.tempErrorTODORemoveLater,
+      ErrorParsingResponseBodyJson:
+        failedJourneyErrors.tempErrorTODORemoveLater,
       ErrorValidatingErrorResponseBody:
-        authorizeErrors.tempErrorTODORemoveLater,
+        failedJourneyErrors.tempErrorTODORemoveLater,
       ErrorParsingErrorResponseBodyJson:
-        authorizeErrors.tempErrorTODORemoveLater,
-      UnknownErrorResponse: authorizeErrors.tempErrorTODORemoveLater,
-      UnknownError: authorizeErrors.tempErrorTODORemoveLater,
+        failedJourneyErrors.tempErrorTODORemoveLater,
+      UnknownErrorResponse: failedJourneyErrors.tempErrorTODORemoveLater,
+      UnknownError: failedJourneyErrors.tempErrorTODORemoveLater,
     };
 
-    await redirectToClientRedirectUri(
-      request,
-      reply,
-      request.session.claims.redirect_uri,
-      errorMap[result.error],
-      request.session.claims.state,
-    );
+    await completeJourney(request, reply, errorMap[result.error], false);
 
     return { success: false };
   }

@@ -8,8 +8,8 @@ import {
 } from "../../../utils/formErrorsHelpers.js";
 import * as v from "valibot";
 import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
-import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
-import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
+import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
+import { completeJourney } from "../../utils/completeJourney.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
@@ -82,33 +82,28 @@ export async function enterPasswordPostHandler(
     type AuthenticateError = (typeof result)["error"];
     const errorMap: Record<
       Exclude<AuthenticateError, "InvalidLoginCredentials">,
-      (typeof authorizeErrors)[keyof typeof authorizeErrors]
+      (typeof failedJourneyErrors)[keyof typeof failedJourneyErrors]
     > = {
-      RequestIsMissingParameters: authorizeErrors.tempErrorTODORemoveLater,
-      AccountDoesNotExist: authorizeErrors.tempErrorTODORemoveLater,
-      UserAccountBlocked: authorizeErrors.tempErrorTODORemoveLater,
-      UserAccountSuspended: authorizeErrors.tempErrorTODORemoveLater,
+      RequestIsMissingParameters: failedJourneyErrors.tempErrorTODORemoveLater,
+      AccountDoesNotExist: failedJourneyErrors.tempErrorTODORemoveLater,
+      UserAccountBlocked: failedJourneyErrors.tempErrorTODORemoveLater,
+      UserAccountSuspended: failedJourneyErrors.tempErrorTODORemoveLater,
       AccountInterventionsUnexpectedError:
-        authorizeErrors.tempErrorTODORemoveLater,
+        failedJourneyErrors.tempErrorTODORemoveLater,
       ExceededIncorrectPasswordSubmissionLimit:
-        authorizeErrors.tempErrorTODORemoveLater,
-      ErrorValidatingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
-      ErrorParsingResponseBodyJson: authorizeErrors.tempErrorTODORemoveLater,
+        failedJourneyErrors.tempErrorTODORemoveLater,
+      ErrorValidatingResponseBody: failedJourneyErrors.tempErrorTODORemoveLater,
+      ErrorParsingResponseBodyJson:
+        failedJourneyErrors.tempErrorTODORemoveLater,
       ErrorValidatingErrorResponseBody:
-        authorizeErrors.tempErrorTODORemoveLater,
+        failedJourneyErrors.tempErrorTODORemoveLater,
       ErrorParsingErrorResponseBodyJson:
-        authorizeErrors.tempErrorTODORemoveLater,
-      UnknownErrorResponse: authorizeErrors.tempErrorTODORemoveLater,
-      UnknownError: authorizeErrors.tempErrorTODORemoveLater,
+        failedJourneyErrors.tempErrorTODORemoveLater,
+      UnknownErrorResponse: failedJourneyErrors.tempErrorTODORemoveLater,
+      UnknownError: failedJourneyErrors.tempErrorTODORemoveLater,
     };
 
-    return await redirectToClientRedirectUri(
-      request,
-      reply,
-      request.session.claims.redirect_uri,
-      errorMap[result.error],
-      request.session.claims.state,
-    );
+    return await completeJourney(request, reply, errorMap[result.error], false);
   }
 
   reply.journeyStates["account-delete"].send({

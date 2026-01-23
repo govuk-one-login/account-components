@@ -183,7 +183,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
       "error=invalid_request",
     );
     expect(response.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2010",
+      "error_description=E1010",
     );
     expect(response.errorResponse.headers?.["location"]).toContain(
       "state=test-state",
@@ -221,7 +221,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
       "error=invalid_request",
     );
     expect(response.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2010",
+      "error_description=E1010",
     );
     expect(response.errorResponse.headers?.["location"]).not.toContain(
       "state=",
@@ -251,7 +251,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
       "error=server_error",
     );
     expect(response.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5001",
+      "error_description=E3001",
     );
     expect(mockLogger.warn).toHaveBeenCalledWith(
       "FailedToCheckJtiUnusedAndSetUpSession",
@@ -287,7 +287,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
       "error=server_error",
     );
     expect(response.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5001",
+      "error_description=E3001",
     );
     expect(mockLogger.warn).toHaveBeenCalledWith(
       "FailedToCheckJtiUnusedAndSetUpSession",
@@ -367,7 +367,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
       "error=server_error",
     );
     expect(response.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5001",
+      "error_description=E3001",
     );
     expect(mockLogger.warn).toHaveBeenCalledWith(
       "FailedToCheckJtiUnusedAndSetUpSession",
@@ -402,7 +402,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
       "error=server_error",
     );
     expect(response.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5001",
+      "error_description=E3001",
     );
   });
 
@@ -425,7 +425,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
       "error=server_error",
     );
     expect(response.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5001",
+      "error_description=E3001",
     );
     expect(mockLogger.warn).toHaveBeenCalledWith(
       "FailedToCheckJtiUnusedAndSetUpSession",
@@ -459,7 +459,7 @@ describe("checkJtiUnusedAndSetUpSession", () => {
       "error=server_error",
     );
     expect(response.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5001",
+      "error_description=E3001",
     );
     expect(mockLogger.warn).toHaveBeenCalledWith(
       "FailedToCheckJtiUnusedAndSetUpSession",

@@ -2,7 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockAuthenticate = vi.fn();
-const mockRedirectToClientRedirectUri = vi.fn();
+const mockCompleteJourney = vi.fn();
+
+vi.mock(import("../../utils/completeJourney.js"), () => ({
+  completeJourney: mockCompleteJourney,
+}));
 
 // @ts-expect-error
 vi.mock(
@@ -15,10 +19,6 @@ vi.mock(
     }),
   }),
 );
-
-vi.mock(import("../../../utils/redirectToClientRedirectUri.js"), () => ({
-  redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
-}));
 
 const { enterPasswordGetHandler, enterPasswordPostHandler } =
   await import("./enterPassword.js");
@@ -281,7 +281,7 @@ describe("enterPassword handlers", () => {
           success: false,
           error: errorType,
         });
-        mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
+        mockCompleteJourney.mockResolvedValue(mockReply);
 
         const result = await enterPasswordPostHandler(
           mockRequest as FastifyRequest,
@@ -292,12 +292,11 @@ describe("enterPassword handlers", () => {
           "test@example.com",
           "validPassword123",
         );
-        expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
+        expect(mockCompleteJourney).toHaveBeenCalledWith(
           mockRequest,
           mockReply,
-          "https://example.com/callback",
-          { description: "E1000", type: "access_denied" },
-          "test-state",
+          { code: 1000, description: "TempErrorTODORemoveLater" },
+          false,
         );
         expect(result).toBe(mockReply);
       },

@@ -11,9 +11,7 @@ import { journeys } from "./config.js";
 import type { Actor, AnyActorLogic, AnyMachineSnapshot } from "xstate";
 import { createActor } from "xstate";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
-import { redirectToClientRedirectUri } from "../../utils/redirectToClientRedirectUri.js";
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
-import { buildRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/buildRedirectToClientRedirectUri.js";
 import type { ClientEntry } from "../../../../config/schema/types.js";
 import { logger } from "../../../../commons/utils/logger/index.js";
 
@@ -22,8 +20,8 @@ vi.mock(import("../../utils/paths.js"), () => ({
   paths: {
     journeys: {
       others: {
-        goToClientRedirectUri: {
-          path: "/go-to-client-redirect-uri",
+        completeFailedJourney: {
+          path: "/complete-failed-journey",
           analytics: {
             taxonomyLevel1: "others",
             taxonomyLevel2: "callback",
@@ -86,43 +84,27 @@ vi.mock(import("../../../../commons/utils/getClientRegistry/index.js"), () => ({
   getClientRegistry: vi.fn(),
 }));
 
-vi.mock(import("../../utils/redirectToClientRedirectUri.js"), () => ({
-  redirectToClientRedirectUri: vi.fn().mockResolvedValue({}),
-}));
-
 vi.mock(import("../../utils/redirectToAuthorizeErrorPage.js"), () => ({
   redirectToAuthorizeErrorPage: vi.fn().mockResolvedValue({}),
 }));
 
 // @ts-expect-error
-vi.mock(
-  import("../../../../commons/utils/authorize/authorizeErrors.js"),
-  () => ({
-    authorizeErrors: {
-      userAborted: {
-        description: "E1001",
-        type: "access_denied",
-      },
-      failedToCreateStateMachineActor: {
-        description: "E5009",
-        type: "server_error",
-      },
-      failedToValidateJourneyUrl: {
-        description: "E5010",
-        type: "server_error",
-      },
+vi.mock(import("../../../../api/src/utils/authorizeErrors.js"), () => ({
+  authorizeErrors: {
+    userAborted: {
+      description: "E1001",
+      type: "access_denied",
     },
-  }),
-);
-
-vi.mock(
-  import("../../../../commons/utils/authorize/buildRedirectToClientRedirectUri.js"),
-  () => ({
-    buildRedirectToClientRedirectUri: vi
-      .fn()
-      .mockReturnValue("/exit-journey-url"),
-  }),
-);
+    failedToCreateStateMachineActor: {
+      description: "E5009",
+      type: "server_error",
+    },
+    failedToValidateJourneyUrl: {
+      description: "E5010",
+      type: "server_error",
+    },
+  },
+}));
 
 describe("onRequest", () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -160,7 +142,7 @@ describe("onRequest", () => {
         currentUrl: {
           pathname: "/test-path",
         } as URL,
-        buildRedirectToClientRedirectUri: undefined,
+        buildCompleteFailedJourneyUri: undefined,
       },
     } as unknown as FastifyReply;
 
@@ -216,119 +198,6 @@ describe("onRequest", () => {
     });
   });
 
-  describe("when actor creation fails", () => {
-    beforeEach(() => {
-      mockSession.claims = {
-        client_id: "test-client-id",
-        scope: "test-scope",
-        redirect_uri: "http://client-redirect",
-        state: "test-state",
-      } as unknown as Claims;
-
-      vi.mocked(createActor).mockImplementation(() => {
-        throw new Error("Actor creation failed");
-      });
-    });
-
-    it("should redirect to client redirect URI with error", async () => {
-      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
-
-      expect(mockRequest.log?.warn).toHaveBeenCalledWith(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        { error: expect.any(Error) },
-        "FailedToCreateStateMachineActor",
-      );
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(metrics.addMetric).toHaveBeenCalledWith(
-        "FailedToCreateStateMachineActor",
-        "Count",
-        1,
-      );
-      expect(redirectToClientRedirectUri).toHaveBeenCalledWith(
-        mockRequest,
-        mockReply,
-        "http://client-redirect",
-        {
-          description: "E5009",
-          type: "server_error",
-        },
-        "test-state",
-      );
-    });
-  });
-
-  describe("when URL validation fails", () => {
-    beforeEach(() => {
-      mockSession.claims = {
-        client_id: "test-client-id",
-        scope: "test-scope",
-        redirect_uri: "http://client-redirect",
-        state: "test-state",
-      } as unknown as Claims;
-
-      mockReply.globals = {
-        currentUrl: {
-          pathname: "/wrong-path",
-        } as URL,
-      };
-    });
-
-    it("should redirect to correct path when URL doesn't match", async () => {
-      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
-
-      expect(mockReply.redirect).toHaveBeenCalledWith("/test-path");
-    });
-
-    it("should not redirect when URL matches others journey paths and set analytics", async () => {
-      mockReply.globals = {
-        currentUrl: {
-          pathname: "/go-to-client-redirect-uri",
-        } as URL,
-      };
-
-      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
-
-      expect(mockReply.redirect).not.toHaveBeenCalled();
-      expect(mockReply.journeyStates).toStrictEqual({
-        "test-scope": mockActor,
-      });
-      expect(mockReply.analytics).toStrictEqual({
-        taxonomyLevel1: "others",
-        taxonomyLevel2: "callback",
-        contentId: "callback-page",
-      });
-    });
-
-    it("should handle missing currentUrl", async () => {
-      // @ts-expect-error
-      mockReply.globals.currentUrl = undefined;
-
-      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
-
-      expect(mockRequest.log?.warn).toHaveBeenCalledWith(
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        { error: expect.any(Error) },
-        "FailedToValidateJourneyUrl",
-      );
-      // eslint-disable-next-line @typescript-eslint/unbound-method
-      expect(metrics.addMetric).toHaveBeenCalledWith(
-        "FailedToValidateJourneyUrl",
-        "Count",
-        1,
-      );
-      expect(redirectToClientRedirectUri).toHaveBeenCalledWith(
-        mockRequest,
-        mockReply,
-        "http://client-redirect",
-        {
-          description: "E5010",
-          type: "server_error",
-        },
-        "test-state",
-      );
-    });
-  });
-
   describe("successful flow", () => {
     beforeEach(() => {
       mockSession.claims = {
@@ -351,7 +220,7 @@ describe("onRequest", () => {
         scope: "test-scope",
       });
       expect(mockReply.client).toStrictEqual({ client_id: "test-client-id" });
-      expect(mockReply.globals?.buildRedirectToClientRedirectUri).toBeTypeOf(
+      expect(mockReply.globals?.buildCompleteFailedJourneyUri).toBeTypeOf(
         "function",
       );
       expect(journeys["test-scope" as Scope]).toHaveBeenCalledWith();
@@ -392,23 +261,21 @@ describe("onRequest", () => {
       expect(mockReply.analytics).toBeUndefined();
     });
 
-    it("should set buildRedirectToClientRedirectUri function on globals", async () => {
+    it("should set buildCompleteFailedJourneyUri function on globals", async () => {
       await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-      expect(mockReply.globals?.buildRedirectToClientRedirectUri).toBeTypeOf(
+      expect(mockReply.globals?.buildCompleteFailedJourneyUri).toBeTypeOf(
         "function",
       );
 
       const testError = {
-        description: "E1001",
-        type: "access_denied",
+        description: "UserSignedOut",
+        code: 1001,
       } as const;
-      mockReply.globals?.buildRedirectToClientRedirectUri?.(testError);
+      const url = mockReply.globals?.buildCompleteFailedJourneyUri?.(testError);
 
-      expect(buildRedirectToClientRedirectUri).toHaveBeenCalledWith(
-        "/go-to-client-redirect-uri",
-        testError,
-        undefined,
+      expect(url).toBe(
+        "/complete-failed-journey?error_code=1001&error_description=UserSignedOut",
       );
     });
 
