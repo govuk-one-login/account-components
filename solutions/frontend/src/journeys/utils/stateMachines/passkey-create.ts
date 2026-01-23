@@ -5,26 +5,21 @@ import { createJourneyStateMachine } from "./index.js";
 
 export enum PasskeyCreateState {
   notCreated = "NOT_CREATED",
-  created = "CREATED",
 }
 
 export const passkeyCreateStateMachine = createJourneyStateMachine<
   {
     registrationOptions?: PublicKeyCredentialCreationOptionsJSON;
   },
-  | {
-      type: "created";
-    }
-  | {
-      type: "updateRegistrationOptions";
-      registrationOptions: PublicKeyCredentialCreationOptionsJSON;
-    }
+  {
+    type: "updateRegistrationOptions";
+    registrationOptions: PublicKeyCredentialCreationOptionsJSON;
+  }
 >(Scope.testingJourney, {
   initial: PasskeyCreateState.notCreated,
   states: {
     [PasskeyCreateState.notCreated]: {
       on: {
-        created: PasskeyCreateState.created,
         updateRegistrationOptions: {
           actions: assign(({ event }) => ({
             registrationOptions: event.registrationOptions,
@@ -32,6 +27,5 @@ export const passkeyCreateStateMachine = createJourneyStateMachine<
         },
       },
     },
-    [PasskeyCreateState.created]: {},
   },
 });

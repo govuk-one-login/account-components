@@ -1,12 +1,10 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
-import { paths } from "../../../utils/paths.js";
 import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
 import * as v from "valibot";
-import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 import {
   checkValueForFormErrors,
   getFormErrorsList,
@@ -18,12 +16,7 @@ const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
   assert.ok(reply.globals.buildRedirectToClientRedirectUri);
 
-  await reply.render("journeys/passkey-create/templates/create.njk", {
-    ...options,
-    backLink: reply.globals.buildRedirectToClientRedirectUri(
-      authorizeErrors.userAborted,
-    ),
-  });
+  await reply.render("journeys/passkey-create/templates/create.njk", options);
 };
 
 export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
@@ -61,6 +54,7 @@ export async function postHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
+  assert.ok(request.session.claims);
   assert.ok(reply.journeyStates?.["passkey-create"]);
 
   const registrationOptions =
@@ -114,10 +108,5 @@ export async function postHandler(
 
   // TODO send passkey to account management API to save it (https://simplewebauthn.dev/docs/packages/server#3-post-registration-responsibilities)
 
-  reply.journeyStates["passkey-create"].send({
-    type: "created",
-  });
-
-  reply.redirect(paths.journeys["passkey-create"].CREATED.success.path);
-  return reply;
+  return await completeJourney(request, reply, request.session.claims);
 }

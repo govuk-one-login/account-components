@@ -15,21 +15,4 @@ export const passkeyCreate = function (fastify: FastifyInstance) {
       return (await import("./handlers/create.js")).postHandler(request, reply);
     },
   );
-
-  fastify.get(
-    paths.journeys["passkey-create"].CREATED.success.path,
-    async function (request, reply) {
-      return (await import("./handlers/success.js")).getHandler(request, reply);
-    },
-  );
-
-  fastify.post(
-    paths.journeys["passkey-create"].CREATED.success.path,
-    async function (request, reply) {
-      return (await import("./handlers/success.js")).postHandler(
-        request,
-        reply,
-      );
-    },
-  );
 };

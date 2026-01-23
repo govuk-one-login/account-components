@@ -1,25 +1,8 @@
 {
   "create": {
-    "pageTitle": "Set up a passkey",
-    "heading": "Set up a passkey",
-    "paragraphs": [
-      "You’ll be asked to scan your face or fingerprint, or enter your device passcode, PIN or pattern."
-    ],
-    "guidanceNoticeTitle": "Where will my passkey be saved?",
-    "guidanceNoticeParagraphs": [
-      "Your passkey will be saved privately to your device or cloud account  - such as your password manager.",
-      "Your biometric data won’t be shared with GOV.UK One Login or any services that you access with it."
-    ],
-    "buttonLabel": "Continue",
-    "exitJourneyLinkText": "Skip for now"
-  },
-  "success": {
-    "pageTitle": "You’ve set up a passkey",
-    "heading": "You’ve set up a passkey",
-    "paragraphs": [
-      "Next time you sign in, you can scan your face or fingerprint, or enter your device PIN, passcode or pattern.",
-      "You won’t need your GOV.UK One Login  password or a security code."
-    ],
-    "buttonLabel": "Continue"
+    "pageTitle": "TODO create passkey",
+    "heading": "TODO create passkey",
+    "buttonLabel": "TODO create passkey",
+    "exitJourneyLinkText": "TODO skip"
   }
 }
