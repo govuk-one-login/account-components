@@ -57,7 +57,7 @@ describe("completeJourney", () => {
   let mockRequest: FastifyRequest;
   let mockReply: FastifyReply;
   let mockClaims: Claims;
-  let mockJourneyOutcome: object[];
+  let mockJourneyOutcomeDetails: Record<string, unknown>;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -77,7 +77,7 @@ describe("completeJourney", () => {
       state: "test-state",
     } as v.InferOutput<ReturnType<typeof getClaimsSchema>>;
 
-    mockJourneyOutcome = [{ result: "success" }];
+    mockJourneyOutcomeDetails = { result: "success" };
 
     process.env["JOURNEY_OUTCOME_TABLE_NAME"] = "test-outcome-table";
     process.env["AUTH_CODE_TABLE_NAME"] = "test-auth-code-table";
@@ -86,7 +86,7 @@ describe("completeJourney", () => {
   it("successfully completes journey and redirects with auth code", async () => {
     const mockAuthCode = "mock-auth-code-hex";
     const mockOutcomeId = "mock-outcome-id-hex";
-    const mockAppConfig = { auth_code_ttl: 300 };
+    const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
 
     mockRandomBytes
       .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
@@ -100,7 +100,7 @@ describe("completeJourney", () => {
       mockRequest,
       mockReply,
       mockClaims,
-      mockJourneyOutcome,
+      mockJourneyOutcomeDetails,
     );
 
     expect(mockRandomBytes).toHaveBeenCalledTimes(2);
@@ -113,14 +113,19 @@ describe("completeJourney", () => {
             TableName: "test-outcome-table",
             Item: {
               outcome_id: mockOutcomeId,
-              outcome: mockJourneyOutcome.map((outcome) => ({
-                ...outcome,
-                scope: mockClaims.scope,
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                timestamp: expect.any(Number),
-              })),
               sub: mockClaims.sub,
               email: mockClaims.email,
+              scope: mockClaims.scope,
+              success: true,
+              journeys: [
+                {
+                  journey: mockClaims.scope,
+                  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                  timestamp: expect.any(Number),
+                  success: true,
+                  details: mockJourneyOutcomeDetails,
+                },
+              ],
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               expires: expect.any(Number),
             },
@@ -159,7 +164,10 @@ describe("completeJourney", () => {
     mockRandomBytes
       .mockReturnValueOnce({ toString: vi.fn(() => "auth-code") })
       .mockReturnValueOnce({ toString: vi.fn(() => "outcome-id") });
-    mockGetAppConfig.mockResolvedValue({ auth_code_ttl: 300 });
+    mockGetAppConfig.mockResolvedValue({
+      auth_code_ttl: 300,
+      journey_outcome_ttl: 600,
+    });
     mockTransactWrite.mockRejectedValue(mockError);
     mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
 
@@ -168,7 +176,7 @@ describe("completeJourney", () => {
       mockRequest,
       mockReply,
       mockClaims,
-      mockJourneyOutcome,
+      mockJourneyOutcomeDetails,
     );
 
     expect(mockRequest.log.warn).toHaveBeenCalledWith(
@@ -207,7 +215,7 @@ describe("completeJourney", () => {
       mockRequest,
       mockReply,
       mockClaims,
-      mockJourneyOutcome,
+      mockJourneyOutcomeDetails,
     );
 
     expect(mockRequest.log.warn).toHaveBeenCalledWith(
@@ -235,7 +243,7 @@ describe("completeJourney", () => {
   it("calculates correct expiry time for auth code", async () => {
     const mockAuthCode = "auth-code";
     const mockOutcomeId = "outcome-id";
-    const mockAppConfig = { auth_code_ttl: 600 };
+    const mockAppConfig = { auth_code_ttl: 600, journey_outcome_ttl: 1200 };
     const mockNow = 1640995200000;
 
     const dateNowSpy = vi.spyOn(Date, "now");
@@ -252,7 +260,7 @@ describe("completeJourney", () => {
       mockRequest,
       mockReply,
       mockClaims,
-      mockJourneyOutcome,
+      mockJourneyOutcomeDetails,
     );
 
     expect(mockTransactWrite).toHaveBeenCalledWith(

@@ -47,7 +47,7 @@ export interface JwtHeader {
   [propName: string]: unknown;
 }
 
-export interface RequestBody {
+export interface AuthorizeRequestObject {
   iss: string;
   client_id: string;
   client_secret?: string;
@@ -59,7 +59,8 @@ export interface RequestBody {
   jti: string;
   iat?: string;
   exp?: string;
-  access_token?: string;
+  account_management_api_access_token?: string;
+  account_data_api_access_token?: string;
   sub?: string;
   public_sub?: string;
   email?: string;

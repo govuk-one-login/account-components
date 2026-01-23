@@ -64,7 +64,6 @@ describe("checkJtiUnusedAndSetUpSession", () => {
     scope: "account-delete" as Scope,
     state: "test-state",
     jti: "test-jti-123",
-    access_token: "test-access-token",
     sub: "test-subject",
     public_sub: "test-public-subject",
     email: "test@example.com",

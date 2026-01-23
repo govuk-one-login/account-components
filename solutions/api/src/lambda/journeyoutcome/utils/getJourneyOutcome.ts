@@ -1,6 +1,7 @@
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
+import type { JourneyOutcome } from "../../../../../commons/utils/interfaces.js";
 import { errorManager } from "./errors.js";
-import type { JourneyOutcome, JourneyOutcomePayload } from "./interfaces.js";
+import type { JourneyOutcomePayload } from "./interfaces.js";
 
 export const getJourneyOutcome = async (
   payload: JourneyOutcomePayload,
@@ -12,9 +13,11 @@ export const getJourneyOutcome = async (
       Key: {
         outcome_id: payload.outcome_id,
       },
-      ProjectionExpression: "outcome_id, outcome, #sub, email",
+      ProjectionExpression:
+        "outcome_id, #sub, email, #scope, success, journeys",
       ExpressionAttributeNames: {
         "#sub": "sub",
+        "#scope": "scope",
       },
     });
 

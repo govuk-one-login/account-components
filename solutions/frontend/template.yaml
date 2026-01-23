@@ -54,7 +54,7 @@ Mappings:
       analyticsCookieDomain: dev.account.gov.uk
       ga4ContainerId: "GTM-KD86CMZ"
       analyticsEnabled: "1"
-      accountManagementApiUrl: https://am-stub.home.dev.account.gov.uk
+      accountManagementApiUrl: https://stubs.manage.dev.account.gov.uk/account-management-api
       contactUrl: https://home.dev.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: dev.account.gov.uk
       passkeysRpName: "GOV.UK One Login (dev)"
@@ -74,7 +74,7 @@ Mappings:
       analyticsCookieDomain: build.account.gov.uk
       ga4ContainerId: "GTM-KD86CMZ"
       analyticsEnabled: "1"
-      accountManagementApiUrl: https://am-stub.home.build.account.gov.uk
+      accountManagementApiUrl: https://stubs.manage.build.account.gov.uk/account-management-api
       contactUrl: https://home.build.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: build.account.gov.uk
       passkeysRpName: "GOV.UK One Login (build)"

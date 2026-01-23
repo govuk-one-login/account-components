@@ -21,9 +21,5 @@ export async function postHandler(
 ) {
   assert.ok(request.session.claims);
 
-  return await completeJourney(request, reply, request.session.claims, [
-    {
-      passkeyCreated: true,
-    },
-  ]);
+  return await completeJourney(request, reply, request.session.claims);
 }

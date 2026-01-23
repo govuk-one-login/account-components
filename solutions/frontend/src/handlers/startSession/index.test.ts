@@ -335,7 +335,7 @@ describe("startSession handler", () => {
         state: "test-state",
         sub: "user-123",
         scope: "testing-journey",
-        access_token: "mock.jwt.token",
+        account_management_api_access_token: "mock.jwt.token",
       };
 
       mockRequest.cookies = { apisession: "test-session-id" };
@@ -401,7 +401,7 @@ describe("startSession handler", () => {
         state: "test-state",
         sub: "user-123",
         scope: "testing-journey",
-        access_token: "mock.jwt.token",
+        account_management_api_access_token: "mock.jwt.token",
       };
 
       mockRequest.cookies = { apisession: "test-session-id" };
@@ -475,60 +475,110 @@ describe("startSession handler", () => {
   });
 
   describe("session expiry calculation", () => {
-    it("should cap session length at maximum when access token expires far in future", async () => {
+    it("should use default 30 mins when no tokens present", async () => {
+      const now = Math.floor(Date.now() / 1000);
       const mockClaims = {
         client_id: "test-client",
         redirect_uri: "https://client.com/callback",
         state: "test-state",
         sub: "user-123",
         scope: "testing-journey",
-        access_token: "mock.jwt.token",
       };
-
-      const now = Math.floor(Date.now() / 1000);
-      const longExpiry = now + 10800;
-      mockDecodeJwt.mockReturnValue({ exp: longExpiry });
 
       mockRequest.cookies = { apisession: "test-session-id" };
       mockGet.mockResolvedValue({
         Item: {
           claims: mockClaims,
-          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
+          expires: now + 60,
         },
       });
       mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
 
       await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-      expect(mockRequest.session?.expires).toBe(1704117600);
+      expect(mockRequest.session?.expires).toBe(now + 1800);
     });
 
-    it("should use access token expiry when within valid range", async () => {
+    it("should cap at 2 hours when tokens expire far in future", async () => {
+      const now = Math.floor(Date.now() / 1000);
       const mockClaims = {
         client_id: "test-client",
         redirect_uri: "https://client.com/callback",
         state: "test-state",
         sub: "user-123",
         scope: "testing-journey",
-        access_token: "mock.jwt.token",
+        account_management_api_access_token: "mock.management.token",
+        account_data_api_access_token: "mock.data.token",
       };
 
-      const now = Math.floor(Date.now() / 1000);
-      const validExpiry = now + 3600;
-      mockDecodeJwt.mockReturnValue({ exp: validExpiry });
-
+      mockDecodeJwt.mockReturnValue({ exp: now + 10800 });
       mockRequest.cookies = { apisession: "test-session-id" };
       mockGet.mockResolvedValue({
         Item: {
           claims: mockClaims,
-          expires: (Date.now() + 60000) / 1000, // Valid for 1 minute
+          expires: now + 60,
         },
       });
       mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
 
       await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-      expect(mockRequest.session?.expires).toBe(1704114000);
+      expect(mockRequest.session?.expires).toBe(now + 7200);
+    });
+
+    it("should use earliest token expiry when within 2 hour limit", async () => {
+      const now = Math.floor(Date.now() / 1000);
+      const mockClaims = {
+        client_id: "test-client",
+        redirect_uri: "https://client.com/callback",
+        state: "test-state",
+        sub: "user-123",
+        scope: "testing-journey",
+        account_management_api_access_token: "mock.management.token",
+        account_data_api_access_token: "mock.data.token",
+      };
+
+      mockDecodeJwt
+        .mockReturnValueOnce({ exp: now + 3600 })
+        .mockReturnValueOnce({ exp: now + 5400 });
+      mockRequest.cookies = { apisession: "test-session-id" };
+      mockGet.mockResolvedValue({
+        Item: {
+          claims: mockClaims,
+          expires: now + 60,
+        },
+      });
+      mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
+
+      await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockRequest.session?.expires).toBe(now + 3600);
+    });
+
+    it("should use token expiry when only one token present", async () => {
+      const now = Math.floor(Date.now() / 1000);
+      const mockClaims = {
+        client_id: "test-client",
+        redirect_uri: "https://client.com/callback",
+        state: "test-state",
+        sub: "user-123",
+        scope: "testing-journey",
+        account_management_api_access_token: "mock.management.token",
+      };
+
+      mockDecodeJwt.mockReturnValue({ exp: now + 900 });
+      mockRequest.cookies = { apisession: "test-session-id" };
+      mockGet.mockResolvedValue({
+        Item: {
+          claims: mockClaims,
+          expires: now + 60,
+        },
+      });
+      mockSafeParse.mockReturnValue({ success: true, output: mockClaims });
+
+      await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockRequest.session?.expires).toBe(now + 900);
     });
   });
 });

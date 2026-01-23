@@ -50,6 +50,16 @@ Feature: Delete account
   
     Given I click the "Delete your GOV.UK One Login" button
     Then the page contains the text "Client callback"
-    And the page contains the text '"accountDeleted": true'
-    And the page contains the text '"sub": "urn:fdc:gov.uk:default"'
-    And the page contains the text '"scope": "account-delete"'
+    And the page contains the text '"sub": "urn:fdc:gov.uk:default"'    
+    And the page contains the text:
+    """
+    "success": true,
+    "email": "someone@example.com",
+    "scope": "account-delete"
+    """
+    And the page contains the text:
+    """
+    "details": {},
+    "journey": "account-delete",
+    "success": true
+    """  

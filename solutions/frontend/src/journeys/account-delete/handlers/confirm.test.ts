@@ -38,7 +38,7 @@ describe("confirm handlers", () => {
       session: {
         // @ts-expect-error
         claims: {
-          access_token: "test-token",
+          account_management_api_access_token: "test-token",
           email: "test@example.com",
           redirect_uri: "https://example.com/callback",
           state: "test-state",
@@ -94,11 +94,6 @@ describe("confirm handlers", () => {
         mockRequest,
         mockReply,
         mockRequest.session?.claims,
-        [
-          {
-            accountDeleted: true,
-          },
-        ],
       );
       expect(result).toBe(mockReply);
     });

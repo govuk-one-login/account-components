@@ -51,9 +51,19 @@ Feature: Journey state
 
     Given I click the "Complete testing journey" button
     Then the page contains the text "Client callback"
-    And the page contains the text '"testingJourneyComplete": true'
-    And the page contains the text '"sub": "urn:fdc:gov.uk:default"'
-    And the page contains the text '"scope": "testing-journey"'
+    And the page contains the text '"sub": "urn:fdc:gov.uk:default"'    
+    And the page contains the text:
+    """
+    "success": true,
+    "email": "someone@example.com",
+    "scope": "testing-journey"
+    """
+    And the page contains the text:
+    """
+    "details": {},
+    "journey": "testing-journey",
+    "success": true
+    """    
 
     # Shouldn't be able to access any journey pages after finishing journey
     Given I go to the "Testing journey - step 1" page   

@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
 
@@ -59,10 +59,10 @@ jobs:
           JOURNEY_OUTCOME_TABLE_NAME=components-core-JourneyOutcome    
           AUTH_FRONTEND_URL=https://signin.account.gov.uk
           ANALYTICS_COOKIE_DOMAIN=localhost       
-          ACCOUNT_MANAGEMENT_API_URL=https://am-stub.home.build.account.gov.uk        
           PASSKEYS_RP_ID=localhost
           PASSKEYS_RP_NAME="GOV.UK One Login (local)"          
           PASSKEYS_EXPECTED_ORIGIN=http://localhost:6002                    
+          ACCOUNT_MANAGEMENT_API_URL=http://localhost:6003/account-management-api
           GA4_CONTAINER_ID=GTM-KD86CMZ
           ANALYTICS_ENABLED=1
           YOUR_SERVICES_URL=https://home.dev.account.gov.uk/your-services

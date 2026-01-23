@@ -93,12 +93,30 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
 
       await request.session.regenerate();
 
-      const accessTokenExpiry = decodeJwt(claims.access_token).exp ?? 0;
+      const now = Math.floor(Date.now() / 1000);
+      let sessionExpiry = now + 1800; // Default session length of 30 mins
 
-      const sessionExpiry = Math.min(
-        accessTokenExpiry,
-        Math.floor(Date.now() / 1000) + 7200, // Max session length of 2 hours
-      );
+      const accountManagementApiAccessTokenExpiry =
+        claims.account_management_api_access_token
+          ? decodeJwt(claims.account_management_api_access_token).exp
+          : undefined;
+
+      const accountDataApiAccessTokenExpiry =
+        claims.account_data_api_access_token
+          ? decodeJwt(claims.account_data_api_access_token).exp
+          : undefined;
+
+      const tokenExpiries = [
+        accountManagementApiAccessTokenExpiry,
+        accountDataApiAccessTokenExpiry,
+      ].filter((item) => typeof item === "number");
+
+      if (tokenExpiries.length) {
+        sessionExpiry = Math.min(
+          now + 7200, // Max session length of 2 hours
+          ...tokenExpiries,
+        );
+      }
 
       request.session.claims = claims;
       request.session.user_id = claims.sub;
