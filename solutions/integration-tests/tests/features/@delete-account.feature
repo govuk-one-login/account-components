@@ -49,7 +49,4 @@ Feature: Delete account
     And the page meets our accessibility standards
   
     Given I click the "Delete your GOV.UK One Login" button
-    Then the page contains the text "Client callback"
-    And the page contains the text '"accountDeleted": true'
-    And the page contains the text '"sub": "urn:fdc:gov.uk:default"'
-    And the page contains the text '"scope": "account-delete"'
+    Then the page looks as expected
