@@ -258,6 +258,7 @@ Globals:
               ]
         DT_LOGGING_NODEJS_FLAGS: Exporter=true,LambdaSensor=false
         DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
+        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: true
 
 Resources:
   CodeDeployServiceRole:
