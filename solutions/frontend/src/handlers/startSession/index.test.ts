@@ -52,7 +52,7 @@ vi.mock(import("../../utils/paths.js"), () => ({
   initialJourneyPaths: {
     "testing-journey": "/testing-journey/step-1",
     "account-delete": "/account-delete/step-1",
-    "passkey-create": "/passkeys/set-up",
+    "passkey-create": "/passkeys/create",
   },
 }));
 

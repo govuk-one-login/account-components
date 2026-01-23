@@ -38,7 +38,7 @@ export const paths = {
     // TODO check these paths with UCD
     [Scope.passkeyCreate]: {
       [PasskeyCreateState.notCreated]: {
-        setUp: {
+        create: {
           path: "/passkeys/create",
         },
       },
@@ -112,5 +112,5 @@ export const initialJourneyPaths: Record<Scope, string> = {
   [Scope.accountDelete]:
     paths.journeys[Scope.accountDelete].EMAIL_NOT_VERIFIED.introduction.path,
   [Scope.passkeyCreate]:
-    paths.journeys[Scope.passkeyCreate].NOT_CREATED.setUp.path,
+    paths.journeys[Scope.passkeyCreate].NOT_CREATED.create.path,
 } as const;
