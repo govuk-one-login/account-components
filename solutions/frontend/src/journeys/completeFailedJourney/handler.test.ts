@@ -39,7 +39,7 @@ describe("completeFailedJourneyHandler", () => {
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
         mockReply,
-        { code: 123, description: "Test error" },
+        { error: { code: 123, description: "Test error" } },
         false,
       );
       expect(result).toBe(mockReply);
@@ -60,7 +60,7 @@ describe("completeFailedJourneyHandler", () => {
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
         mockReply,
-        { code: 456, description: "Another error" },
+        { error: { code: 456, description: "Another error" } },
         false,
       );
     });
@@ -131,7 +131,7 @@ describe("completeFailedJourneyHandler", () => {
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
         mockReply,
-        { code: 789, description: "Post error" },
+        { error: { code: 789, description: "Post error" } },
         false,
       );
       expect(result).toBe(mockReply);

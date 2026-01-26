@@ -8,8 +8,6 @@ import {
 } from "../../../utils/formErrorsHelpers.js";
 import * as v from "valibot";
 import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
-import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
-import { completeJourney } from "../../utils/completeJourney.js";
 
 const render = async (
   request: FastifyRequest,
@@ -103,27 +101,11 @@ export async function verifyEmailAddressPostHandler(
         errorList: getFormErrorsList(formErrors),
       });
       return reply;
+    } else if (result.error === "TooManyEmailCodesEntered") {
+      // TODO need to do something in this case?
     }
 
-    type SendOtpChallengeError = (typeof result)["error"];
-    const errorMap: Record<
-      Exclude<SendOtpChallengeError, "InvalidOTPCode">,
-      (typeof failedJourneyErrors)[keyof typeof failedJourneyErrors]
-    > = {
-      RequestIsMissingParameters: failedJourneyErrors.tempErrorTODORemoveLater,
-      TooManyEmailCodesEntered: failedJourneyErrors.tempErrorTODORemoveLater,
-      ErrorValidatingResponseBody: failedJourneyErrors.tempErrorTODORemoveLater,
-      ErrorParsingResponseBodyJson:
-        failedJourneyErrors.tempErrorTODORemoveLater,
-      ErrorValidatingErrorResponseBody:
-        failedJourneyErrors.tempErrorTODORemoveLater,
-      ErrorParsingErrorResponseBodyJson:
-        failedJourneyErrors.tempErrorTODORemoveLater,
-      UnknownErrorResponse: failedJourneyErrors.tempErrorTODORemoveLater,
-      UnknownError: failedJourneyErrors.tempErrorTODORemoveLater,
-    };
-
-    return await completeJourney(request, reply, errorMap[result.error], false);
+    throw new Error(result.error);
   }
 
   reply.journeyStates["account-delete"].send({

@@ -24,8 +24,10 @@ export const completeFailedJourneyHandler = async (
     request,
     reply,
     {
-      code: params.error_code,
-      description: params.error_description,
+      error: {
+        code: params.error_code,
+        description: params.error_description,
+      },
     },
     false,
   );

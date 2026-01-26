@@ -169,7 +169,9 @@ describe("completeJourney", () => {
     const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
     const mockRedirectUrl =
       "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
-    const mockErrorDetails = { code: 1001, description: "Test error" };
+    const mockErrorDetails = {
+      error: { code: 1001, description: "Test error" },
+    };
 
     mockRandomBytes
       .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
@@ -206,9 +208,7 @@ describe("completeJourney", () => {
                   // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                   timestamp: expect.any(Number),
                   success: false,
-                  details: {
-                    error: mockErrorDetails,
-                  },
+                  details: mockErrorDetails,
                 },
               ],
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

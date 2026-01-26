@@ -458,7 +458,7 @@ components:
                 description: Whether the journey was successful
               details:
                 type: object
-                description: Additional journey details. When success is false, must have an error property the value of which must be an object with code (number) and description (string). When success is true, this can contain any properties.
+                description: Additional journey details. Can contain any properties but when success is false it must contain an error property the value of which must be an object with code (number) and description (string) properties.
                 additionalProperties: true
                 properties:
                   error:

@@ -8,8 +8,6 @@ import {
 } from "../../../utils/formErrorsHelpers.js";
 import * as v from "valibot";
 import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
-import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
-import { completeJourney } from "../../utils/completeJourney.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
@@ -77,33 +75,17 @@ export async function enterPasswordPostHandler(
         errorList: getFormErrorsList(formErrors),
       });
       return reply;
+    } else if (result.error === "ExceededIncorrectPasswordSubmissionLimit") {
+      // TODO need to do something in this case?
+    } else if (result.error === "AccountInterventionsUnexpectedError") {
+      // TODO need to do something in this case?
+    } else if (result.error === "UserAccountSuspended") {
+      // TODO need to do something in this case?
+    } else if (result.error === "UserAccountBlocked") {
+      // TODO need to do something in this case?
     }
 
-    type AuthenticateError = (typeof result)["error"];
-    const errorMap: Record<
-      Exclude<AuthenticateError, "InvalidLoginCredentials">,
-      (typeof failedJourneyErrors)[keyof typeof failedJourneyErrors]
-    > = {
-      RequestIsMissingParameters: failedJourneyErrors.tempErrorTODORemoveLater,
-      AccountDoesNotExist: failedJourneyErrors.tempErrorTODORemoveLater,
-      UserAccountBlocked: failedJourneyErrors.tempErrorTODORemoveLater,
-      UserAccountSuspended: failedJourneyErrors.tempErrorTODORemoveLater,
-      AccountInterventionsUnexpectedError:
-        failedJourneyErrors.tempErrorTODORemoveLater,
-      ExceededIncorrectPasswordSubmissionLimit:
-        failedJourneyErrors.tempErrorTODORemoveLater,
-      ErrorValidatingResponseBody: failedJourneyErrors.tempErrorTODORemoveLater,
-      ErrorParsingResponseBodyJson:
-        failedJourneyErrors.tempErrorTODORemoveLater,
-      ErrorValidatingErrorResponseBody:
-        failedJourneyErrors.tempErrorTODORemoveLater,
-      ErrorParsingErrorResponseBodyJson:
-        failedJourneyErrors.tempErrorTODORemoveLater,
-      UnknownErrorResponse: failedJourneyErrors.tempErrorTODORemoveLater,
-      UnknownError: failedJourneyErrors.tempErrorTODORemoveLater,
-    };
-
-    return await completeJourney(request, reply, errorMap[result.error], false);
+    throw new Error(result.error);
   }
 
   reply.journeyStates["account-delete"].send({

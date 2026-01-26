@@ -2,11 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockAuthenticate = vi.fn();
-const mockCompleteJourney = vi.fn();
-
-vi.mock(import("../../utils/completeJourney.js"), () => ({
-  completeJourney: mockCompleteJourney,
-}));
 
 // @ts-expect-error
 vi.mock(
@@ -258,48 +253,103 @@ describe("enterPassword handlers", () => {
       ).rejects.toThrowError();
     });
 
-    it.each([
-      "RequestIsMissingParameters",
-      "AccountDoesNotExist",
-      "UserAccountBlocked",
-      "UserAccountSuspended",
-      "AccountInterventionsUnexpectedError",
-      "ExceededIncorrectPasswordSubmissionLimit",
-      "ErrorValidatingResponseBody",
-      "ErrorParsingResponseBodyJson",
-      "ErrorValidatingErrorResponseBody",
-      "ErrorParsingErrorResponseBodyJson",
-      "UnknownErrorResponse",
-      "UnknownError",
-    ] as const)(
-      "should redirect to client redirect URI when authenticate fails with %s",
-      async (errorType) => {
-        mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
-        mockAuthenticate.mockResolvedValue({
-          success: false,
-          error: errorType,
-        });
-        mockCompleteJourney.mockResolvedValue(mockReply);
+    it("should throw if session claims are not available", async () => {
+      delete mockRequest.session;
+      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
 
-        const result = await enterPasswordPostHandler(
+      await expect(
+        enterPasswordPostHandler(
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
-        );
+        ),
+        // eslint-disable-next-line vitest/require-to-throw-message
+      ).rejects.toThrowError();
+    });
 
-        expect(mockAuthenticate).toHaveBeenCalledWith(
-          "test@example.com",
-          "validPassword123",
-        );
-        expect(mockCompleteJourney).toHaveBeenCalledWith(
-          mockRequest,
-          mockReply,
-          { code: 1000, description: "TempErrorTODORemoveLater" },
-          false,
-        );
-        expect(result).toBe(mockReply);
-      },
-    );
+    it("should throw if access token is not available", async () => {
+      // @ts-expect-error
+      delete mockRequest.session.claims.account_management_api_access_token;
+      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
+
+      await expect(
+        enterPasswordPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+        // eslint-disable-next-line vitest/require-to-throw-message
+      ).rejects.toThrowError();
+    });
+
+    it("should throw error when ExceededIncorrectPasswordSubmissionLimit", async () => {
+      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
+      mockAuthenticate.mockResolvedValue({
+        success: false,
+        error: "ExceededIncorrectPasswordSubmissionLimit",
+      });
+
+      await expect(
+        enterPasswordPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+      ).rejects.toThrowError("ExceededIncorrectPasswordSubmissionLimit");
+    });
+
+    it("should throw error when AccountInterventionsUnexpectedError", async () => {
+      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
+      mockAuthenticate.mockResolvedValue({
+        success: false,
+        error: "AccountInterventionsUnexpectedError",
+      });
+
+      await expect(
+        enterPasswordPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+      ).rejects.toThrowError("AccountInterventionsUnexpectedError");
+    });
+
+    it("should throw error when UserAccountSuspended", async () => {
+      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
+      mockAuthenticate.mockResolvedValue({
+        success: false,
+        error: "UserAccountSuspended",
+      });
+
+      await expect(
+        enterPasswordPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+      ).rejects.toThrowError("UserAccountSuspended");
+    });
+
+    it("should throw error when UserAccountBlocked", async () => {
+      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
+      mockAuthenticate.mockResolvedValue({
+        success: false,
+        error: "UserAccountBlocked",
+      });
+
+      await expect(
+        enterPasswordPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+      ).rejects.toThrowError("UserAccountBlocked");
+    });
   });
 });

@@ -94,38 +94,52 @@ describe("confirm handlers", () => {
       expect(result).toBe(mockReply);
     });
 
-    it.each([
-      "RequestIsMissingParameters",
-      "AccountDoesNotExist",
-      "ErrorValidatingResponseBody",
-      "ErrorParsingResponseBodyJson",
-      "ErrorValidatingErrorResponseBody",
-      "ErrorParsingErrorResponseBodyJson",
-      "UnknownErrorResponse",
-      "UnknownError",
-    ] as const)(
-      "should redirect to client redirect URI when deleteAccount fails with %s",
-      async (errorType) => {
-        mockDeleteAccount.mockResolvedValue({
-          success: false,
-          error: errorType,
-        });
-        mockCompleteJourney.mockResolvedValue(mockReply);
+    it("should throw error when deleteAccount fails", async () => {
+      mockDeleteAccount.mockResolvedValue({
+        success: false,
+        error: "Failed to delete account",
+      });
 
-        const result = await confirmPostHandler(
+      await expect(
+        confirmPostHandler(
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
-        );
+        ),
+      ).rejects.toThrowError("Failed to delete account");
 
-        expect(mockDeleteAccount).toHaveBeenCalledWith("test@example.com");
-        expect(mockCompleteJourney).toHaveBeenCalledWith(
-          mockRequest,
-          mockReply,
-          { code: 1000, description: "TempErrorTODORemoveLater" },
-          false,
-        );
-        expect(result).toBe(mockReply);
-      },
-    );
+      expect(mockDeleteAccount).toHaveBeenCalledWith("test@example.com");
+      expect(mockCompleteJourney).not.toHaveBeenCalled();
+    });
+
+    it("should throw error when session claims are missing", async () => {
+      delete mockRequest.session;
+
+      await expect(
+        confirmPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+        // eslint-disable-next-line vitest/require-to-throw-message
+      ).rejects.toThrowError();
+
+      expect(mockDeleteAccount).not.toHaveBeenCalled();
+      expect(mockCompleteJourney).not.toHaveBeenCalled();
+    });
+
+    it("should throw error when access token is missing", async () => {
+      // @ts-expect-error
+      delete mockRequest.session.claims.account_management_api_access_token;
+
+      await expect(
+        confirmPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+        // eslint-disable-next-line vitest/require-to-throw-message
+      ).rejects.toThrowError();
+
+      expect(mockDeleteAccount).not.toHaveBeenCalled();
+      expect(mockCompleteJourney).not.toHaveBeenCalled();
+    });
   });
 });

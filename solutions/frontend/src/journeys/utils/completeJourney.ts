@@ -2,7 +2,6 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import { randomBytes } from "node:crypto";
 import { getAppConfig } from "../../../../commons/utils/getAppConfig/index.js";
-import * as v from "valibot";
 import type { JourneyOutcome } from "../../../../commons/utils/interfaces.js";
 import { buildRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/buildRedirectToClientRedirectUri.js";
 import { destroySession } from "../../utils/session.js";
@@ -11,17 +10,17 @@ import assert from "node:assert";
 
 const dynamoDbClient = getDynamoDbClient();
 
-export const journeyErrorSchema = v.object({
-  code: v.number(),
-  description: v.string(),
-});
-
 export const completeJourney = async (
   ...[request, reply, journeyOutcomeDetails, success]:
     | [
         request: FastifyRequest,
         reply: FastifyReply,
-        journeyOutcomeDetails: v.InferOutput<typeof journeyErrorSchema>,
+        journeyOutcomeDetails: {
+          error: {
+            code: number;
+            description: string;
+          };
+        } & JourneyOutcome["journeys"][number]["details"],
         success: false,
       ]
     | [
@@ -51,11 +50,7 @@ export const completeJourney = async (
         journey: claims.scope,
         timestamp: Date.now(),
         success,
-        details: success
-          ? journeyOutcomeDetails
-          : {
-              error: journeyOutcomeDetails,
-            },
+        details: journeyOutcomeDetails,
       },
     ],
   };
