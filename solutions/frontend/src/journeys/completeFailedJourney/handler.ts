@@ -10,7 +10,7 @@ export const completeFailedJourneyHandler = async (
     v.object({
       error_code: v.pipe(
         v.string(),
-        v.transform(parseInt),
+        v.transform(Number.parseInt),
         v.number(),
         v.integer(),
         v.minValue(1),
