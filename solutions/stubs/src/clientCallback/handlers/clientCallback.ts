@@ -7,6 +7,7 @@ import { SignJWT, importPKCS8 } from "jose";
 import type { ClientEntry } from "../../../../config/schema/types.js";
 import { getParametersProvider } from "../../../../commons/utils/awsClient/ssmClient/index.js";
 import { jwtSigningAlgorithm } from "../../../../commons/utils/constants.js";
+import deterministicJsonStringify from "fast-json-stable-stringify";
 
 export async function handler(request: FastifyRequest, reply: FastifyReply) {
   assert.ok(reply.render);
@@ -99,7 +100,10 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
 
       await reply.render("clientCallback/handlers/clientCallback.njk", {
         client: `${client.client_name} (${client.client_id})`,
-        journeyOutcomeDetails,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        journeyOutcomeDetails: JSON.parse(
+          deterministicJsonStringify(journeyOutcomeDetails),
+        ),
       });
       return await reply;
     }
