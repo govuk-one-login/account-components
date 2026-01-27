@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components Private API
-  version: 0.0.9
+  version: 0.0.10
   description: |
     OAuth 2.0 provider endpoints, including:
     - POST /token (supports client assertions via private_key_jwt)
@@ -158,6 +158,49 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/JourneyOutcome"
+              examples:
+                successful_journey:
+                  value:
+                    outcome_id: 9cd4c45f8f33cced99cfaa48394e1acf5e90f6e2616bba40
+                    sub: urn:fdc:gov.uk:2022:JG0RJI1pYbnanbvPs-j4j5-a-PFcmhry9Qu9NCEp5d4
+                    email: user@example.com
+                    scope: account-delete
+                    success: true
+                    journeys:
+                      - journey: account-delete
+                        timestamp: 1760718467000
+                        success: true
+                        details: {}
+                failed_journey__user_signed_out:
+                  value:
+                    outcome_id: 8bc3d34e7e22bbdc88beaa37283d0ace4d80e5d1505aa30
+                    sub: urn:fdc:gov.uk:2022:JG0RJI1pYbnanbvPs-j4j5-a-PFcmhry9Qu9NCEp5d4
+                    email: user@example.com
+                    scope: account-delete
+                    success: false
+                    journeys:
+                      - journey: account-delete
+                        timestamp: 1760718467000
+                        success: false
+                        details:
+                          error:
+                            code: 1001
+                            description: UserSignedOut
+                failed_journey__user_aborted_journey:
+                  value:
+                    outcome_id: 8bc3d34e7e22bbdc88beaa37283d0ace4d80e5d1505aa30
+                    sub: urn:fdc:gov.uk:2022:JG0RJI1pYbnanbvPs-j4j5-a-PFcmhry9Qu9NCEp5d4
+                    email: user@example.com
+                    scope: account-delete
+                    success: false
+                    journeys:
+                      - journey: account-delete
+                        timestamp: 1760718467000
+                        success: false
+                        details:
+                          error:
+                            code: 1002
+                            description: UserAbortedJourney
         "400":
           description: Bad request - invalid authorization header, access token, or outcome mismatch
           content:
@@ -212,7 +255,7 @@ paths:
                 failed_to_find_outcome:
                   value:
                     error: internal_server_error
-                    error_description: E500
+                    error_description: E5001
 
   /.well-known/jwks.json:
     get:
@@ -373,7 +416,7 @@ components:
 
     JourneyOutcome:
       type: object
-      description: Provides the outcomes of the Account Component journeys undertaken by the user
+      description: Provides the outcomes of the Account Component journeys undertaken by the user.
       properties:
         outcome_id:
           description: The journey outcome's unique ID
@@ -393,9 +436,11 @@ components:
           description: The scope of the journey
         success:
           type: boolean
-          description: Whether the main journey was successful
+          description: Whether the main journey was successful. If any journey has success false, then this will also be false.
         journeys:
           type: array
+          description: Array of journey outcomes. The first item's journey property will always match the top-level scope property.
+          minItems: 1
           items:
             type: object
             description: The outcomes of the main journey and any sub-journeys
@@ -413,8 +458,18 @@ components:
                 description: Whether the journey was successful
               details:
                 type: object
-                description: Additional journey details
+                description: Additional journey details. Can contain any properties but when success is false it must contain an error property the value of which must be an object with code (number) and description (string) properties.
                 additionalProperties: true
+                properties:
+                  error:
+                    type: object
+                    description: Error details (required when success is false)
+                    properties:
+                      code:
+                        type: number
+                      description:
+                        type: string
+                    required: [code, description]
             required: [journey, timestamp, success, details]
       required: [outcome_id, sub, email, scope, success, journeys]
 

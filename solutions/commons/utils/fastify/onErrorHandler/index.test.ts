@@ -2,6 +2,15 @@ import type { Mock } from "vitest";
 import { expect, it, describe, vi, afterEach, beforeEach } from "vitest";
 import { onError } from "./index.js";
 import type { FastifyRequest, FastifyReply } from "fastify";
+import { metrics } from "../../metrics/index.js";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
+
+// @ts-expect-error
+vi.mock(import("../../metrics/index.js"), () => ({
+  metrics: {
+    addMetric: vi.fn(),
+  },
+}));
 
 describe("onError handler", () => {
   let mockLog: {
@@ -35,7 +44,20 @@ describe("onError handler", () => {
 
     expect(mockLog.error).toHaveBeenCalledExactlyOnceWith(
       testError,
-      "An error occurred",
+      "ERROR_CAUGHT_BY_GLOBAL_ERROR_HANDLER",
+    );
+  });
+
+  it("adds metric with error message", async () => {
+    const testError = new Error("Test error");
+
+    await onError(testError, mockRequest, mockReply);
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(metrics.addMetric).toHaveBeenCalledExactlyOnceWith(
+      "ERROR_CAUGHT_BY_GLOBAL_ERROR_HANDLER",
+      MetricUnit.Count,
+      1,
     );
   });
 

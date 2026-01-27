@@ -38,7 +38,7 @@ import { paths } from "./utils/paths.js";
 import { getEnvironment } from "../../commons/utils/getEnvironment/index.js";
 import { FastifyPowertoolsLogger } from "../../commons/utils/fastify/powertoolsLogger/index.js";
 import { resolveEnvVarToBool } from "../../commons/utils/resolveEnvVarToBool/index.js";
-import { authorizeErrors } from "../../commons/utils/authorize/authorizeErrors.js";
+import { failedJourneyErrors } from "./journeys/utils/failedJourneyErrors.js";
 
 await configureI18n({
   [Lang.English]: {
@@ -83,7 +83,7 @@ export const initFrontend = async function () {
       analyticsCookieDomain: process.env["ANALYTICS_COOKIE_DOMAIN"],
       ga4ContainerId: process.env["GA4_CONTAINER_ID"],
       analyticsEnabled: resolveEnvVarToBool("ANALYTICS_ENABLED"),
-      authorizeErrors,
+      failedJourneyErrors,
       contactUrl: process.env["CONTACT_URL"],
       yourServicesUrl: process.env["YOUR_SERVICES_URL"],
       securityUrl: process.env["SECURITY_URL"],

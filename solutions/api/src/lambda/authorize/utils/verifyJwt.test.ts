@@ -119,7 +119,7 @@ describe("verifyJwt", () => {
       "error=unauthorized_client",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E4001",
+      "error_description=E2001",
     );
   });
 
@@ -136,7 +136,7 @@ describe("verifyJwt", () => {
       "error=unauthorized_client",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E4002",
+      "error_description=E2002",
     );
   });
 
@@ -153,7 +153,7 @@ describe("verifyJwt", () => {
       "error=unauthorized_client",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E4003",
+      "error_description=E2003",
     );
   });
 
@@ -170,7 +170,7 @@ describe("verifyJwt", () => {
       "error=unauthorized_client",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E4004",
+      "error_description=E2004",
     );
   });
 
@@ -187,7 +187,7 @@ describe("verifyJwt", () => {
       "error=unauthorized_client",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E4005",
+      "error_description=E2005",
     );
   });
 
@@ -204,7 +204,7 @@ describe("verifyJwt", () => {
       "error=invalid_request",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2001",
+      "error_description=E1001",
     );
   });
 
@@ -221,7 +221,7 @@ describe("verifyJwt", () => {
       "error=invalid_request",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2002",
+      "error_description=E1002",
     );
   });
 
@@ -238,7 +238,7 @@ describe("verifyJwt", () => {
       "error=invalid_request",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2003",
+      "error_description=E1003",
     );
   });
 
@@ -255,7 +255,7 @@ describe("verifyJwt", () => {
       "error=invalid_request",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2004",
+      "error_description=E1004",
     );
   });
 
@@ -274,7 +274,7 @@ describe("verifyJwt", () => {
       "error=invalid_request",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2005",
+      "error_description=E1005",
     );
   });
 
@@ -291,7 +291,7 @@ describe("verifyJwt", () => {
       "error=invalid_request",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2006",
+      "error_description=E1006",
     );
   });
 
@@ -312,7 +312,7 @@ describe("verifyJwt", () => {
       "error=invalid_request",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2008",
+      "error_description=E1008",
     );
   });
 
@@ -348,7 +348,7 @@ describe("verifyJwt", () => {
       "error=invalid_request",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E2007",
+      "error_description=E1007",
     );
   });
 
@@ -365,7 +365,7 @@ describe("verifyJwt", () => {
       "error=server_error",
     );
     expect(result.errorResponse.headers?.["location"]).toContain(
-      "error_description=E5002",
+      "error_description=E3002",
     );
   });
 

@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockDeleteAccount = vi.fn();
-const mockRedirectToClientRedirectUri = vi.fn();
 const mockCompleteJourney = vi.fn();
 
 // @ts-expect-error
@@ -16,10 +15,6 @@ vi.mock(
     }),
   }),
 );
-
-vi.mock(import("../../../utils/redirectToClientRedirectUri.js"), () => ({
-  redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
-}));
 
 vi.mock(import("../../utils/completeJourney.js"), () => ({
   completeJourney: mockCompleteJourney,
@@ -93,44 +88,58 @@ describe("confirm handlers", () => {
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
         mockReply,
-        mockRequest.session?.claims,
+        {},
+        true,
       );
       expect(result).toBe(mockReply);
     });
 
-    it.each([
-      "RequestIsMissingParameters",
-      "AccountDoesNotExist",
-      "ErrorValidatingResponseBody",
-      "ErrorParsingResponseBodyJson",
-      "ErrorValidatingErrorResponseBody",
-      "ErrorParsingErrorResponseBodyJson",
-      "UnknownErrorResponse",
-      "UnknownError",
-    ] as const)(
-      "should redirect to client redirect URI when deleteAccount fails with %s",
-      async (errorType) => {
-        mockDeleteAccount.mockResolvedValue({
-          success: false,
-          error: errorType,
-        });
-        mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
+    it("should throw error when deleteAccount fails", async () => {
+      mockDeleteAccount.mockResolvedValue({
+        success: false,
+        error: "Failed to delete account",
+      });
 
-        const result = await confirmPostHandler(
+      await expect(
+        confirmPostHandler(
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
-        );
+        ),
+      ).rejects.toThrowError("Failed to delete account");
 
-        expect(mockDeleteAccount).toHaveBeenCalledWith("test@example.com");
-        expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
-          mockRequest,
-          mockReply,
-          "https://example.com/callback",
-          { description: "E1000", type: "access_denied" },
-          "test-state",
-        );
-        expect(result).toBe(mockReply);
-      },
-    );
+      expect(mockDeleteAccount).toHaveBeenCalledWith("test@example.com");
+      expect(mockCompleteJourney).not.toHaveBeenCalled();
+    });
+
+    it("should throw error when session claims are missing", async () => {
+      delete mockRequest.session;
+
+      await expect(
+        confirmPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+        // eslint-disable-next-line vitest/require-to-throw-message
+      ).rejects.toThrowError();
+
+      expect(mockDeleteAccount).not.toHaveBeenCalled();
+      expect(mockCompleteJourney).not.toHaveBeenCalled();
+    });
+
+    it("should throw error when access token is missing", async () => {
+      // @ts-expect-error
+      delete mockRequest.session.claims.account_management_api_access_token;
+
+      await expect(
+        confirmPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+        // eslint-disable-next-line vitest/require-to-throw-message
+      ).rejects.toThrowError();
+
+      expect(mockDeleteAccount).not.toHaveBeenCalled();
+      expect(mockCompleteJourney).not.toHaveBeenCalled();
+    });
   });
 });

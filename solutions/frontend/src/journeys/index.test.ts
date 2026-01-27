@@ -6,7 +6,7 @@ import type { FastifyInstance } from "fastify";
 import { testingJourney } from "./testing-journey/index.js";
 import { onRequest } from "./utils/onRequest.js";
 import { onSend } from "./utils/onSend.js";
-import { goToClientRedirectUriHandler } from "./goToClientRedirectUri/handler.js";
+import { completeFailedJourneyHandler } from "./completeFailedJourney/handler.js";
 import { paths } from "../utils/paths.js";
 
 vi.mock(import("./utils/onRequest.js"), () => ({
@@ -15,8 +15,8 @@ vi.mock(import("./utils/onRequest.js"), () => ({
 vi.mock(import("./utils/onSend.js"), () => ({
   onSend: vi.fn(),
 }));
-vi.mock(import("./goToClientRedirectUri/handler.js"), () => ({
-  goToClientRedirectUriHandler: vi.fn(),
+vi.mock(import("./completeFailedJourney/handler.js"), () => ({
+  completeFailedJourneyHandler: vi.fn(),
 }));
 
 describe("journeyRoutes plugin", () => {
@@ -97,16 +97,16 @@ describe("journeyRoutes plugin", () => {
     expect(mockRegister).toHaveBeenCalledWith(accountDelete);
   });
 
-  it("registers goToClientRedirectUriHandler routes", () => {
+  it("registers completeFailedJourneyHandler routes", () => {
     journeyRoutes(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      paths.journeys.others.goToClientRedirectUri.path,
-      goToClientRedirectUriHandler,
+      paths.journeys.others.completeFailedJourney.path,
+      completeFailedJourneyHandler,
     );
     expect(mockPost).toHaveBeenCalledWith(
-      paths.journeys.others.goToClientRedirectUri.path,
-      goToClientRedirectUriHandler,
+      paths.journeys.others.completeFailedJourney.path,
+      completeFailedJourneyHandler,
     );
   });
 });

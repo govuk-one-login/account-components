@@ -43,7 +43,7 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       statusCode: 302,
       headers: {
         location:
-          "https://example.com/callback?error=invalid_request&error_description=E2005",
+          "https://example.com/callback?error=invalid_request&error_description=E1005",
       },
       body: "",
     });
@@ -72,7 +72,7 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       await import("./common.js");
     const result = getRedirectToClientRedirectUriResponse(
       "https://example.com/callback",
-      authorizeErrors.userAborted,
+      authorizeErrors.verifyJwtUnknownError,
       "state-456",
     );
 
@@ -80,7 +80,7 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       statusCode: 302,
       headers: {
         location:
-          "https://example.com/callback?error=access_denied&error_description=E1001&state=state-456",
+          "https://example.com/callback?error=server_error&error_description=E3002&state=state-456",
       },
       body: "",
     });

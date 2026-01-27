@@ -5,7 +5,7 @@ import type { Actor, AnyMachineSnapshot } from "xstate";
 import type { accountDeleteStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/account-delete.ts";
 import type { testingJourneyStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/testing-journey.ts";
 import type { ClientEntry } from "../../../config/schema/types.ts";
-import type { authorizeErrors } from "../authorize/authorizeErrors.ts";
+import type { failedJourneyErrors } from "../../../frontend/src/journeys/utils/failedJourneyErrors.ts";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -31,9 +31,9 @@ declare module "fastify" {
       analyticsCookieDomain?: string | undefined;
       ga4ContainerId?: string | undefined;
       analyticsEnabled?: boolean | undefined;
-      authorizeErrors?: typeof authorizeErrors | undefined;
-      buildRedirectToClientRedirectUri?: (
-        error?: (typeof authorizeErrors)[keyof typeof authorizeErrors],
+      failedJourneyErrors?: typeof failedJourneyErrors | undefined;
+      buildCompleteFailedJourneyUri?: (
+        error: (typeof failedJourneyErrors)[keyof typeof failedJourneyErrors],
       ) => string;
       contactUrl?: string | undefined;
       yourServicesUrl?: string | undefined;

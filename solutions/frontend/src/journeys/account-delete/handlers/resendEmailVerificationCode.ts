@@ -1,7 +1,7 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
-import { handleSendOtpChallenge } from "../utils/handleSendOtpChallenge.js";
+import { introductionPostHandler } from "./introduction.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
@@ -28,14 +28,10 @@ export async function resendEmailVerificationCodePostHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  const result = await handleSendOtpChallenge(request, reply);
-
-  if (!result.success) {
-    return reply;
-  }
-
-  reply.redirect(
-    paths.journeys["account-delete"].EMAIL_NOT_VERIFIED.verifyEmailAddress.path,
-  );
-  return reply;
+  // Only make use of introductionPostHandler whilst this handler
+  // contains no different logic. If this handler needs to have
+  // different logic to introductionPostHandler then don't call
+  // introductionPostHandler and add the logic directly in this
+  // handler.
+  return await introductionPostHandler(request, reply);
 }

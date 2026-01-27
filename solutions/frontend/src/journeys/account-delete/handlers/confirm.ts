@@ -1,8 +1,6 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
-import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
-import { redirectToClientRedirectUri } from "../../../utils/redirectToClientRedirectUri.js";
 import { completeJourney } from "../../utils/completeJourney.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
@@ -34,31 +32,8 @@ export async function confirmPostHandler(
   );
 
   if (!result.success) {
-    type DeleteAccountError = (typeof result)["error"];
-    const errorMap: Record<
-      DeleteAccountError,
-      (typeof authorizeErrors)[keyof typeof authorizeErrors]
-    > = {
-      RequestIsMissingParameters: authorizeErrors.tempErrorTODORemoveLater,
-      AccountDoesNotExist: authorizeErrors.tempErrorTODORemoveLater,
-      ErrorValidatingResponseBody: authorizeErrors.tempErrorTODORemoveLater,
-      ErrorParsingResponseBodyJson: authorizeErrors.tempErrorTODORemoveLater,
-      ErrorValidatingErrorResponseBody:
-        authorizeErrors.tempErrorTODORemoveLater,
-      ErrorParsingErrorResponseBodyJson:
-        authorizeErrors.tempErrorTODORemoveLater,
-      UnknownErrorResponse: authorizeErrors.tempErrorTODORemoveLater,
-      UnknownError: authorizeErrors.tempErrorTODORemoveLater,
-    };
-
-    return await redirectToClientRedirectUri(
-      request,
-      reply,
-      request.session.claims.redirect_uri,
-      errorMap[result.error],
-      request.session.claims.state,
-    );
+    throw new Error(result.error);
   }
 
-  return await completeJourney(request, reply, request.session.claims);
+  return await completeJourney(request, reply, {}, true);
 }

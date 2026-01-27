@@ -63,6 +63,5 @@ export async function confirmPostHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(request.session.claims);
-  return await completeJourney(request, reply, request.session.claims);
+  return await completeJourney(request, reply, {}, true);
 }

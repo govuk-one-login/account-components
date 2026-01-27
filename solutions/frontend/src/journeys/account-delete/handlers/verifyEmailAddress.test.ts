@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockVerifyOtpChallenge = vi.fn();
-const mockRedirectToClientRedirectUri = vi.fn();
 
 // @ts-expect-error
 vi.mock(
@@ -15,10 +14,6 @@ vi.mock(
     }),
   }),
 );
-
-vi.mock(import("../../../utils/redirectToClientRedirectUri.js"), () => ({
-  redirectToClientRedirectUri: mockRedirectToClientRedirectUri,
-}));
 
 const { verifyEmailAddressGetHandler, verifyEmailAddressPostHandler } =
   await import("./verifyEmailAddress.js");
@@ -387,6 +382,37 @@ describe("verifyEmailAddress handlers", () => {
       ).rejects.toThrowError();
     });
 
+    it("should throw if session claims are not available", async () => {
+      mockRequest.body = { code: "123456" };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
+      delete mockRequest.session;
+
+      await expect(
+        verifyEmailAddressPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+        // eslint-disable-next-line vitest/require-to-throw-message
+      ).rejects.toThrowError();
+    });
+
+    it("should throw if access token is not available", async () => {
+      mockRequest.body = { code: "123456" };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
+      // @ts-expect-error
+      delete mockRequest.session.claims.account_management_api_access_token;
+
+      await expect(
+        verifyEmailAddressPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+        // eslint-disable-next-line vitest/require-to-throw-message
+      ).rejects.toThrowError();
+    });
+
     it("should render error when verifyOtpChallenge fails with InvalidOTPCode", async () => {
       mockRequest.body = { code: "123456" };
       // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -433,45 +459,21 @@ describe("verifyEmailAddress handlers", () => {
       expect(result).toBe(mockReply);
     });
 
-    it.each([
-      "RequestIsMissingParameters",
-      "TooManyEmailCodesEntered",
-      "ErrorValidatingResponseBody",
-      "ErrorParsingResponseBodyJson",
-      "ErrorValidatingErrorResponseBody",
-      "ErrorParsingErrorResponseBodyJson",
-      "UnknownErrorResponse",
-      "UnknownError",
-    ] as const)(
-      "should redirect to client redirect URI when verifyOtpChallenge fails with %s",
-      async (errorType) => {
-        mockRequest.body = { code: "123456" };
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
-        mockVerifyOtpChallenge.mockResolvedValue({
-          success: false,
-          error: errorType,
-        });
-        mockRedirectToClientRedirectUri.mockResolvedValue(mockReply);
+    it("should throw error when TooManyEmailCodesEntered", async () => {
+      mockRequest.body = { code: "123456" };
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
+      mockVerifyOtpChallenge.mockResolvedValue({
+        success: false,
+        error: "TooManyEmailCodesEntered",
+      });
 
-        const result = await verifyEmailAddressPostHandler(
+      await expect(
+        verifyEmailAddressPostHandler(
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
-        );
-
-        expect(mockVerifyOtpChallenge).toHaveBeenCalledWith(
-          "test-public_sub-123",
-          "123456",
-        );
-        expect(mockRedirectToClientRedirectUri).toHaveBeenCalledWith(
-          mockRequest,
-          mockReply,
-          "https://example.com/callback",
-          { description: "E1000", type: "access_denied" },
-          "test-state",
-        );
-        expect(result).toBe(mockReply);
-      },
-    );
+        ),
+      ).rejects.toThrowError("TooManyEmailCodesEntered");
+    });
   });
 });
