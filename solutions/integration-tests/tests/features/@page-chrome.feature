@@ -20,21 +20,21 @@ Feature: Page chrome
     And the account navigation is present and contains the expected links
     Given I click the sign out button in the header
     Then the page contains the text "Client callback"
-    And the page contains the text '"sub": "urn:fdc:gov.uk:default"'    
+    And the page contains the text '"email": "someone@example.com",'
     And the page contains the text:
     """
-    "success": false,
-    "email": "someone@example.com",
-    "scope": "testing-journey"
+    "scope": "testing-journey",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": false
     """
     And the page contains the text:
     """
     "details": {
       "error": {
-        "description": "UserSignedOut",
-        "code": 1001
-      }
+        "code": 1001,
+        "description": "UserSignedOut"
+      }      
     },
     "journey": "testing-journey",
-    "success": false
-    """   
+    "success": false,
+    """ 
