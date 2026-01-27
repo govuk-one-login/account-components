@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
-import { authorizeErrors } from "../../../utils/authorizeErrors.js";
+import { authorizeErrors } from "../../../../../commons/utils/authorize/authorizeErrors.js";
 
 const ORIGINAL_ENV = { ...process.env };
 

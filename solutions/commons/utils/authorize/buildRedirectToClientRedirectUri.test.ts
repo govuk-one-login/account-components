@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { authorizeErrors } from "../../../api/src/utils/authorizeErrors.js";
+import { authorizeErrors } from "./authorizeErrors.js";
 import { buildRedirectToClientRedirectUri } from "./buildRedirectToClientRedirectUri.js";
 
 describe("buildRedirectToClientRedirectUri", () => {

@@ -416,7 +416,7 @@ components:
 
     JourneyOutcome:
       type: object
-      description: Provides the outcomes of the Account Component journeys undertaken by the user. If any journey has success false, the top-level success must also be false.
+      description: Provides the outcomes of the Account Component journeys undertaken by the user.
       properties:
         outcome_id:
           description: The journey outcome's unique ID
@@ -436,7 +436,7 @@ components:
           description: The scope of the journey
         success:
           type: boolean
-          description: Whether the main journey was successful
+          description: Whether the main journey was successful. If any journey has success false, then this will also be false.
         journeys:
           type: array
           description: Array of journey outcomes. The first item's journey property will always match the top-level scope property.

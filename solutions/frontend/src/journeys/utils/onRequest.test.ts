@@ -89,22 +89,25 @@ vi.mock(import("../../utils/redirectToAuthorizeErrorPage.js"), () => ({
 }));
 
 // @ts-expect-error
-vi.mock(import("../../../../api/src/utils/authorizeErrors.js"), () => ({
-  authorizeErrors: {
-    userAborted: {
-      description: "E1001",
-      type: "access_denied",
+vi.mock(
+  import("../../../../commons/utils/authorize/authorizeErrors.js"),
+  () => ({
+    authorizeErrors: {
+      userAborted: {
+        description: "E1001",
+        type: "access_denied",
+      },
+      failedToCreateStateMachineActor: {
+        description: "E5009",
+        type: "server_error",
+      },
+      failedToValidateJourneyUrl: {
+        description: "E5010",
+        type: "server_error",
+      },
     },
-    failedToCreateStateMachineActor: {
-      description: "E5009",
-      type: "server_error",
-    },
-    failedToValidateJourneyUrl: {
-      description: "E5010",
-      type: "server_error",
-    },
-  },
-}));
+  }),
+);
 
 describe("onRequest", () => {
   let mockRequest: Partial<FastifyRequest>;

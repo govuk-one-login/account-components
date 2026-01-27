@@ -1,4 +1,4 @@
-import type { authorizeErrors } from "../../../api/src/utils/authorizeErrors.js";
+import type { authorizeErrors } from "./authorizeErrors.js";
 
 export const buildRedirectToClientRedirectUri = (
   redirectUri: string,
