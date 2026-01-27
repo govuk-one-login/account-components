@@ -44,18 +44,7 @@ describe("onError handler", () => {
 
     expect(mockLog.error).toHaveBeenCalledExactlyOnceWith(
       testError,
-      "Test error",
-    );
-  });
-
-  it("logs unknown error for non-Error objects", async () => {
-    const testError = "string error";
-
-    await onError(testError, mockRequest, mockReply);
-
-    expect(mockLog.error).toHaveBeenCalledExactlyOnceWith(
-      testError,
-      "An unknown error occurred",
+      "ERROR_CAUGHT_BY_GLOBAL_ERROR_HANDLER",
     );
   });
 
@@ -66,7 +55,7 @@ describe("onError handler", () => {
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(metrics.addMetric).toHaveBeenCalledExactlyOnceWith(
-      "Test error",
+      "ERROR_CAUGHT_BY_GLOBAL_ERROR_HANDLER",
       MetricUnit.Count,
       1,
     );

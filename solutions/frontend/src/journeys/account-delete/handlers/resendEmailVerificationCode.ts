@@ -1,7 +1,7 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
-import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
+import { introductionPostHandler } from "./introduction.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
@@ -28,30 +28,10 @@ export async function resendEmailVerificationCodePostHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(request.session.claims);
-  assert.ok(request.session.claims.account_management_api_access_token);
-
-  const accountManagementApiClient = new AccountManagementApiClient(
-    request.session.claims.account_management_api_access_token,
-    request.awsLambda?.event,
-  );
-
-  const result = await accountManagementApiClient.sendOtpChallenge(
-    request.session.claims.public_sub,
-  );
-
-  if (!result.success) {
-    if (result.error === "TooManyEmailCodesEntered") {
-      // TODO need to do something in this case?
-    } else if (result.error === "BlockedForEmailVerificationCodes") {
-      // TODO need to do something in this case?
-    }
-
-    throw new Error(result.error);
-  }
-
-  reply.redirect(
-    paths.journeys["account-delete"].EMAIL_NOT_VERIFIED.verifyEmailAddress.path,
-  );
-  return reply;
+  // Only make use of introductionPostHandler whilst this handler
+  // contains no different logic. If this handler needs to have
+  // different logic to introductionPostHandler then don't call
+  // introductionPostHandler and add the logic directly in this
+  // handler.
+  return await introductionPostHandler(request, reply);
 }

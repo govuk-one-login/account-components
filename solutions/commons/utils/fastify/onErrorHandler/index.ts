@@ -12,8 +12,7 @@ export const onError = async (
   reply: Parameters<ErrorHandler>[2],
   pathToTemplate = "handlers/onError/index.njk",
 ): Promise<ReturnType<ErrorHandler>> => {
-  const msg =
-    error instanceof Error ? error.message : "An unknown error occurred";
+  const msg = "ERROR_CAUGHT_BY_GLOBAL_ERROR_HANDLER";
   request.log.error(error, msg);
   metrics.addMetric(msg, MetricUnit.Count, 1);
 
