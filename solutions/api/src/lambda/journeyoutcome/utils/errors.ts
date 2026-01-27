@@ -14,7 +14,7 @@ const journeyOutcomeErrors: Record<string, ErrorType> = {
     statusCode: 500,
   },
   FailedToFindOutcome: {
-    code: "E500",
+    code: "E5001",
     description: "internal_server_error",
     statusCode: 500,
     metric: "FailedToFindOutcome",

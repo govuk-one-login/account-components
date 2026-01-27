@@ -255,7 +255,7 @@ paths:
                 failed_to_find_outcome:
                   value:
                     error: internal_server_error
-                    error_description: E500
+                    error_description: E5001
 
   /.well-known/jwks.json:
     get:
