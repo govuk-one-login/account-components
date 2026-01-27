@@ -51,14 +51,14 @@
       {% endset %}
       {{ govukPhaseBanner({
           tag: {
-            text: 'FECTranslations.phaseBanner.tag' | translate
+            text: 'FECTranslations.phaseBanner.tag' | translate | capitalize
           },
           html: bannerHtml
       })}}
     {% else %}
       {{ govukPhaseBanner({
           tag: {
-            text: "TEST",
+            text: "Test",
             classes: "govuk-tag--yellow"
           },
           text: 'general.phaseBanner.testText' | translate
