@@ -14,6 +14,7 @@ import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import { oneYearInSeconds } from "../../commons/utils/constants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
+import simpleWebAuthNBrowserStaticHash from "./utils/static-hash-simplewebauthn-browser.json" with { type: "json" };
 import staticHashGovUkFrontendAssets from "./utils/static-hash-govuk-frontend-assets.json" with { type: "json" };
 import staticHashGovUkFrontend from "./utils/static-hash-govuk-frontend.json" with { type: "json" };
 import staticHashGovUkOneLoginFrontendDeviceIntelligence from "./utils/static-hash-govuk-one-login-frontend-device-intelligence.json" with { type: "json" };
@@ -72,6 +73,7 @@ export const initFrontend = async function () {
     reply.globals = {
       ...reply.globals,
       staticHash: staticHash.hash,
+      simpleWebAuthNBrowserStaticHash: simpleWebAuthNBrowserStaticHash.hash,
       assetsHash: staticHashGovUkFrontendAssets.hash,
       publicScriptsHash:
         staticHashGovUkFrontend.hash +
@@ -163,6 +165,21 @@ export const initFrontend = async function () {
       which we can't change) and so we can't append the necessary hash in all loading 
       situations to ensure that the user has the latest version. */
       addStaticAssetsCachingHeaders(res, false);
+    },
+  });
+
+  fastify.register(fastifyStatic, {
+    root: [
+      path.join(
+        import.meta.dirname,
+        "/node_modules/@simplewebauthn/browser/dist/bundle",
+      ),
+    ],
+    prefix: "/@simplewebauthn/browser",
+    decorateReply: false,
+    cacheControl: false,
+    setHeaders: (res) => {
+      addStaticAssetsCachingHeaders(res);
     },
   });
 
