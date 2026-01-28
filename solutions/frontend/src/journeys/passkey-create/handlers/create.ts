@@ -11,10 +11,10 @@ import {
 } from "../../../utils/formErrorsHelpers.js";
 import { isoUint8Array } from "@simplewebauthn/server/helpers";
 import { completeJourney } from "../../utils/completeJourney.js";
+import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
-  assert.ok(reply.globals.buildRedirectToClientRedirectUri);
 
   await reply.render("journeys/passkey-create/templates/create.njk", options);
 };
@@ -95,18 +95,21 @@ export async function postHandler(
     request.log.error(verification, "Create passkey verification failed");
     assert.ok(request.session.claims);
 
-    // TODO is this the right thing to do here or should we go to the callback with an error code, or allow the user to try again?
+    // TODO is this the right thing to do here or should we allow the user to try again?
     // If we allow the user to try again then the registration options should be regrenerated and resaved to the session to prevent replay attacks.
+    // If this is the right thing to do then don't use userAbortedJourney. Add a specific error code
+    // to failedJourneyErrors and also update the private API spec with this code.
     return await completeJourney(
       request,
       reply,
-      request.session.claims,
-      {},
+      {
+        error: failedJourneyErrors.userAbortedJourney,
+      },
       false,
     );
   }
 
   // TODO send passkey to account management API to save it (https://simplewebauthn.dev/docs/packages/server#3-post-registration-responsibilities)
 
-  return await completeJourney(request, reply, request.session.claims);
+  return await completeJourney(request, reply, {}, true);
 }

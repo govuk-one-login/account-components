@@ -1,5 +1,4 @@
 import type { authorizeErrors } from "./authorizeErrors.js";
-import * as v from "valibot";
 
 export const buildRedirectToClientRedirectUri = (
   redirectUri: string,
@@ -7,10 +6,7 @@ export const buildRedirectToClientRedirectUri = (
   state?: string,
   code?: string,
 ) => {
-  const isRelativeUrl = !v.safeParse(v.pipe(v.string(), v.url()), redirectUri)
-    .success;
-
-  const url = new URL(redirectUri, "http://localhost");
+  const url = new URL(redirectUri);
   if (error) {
     url.searchParams.set("error", error.type);
     url.searchParams.set("error_description", error.description);
@@ -21,5 +17,5 @@ export const buildRedirectToClientRedirectUri = (
     url.searchParams.set("state", state);
   }
 
-  return isRelativeUrl ? url.pathname + url.search : url.toString();
+  return url.toString();
 };

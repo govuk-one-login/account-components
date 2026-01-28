@@ -4,7 +4,7 @@ import { accountDelete } from "./account-delete/index.js";
 import { passkeyCreate } from "./passkey-create/index.js";
 import { onRequest } from "./utils/onRequest.js";
 import { onSend } from "./utils/onSend.js";
-import { goToClientRedirectUriHandler } from "./goToClientRedirectUri/handler.js";
+import { completeFailedJourneyHandler } from "./completeFailedJourney/handler.js";
 import { paths } from "../utils/paths.js";
 
 export const journeyRoutes = function (fastify: FastifyInstance) {
@@ -17,12 +17,12 @@ export const journeyRoutes = function (fastify: FastifyInstance) {
   });
 
   fastify.get(
-    paths.journeys.others.goToClientRedirectUri.path,
-    goToClientRedirectUriHandler,
+    paths.journeys.others.completeFailedJourney.path,
+    completeFailedJourneyHandler,
   );
   fastify.post(
-    paths.journeys.others.goToClientRedirectUri.path,
-    goToClientRedirectUriHandler,
+    paths.journeys.others.completeFailedJourney.path,
+    completeFailedJourneyHandler,
   );
   fastify.register(testingJourney);
   fastify.register(accountDelete);

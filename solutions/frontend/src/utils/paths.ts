@@ -89,7 +89,7 @@ export const paths = {
       },
     },
     others: {
-      goToClientRedirectUri: { path: "/go-to-client-redirect-uri" },
+      completeFailedJourney: { path: "/complete-failed-journey" },
     },
   },
   others: {
