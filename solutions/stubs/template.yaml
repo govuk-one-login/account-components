@@ -127,7 +127,7 @@ Globals:
                 !Ref Environment,
                 dynatraceSecretArn,
               ]
-        DT_CLUSTER: !Sub
+        DT_CLUSTER_ID: !Sub
           - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}" # pragma: allowlist-secret
           - SecretArn:
               !FindInMap [

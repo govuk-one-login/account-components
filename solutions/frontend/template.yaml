@@ -232,7 +232,7 @@ Globals:
                 !Ref Environment,
                 dynatraceSecretArn,
               ]
-        DT_CLUSTER: !Sub
+        DT_CLUSTER_ID: !Sub
           - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}" # pragma: allowlist-secret
           - SecretArn:
               !FindInMap [
@@ -256,9 +256,10 @@ Globals:
                 !Ref Environment,
                 dynatraceSecretArn,
               ]
-        DT_LOGGING_NODEJS_FLAGS: Exporter=true,LambdaSensor=false
+        DT_LOGGING_NODEJS_FLAGS: Exporter=true,LambdaSensor=true
         DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: true
+        DT_LOGGING_DESTINATION: stdout
 
 Resources:
   CodeDeployServiceRole:
