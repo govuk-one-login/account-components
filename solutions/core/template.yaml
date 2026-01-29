@@ -657,7 +657,7 @@ Resources:
       Value: !Ref AuthCodeTable
       Description: Name of the auth code table
 
-  ReplyAttackTableArnParameter:
+  ReplayAttackTableArnParameter:
     Type: AWS::SSM::Parameter
     Properties:
       Name: !Sub "/${AWS::StackName}/ReplayAttackTableArn"

@@ -6,6 +6,8 @@ import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import assert from "node:assert";
 import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 import { getEnvironment } from "../../../../../commons/utils/getEnvironment/index.js";
+import { logger } from "../../../../../commons/utils/logger/index.js";
+import { metrics } from "../../../../../commons/utils/metrics/index.js";
 
 export const verifyClientAssertion = async (
   clientAssertion: string,
@@ -69,9 +71,16 @@ export const verifyClientAssertion = async (
     );
   }
 
-  try {
-    assert.ok(client);
+  assert.ok(client);
 
+  metrics.addDimensions({
+    client_id: client.client_id,
+  });
+  logger.appendKeys({
+    client_id: client.client_id,
+  });
+
+  try {
     const jwks = createRemoteJWKSet(
       new URL(
         getEnvironment() === "local"
