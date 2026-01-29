@@ -5,6 +5,7 @@ import { errorManager } from "./errors.js";
 import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import assert from "node:assert";
 import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
+import { getEnvironment } from "../../../../../commons/utils/getEnvironment/index.js";
 
 export const verifyClientAssertion = async (
   clientAssertion: string,
@@ -69,11 +70,19 @@ export const verifyClientAssertion = async (
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const jwks = createRemoteJWKSet(new URL(client!.jwks_uri), {
-      cacheMaxAge: appConfig.jwks_cache_max_age,
-      timeoutDuration: appConfig.jwks_http_timeout,
-    });
+    assert.ok(client);
+
+    const jwks = createRemoteJWKSet(
+      new URL(
+        getEnvironment() === "local"
+          ? (client.jwks_uri_from_container ?? client.jwks_uri)
+          : client.jwks_uri,
+      ),
+      {
+        cacheMaxAge: appConfig.jwks_cache_max_age,
+        timeoutDuration: appConfig.jwks_http_timeout,
+      },
+    );
     const { payload } = await jwtVerify(clientAssertion, jwks, {
       algorithms: [jwtSigningAlgorithm],
     });
