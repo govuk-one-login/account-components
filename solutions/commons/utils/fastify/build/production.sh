@@ -8,6 +8,10 @@ bash ../commons/utils/fastify/build/shared.sh
 # into a JSON object in src/utils/static-hash.json
 tar cvf - src/static | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > src/utils/static-hash.json
 
+# Create a hash of the node_modules/@simplewebauthn/browser/dist/bundle folder and write it
+# into a JSON object in src/utils/static-hash-simplewebauthn-browser.json
+tar cvf - node_modules/@simplewebauthn/browser/dist/bundle | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > src/utils/static-hash-simplewebauthn-browser.json
+
 # Create a hash of the node_modules/govuk-frontend/dist/govuk/assets folder and write it
 # into a JSON object in src/utils/static-hash-govuk-frontend-assets.json
 tar cvf - node_modules/govuk-frontend/dist/govuk/assets | sha1sum | head -c 40 | xargs -I X echo '{"hash":"X"}' > src/utils/static-hash-govuk-frontend-assets.json
