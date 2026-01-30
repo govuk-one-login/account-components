@@ -63,7 +63,7 @@
     "knip": "^5.82.1",
     "pino": "^10.2.1",
     "prettier": "^3.8.1",
-    "rolldown": "1.0.0-beta.60",
+    "rolldown": "1.0.0-rc.1",
     "sass": "^1.97.3",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.53.1",
