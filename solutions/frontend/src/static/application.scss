@@ -23,13 +23,14 @@
 @import "components/summary-list/summary-list";
 @import "components/warning-text/warning-text";
 @import "components/radios/radios";
+@import "components/service-navigation/service-navigation";
 // end Design System component imports
 
 // FEC language toggle component import
 @import "components/language-select";
 
 .govuk-input--disabled {
-  background-color: govuk-colour("light-grey", $legacy: "grey-3");
+  background-color: govuk-colour("black", $variant: "tint-95");
 }
 
 // the modifier below is in place to remove the non-optional blue border at the bottom of the Design System header component
@@ -49,20 +50,25 @@
 }
 
 .govuk-header--with-signout {
-  .govuk-template--rebranded & {
-    .govuk-header__logo {
-      width: 100%;
-    }
+  .govuk-header__logo {
+    width: 100%;
+  }
+}
+
+.govuk-header__container {
+  position: relative;
+
+  &:after {
+    content: "";
+    display: block;
+    clear: both;
   }
 }
 
 .account-navigation {
-  background-color: govuk-colour("light-grey");
-  .govuk-template--rebranded & {
-    background-color: $_govuk-rebrand-template-background-colour;
-    border-bottom: 1px solid $_govuk-rebrand-border-colour-on-blue-tint-95;
-  }
-  border-bottom: 1px solid $govuk-border-colour;
+  background-color: govuk-colour("black", $variant: "tint-95");
+  background-color: govuk-functional-colour(surface-background);
+  border-bottom: 1px solid govuk-functional-colour(surface-border);
   position: relative;
 }
 
@@ -146,7 +152,7 @@ $nav-button-padding-bottom: $nav-link-padding + $nav-link-outline-thickness;
 }
 
 .account-navigation__link {
-  @extend .govuk-link;
+  @extend .govuk-service-navigation__link;
   display: inline-block;
   padding: $nav-link-padding-left 0 $nav-link-padding;
   margin-top: $nav-link-outline-thickness;
@@ -155,20 +161,8 @@ $nav-button-padding-bottom: $nav-link-padding + $nav-link-outline-thickness;
     text-decoration: none;
   }
 
-  &:visited {
-    color: $govuk-link-colour;
-
-    &:hover {
-      color: $govuk-link-hover-colour;
-    }
-
-    &:focus {
-      color: $govuk-focus-text-colour;
-    }
-  }
-
   .account-navigation__list-item--active & {
-    border-bottom: $nav-active-border-thickness solid $govuk-link-colour;
+    border-bottom: $nav-active-border-thickness solid govuk-functional-colour(link);
     padding: $nav-link-padding-left 0 govuk-spacing(2);
 
     &:focus {
@@ -178,7 +172,7 @@ $nav-button-padding-bottom: $nav-link-padding + $nav-link-outline-thickness;
     }
 
     &:hover {
-      border-color: $govuk-link-hover-colour;
+      border-color: govuk-functional-colour(link-hover);
     }
   }
 }

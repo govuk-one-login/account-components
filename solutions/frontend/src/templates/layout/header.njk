@@ -1,7 +1,7 @@
-<header class="govuk-header {{ headerClasses }}" data-module="govuk-header">
+<div class="govuk-header {{ headerClasses }}" data-module="govuk-header">
     <div class="govuk-header__container govuk-width-container">
         <div class="govuk-header__logo">
-            <a href="{{ reply.client.homepage_url | default('https://www.gov.uk/') }}" class="govuk-header__link govuk-header__link--homepage">
+            <a href="{{ reply.client.homepage_url | default('https://www.gov.uk/') }}" class="govuk-header__homepage-link">
               <svg
                 focusable="false"
                 role="img"
@@ -52,4 +52,4 @@
           </div>
         {% endif %}
     </div>
-</header>
+</div>
