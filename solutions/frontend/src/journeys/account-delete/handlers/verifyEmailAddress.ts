@@ -7,7 +7,7 @@ import {
   getFormErrorsList,
 } from "../../../utils/formErrorsHelpers.js";
 import * as v from "valibot";
-import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
+import { AccountManagementApiClient } from "../../../utils/accountManagementApiClient.js";
 
 const render = async (
   request: FastifyRequest,

@@ -538,35 +538,6 @@ Resources:
       ServiceToken: !GetAtt JwksGeneratorLambda.Arn
       ForceUpdate: !Ref JwksGeneratorLambda
 
-  ApiSessionsTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
-    Properties:
-      TableName: !Sub ${AWS::StackName}-ApiSessions
-      AttributeDefinitions:
-        - AttributeName: "id"
-          AttributeType: "S"
-      KeySchema:
-        - AttributeName: "id"
-          KeyType: "HASH"
-      BillingMode: PAY_PER_REQUEST
-      ContributorInsightsSpecification:
-        Enabled: true
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: false
-      TimeToLiveSpecification:
-        AttributeName: "expires"
-        Enabled: true
-      SSESpecification:
-        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
-        SSEEnabled: true
-        SSEType: KMS
-      TableClass: STANDARD
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-api_sessions"
-
   AuthCodeTable:
     Type: AWS::DynamoDB::Table
     DeletionPolicy: Delete
@@ -625,6 +596,35 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-journey_outcome"
 
+  ReplayAttackTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-ReplayAttack
+      AttributeDefinitions:
+        - AttributeName: nonce
+          AttributeType: S
+      KeySchema:
+        - AttributeName: nonce
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expires
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-replay_attack"
+
   JourneyOutcomeTableArnParameter:
     Type: AWS::SSM::Parameter
     Properties:
@@ -641,22 +641,6 @@ Resources:
       Value: !Ref JourneyOutcomeTable
       Description: Name of the journey outcome table
 
-  ApiSessionsTableNameParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub "/${AWS::StackName}/ApiSessionsTableName"
-      Type: String
-      Value: !Ref ApiSessionsTable
-      Description: Name of the API sessions table
-
-  ApiSessionsTableArnParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub "/${AWS::StackName}/ApiSessionsTableArn"
-      Type: String
-      Value: !GetAtt ApiSessionsTable.Arn
-      Description: ARN of the API sessions table
-
   AuthCodeTableArnParameter:
     Type: AWS::SSM::Parameter
     Properties:
@@ -672,6 +656,22 @@ Resources:
       Type: String
       Value: !Ref AuthCodeTable
       Description: Name of the auth code table
+
+  ReplayAttackTableArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/ReplayAttackTableArn"
+      Type: String
+      Value: !GetAtt ReplayAttackTable.Arn
+      Description: ARN of the replay attack table
+
+  ReplayAttackTableNameParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/ReplayAttackTableName"
+      Type: String
+      Value: !Ref ReplayAttackTable
+      Description: Name of the replay attack table
 
   JWKSStoreBucketNameParameter:
     Type: AWS::SSM::Parameter

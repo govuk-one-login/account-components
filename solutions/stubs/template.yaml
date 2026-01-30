@@ -33,14 +33,14 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       stubsDomain: stubs.manage.dev.account.gov.uk
       LambdaLogLevel: DEBUG
-      apiTokenEndpointUrl: https://internal.manage.dev.account.gov.uk/token
-      apiJourneyOutcomeEndpointUrl: https://internal.manage.dev.account.gov.uk/journeyoutcome
+      apiTokenEndpointUrl: https://api.manage.dev.account.gov.uk/token
+      apiJourneyOutcomeEndpointUrl: https://api.manage.dev.account.gov.uk/journeyoutcome
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       stubsDomain: stubs.manage.build.account.gov.uk
       LambdaLogLevel: INFO
-      apiTokenEndpointUrl: https://internal.manage.build.account.gov.uk/token
-      apiJourneyOutcomeEndpointUrl: https://internal.manage.build.account.gov.uk/journeyoutcome
+      apiTokenEndpointUrl: https://api.manage.build.account.gov.uk/token
+      apiJourneyOutcomeEndpointUrl: https://api.manage.build.account.gov.uk/journeyoutcome
 
 Conditions:
   UseCodeSigning:
@@ -272,9 +272,9 @@ Resources:
           MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPrivateKey"
           MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPublicKey"
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
-          DEFAULT_AUDIENCE: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
+          DEFAULT_AUDIENCE: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
-          AUTHORIZE_URL: !Sub "https://api.manage.${Environment}.account.gov.uk/authorize"
+          AUTHORIZE_URL: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
           API_TOKEN_ENDPOINT_URL:
             !FindInMap [
               EnvironmentConfiguration,

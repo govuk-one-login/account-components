@@ -1,4 +1,4 @@
-import { Scope } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
+import { Scope } from "../../../../../commons/utils/interfaces.js";
 import { createJourneyStateMachine } from "./index.js";
 import type { MachineContext } from "xstate";
 

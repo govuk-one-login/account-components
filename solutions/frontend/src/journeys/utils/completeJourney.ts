@@ -3,9 +3,8 @@ import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbC
 import { randomBytes } from "node:crypto";
 import { getAppConfig } from "../../../../commons/utils/getAppConfig/index.js";
 import type { JourneyOutcome } from "../../../../commons/utils/interfaces.js";
-import { buildRedirectToClientRedirectUri } from "../../../../commons/utils/authorize/buildRedirectToClientRedirectUri.js";
+import { buildRedirectToClientRedirectUri } from "../../utils/buildRedirectToClientRedirectUri.js";
 import { destroySession } from "../../utils/session.js";
-import { destroyApiSession } from "../../utils/apiSession.js";
 import assert from "node:assert";
 
 const dynamoDbClient = getDynamoDbClient();
@@ -83,7 +82,6 @@ export const completeJourney = async (
     ],
   });
 
-  await destroyApiSession(request, reply);
   await destroySession(request);
 
   reply.redirect(

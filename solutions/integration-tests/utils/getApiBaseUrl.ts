@@ -6,8 +6,8 @@ export const getApiBaseUrl = () => {
   }
 
   if (env.TEST_TARGET === "production") {
-    return "https://internal.manage.account.gov.uk";
+    return "https://api.manage.account.gov.uk";
   }
 
-  return `https://internal.manage.${env.TEST_TARGET}.account.gov.uk`;
+  return `https://api.manage.${env.TEST_TARGET}.account.gov.uk`;
 };

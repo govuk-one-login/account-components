@@ -1,6 +1,6 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
-import { AccountManagementApiClient } from "../../../../../commons/utils/accountManagementApiClient/index.js";
+import { AccountManagementApiClient } from "../../../utils/accountManagementApiClient.js";
 import { completeJourney } from "../../utils/completeJourney.js";
 
 const render = async (reply: FastifyReply, options?: object) => {

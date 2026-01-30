@@ -1,6 +1,8 @@
-import { Scope } from "../../../../commons/utils/authorize/getClaimsSchema.js";
-import { Lang } from "../../../../commons/utils/configureI18n/index.js";
+import { type getClaimsSchema } from "../../utils/getClaimsSchema.js";
+import { Lang } from "../../utils/configureI18n.js";
 import type { AnyStateMachine } from "xstate";
+import type * as v from "valibot";
+import { Scope } from "../../../../commons/utils/interfaces.js";
 
 export const journeys = {
   [Scope.testingJourney]: async () => {
@@ -16,6 +18,7 @@ export const journeys = {
         [Lang.English]: en,
         [Lang.Welsh]: cy,
       },
+      requiredClaims: [],
     };
   },
   [Scope.accountDelete]: async () => {
@@ -31,6 +34,7 @@ export const journeys = {
         [Lang.English]: en,
         [Lang.Welsh]: cy,
       },
+      requiredClaims: ["account_management_api_access_token"],
     };
   },
 } satisfies Record<
@@ -38,5 +42,6 @@ export const journeys = {
   () => Promise<{
     stateMachine: AnyStateMachine;
     translations: Record<Lang, object>;
+    requiredClaims: (keyof v.InferOutput<ReturnType<typeof getClaimsSchema>>)[];
   }>
 >;

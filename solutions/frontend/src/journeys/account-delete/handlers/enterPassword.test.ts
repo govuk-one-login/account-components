@@ -4,16 +4,13 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 const mockAuthenticate = vi.fn();
 
 // @ts-expect-error
-vi.mock(
-  import("../../../../../commons/utils/accountManagementApiClient/index.js"),
-  () => ({
-    AccountManagementApiClient: vi.fn().mockImplementation(function () {
-      return {
-        authenticate: mockAuthenticate,
-      };
-    }),
+vi.mock(import("../../../utils/accountManagementApiClient.js"), () => ({
+  AccountManagementApiClient: vi.fn().mockImplementation(function () {
+    return {
+      authenticate: mockAuthenticate,
+    };
   }),
-);
+}));
 
 const { enterPasswordGetHandler, enterPasswordPostHandler } =
   await import("./enterPassword.js");

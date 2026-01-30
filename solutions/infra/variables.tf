@@ -20,12 +20,7 @@ variable "stubs_domain" {
 
 variable "api_domain" {
   type        = string
-  description = "The domain to use for the public API"
-}
-
-variable "private_api_domain" {
-  type        = string
-  description = "The domain to use for the Private API"
+  description = "The domain to use for the API"
 }
 
 variable "create_build_stacks" {

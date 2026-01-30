@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
-import type { Claims } from "../../../../commons/utils/authorize/getClaimsSchema.js";
+import type { Claims } from "../../utils/getClaimsSchema.js";
 import type { FastifySessionObject } from "@fastify/session";
 
 const mockCompleteJourney = vi.fn();

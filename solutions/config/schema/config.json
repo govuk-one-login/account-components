@@ -20,11 +20,6 @@
       "type": "integer",
       "minimum": 1
     },
-    "api_session_ttl_in_seconds": {
-      "description": "Time-to-live in seconds for API session",
-      "type": "integer",
-      "minimum": 1
-    },
     "auth_code_ttl": {
       "description": "Time-to-live in seconds for auth code",
       "type": "integer",
@@ -49,7 +44,6 @@
   "required": [
     "client_registry",
     "jti_nonce_ttl_in_seconds",
-    "api_session_ttl_in_seconds",
     "auth_code_ttl",
     "jwks_cache_max_age",
     "jwks_http_timeout",
@@ -92,7 +86,15 @@
           "maxLength": 255
         },
         "jwks_uri": {
-          "description": "URL string referencing the client's JSON Web Key (JWK) Set ",
+          "description": "URL string referencing the client's JSON Web Key (JWK) Set",
+          "type": "string",
+          "format": "uri",
+          "pattern": "^(https|http)://(www\\.)?((localhost(:[0-9]+)?)|[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b)([-a-zA-Z0-9()@:%_+.~#?&/=]*)$",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "jwks_uri_from_container": {
+          "description": "URL string referencing the client's JSON Web Key (JWK) Set if the caller is in a container (only needed for local development)",
           "type": "string",
           "format": "uri",
           "pattern": "^(https|http)://(www\\.)?((localhost(:[0-9]+)?)|[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b)([-a-zA-Z0-9()@:%_+.~#?&/=]*)$",

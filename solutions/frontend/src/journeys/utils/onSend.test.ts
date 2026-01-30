@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { onSend } from "./onSend.js";
 import type { FastifySessionObject } from "@fastify/session";
-import type { Claims } from "../../../../commons/utils/authorize/getClaimsSchema.js";
+import type { Claims } from "../../utils/getClaimsSchema.js";
 
 describe("onSend", () => {
   let mockRequest: Partial<FastifyRequest>;

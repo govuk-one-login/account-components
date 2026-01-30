@@ -1,6 +1,6 @@
 import type { MachineContext } from "xstate";
-import { Scope } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
 import { createJourneyStateMachine } from "./index.js";
+import { Scope } from "../../../../../commons/utils/interfaces.js";
 
 export enum AcountDeleteJourneyState {
   emailNotVerified = "EMAIL_NOT_VERIFIED",

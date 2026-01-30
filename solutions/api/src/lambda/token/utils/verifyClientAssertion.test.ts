@@ -3,14 +3,20 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import * as jose from "jose";
 import { getClientRegistry } from "../../../../../commons/utils/getClientRegistry/index.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
+import { metrics } from "../../../../../commons/utils/metrics/index.js";
+import { logger } from "../../../../../commons/utils/logger/index.js";
 
 vi.mock(import("jose"));
 vi.mock(import("../../../../../commons/utils/getClientRegistry/index.js"));
+vi.mock(import("../../../../../commons/utils/metrics/index.js"));
+vi.mock(import("../../../../../commons/utils/logger/index.js"));
 
 const mockGetClientRegistry = vi.mocked(getClientRegistry);
 const mockDecodeJwt = vi.mocked(jose.decodeJwt);
 const mockJwtVerify = vi.mocked(jose.jwtVerify);
 const mockCreateRemoteJWKSet = vi.mocked(jose.createRemoteJWKSet);
+const mockMetrics = vi.mocked(metrics);
+const mockLogger = vi.mocked(logger);
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -60,6 +66,14 @@ describe("verifyClientAssertion", () => {
       new URL(mockClientRegistry[0].jwks_uri),
       { cacheMaxAge: 60000, timeoutDuration: 2500 },
     );
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
+      client_id: "test-client-id",
+    });
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(mockLogger.appendKeys).toHaveBeenCalledWith({
+      client_id: "test-client-id",
+    });
   });
 
   it("should throw error when iss is missing from JWT", async () => {

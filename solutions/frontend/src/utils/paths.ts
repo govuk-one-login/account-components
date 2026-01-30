@@ -1,7 +1,7 @@
 import type { FastifyReply } from "fastify";
-import { Scope } from "../../../commons/utils/authorize/getClaimsSchema.js";
 import { AcountDeleteJourneyState } from "../journeys/utils/stateMachines/account-delete.js";
 import { TestingJourneyState } from "../journeys/utils/stateMachines/testing-journey.js";
+import { Scope } from "../../../commons/utils/interfaces.js";
 
 type PathsMap = Record<
   string,
@@ -84,8 +84,8 @@ export const paths = {
     },
   },
   others: {
+    authorize: { path: "/authorize" },
     authorizeError: { path: "/authorize-error" },
-    startSession: { path: "/start-session" },
   },
 } as const satisfies {
   journeys: {
