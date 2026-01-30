@@ -2,6 +2,7 @@ import * as v from "valibot";
 import { logger } from "../../../commons/utils/logger/index.js";
 import { getPropsForLoggingFromEvent } from "../../../commons/utils/getPropsForLoggingFromEvent/index.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
+import { getTxmaAuditEncodedFromEvent } from "../../../commons/utils/getTxmaAuditEncodedFromEvent/index.js";
 
 export abstract class JsonApiClient {
   private readonly errorScope: string;
@@ -16,7 +17,7 @@ export abstract class JsonApiClient {
     this.errorScope = errorScope;
 
     const propsForLoggingFromEvent = getPropsForLoggingFromEvent(event);
-    const txmaAuditEncoded = event?.headers["txma-audit-encoded"];
+    const txmaAuditEncoded = getTxmaAuditEncodedFromEvent(event);
 
     this.commonHeaders = {
       ...(propsForLoggingFromEvent.persistentSessionId
