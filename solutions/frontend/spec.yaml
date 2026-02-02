@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components OAuth Provider Public API
-  version: 0.0.12
+  version: 0.0.13
   description: |
     OAuth 2.0 provider endpoints, including:
     - GET /authorize
