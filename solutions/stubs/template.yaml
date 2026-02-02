@@ -30,13 +30,13 @@ Parameters:
 Mappings:
   EnvironmentConfiguration:
     dev:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u # pragma: allowlist-secret
       stubsDomain: stubs.manage.dev.account.gov.uk
       LambdaLogLevel: DEBUG
       apiTokenEndpointUrl: https://api.manage.dev.account.gov.uk/token
       apiJourneyOutcomeEndpointUrl: https://api.manage.dev.account.gov.uk/journeyoutcome
     build:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u # pragma: allowlist-secret
       stubsDomain: stubs.manage.build.account.gov.uk
       LambdaLogLevel: INFO
       apiTokenEndpointUrl: https://api.manage.build.account.gov.uk/token

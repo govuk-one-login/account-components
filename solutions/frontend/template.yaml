@@ -43,7 +43,7 @@ Parameters:
 Mappings:
   EnvironmentConfiguration:
     dev:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u # pragma: allowlist-secret
       rootCookieDomain: dev.account.gov.uk
       frontendDomain: manage.dev.account.gov.uk
       LambdaLogLevel: DEBUG
@@ -59,7 +59,7 @@ Mappings:
       securityUrl: https://home.dev.account.gov.uk/security
       dynatraceRumUrl: ""
     build:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
       frontendDomain: manage.build.account.gov.uk
       LambdaLogLevel: INFO
@@ -75,7 +75,7 @@ Mappings:
       securityUrl: https://home.build.account.gov.uk/security
       dynatraceRumUrl: ""
     staging:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
       frontendDomain: manage.staging.account.gov.uk
       LambdaLogLevel: INFO
@@ -91,7 +91,7 @@ Mappings:
       securityUrl: https://home.staging.account.gov.uk/security
       dynatraceRumUrl: TODO
     integration:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
       frontendDomain: manage.integration.account.gov.uk
       LambdaLogLevel: INFO

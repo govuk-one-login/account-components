@@ -46,16 +46,16 @@ Mappings:
   EnvConfig:
     dev:
       LambdaLogLevel: DEBUG
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u #pragma: allowlist secret
     build:
       LambdaLogLevel: INFO
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u #pragma: allowlist secret
     staging:
       LambdaLogLevel: INFO
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u #pragma: allowlist secret
     integration:
       LambdaLogLevel: INFO
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u #pragma: allowlist secret
     production:
       LambdaLogLevel: INFO
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables #pragma: allowlist secret

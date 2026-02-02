@@ -55,7 +55,7 @@ Parameters:
 Mappings:
   EnvironmentConfiguration:
     dev:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u # pragma: allowlist-secret
       apiDomain: api.manage.dev.account.gov.uk
       authorizeEndpointUrl: https://manage.dev.account.gov.uk/authorize
       issuerUrl: https://manage.dev.account.gov.uk
@@ -69,7 +69,7 @@ Mappings:
       frontendUrl: https://manage.dev.account.gov.uk
       cacheHeaderMaxAge: 5
     build:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u # pragma: allowlist-secret
       apiDomain: api.manage.build.account.gov.uk
       authorizeEndpointUrl: https://manage.build.account.gov.uk/authorize
       issuerUrl: https://manage.build.account.gov.uk
@@ -83,7 +83,7 @@ Mappings:
       frontendUrl: https://manage.build.account.gov.uk
       cacheHeaderMaxAge: 5
     staging:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u # pragma: allowlist-secret
       apiDomain: api.manage.staging.account.gov.uk
       authorizeEndpointUrl: https://manage.staging.account.gov.uk/authorize
       issuerUrl: https://manage.staging.account.gov.uk
@@ -98,7 +98,7 @@ Mappings:
       frontendUrl: https://manage.staging.account.gov.uk
       cacheHeaderMaxAge: 60
     integration:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:dynatrace-otel-v2-test-oIwH2u # pragma: allowlist-secret
       apiDomain: api.manage.integration.account.gov.uk
       authorizeEndpointUrl: https://manage.integration.account.gov.uk/authorize
       issuerUrl: https://manage.integration.account.gov.uk
