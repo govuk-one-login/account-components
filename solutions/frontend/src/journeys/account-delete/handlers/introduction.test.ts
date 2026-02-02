@@ -4,16 +4,13 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 const mockSendOtpChallenge = vi.fn();
 
 // @ts-expect-error
-vi.mock(
-  import("../../../../../commons/utils/accountManagementApiClient/index.js"),
-  () => ({
-    AccountManagementApiClient: vi.fn().mockImplementation(function () {
-      return {
-        sendOtpChallenge: mockSendOtpChallenge,
-      };
-    }),
+vi.mock(import("../../../utils/accountManagementApiClient.js"), () => ({
+  AccountManagementApiClient: vi.fn().mockImplementation(function () {
+    return {
+      sendOtpChallenge: mockSendOtpChallenge,
+    };
   }),
-);
+}));
 
 const { introductionGetHandler, introductionPostHandler } =
   await import("./introduction.js");

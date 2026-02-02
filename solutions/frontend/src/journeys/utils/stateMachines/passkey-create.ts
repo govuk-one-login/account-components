@@ -1,7 +1,7 @@
 import type { PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/server";
 import { assign } from "xstate";
-import { Scope } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
 import { createJourneyStateMachine } from "./index.js";
+import { Scope } from "../../../../../commons/utils/interfaces.js";
 
 export enum PasskeyCreateState {
   notCreated = "NOT_CREATED",

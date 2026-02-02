@@ -3,7 +3,12 @@ import type {
   APIGatewayProxyResult,
   Context,
 } from "aws-lambda";
-import type { Scope } from "./authorize/getClaimsSchema.js";
+
+export enum Scope {
+  testingJourney = "testing-journey",
+  accountDelete = "account-delete",
+  passkeyCreate = "passkey-create",
+}
 
 export type APIGatewayProxyHandler = (
   event: APIGatewayProxyEvent,

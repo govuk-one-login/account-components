@@ -2,10 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { onRequest } from "./onRequest.js";
 import type { FastifySessionObject } from "@fastify/session";
-import type {
-  Claims,
-  Scope,
-} from "../../../../commons/utils/authorize/getClaimsSchema.js";
+import type { Claims } from "../../utils/getClaimsSchema.js";
 import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { journeys } from "./config.js";
 import type { Actor, AnyActorLogic, AnyMachineSnapshot } from "xstate";
@@ -14,6 +11,7 @@ import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/i
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
 import type { ClientEntry } from "../../../../config/schema/types.js";
 import { logger } from "../../../../commons/utils/logger/index.js";
+import type { Scope } from "../../../../commons/utils/interfaces.js";
 
 // @ts-expect-error
 vi.mock(import("../../utils/paths.js"), () => ({
@@ -72,6 +70,7 @@ vi.mock(import("./config.js"), () => ({
       stateMachine: {
         resolveState: vi.fn().mockReturnValue({}),
       },
+      requiredClaims: [],
     }),
   },
 }));
@@ -89,25 +88,22 @@ vi.mock(import("../../utils/redirectToAuthorizeErrorPage.js"), () => ({
 }));
 
 // @ts-expect-error
-vi.mock(
-  import("../../../../commons/utils/authorize/authorizeErrors.js"),
-  () => ({
-    authorizeErrors: {
-      userAborted: {
-        description: "E1001",
-        type: "access_denied",
-      },
-      failedToCreateStateMachineActor: {
-        description: "E5009",
-        type: "server_error",
-      },
-      failedToValidateJourneyUrl: {
-        description: "E5010",
-        type: "server_error",
-      },
+vi.mock(import("../../utils/authorizeErrors.js"), () => ({
+  authorizeErrors: {
+    userAborted: {
+      description: "E1001",
+      type: "access_denied",
     },
-  }),
-);
+    failedToCreateStateMachineActor: {
+      description: "E5009",
+      type: "server_error",
+    },
+    failedToValidateJourneyUrl: {
+      description: "E5010",
+      type: "server_error",
+    },
+  },
+}));
 
 describe("onRequest", () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -153,6 +149,13 @@ describe("onRequest", () => {
     vi.mocked(getClientRegistry).mockResolvedValue([
       { client_id: "test-client-id" } as ClientEntry,
     ]);
+    vi.mocked(journeys["test-scope" as Scope]).mockResolvedValue({
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      translations: { en: { key: "value" } } as any,
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      stateMachine: { resolveState: vi.fn().mockReturnValue({}) } as any,
+      requiredClaims: [],
+    });
   });
 
   describe("when session has no claims", () => {
@@ -191,6 +194,42 @@ describe("onRequest", () => {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(metrics.addMetric).toHaveBeenCalledWith(
         "ClientNotFound",
+        "Count",
+        1,
+      );
+      expect(redirectToAuthorizeErrorPage).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+      );
+    });
+  });
+
+  describe("when required claims are missing", () => {
+    beforeEach(() => {
+      mockSession.claims = {
+        client_id: "test-client-id",
+        scope: "test-scope",
+      } as unknown as Claims;
+      vi.mocked(journeys["test-scope" as Scope]).mockResolvedValue({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        translations: { en: { key: "value" } } as any,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        stateMachine: { resolveState: vi.fn().mockReturnValue({}) } as any,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        requiredClaims: ["account_management_api_access_token"] as any,
+      });
+    });
+
+    it("should redirect to error page and log warning", async () => {
+      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockRequest.log?.warn).toHaveBeenCalledWith(
+        { missingRequiredClaims: ["account_management_api_access_token"] },
+        "RequiredClaimsMissing",
+      );
+      // eslint-disable-next-line @typescript-eslint/unbound-method
+      expect(metrics.addMetric).toHaveBeenCalledWith(
+        "RequiredClaimsMissing",
         "Count",
         1,
       );

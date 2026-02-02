@@ -57,84 +57,74 @@ Mappings:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.dev.account.gov.uk
-      privateApiDomain: internal.manage.dev.account.gov.uk
-      authorizeErrorPageUrl: https://manage.dev.account.gov.uk/authorize-error
-      authorizeEndpointUrl: https://api.manage.dev.account.gov.uk/authorize
-      tokenEndpointUrl: https://internal.manage.dev.account.gov.uk/token
-      journeyOutcomeEndpointUrl: https://internal.manage.dev.account.gov.uk/journeyoutcome
-      privateApiAllowedVpceIds:
+      authorizeEndpointUrl: https://manage.dev.account.gov.uk/authorize
+      issuerUrl: https://manage.dev.account.gov.uk
+      tokenEndpointUrl: https://api.manage.dev.account.gov.uk/token
+      journeyOutcomeEndpointUrl: https://api.manage.dev.account.gov.uk/journeyoutcome
+      apiAllowedVpceIds:
         - "vpce-0a7dad1503be13796" # di-account-components-dev
-      privateApiAllowedVpcIds: []
+      apiAllowedVpcIds: []
       LambdaLogLevel: DEBUG
       UseCanary: false
-      apiSessionCookieDomain: manage.dev.account.gov.uk
       frontendUrl: https://manage.dev.account.gov.uk
       cacheHeaderMaxAge: 5
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.build.account.gov.uk
-      privateApiDomain: internal.manage.build.account.gov.uk
-      authorizeErrorPageUrl: https://manage.build.account.gov.uk/authorize-error
-      authorizeEndpointUrl: https://api.manage.build.account.gov.uk/authorize
-      tokenEndpointUrl: https://internal.manage.build.account.gov.uk/token
-      journeyOutcomeEndpointUrl: https://internal.manage.build.account.gov.uk/journeyoutcome
-      privateApiAllowedVpceIds:
+      authorizeEndpointUrl: https://manage.build.account.gov.uk/authorize
+      issuerUrl: https://manage.build.account.gov.uk
+      tokenEndpointUrl: https://api.manage.build.account.gov.uk/token
+      journeyOutcomeEndpointUrl: https://api.manage.build.account.gov.uk/journeyoutcome
+      apiAllowedVpceIds:
         - "vpce-0f4845b63ae267db4" # di-account-components-build
-      privateApiAllowedVpcIds: []
+      apiAllowedVpcIds: []
       LambdaLogLevel: INFO
       UseCanary: false
-      apiSessionCookieDomain: manage.build.account.gov.uk
       frontendUrl: https://manage.build.account.gov.uk
       cacheHeaderMaxAge: 5
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.staging.account.gov.uk
-      privateApiDomain: internal.manage.staging.account.gov.uk
-      authorizeErrorPageUrl: https://manage.staging.account.gov.uk/authorize-error
-      authorizeEndpointUrl: https://api.manage.staging.account.gov.uk/authorize
-      tokenEndpointUrl: https://internal.manage.staging.account.gov.uk/token
-      journeyOutcomeEndpointUrl: https://internal.manage.staging.account.gov.uk/journeyoutcome
-      privateApiAllowedVpceIds:
+      authorizeEndpointUrl: https://manage.staging.account.gov.uk/authorize
+      issuerUrl: https://manage.staging.account.gov.uk
+      tokenEndpointUrl: https://api.manage.staging.account.gov.uk/token
+      journeyOutcomeEndpointUrl: https://api.manage.staging.account.gov.uk/journeyoutcome
+      apiAllowedVpceIds:
         - "vpce-07078f5f005fe5efc" # di-authentication-staging
-      privateApiAllowedVpcIds:
+      apiAllowedVpcIds:
         - "vpc-07cf1e76e27f28e86" # di-authentication-staging
       LambdaLogLevel: INFO
       UseCanary: true
-      apiSessionCookieDomain: manage.staging.account.gov.uk
       frontendUrl: https://manage.staging.account.gov.uk
       cacheHeaderMaxAge: 60
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.integration.account.gov.uk
-      privateApiDomain: internal.manage.integration.account.gov.uk
-      authorizeErrorPageUrl: https://manage.integration.account.gov.uk/authorize-error
-      authorizeEndpointUrl: https://api.manage.integration.account.gov.uk/authorize
-      tokenEndpointUrl: https://internal.manage.integration.account.gov.uk/token
-      journeyOutcomeEndpointUrl: https://internal.manage.integration.account.gov.uk/journeyoutcome
-      privateApiAllowedVpceIds:
+      authorizeEndpointUrl: https://manage.integration.account.gov.uk/authorize
+      issuerUrl: https://manage.integration.account.gov.uk
+      tokenEndpointUrl: https://api.manage.integration.account.gov.uk/token
+      journeyOutcomeEndpointUrl: https://api.manage.integration.account.gov.uk/journeyoutcome
+      apiAllowedVpceIds:
         - "vpce-0df10df14d851e1c9" # di-authentication-integration
-      privateApiAllowedVpcIds:
+      apiAllowedVpcIds:
         - "vpc-04796e8a5bf41b046" # di-authentication-integration
       LambdaLogLevel: INFO
       UseCanary: true
-      apiSessionCookieDomain: manage.integration.account.gov.uk
       frontendUrl: https://manage.integration.account.gov.uk
       cacheHeaderMaxAge: 60
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.account.gov.uk
-      privateApiDomain: internal.manage.account.gov.uk
-      authorizeErrorPageUrl: https://manage.account.gov.uk/authorize-error
-      authorizeEndpointUrl: https://api.manage.account.gov.uk/authorize
-      tokenEndpointUrl: https://internal.manage.account.gov.uk/token
-      journeyOutcomeEndpointUrl: https://internal.manage.account.gov.uk/journeyoutcome
-      privateApiAllowedVpceIds:
+      authorizeEndpointUrl: https://manage.account.gov.uk/authorize
+      issuerUrl: https://manage.account.gov.uk
+      tokenEndpointUrl: https://api.manage.account.gov.uk/token
+      journeyOutcomeEndpointUrl: https://api.manage.account.gov.uk/journeyoutcome
+      apiAllowedVpceIds:
         - "vpce-0db136878c87bf2d0" # di-authentication-production
-      privateApiAllowedVpcIds:
+      apiAllowedVpcIds:
         - "vpc-06a7d758af9eefddb" # di-authentication-production
       LambdaLogLevel: INFO
       UseCanary: true
-      apiSessionCookieDomain: manage.account.gov.uk
       frontendUrl: https://manage.account.gov.uk
       cacheHeaderMaxAge: 60
 
@@ -291,130 +281,7 @@ Resources:
           !Ref AWS::NoValue,
         ]
 
-  ApiDomain:
-    Type: AWS::ApiGateway::DomainName
-    Properties:
-      DomainName:
-        !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
-      RegionalCertificateArn:
-        Fn::ImportValue: certificate-CertificateARN
-      EndpointConfiguration:
-        Types:
-          - REGIONAL
-      SecurityPolicy: SecurityPolicy_TLS13_1_2_FIPS_PQ_2025_09
-      EndpointAccessMode: STRICT
-
-  ApiOriginRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Name: !Sub
-        - "origin.${BaseAlias}"
-        - BaseAlias:
-            !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
-      Type: A
-      HostedZoneId:
-        Fn::ImportValue: hosted-zone-HostedZoneID
-      AliasTarget:
-        DNSName: !GetAtt ApiDomain.RegionalDomainName
-        HostedZoneId: !GetAtt ApiDomain.RegionalHostedZoneId
-        EvaluateTargetHealth: false
-
-  ApiWafAssociation:
-    Type: "AWS::WAFv2::WebACLAssociation"
-    Properties:
-      WebACLArn:
-        Fn::ImportValue: "cloudfront-api-CloakingOriginWebACLArn"
-      ResourceArn: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGateway}/stages/${ApiStageName}"
-    DependsOn:
-      - ApiGatewayStage # This resource is created as part of the RestApi resource
-
-  DomainRecord:
-    Type: AWS::Route53::RecordSet
-    Properties:
-      Name: !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
-      Type: A
-      HostedZoneId:
-        Fn::ImportValue: hosted-zone-HostedZoneID
-      AliasTarget:
-        DNSName:
-          Fn::ImportValue: "cloudfront-api-DistributionDomain"
-        HostedZoneId: "Z2FDTNDATAQYW2"
-        EvaluateTargetHealth: false
-
-  ApiMapping:
-    Type: AWS::ApiGateway::BasePathMapping
-    Properties:
-      DomainName: !Ref ApiDomain
-      RestApiId: !Ref ApiGateway
-      Stage: !Ref ApiStageName
-    DependsOn:
-      - ApiGatewayStage # This resource is created as part of the RestApi resource
-
-  ApiGateway:
-    Type: AWS::Serverless::Api
-    Properties:
-      Description: Account Components Public API
-      StageName: !Ref ApiStageName
-      AlwaysDeploy: true
-      DisableExecuteApiEndpoint: true
-      TracingEnabled: true
-      EndpointConfiguration:
-        Type: REGIONAL
-      AccessLogSetting:
-        Format: >-
-          {
-          "requestId": "$context.requestId",
-          "requestTime": "$context.requestTime",
-          "requestTimeEpoch": "$context.requestTimeEpoch",
-          "httpMethod": "$context.httpMethod",
-          "domainName": "$context.domainName",
-          "path": "$context.path",
-          "routeKey": "$context.routeKey",
-          "protocol": "$context.protocol",
-          "status": "$context.status",
-          "responseLength": "$context.responseLength",
-          "responseLatency": "$context.responseLatency",
-          "authorizerLatency": "$context.authorizer.latency",
-          "integrationStatus": "$context.integrationStatus",
-          "integrationLatency": "$context.integrationLatency",
-          "integrationErrorMessage": "$context.integrationErrorMessage",
-          "errorMessage": "$context.error.message",
-          "errorResponseType": "$context.error.responseType",
-          "validationErrorString": "$context.error.validationErrorString",
-          "xrayTraceId": "$context.xrayTraceId"
-          }
-        DestinationArn: !GetAtt ApiGatewayAccessLogGroup.Arn
-      MethodSettings:
-        - MetricsEnabled: true
-          ResourcePath: /*
-          HttpMethod: "*"
-      DefinitionBody:
-        openapi: 3.0.3
-        info:
-          title: Account Components Public API
-          version: 1.0.0
-        paths:
-          /healthcheck:
-            get:
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HealthcheckLambda.Alias}/invocations"
-          /authorize:
-            get:
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AuthorizeLambda.Alias}/invocations"
-
-  ApiGatewayAccessLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub "/aws/apigateway/${ApiGateway}/${ApiStageName}"
-      RetentionInDays: 30
-      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
-
-  PrivateApiGatewayS3Role:
+  ApiGatewayS3Role:
     Type: AWS::IAM::Role
     Properties:
       PermissionsBoundary: !If
@@ -443,18 +310,13 @@ Resources:
                 Resource: !Sub "{{resolve:ssm:/${CoreStackName}/S3SSEKeyArn}}"
 
   # required to allow stub to call private api via custom domain name
-  PrivateApiDomainRecord:
+  ApiDomainRecord:
     Condition: IsDevOrBuild
     Type: AWS::Route53::RecordSet
     Properties:
       HostedZoneId:
         Fn::ImportValue: hosted-zone-HostedZoneID
-      Name:
-        !FindInMap [
-          EnvironmentConfiguration,
-          !Ref Environment,
-          privateApiDomain,
-        ]
+      Name: !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
       Type: A
       AliasTarget:
         #        Temporary fix until https://govukverify.atlassian.net/browse/PSREDEV-3033 is done
@@ -469,17 +331,13 @@ Resources:
         HostedZoneId: "Z7K1066E3PUKB" # Canonical hosted zone ID for VPC interface endpoint in eu-west-2 (eu-west-2.vpce.amazonaws.com.)
         EvaluateTargetHealth: false
 
-  PrivateApiDomain:
+  ApiDomain:
     Type: AWS::ApiGateway::DomainNameV2
     Properties:
       CertificateArn:
         Fn::ImportValue: certificate-CertificateARN
       DomainName:
-        !FindInMap [
-          EnvironmentConfiguration,
-          !Ref Environment,
-          privateApiDomain,
-        ]
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
       EndpointConfiguration:
         Types:
           - PRIVATE
@@ -498,30 +356,30 @@ Resources:
                   !FindInMap [
                     EnvironmentConfiguration,
                     !Ref Environment,
-                    privateApiAllowedVpceIds,
+                    apiAllowedVpceIds,
                   ]
 
-  PrivateBasePathMapping:
+  BasePathMapping:
     Type: AWS::ApiGateway::BasePathMappingV2
     DependsOn:
-      - PrivateApiGatewayStage
+      - ApiGatewayStage
     Properties:
-      DomainNameArn: !GetAtt PrivateApiDomain.DomainNameArn
-      RestApiId: !Ref PrivateApiGateway
+      DomainNameArn: !GetAtt ApiDomain.DomainNameArn
+      RestApiId: !Ref ApiGateway
       Stage: !Ref ApiStageName
 
   DomainNameAccessAssociation:
     Type: AWS::ApiGateway::DomainNameAccessAssociation
     Properties:
-      DomainNameArn: !GetAtt PrivateApiDomain.DomainNameArn
+      DomainNameArn: !GetAtt ApiDomain.DomainNameArn
       AccessAssociationSource:
         Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
       AccessAssociationSourceType: VPCE
 
-  PrivateApiGateway:
+  ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
-      Description: Account Components Private API
+      Description: Account Components API
       StageName: !Ref ApiStageName
       AlwaysDeploy: true
       DisableExecuteApiEndpoint: true
@@ -537,7 +395,7 @@ Resources:
               - !FindInMap
                 - EnvironmentConfiguration
                 - !Ref Environment
-                - privateApiAllowedVpcIds
+                - apiAllowedVpcIds
 
       EndpointConfiguration:
         Type: PRIVATE
@@ -568,7 +426,7 @@ Resources:
           "tlsVersion": "$context.tlsVersion",
           "cipherSuite": "$context.cipherSuite"
           }
-        DestinationArn: !GetAtt PrivateApiGatewayAccessLogGroup.Arn
+        DestinationArn: !GetAtt ApiGatewayAccessLogGroup.Arn
       MethodSettings:
         - MetricsEnabled: true
           ResourcePath: /*
@@ -586,27 +444,23 @@ Resources:
                   !FindInMap [
                     EnvironmentConfiguration,
                     !Ref Environment,
-                    privateApiAllowedVpceIds,
+                    apiAllowedVpceIds,
                   ]
       Variables:
         ApiDomain:
           !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
-        PrivateApiDomain:
-          !FindInMap [
-            EnvironmentConfiguration,
-            !Ref Environment,
-            privateApiDomain,
-          ]
         AuthorizeEndpointUrl:
           !FindInMap [
             EnvironmentConfiguration,
             !Ref Environment,
             authorizeEndpointUrl,
           ]
+        IssuerUrl:
+          !FindInMap [EnvironmentConfiguration, !Ref Environment, issuerUrl]
       DefinitionBody:
         openapi: 3.0.3
         info:
-          title: Account Components Private API
+          title: Account Components API
           version: 1.0.0
         paths:
           /healthcheck:
@@ -647,7 +501,7 @@ Resources:
                 uri: !Sub
                   - "arn:aws:apigateway:${AWS::Region}:s3:path/${BucketName}/jwks.json"
                   - BucketName: !Sub "{{resolve:ssm:/${CoreStackName}/JWKSStoreBucketName}}"
-                credentials: !GetAtt PrivateApiGatewayS3Role.Arn
+                credentials: !GetAtt ApiGatewayS3Role.Arn
                 responses:
                   default:
                     statusCode: 200
@@ -692,10 +546,10 @@ Resources:
                     responseTemplates:
                       application/json: !Sub >-
                         {
-                            "issuer": "https://$stageVariables.ApiDomain",
+                            "issuer": "$stageVariables.IssuerUrl",
                             "authorization_endpoint": "$stageVariables.AuthorizeEndpointUrl",
-                            "token_endpoint": "https://$stageVariables.PrivateApiDomain/token",
-                            "jwks_uri": "https://$stageVariables.PrivateApiDomain/.well-known/jwks.json",
+                            "token_endpoint": "https://$stageVariables.ApiDomain/token",
+                            "jwks_uri": "https://$stageVariables.ApiDomain/.well-known/jwks.json",
                             "response_types_supported": ["code"],
                             "token_endpoint_auth_methods_supported": ["private_key_jwt"],
                             "token_endpoint_auth_signing_alg_values_supported": ["ES256"],
@@ -707,10 +561,10 @@ Resources:
                   application/json: '{"statusCode": 200}'
                 type: mock
 
-  PrivateApiGatewayAccessLogGroup:
+  ApiGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/apigateway/${PrivateApiGateway}/${ApiStageName}"
+      LogGroupName: !Sub "/aws/apigateway/${ApiGateway}/${ApiStageName}"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
 
@@ -733,16 +587,10 @@ Resources:
       # When CloudFormation executes this template these events are ignored
       # and the DefinitionBody on the API Gateways takes precedence.
       Events:
-        HealthcheckPublicApi:
+        Healthcheck:
           Type: Api
           Properties:
             RestApiId: !Ref ApiGateway
-            Path: /healthcheck
-            Method: GET
-        HealthcheckPrivateApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref PrivateApiGateway
             Path: /healthcheck
             Method: GET
     Metadata:
@@ -773,7 +621,7 @@ Resources:
       Environment:
         Variables:
           AUTH_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableName}}"
-          REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
+          REPLAY_ATTACK_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/ReplayAttackTableName}}"
           TOKEN_ENDPOINT_URL:
             !FindInMap [
               EnvironmentConfiguration,
@@ -793,8 +641,7 @@ Resources:
             - Effect: Allow
               Action:
                 - dynamodb:PutItem
-              Resource:
-                - !GetAtt ReplayAttackTable.Arn
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/ReplayAttackTableArn}}"
             - Effect: Allow
               Action:
                 - dynamodb:GetItem
@@ -817,10 +664,10 @@ Resources:
       # When CloudFormation executes this template these events are ignored
       # and the DefinitionBody on the API Gateways takes precedence.
       Events:
-        TokenPrivateApi:
+        Token:
           Type: Api
           Properties:
-            RestApiId: !Ref PrivateApiGateway
+            RestApiId: !Ref ApiGateway
             Path: /token
             Method: POST
     Metadata:
@@ -887,10 +734,10 @@ Resources:
       # When CloudFormation executes this template these events are ignored
       # and the DefinitionBody on the API Gateways takes precedence.
       Events:
-        JourneyOutcomePrivateApi:
+        JourneyOutcome:
           Type: Api
           Properties:
-            RestApiId: !Ref PrivateApiGateway
+            RestApiId: !Ref ApiGateway
             Path: /journeyoutcome
             Method: GET
     Metadata:
@@ -907,92 +754,6 @@ Resources:
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
 
-  AuthorizeLambdaLogGroup:
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/AuthorizeLambdaLogGroup"
-      RetentionInDays: 30
-      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
-
-  AuthorizeLambda:
-    Type: AWS::Serverless::Function
-    Properties:
-      LoggingConfig:
-        LogGroup: !Ref AuthorizeLambdaLogGroup
-      Handler: index.handler
-      Environment:
-        Variables:
-          AUTHORIZE_ERROR_PAGE_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              authorizeErrorPageUrl,
-            ]
-          AUTHORIZE_ENDPOINT_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              authorizeEndpointUrl,
-            ]
-          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
-          REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
-          API_SESSIONS_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/ApiSessionsTableName}}"
-          API_SESSION_COOKIE_DOMAIN:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              apiSessionCookieDomain,
-            ]
-          FRONTEND_URL:
-            !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendUrl]
-      Policies:
-        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
-        - Statement:
-            - Effect: Allow
-              Action:
-                - kms:DescribeKey
-                - kms:Decrypt
-              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyArn}}"
-            - Effect: Allow
-              Action:
-                - appconfig:GetLatestConfiguration
-                - appconfig:StartConfigurationSession
-              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
-            - Effect: Allow
-              Action:
-                - dynamodb:PutItem
-              Resource:
-                - !GetAtt ReplayAttackTable.Arn
-                - !Sub "{{resolve:ssm:/${CoreStackName}/ApiSessionsTableArn}}"
-            - Effect: Allow
-              Action:
-                - kms:Decrypt
-                - kms:GenerateDataKey
-              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
-      # These events are only necessary for running locally using the SAM CLI.
-      # When CloudFormation executes this template these events are ignored
-      # and the DefinitionBody on the API Gateways takes precedence.
-      Events:
-        AuthorizePublicApi:
-          Type: Api
-          Properties:
-            RestApiId: !Ref ApiGateway
-            Path: /authorize
-            Method: GET
-    Metadata:
-      BuildMethod: esbuild
-      BuildProperties:
-        Minify: true
-        Format: "esm"
-        OutExtension:
-          - .js=.mjs
-        Target: "es2024"
-        Sourcemap: true
-        Banner:
-          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
-        EntryPoints:
-          - solutions/api/src/lambda/authorize/index.ts
-
   HealthcheckLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -1001,63 +762,18 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
 
-  PrivateHealthcheckLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref HealthcheckLambda.Alias
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
-
-  PrivateTokenLambdaPermission:
+  TokenLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref TokenLambda.Alias
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
 
-  PrivateJourneyOutcomeLambdaPermission:
+  JourneyOutcomeLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref JourneyOutcomeLambda.Alias
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PrivateApiGateway}/*/*"
-
-  AuthorizeLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Properties:
-      FunctionName: !Ref AuthorizeLambda.Alias
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
-
-  ReplayAttackTable:
-    Type: AWS::DynamoDB::Table
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
-    Properties:
-      TableName: !Sub ${AWS::StackName}-ReplayAttack
-      AttributeDefinitions:
-        - AttributeName: nonce
-          AttributeType: S
-      KeySchema:
-        - AttributeName: nonce
-          KeyType: HASH
-      TimeToLiveSpecification:
-        AttributeName: expires
-        Enabled: true
-      BillingMode: PAY_PER_REQUEST
-      ContributorInsightsSpecification:
-        Enabled: true
-      PointInTimeRecoverySpecification:
-        PointInTimeRecoveryEnabled: false
-      SSESpecification:
-        KMSMasterKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
-        SSEEnabled: true
-        SSEType: KMS
-      TableClass: STANDARD
-      Tags:
-        - Key: Name
-          Value: !Sub "${AWS::StackName}-replay_attack"

@@ -8,7 +8,7 @@ vi.mock(import("../../../commons/utils/getEnvironment/index.js"), () => ({
   getEnvironment: mockGetEnvironment,
 }));
 
-vi.mock(import("../../../commons/utils/constants.js"), () => ({
+vi.mock(import("./constants.js"), () => ({
   rootCookieDomain: "test.com",
 }));
 

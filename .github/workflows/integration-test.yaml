@@ -52,9 +52,7 @@ jobs:
           LOCAL_KMS_ENDPOINT=http://localhost:4567
           LOCALSTACK_ACCESS_KEY_ID=test
           LOCALSTACK_ACCESS_KEY=test
-          API_SESSION_COOKIE_DOMAIN=localhost    
-          API_SESSIONS_TABLE_NAME=components-core-ApiSessions
-          AUTHORIZE_ENDPOINT_URL=http://localhost:6004/authorize
+          AUTHORIZE_ENDPOINT_URL=http://localhost:6002/authorize
           AUTH_CODE_TABLE_NAME=components-core-AuthCode
           JOURNEY_OUTCOME_TABLE_NAME=components-core-JourneyOutcome    
           AUTH_FRONTEND_URL=https://signin.account.gov.uk
@@ -68,6 +66,8 @@ jobs:
           YOUR_SERVICES_URL=https://home.dev.account.gov.uk/your-services
           SECURITY_URL=https://home.dev.account.gov.uk/security  
           CONTACT_URL=https://home.dev.account.gov.uk/contact-gov-uk-one-login         
+          JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/components-core-JARRSAEncryptionKey
+          REPLAY_ATTACK_TABLE_NAME=components-core-ReplayAttack      
           EOF
 
       - name: Configure stubs environment
@@ -80,9 +80,9 @@ jobs:
           MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME=/components-mocks/MockClientEcPrivateKey  
           MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME=/components-mocks/MockClientEcPublicKey  
           JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/components-core-JARRSAEncryptionKey 
-          DEFAULT_AUDIENCE=http://localhost:6004/authorize
+          DEFAULT_AUDIENCE=http://localhost:6002/authorize
           ACCESS_TOKEN_ISSUER=http://localhost:6003
-          AUTHORIZE_URL=http://localhost:6004/authorize
+          AUTHORIZE_URL=http://localhost:6002/authorize
           AWS_REGION=eu-west-2
           LOCALSTACK_ENDPOINT=http://localhost:4566
           LOCAL_KMS_ENDPOINT=http://localhost:4567
@@ -107,18 +107,9 @@ jobs:
               "LOCALSTACK_ACCESS_KEY_ID": "test",
               "LOCALSTACK_ACCESS_KEY": "test"
             },
-            "AuthorizeLambda": {
-              "AUTHORIZE_ERROR_PAGE_URL": "http://localhost:6002/authorize-error",
-              "JAR_RSA_ENCRYPTION_KEY_ALIAS": "alias/components-core-JARRSAEncryptionKey",
-              "AUTHORIZE_ENDPOINT_URL": "http://localhost:6004/authorize",
-              "REPLAY_ATTACK_TABLE_NAME": "components-api-ReplayAttack",
-              "API_SESSIONS_TABLE_NAME": "components-core-ApiSessions",
-              "API_SESSION_COOKIE_DOMAIN": "localhost",
-              "FRONTEND_URL": "http://localhost:6002"
-            },
             "TokenLambda": {
               "AUTH_TABLE_NAME": "components-core-AuthCode",
-              "REPLAY_ATTACK_TABLE_NAME": "components-api-ReplayAttack",
+              "REPLAY_ATTACK_TABLE_NAME": "components-core-ReplayAttack",
               "TOKEN_ENDPOINT_URL": "http://localhost:6004/token",
               "JOURNEY_OUTCOME_ENDPOINT_URL": "http://localhost:6004/journeyoutcome",
               "JWT_SIGNING_KEY_ALIAS": "alias/components-core-JWTSigningKey"

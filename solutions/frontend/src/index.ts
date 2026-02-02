@@ -19,7 +19,7 @@ import staticHashGovUkFrontendAssets from "./utils/static-hash-govuk-frontend-as
 import staticHashGovUkFrontend from "./utils/static-hash-govuk-frontend.json" with { type: "json" };
 import staticHashGovUkOneLoginFrontendDeviceIntelligence from "./utils/static-hash-govuk-one-login-frontend-device-intelligence.json" with { type: "json" };
 import staticHashGovUkOneLoginFrontendAnalytics from "./utils/static-hash-govuk-one-login-frontend-analytics.json" with { type: "json" };
-import { csrfProtection } from "../../commons/utils/fastify/csrfProtection/index.js";
+import { csrfProtection } from "./utils/csrfProtection.js";
 import { addStaticAssetsCachingHeaders } from "../../commons/utils/fastify/addStaticAssetsCachingHeaders/index.js";
 import i18next from "i18next";
 import {
@@ -27,10 +27,7 @@ import {
   handle as i18nextMiddlewareHandle,
 } from "i18next-http-middleware";
 import { getCurrentUrl } from "../../commons/utils/fastify/getCurrentUrl/index.js";
-import {
-  configureI18n,
-  Lang,
-} from "../../commons/utils/configureI18n/index.js";
+import { configureI18n, Lang } from "./utils/configureI18n.js";
 import {
   frontendUiTranslationCy,
   frontendUiTranslationEn,
@@ -266,15 +263,12 @@ export const initFrontend = async function () {
     fastify.register(fastifySession, await getSessionOptions());
     fastify.register(csrfProtection);
 
-    fastify.get(
-      paths.others.startSession.path,
-      async function (request, reply) {
-        return (await import("./handlers/startSession/index.js")).handler(
-          request,
-          reply,
-        );
-      },
-    );
+    fastify.get(paths.others.authorize.path, async function (request, reply) {
+      return (await import("./handlers/authorize/index.js")).getHandler(
+        request,
+        reply,
+      );
+    });
 
     fastify.register(journeyRoutes);
   });
