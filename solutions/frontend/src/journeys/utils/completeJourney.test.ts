@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import type {
-  Claims,
-  getClaimsSchema,
-} from "../../../../commons/utils/authorize/getClaimsSchema.js";
+import type { Claims, getClaimsSchema } from "../../utils/getClaimsSchema.js";
 import type * as v from "valibot";
 
 const mockTransactWrite = vi.fn();
@@ -11,7 +8,6 @@ const mockRandomBytes = vi.fn();
 const mockGetAppConfig = vi.fn();
 const mockBuildRedirectToClientRedirectUri = vi.fn();
 const mockDestroySession = vi.fn();
-const mockDestroyApiSession = vi.fn();
 const mockRedirect = vi.fn();
 
 // @ts-expect-error
@@ -32,19 +28,12 @@ vi.mock(import("../../../../commons/utils/getAppConfig/index.js"), () => ({
   getAppConfig: mockGetAppConfig,
 }));
 
-vi.mock(
-  import("../../../../commons/utils/authorize/buildRedirectToClientRedirectUri.js"),
-  () => ({
-    buildRedirectToClientRedirectUri: mockBuildRedirectToClientRedirectUri,
-  }),
-);
+vi.mock(import("../../utils/buildRedirectToClientRedirectUri.js"), () => ({
+  buildRedirectToClientRedirectUri: mockBuildRedirectToClientRedirectUri,
+}));
 
 vi.mock(import("../../utils/session.js"), () => ({
   destroySession: mockDestroySession,
-}));
-
-vi.mock(import("../../utils/apiSession.js"), () => ({
-  destroyApiSession: mockDestroyApiSession,
 }));
 
 describe("completeJourney", () => {
@@ -79,7 +68,6 @@ describe("completeJourney", () => {
 
     mockRedirect.mockReturnValue(mockReply);
     mockDestroySession.mockResolvedValue(undefined);
-    mockDestroyApiSession.mockResolvedValue(undefined);
 
     process.env["JOURNEY_OUTCOME_TABLE_NAME"] = "test-outcome-table";
     process.env["AUTH_CODE_TABLE_NAME"] = "test-auth-code-table";
@@ -151,7 +139,6 @@ describe("completeJourney", () => {
         },
       ],
     });
-    expect(mockDestroyApiSession).toHaveBeenCalledWith(mockRequest, mockReply);
     expect(mockDestroySession).toHaveBeenCalledWith(mockRequest);
     expect(mockBuildRedirectToClientRedirectUri).toHaveBeenCalledWith(
       mockClaims.redirect_uri,
@@ -232,7 +219,6 @@ describe("completeJourney", () => {
         },
       ],
     });
-    expect(mockDestroyApiSession).toHaveBeenCalledWith(mockRequest, mockReply);
     expect(mockDestroySession).toHaveBeenCalledWith(mockRequest);
     expect(mockBuildRedirectToClientRedirectUri).toHaveBeenCalledWith(
       mockClaims.redirect_uri,

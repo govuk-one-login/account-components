@@ -138,6 +138,7 @@ create_dynamodb_tables() {
     --table-name "components-core-JourneyOutcome" \
     --time-to-live-specification "Enabled=true,AttributeName=expires"
 
+  # SessionStore
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
     --table-name "components-main-SessionStore" \
     --attribute-definitions \
@@ -165,7 +166,7 @@ create_dynamodb_tables() {
 
   # ReplayAttackTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-api-ReplayAttack" \
+    --table-name "components-core-ReplayAttack" \
     --attribute-definitions \
       AttributeName=nonce,AttributeType=S \
     --key-schema \
@@ -173,21 +174,8 @@ create_dynamodb_tables() {
     --billing-mode PAY_PER_REQUEST
 
   aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
-    --table-name "components-api-ReplayAttack" \
-    --time-to-live-specification "Enabled=true,AttributeName=expires"
-
-  # ApiSessionsTable
-  aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-core-ApiSessions" \
-    --attribute-definitions \
-      AttributeName=id,AttributeType=S \
-    --key-schema \
-      AttributeName=id,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST
-
-  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
-    --table-name "components-core-ApiSessions" \
-    --time-to-live-specification "Enabled=true,AttributeName=expires"      
+    --table-name "components-core-ReplayAttack" \
+    --time-to-live-specification "Enabled=true,AttributeName=expires"    
 
   echo "Finished creating DynamoDB tables"
   return 0

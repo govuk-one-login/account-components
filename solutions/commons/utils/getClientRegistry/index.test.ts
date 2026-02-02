@@ -24,7 +24,6 @@ describe("getClientRegistry", () => {
     const mockAppConfig: AppConfigSchema = {
       client_registry: mockClientRegistry as [ClientEntry, ...ClientEntry[]],
       jti_nonce_ttl_in_seconds: 300,
-      api_session_ttl_in_seconds: 300,
       auth_code_ttl: 300,
       jwks_cache_max_age: 1000,
       jwks_http_timeout: 1000,

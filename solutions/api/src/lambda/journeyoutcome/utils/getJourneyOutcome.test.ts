@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { JourneyOutcomePayload } from "./interfaces.js";
 
 const mockDynamoDbGet = vi.fn();
+const mockMetricsAddDimensions = vi.fn();
+const mockLoggerAppendKeys = vi.fn();
 
 vi.doMock(
   "../../../../../commons/utils/awsClient/dynamodbClient/index.js",
@@ -14,6 +16,14 @@ vi.doMock(
 
 vi.doMock("./errors.js", () => ({
   errorManager: { throwError: vi.fn(() => undefined) },
+}));
+
+vi.doMock("../../../../../commons/utils/metrics/index.js", () => ({
+  metrics: { addDimensions: mockMetricsAddDimensions },
+}));
+
+vi.doMock("../../../../../commons/utils/logger/index.js", () => ({
+  logger: { appendKeys: mockLoggerAppendKeys },
 }));
 
 const { errorManager } = await import("./errors.js");
@@ -31,6 +41,7 @@ const mockJourneyOutcome = {
   outcome_id: "test-outcome-123",
   sub: "test-sub-789",
   email: "test@example.com",
+  scope: "test-scope",
   outcome: [
     { scope: "test-scope", timestamp: 1234567890 },
     { scope: "another-scope", timestamp: 1234567891 },
@@ -70,6 +81,12 @@ describe("getJourneyOutcome", () => {
         "#sub": "sub",
         "#scope": "scope",
       },
+    });
+    expect(mockMetricsAddDimensions).toHaveBeenCalledWith({
+      scope: "test-scope",
+    });
+    expect(mockLoggerAppendKeys).toHaveBeenCalledWith({
+      scope: "test-scope",
     });
 
     // eslint-disable-next-line @typescript-eslint/unbound-method
