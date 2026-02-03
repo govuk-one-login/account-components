@@ -2,6 +2,10 @@ import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../utils/paths.js";
 import { completeJourney } from "../utils/completeJourney.js";
+import {
+  NotificationType,
+  sendNotification,
+} from "../../../../commons/utils/notifications/index.js";
 
 export async function step1GetHandler(
   _request: FastifyRequest,
@@ -16,6 +20,10 @@ export async function step1PostHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {
+  await sendNotification({
+    emailAddress: "michael.henson@digital.cabinet-office.gov.uk",
+    notificationType: NotificationType.GLOBAL_LOGOUT,
+  });
   reply.redirect(
     paths.journeys["testing-journey"].PASSWORD_NOT_PROVIDED.enterPassword.path,
   );
