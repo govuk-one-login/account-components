@@ -110,6 +110,18 @@ variable "api_artifact_source_bucket_event_trigger_role_arn" {
   default     = "none"
 }
 
+variable "alarms_artifact_source_bucket_arn" {
+  type        = string
+  description = "The ARN of the promotion bucket from the previous environment's alarms pipeline"
+  default     = "none"
+}
+
+variable "alarms_artifact_source_bucket_event_trigger_role_arn" {
+  type        = string
+  description = "The ARN of the role to assume for promotion events from the previous environment's alarms pipeline"
+  default     = "none"
+}
+
 variable "repository_name" {
   type        = string
   description = "The Github repository name"
