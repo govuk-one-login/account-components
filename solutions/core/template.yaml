@@ -773,11 +773,11 @@ Resources:
               - ReportBatchItemFailures
       Handler: notifications-service.handler
       Runtime: nodejs22.x # as at 2026-02-03 the notifications-node-client library does not work with Node 24 or newer
-    VpcConfig:
-      SubnetIds:
-        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
-        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
-        - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
       Environment:
         Variables:
           NOTIFY_API_KEY_SECRET_ARN: !Ref NotifyAPIKeySecret
