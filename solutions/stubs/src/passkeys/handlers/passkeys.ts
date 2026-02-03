@@ -100,8 +100,6 @@ export async function passkeysPostHandler(
     return reply;
   }
 
-  //todo validate the attestationSignature properly
-
   if (!parsedRequestBody.success) {
     reply.status(400);
     reply.send({
@@ -129,10 +127,11 @@ export async function passkeysPostHandler(
   return reply;
 }
 
-export async function passkeysDeleteHandler(
+const deleteAndPatchHandler = async (
   request: FastifyRequest,
   reply: FastifyReply,
-) {
+  fn: () => Promise<FastifyReply>,
+) => {
   const { accountId, passkeyId } = v.parse(
     v.object({
       accountId: v.string(),
@@ -163,68 +162,49 @@ export async function passkeysDeleteHandler(
     return reply;
   }
 
-  reply.status(204);
-  reply.send({ message: "Passkey deleted successfully" });
-  return reply;
+  return await fn();
+};
+
+export async function passkeysDeleteHandler(
+  request: FastifyRequest,
+  reply: FastifyReply,
+) {
+  return await deleteAndPatchHandler(request, reply, async () => {
+    reply.status(204);
+    reply.send({ message: "Passkey deleted successfully" });
+    return reply;
+  });
 }
 
 export async function passkeysPatchHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  const { accountId, passkeyId } = v.parse(
-    v.object({
-      accountId: v.string(),
-      passkeyId: v.string(),
-    }),
-    request.params,
-    {
-      abortEarly: false,
-    },
-  );
+  return await deleteAndPatchHandler(request, reply, async () => {
+    const parsedRequestBody = v.safeParse(
+      v.object({
+        lastUsedAt: v.string(),
+      }),
+      request.body,
+      {
+        abortEarly: false,
+      },
+    );
 
-  if (!passkeyData[accountId]) {
-    reply.status(404);
+    if (!parsedRequestBody.success) {
+      reply.status(400);
+      reply.send({
+        message: parsedRequestBody.issues
+          .map((issue) => issue.message)
+          .join(", "),
+      });
+      return reply;
+    }
+
+    reply.status(200);
     reply.send({
-      message: "User not found",
+      message: "Passkey updated successfully",
     });
     return reply;
-  }
-
-  const passkeyIndex = passkeyData[accountId].findIndex(
-    (p) => p.id === passkeyId,
-  );
-  if (passkeyIndex === -1) {
-    reply.status(404);
-    reply.send({
-      message: "Passkey not found",
-    });
-    return reply;
-  }
-
-  const parsedRequestBody = v.safeParse(
-    v.object({
-      lastUsedAt: v.string(),
-    }),
-    request.body,
-    {
-      abortEarly: false,
-    },
-  );
-
-  if (!parsedRequestBody.success) {
-    reply.status(400);
-    reply.send({
-      message: parsedRequestBody.issues
-        .map((issue) => issue.message)
-        .join(", "),
-    });
-    return reply;
-  }
-
-  reply.status(200);
-  reply.send({
-    message: "Passkey updated successfully",
   });
-  return reply;
 }
