@@ -12,6 +12,7 @@
         "solutions/stubs/rolldown.config.ts",
         "solutions/stubs/rolldown.local.config.ts",
         "solutions/core/src/lambda/jwks-creator.ts",
+        "solutions/core/src/lambda/notifications-service.ts",
         "solutions/api/src/lambda/healthcheck.ts",
         "solutions/api/src/lambda/token/index.ts",
         "solutions/api/src/lambda/journeyoutcome/index.ts",
