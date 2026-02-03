@@ -53,27 +53,20 @@ cd /solutions/integration-tests
 npm run test:update-snapshots
 ```
 
-Before running the tests these commands will start the test server in which the browsers will run (when `PRE_OR_POST_DEPLOY` is `pre`), and if `TEST_ENVIRONMENT` is `local` they will also start the necessary local servers. These servers are also stopped once the tests have run. Starting the servers can take some time. If you’re writing or updating tests and will need to frequently run them whilst doing so then prefer starting the servers manually:
-
-To run the frontend:
-
-```bash
-cd /solutions/integration-tests
-npm run run:frontend
-```
-
-To run the stubs:
-
-```bash
-cd /solutions/integration-tests
-npm run run:stubs
-```
+Before running the tests these commands will start the test server in which the browsers will run (when `PRE_OR_POST_DEPLOY` is `pre`), and if `TEST_ENVIRONMENT` is `local` they will also start the necessary application servers. These servers are also stopped once the tests have run. Starting the servers can take some time. If you’re writing or updating tests and will need to frequently run them whilst doing so then prefer starting the servers manually:
 
 To run the test server:
 
 ```bash
 cd /solutions/integration-tests
 npm run start-test-server
+```
+
+To run the application servers:
+
+```bash
+cd /solutions/integration-tests
+npm run run:all
 ```
 
 With the servers already running the tests will execute more quickly as they don't need to wait for the servers to start.

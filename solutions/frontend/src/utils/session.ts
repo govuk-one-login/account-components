@@ -3,7 +3,7 @@ import { getEnvironment } from "../../../commons/utils/getEnvironment/index.js";
 import assert from "node:assert";
 import type { FastifyRequest } from "fastify";
 import { DynamoDbSessionStore } from "./dynamoDbSessionStore.js";
-import { rootCookieDomain } from "../../../commons/utils/constants.js";
+import { rootCookieDomain } from "./constants.js";
 
 export const destroySession = async (request: FastifyRequest) => {
   await request.session.regenerate();

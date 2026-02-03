@@ -8,7 +8,7 @@ import type {
   ProvidedActor,
 } from "xstate";
 import { createMachine } from "xstate";
-import type { Scope } from "../../../../../commons/utils/authorize/getClaimsSchema.js";
+import type { Scope } from "../../../../../commons/utils/interfaces.js";
 
 export const createJourneyStateMachine = <
   TContext extends MachineContext = MachineContext,

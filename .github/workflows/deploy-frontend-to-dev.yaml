@@ -113,7 +113,7 @@ jobs:
         run: npm run build:frontend
 
       - name: Deploy frontend
-        uses: govuk-one-login/devplatform-upload-action@ac4a243a86c2017f5360b83d737dea4268dcf38a
+        uses: govuk-one-login/devplatform-upload-action@abbf25e43a88b3512b1a43621f9aef4cbea1b648
         with:
           artifact-bucket-name: ${{ secrets.DEV_ARTIFACT_BUCKET_NAME }}
           signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}

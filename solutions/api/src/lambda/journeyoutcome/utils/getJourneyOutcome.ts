@@ -1,5 +1,7 @@
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import type { JourneyOutcome } from "../../../../../commons/utils/interfaces.js";
+import { logger } from "../../../../../commons/utils/logger/index.js";
+import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { errorManager } from "./errors.js";
 import type { JourneyOutcomePayload } from "./interfaces.js";
 
@@ -31,6 +33,13 @@ export const getJourneyOutcome = async (
 
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const outcome = result.Item as JourneyOutcome;
+
+    metrics.addDimensions({
+      scope: outcome.scope,
+    });
+    logger.appendKeys({
+      scope: outcome.scope,
+    });
 
     if (outcome.sub !== payload.sub) {
       errorManager.throwError(

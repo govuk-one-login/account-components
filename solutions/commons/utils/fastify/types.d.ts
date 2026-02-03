@@ -1,11 +1,12 @@
 import type { APIGatewayEvent, Context } from "aws-lambda";
 import type * as v from "valibot";
-import type { Scope, getClaimsSchema } from "../authorize/getClaimsSchema.ts";
 import type { Actor, AnyMachineSnapshot } from "xstate";
 import type { accountDeleteStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/account-delete.ts";
 import type { testingJourneyStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/testing-journey.ts";
 import type { ClientEntry } from "../../../config/schema/types.ts";
 import type { failedJourneyErrors } from "../../../frontend/src/journeys/utils/failedJourneyErrors.ts";
+import type { Scope } from "../interfaces.ts";
+import type { getClaimsSchema } from "../../../frontend/src/utils/getClaimsSchema.ts";
 
 declare module "fastify" {
   interface FastifyRequest {

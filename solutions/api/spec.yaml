@@ -1,0 +1,557 @@
+---
+openapi: 3.0.3
+
+info:
+  title: Account Management Components API
+  version: 0.0.11
+  description: |
+    OAuth 2.0 provider endpoints, including:
+    - POST /token (supports client assertions via private_key_jwt)
+    - GET /journeyoutcome
+    - GET /.well-known/jwks.json (publishes signing and encryption keys)
+    - GET /.well-known/oauth-authorization-server (OAuth Discovery)
+  contact:
+    name: GDS - DI Accounts Pod - Home Team
+    email: one-login-home-team@digital.cabinet-office.gov.uk
+  license:
+    name: MIT
+    url: https://github.com/govuk-one-login/account-components/blob/main/LICENSE.md
+tags:
+  - name: OAuth
+    description: |-
+      Supporting methods for Account Management Component Journeys.
+
+      **Note:** This functionality is intended to be used by systems solely belonging internally to GDS DI.
+  - name: AMC
+    description: |-
+      Specific methods for Account Management Component Journeys.
+
+      **Note:** This functionality is intended to be used by systems solely belonging internally to GDS DI.
+servers:
+  - url: https://api.manage.dev.account.gov.uk
+    description: development server
+  - url: https://api.manage.build.account.gov.uk
+    description: build server
+  - url: https://api.manage.staging.account.gov.uk
+    description: staging server
+  - url: https://api.manage.integration.account.gov.uk
+    description: integration server
+  - url: https://api.manage.account.gov.uk
+    description: production server
+
+paths:
+  /token:
+    post:
+      summary: Token endpoint
+      description: |
+        Issues tokens for supported grants. This endpoint supports `private_key_jwt` client authentication via `client_assertion_type` and `client_assertion` per RFC 7523.
+      operationId: token
+      tags:
+        - OAuth
+      parameters:
+        - $ref: "#/components/parameters/DiPersistentSessionId"
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/ClientSessionId"
+        - $ref: "#/components/parameters/TxmaAuditEncoded"
+        - $ref: "#/components/parameters/XForwardedFor"
+        - $ref: "#/components/parameters/UserLanguage"
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                grant_type:
+                  type: string
+                  enum:
+                    - authorization_code
+                  example: authorization_code
+                code:
+                  type: string
+                  description: Required for `authorization_code`.
+                  example: anAuthCode
+                redirect_uri:
+                  type: string
+                  format: uri
+                  description: Must be the same as in the authorize request.
+                  pattern: ^(https|http)://(www\.)?((localhost(:[0-9]+)?)|[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b)([-a-zA-Z0-9()@:%_+.~#?&/=]*)$
+                  example: https://signin.account.gov.uk/callbacks/account-deletion
+                client_assertion_type:
+                  type: string
+                  enum:
+                    ["urn:ietf:params:oauth:client-assertion-type:jwt-bearer"]
+                  description: Indicates private_key_jwt authentication.
+                client_assertion:
+                  type: string
+                  description: JWT signed by the client's private key.
+              required:
+                - grant_type
+                - code
+                - redirect_uri
+                - client_assertion_type
+                - client_assertion
+      responses:
+        "200":
+          description: Token response
+          headers:
+            Cache-Control:
+              $ref: "#/components/headers/CacheControlNoStore"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "400":
+          description: Invalid request, grant, or client assertion
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
+              examples:
+                invalid_request:
+                  value:
+                    error: invalid_request
+                    error_description: E4001
+                invalid_client_assertion:
+                  value:
+                    error: invalid_request
+                    error_description: E4002
+                invalid_code:
+                  value:
+                    error: invalid_grant
+                    error_description: E4003
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
+              examples:
+                generic_error:
+                  value:
+                    error: internal_server_error
+                    error_description: E500
+
+  /journeyoutcome:
+    get:
+      summary: Journey Outcome endpoint
+      description: Get Journey Outcome information
+      security:
+        - bearerAuth: []
+      operationId: journeyoutcome
+      tags:
+        - AMC
+      parameters:
+        - $ref: "#/components/parameters/DiPersistentSessionId"
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/ClientSessionId"
+        - $ref: "#/components/parameters/TxmaAuditEncoded"
+        - $ref: "#/components/parameters/XForwardedFor"
+        - $ref: "#/components/parameters/UserLanguage"
+      responses:
+        "200":
+          description: Claims about the outcome of the user's journey
+          headers:
+            Cache-Control:
+              $ref: "#/components/headers/CacheControlNoStore"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JourneyOutcome"
+              examples:
+                successful_journey:
+                  value:
+                    outcome_id: 9cd4c45f8f33cced99cfaa48394e1acf5e90f6e2616bba40
+                    sub: urn:fdc:gov.uk:2022:JG0RJI1pYbnanbvPs-j4j5-a-PFcmhry9Qu9NCEp5d4
+                    email: user@example.com
+                    scope: account-delete
+                    success: true
+                    journeys:
+                      - journey: account-delete
+                        timestamp: 1760718467000
+                        success: true
+                        details: {}
+                failed_journey__user_signed_out:
+                  value:
+                    outcome_id: 8bc3d34e7e22bbdc88beaa37283d0ace4d80e5d1505aa30
+                    sub: urn:fdc:gov.uk:2022:JG0RJI1pYbnanbvPs-j4j5-a-PFcmhry9Qu9NCEp5d4
+                    email: user@example.com
+                    scope: account-delete
+                    success: false
+                    journeys:
+                      - journey: account-delete
+                        timestamp: 1760718467000
+                        success: false
+                        details:
+                          error:
+                            code: 1001
+                            description: UserSignedOut
+                failed_journey__user_aborted_journey:
+                  value:
+                    outcome_id: 8bc3d34e7e22bbdc88beaa37283d0ace4d80e5d1505aa30
+                    sub: urn:fdc:gov.uk:2022:JG0RJI1pYbnanbvPs-j4j5-a-PFcmhry9Qu9NCEp5d4
+                    email: user@example.com
+                    scope: account-delete
+                    success: false
+                    journeys:
+                      - journey: account-delete
+                        timestamp: 1760718467000
+                        success: false
+                        details:
+                          error:
+                            code: 1002
+                            description: UserAbortedJourney
+        "400":
+          description: Bad request - invalid authorization header, access token, or outcome mismatch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
+              examples:
+                invalid_authorization_header:
+                  value:
+                    error: invalid_request
+                    error_description: E4006
+                outcome_sub_does_not_match_payload:
+                  value:
+                    error: invalid_request
+                    error_description: E4005
+                invalid_access_token:
+                  value:
+                    error: invalid_request
+                    error_description: E4007
+                access_token_signature_invalid:
+                  value:
+                    error: invalid_request
+                    error_description: E4008
+        "401":
+          description: Missing or invalid access token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
+        "404":
+          description: Journey outcome not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
+              examples:
+                missing_outcome:
+                  value:
+                    error: not_found
+                    error_description: E404
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
+              examples:
+                generic_error:
+                  value:
+                    error: internal_server_error
+                    error_description: E500
+                failed_to_find_outcome:
+                  value:
+                    error: internal_server_error
+                    error_description: E5001
+
+  /.well-known/jwks.json:
+    get:
+      summary: JSON Web Key Set (JWKS)
+      description: Publishes public keys for signature and encryption.
+      operationId: jwks
+      tags:
+        - OAuth
+      responses:
+        "200":
+          description: JWK Set
+          headers:
+            Cache-Control:
+              $ref: "#/components/headers/CacheControlMaxAge"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/JWKSet"
+              examples:
+                example:
+                  value:
+                    keys:
+                      - kty: RSA
+                        use: enc
+                        kid: enc-2025-01
+                        alg: RSA-OAEP-256
+                        n: "t7Z...base64url-modulus" # pragma: allowlist secret
+                        e: "AQAB" # pragma: allowlist secret
+
+  /.well-known/oauth-authorization-server:
+    get:
+      summary: OAuth Provider Configuration (Discovery)
+      description: Discover OAuth method URLs
+      operationId: discovery
+      tags:
+        - OAuth
+      responses:
+        "200":
+          description: OAuth discovery metadata document (rfc8414)
+          headers:
+            Cache-Control:
+              $ref: "#/components/headers/CacheControlMaxAge"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProviderConfiguration"
+              examples:
+                example:
+                  value:
+                    issuer: https://manage.account.gov.uk
+                    authorization_endpoint: https://manage.account.gov.uk/authorize
+                    token_endpoint: https://api.manage.account.gov.uk/token
+                    jwks_uri: https://api.manage.account.gov.uk/.well-known/jwks.json
+                    response_types_supported: [code]
+                    token_endpoint_auth_methods_supported: [private_key_jwt]
+                    token_endpoint_auth_signing_alg_values_supported: [ES256]
+                    scopes_supported: [testing-journey, account-delete]
+                    grant_types_supported: [authorization_code]
+
+components:
+  parameters:
+    DiPersistentSessionId:
+      in: header
+      name: di-persistent-session-id
+      description: Optional DI persistent session identifier
+      required: false
+      schema:
+        type: string
+
+    SessionId:
+      in: header
+      name: session-id
+      description: Optional DI session identifier
+      required: false
+      schema:
+        type: string
+
+    ClientSessionId:
+      in: header
+      name: client-session-id
+      description: Optional DI client session identifier
+      required: false
+      schema:
+        type: string
+
+    TxmaAuditEncoded:
+      in: header
+      name: txma-audit-encoded
+      description: Optional TXMA audit encoded data
+      required: false
+      schema:
+        type: string
+
+    XForwardedFor:
+      in: header
+      name: x-forwarded-for
+      description: Optional client IP address
+      required: false
+      schema:
+        type: string
+
+    UserLanguage:
+      in: header
+      name: user-language
+      description: Optional two-letter language code
+      required: false
+      schema:
+        type: string
+        pattern: ^[a-z]{2}$
+        example: en
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  headers:
+    CacheControlMaxAge:
+      description: Caching directives for public, cacheable resources.
+      schema:
+        type: string
+        example: "max-age=60"
+    CacheControlNoStore:
+      description: Caching directives for public, cacheable resources.
+      schema:
+        type: string
+        example: "no-store, no-cache, must-revalidate, proxy-revalidate"
+
+  schemas:
+    OAuthError:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error code
+          example: invalid_request
+        error_description:
+          type: string
+          example: E9999
+      required:
+        - error
+
+    TokenResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          example: eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IjJhNjkzNjFkLTAzOTctNGU4OS04ZmFlLTI4YjFjMmZlZDYxNCJ9.eyJzdWIiOiJ1cm46ZmRjOmdvdi51azoyMDIyOkpHMFJKSTFwWWJuYW5idlBzLWo0ajUtYS1QRmNtaHJ5OVF1OU5DRXA1ZDQiLCJuYmYiOjE2NzAzMzY0NDEsImlzcyI6Imh0dHBzOi8vaWRlbnRpdHkuYWNjb3VudC5nb3YudWsvIiwidm90IjoiUDIiLCJleHAiOjE2ODI5NTkwMzEsImlhdCI6MTY4Mjk1ODczMSwidnRtIjoiaHR0cHM6Ly9vaWRjLmFjY291bnQuZ292LnVrL3RydXN0bWFyayIsInZjIjp7InR5cGUiOlsiVmVyaWZpYWJsZUNyZWRlbnRpYWwiLCJWZXJpZmlhYmxlSWRlbnRpdHlDcmVkZW50aWFsIl0sImNyZWRlbnRpYWxTdWJqZWN0Ijp7Im5hbWUiOlt7Im5hbWVQYXJ0cyI6W3sidmFsdWUiOiJKYW5lIiwidHlwZSI6IkdpdmVuTmFtZSJ9LHsidmFsdWUiOiJXcmlnaHQiLCJ0eXBlIjoiRmFtaWx5TmFtZSJ9XSwidmFsaWRGcm9tIjoiMjAxOS0wNC0wMSJ9LHsibmFtZVBhcnRzIjpbeyJ2YWx1ZSI6IkphbmUiLCJ0eXBlIjoiR2l2ZW5OYW1lIn0seyJ2YWx1ZSI6IldyaWdodCIsInR5cGUiOiJGYW1pbHlOYW1lIn1dLCJ2YWxpZFVudGlsIjoiMjAxOS0wNC0wMSJ9XSwiYmlydGhEYXRlIjpbeyJ2YWx1ZSI6IjE5ODktMDctMDYifV19fSwiYXVkIjoiaXB2QXVkaWVuY2UifQ.qf0yp7B1an7cEwBui7GFCF9NNCJhHxTZuMSh5ehZPmZ4J527okK3pRgdSpWX8DlBFiZS-rXA496egfcfI-neGQ # pragma: allowlist secret
+        token_type:
+          type: string
+          example: Bearer
+        expires_in:
+          type: integer
+          format: int32
+          example: 3600
+      required: [access_token, token_type, expires_in]
+
+    JourneyOutcome:
+      type: object
+      description: Provides the outcomes of the Account Component journeys undertaken by the user.
+      properties:
+        outcome_id:
+          description: The journey outcome's unique ID
+          type: string
+          example: 9cd4c45f8f33cced99cfaa48394e1acf5e90f6e2616bba40 # pragma: allowlist-secret
+        sub:
+          description: The internal pairwise identifier of the user
+          type: string
+          example: urn:fdc:gov.uk:2022:JG0RJI1pYbnanbvPs-j4j5-a-PFcmhry9Qu9NCEp5d4
+        email:
+          type: string
+          format: email
+          example: someone@something.com
+        scope:
+          type: string
+          enum: ["account-delete", "testing-journey"]
+          description: The scope of the journey
+        success:
+          type: boolean
+          description: Whether the main journey was successful. If any journey has success false, then this will also be false.
+        journeys:
+          type: array
+          description: Array of journey outcomes. The first item's journey property will always match the top-level scope property.
+          minItems: 1
+          items:
+            type: object
+            description: The outcomes of the main journey and any sub-journeys
+            properties:
+              journey:
+                type: string
+                enum: ["account-delete", "testing-journey"]
+                description: The scope of the journey
+              timestamp:
+                type: integer
+                description: Epoch timestamp in milliseconds representing when the journey was completed
+                example: 1760718467000
+              success:
+                type: boolean
+                description: Whether the journey was successful
+              details:
+                type: object
+                description: Additional journey details. Can contain any properties but when success is false it must contain an error property the value of which must be an object with code (number) and description (string) properties.
+                additionalProperties: true
+                properties:
+                  error:
+                    type: object
+                    description: Error details (required when success is false)
+                    properties:
+                      code:
+                        type: number
+                      description:
+                        type: string
+                    required: [code, description]
+            required: [journey, timestamp, success, details]
+      required: [outcome_id, sub, email, scope, success, journeys]
+
+    JWK:
+      type: object
+      description: JSON Web Key (public parameters only)
+      properties:
+        kty:
+          type: string
+          example: RSA
+        use:
+          type: string
+          enum: [sig, enc]
+        kid:
+          type: string
+        alg:
+          type: string
+          example: RS256
+        n:
+          type: string
+          description: Base64url-encoded modulus for RSA
+        e:
+          type: string
+          description: Base64url-encoded exponent for RSA
+        crv:
+          type: string
+          description: Curve name for EC keys
+        x:
+          type: string
+          description: EC/OKP x coordinate
+        y:
+          type: string
+          description: EC y coordinate
+      required: [kty, kid]
+
+    JWKSet:
+      type: object
+      properties:
+        keys:
+          type: array
+          items:
+            $ref: "#/components/schemas/JWK"
+      required: [keys]
+
+    ProviderConfiguration:
+      type: object
+      description: Subset of OIDC Discovery 1.0 metadata
+      properties:
+        issuer:
+          type: string
+          format: uri
+        authorization_endpoint:
+          type: string
+          format: uri
+        token_endpoint:
+          type: string
+          format: uri
+        jwks_uri:
+          type: string
+          format: uri
+        response_types_supported:
+          type: array
+          items:
+            type: string
+        token_endpoint_auth_methods_supported:
+          type: array
+          items:
+            type: string
+        token_endpoint_auth_signing_alg_values_supported:
+          type: array
+          items:
+            type: string
+        scopes_supported:
+          type: array
+          items:
+            type: string
+        grant_types_supported:
+          type: array
+          items:
+            type: string
+      required:
+        - issuer
+        - authorization_endpoint
+        - token_endpoint
+        - jwks_uri
