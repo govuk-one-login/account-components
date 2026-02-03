@@ -757,10 +757,6 @@ Resources:
     Properties:
       KmsMasterKeyId: !GetAtt SqsKmsKey.Arn
       MessageRetentionPeriod: 1209600
-      RedriveAllowPolicy:
-        redrivePermission: byQueue
-        sourceQueueArns:
-          - !Sub "arn:aws:sqs:${AWS::Region}:${AWS::AccountId}:${AWS::StackName}-NotificationsQueue"
 
   NotificationsServiceLambda:
     Type: AWS::Serverless::Function
