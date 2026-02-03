@@ -68,7 +68,7 @@ const setUpNotifyClient = async (
     maxAge: appConfig.notify_api_key_scret_max_age,
   });
 
-  console.log("MHTEST17");
+  console.log("MHTEST17", notifyApiKey);
 
   if (!notifyApiKey) {
     const errorName = "notify_api_key_is_undefined";
