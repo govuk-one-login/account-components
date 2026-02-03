@@ -14,8 +14,8 @@ resource "aws_cloudformation_stack" "vpc_stack" {
     DynamoDBApiEnabled            = "Yes"
     AppConfigDataApiEnabled       = "Yes"
     S3ApiEnabled                  = "Yes"
-    AllowRules                    = "pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:\"account.gov.uk\"; endswith; msg:\"Pass TLS to *.account.gov.uk\"; flow:established; sid:2001; rev:1;)\npass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:\"api.notifications.service.gov.uk\"; endswith; msg:\"Pass TLS to *.notifications.service.gov.uk\"; flow:established; sid:2002; rev:1;)"
-    AllowedDomains                = "*.account.gov.uk,*.notifications.service.gov.uk"
+    AllowRules                    = "pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:\".notifications.service.gov.uk\"; endswith; msg:\"Pass TLS to *.notifications.service.gov.uk\"; flow:established; sid:2002; rev:1;)"
+    AllowedDomains                = "*.notifications.service.gov.uk"
     ExecuteApiGatewayEnabled      = "Yes"
   }
 
