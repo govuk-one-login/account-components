@@ -772,6 +772,7 @@ Resources:
             FunctionResponseTypes:
               - ReportBatchItemFailures
       Handler: notifications-service.handler
+      Runtime: nodejs22.x # as at 2026-02-03 the notifications-node-client library does not work with Node 24 or newer
       Environment:
         Variables:
           NOTIFY_API_KEY_SECRET_ARN: !Ref NotifyAPIKeySecret
@@ -813,7 +814,7 @@ Resources:
         Format: esm
         OutExtension:
           - .js=.mjs
-        Target: es2024
+        Target: es2022 # as at 2026-02-03 the notifications-node-client library does not work with Node 24 or newer
         Sourcemap: true
         EntryPoints:
           - solutions/core/src/lambda/notifications-service.ts
