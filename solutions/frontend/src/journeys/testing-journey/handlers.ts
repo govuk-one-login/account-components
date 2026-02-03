@@ -20,6 +20,7 @@ export async function step1PostHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {
+  // TODO remove this
   await sendNotification({
     emailAddress: "michael.henson@digital.cabinet-office.gov.uk",
     notificationType: NotificationType.GLOBAL_LOGOUT,
