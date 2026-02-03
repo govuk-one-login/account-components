@@ -30,7 +30,7 @@
     "cookie": "^1.1.1",
     "ecdsa-sig-formatter": "^1.0.11",
     "esbuild": "^0.27.2",
-    "fastify": "^5.7.2",
+    "fastify": "^5.7.3",
     "fastify-plugin": "^5.1.0",
     "govuk-frontend": "^5.14.0",
     "i18next": "^25.8.0",
