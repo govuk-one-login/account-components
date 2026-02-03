@@ -214,6 +214,7 @@ const processNotification = async (
     }
 
     console.log("MHTEST22");
+    console.log("MHTEST22b");
 
     let sendResult: unknown;
     try {
