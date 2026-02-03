@@ -26,7 +26,7 @@ describe("sendNotification", () => {
   it("should send message to SQS queue", async () => {
     const message = {
       emailAddress: "test@example.com",
-      notificationType: NotificationType.TODO,
+      notificationType: NotificationType.GLOBAL_LOGOUT,
       personalisation: {},
     };
 
@@ -43,7 +43,7 @@ describe("sendNotification", () => {
 
     const message = {
       emailAddress: "test@example.com",
-      notificationType: NotificationType.TODO,
+      notificationType: NotificationType.GLOBAL_LOGOUT,
       personalisation: {},
     };
 

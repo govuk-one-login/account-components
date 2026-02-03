@@ -39,6 +39,11 @@
       "description": "Time-to-live in seconds for journey outcome",
       "type": "integer",
       "minimum": 1
+    },
+    "notify_api_key_scret_max_age": {
+      "description": "How long (in seconds) to cache the Notify API key secret value before refetching it",
+      "type": "integer",
+      "minimum": 1
     }
   },
   "required": [
@@ -47,7 +52,8 @@
     "auth_code_ttl",
     "jwks_cache_max_age",
     "jwks_http_timeout",
-    "journey_outcome_ttl"
+    "journey_outcome_ttl",
+    "notify_api_key_scret_max_age"
   ],
   "$defs": {
     "clientEntry": {

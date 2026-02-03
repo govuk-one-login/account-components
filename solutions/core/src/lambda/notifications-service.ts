@@ -20,6 +20,7 @@ import {
   messageSchema,
   NotificationType,
 } from "../../../commons/utils/notifications/index.js";
+import { getAppConfig } from "../../../commons/utils/getAppConfig/index.js";
 
 type EmailAddress = string;
 type Personalisation = Record<string, string>;
@@ -53,8 +54,10 @@ const setUpNotifyClient = async (
     "process.env.NOTIFY_API_KEY_SECRET_ARN is not defined",
   );
   const notifyApiKeySecretArn = process.env["NOTIFY_API_KEY_SECRET_ARN"];
+  const appConfig = await getAppConfig();
+
   const notifyApiKey = await getSecret(notifyApiKeySecretArn, {
-    maxAge: 900, // TODO get from config
+    maxAge: appConfig.notify_api_key_scret_max_age,
   });
 
   if (!notifyApiKey) {
@@ -132,7 +135,10 @@ const processNotification = async (
       return;
     }
 
-    const messageParsed = v.safeParse(messageSchema, record.body);
+    const messageParsed = v.safeParse(
+      v.pipe(v.string(), v.parseJson(), messageSchema),
+      record.body,
+    );
     if (!messageParsed.success) {
       const errorName = "invalid_message_format";
       logger.error(errorName, {
