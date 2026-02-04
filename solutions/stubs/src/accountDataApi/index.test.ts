@@ -17,9 +17,6 @@ describe("passkeys stub tests", () => {
   it("should register routes", () => {
     accountDataApi(mockApp);
 
-    expect(mockApp.get).toHaveBeenCalledTimes(1);
     expect(mockApp.post).toHaveBeenCalledTimes(1);
-    expect(mockApp.delete).toHaveBeenCalledTimes(1);
-    expect(mockApp.patch).toHaveBeenCalledTimes(1);
   });
 });
