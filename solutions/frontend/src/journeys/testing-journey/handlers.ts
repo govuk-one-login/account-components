@@ -2,10 +2,6 @@ import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../utils/paths.js";
 import { completeJourney } from "../utils/completeJourney.js";
-import {
-  NotificationType,
-  sendNotification,
-} from "../../../../commons/utils/notifications/index.js";
 
 export async function step1GetHandler(
   _request: FastifyRequest,
