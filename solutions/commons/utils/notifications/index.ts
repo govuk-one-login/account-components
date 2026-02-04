@@ -3,13 +3,13 @@ import { getSqsClient } from "../awsClient/sqsClient/index.js";
 import assert from "node:assert";
 
 export enum NotificationType {
-  GLOBAL_LOGOUT = "GLOBAL_LOGOUT",
+  CREATE_PASSKEY = "CREATE_PASSKEY",
 }
 
 export const messageSchema = v.variant("notificationType", [
   v.pipe(
     v.object({
-      notificationType: v.literal(NotificationType.GLOBAL_LOGOUT),
+      notificationType: v.literal(NotificationType.CREATE_PASSKEY),
       emailAddress: v.pipe(v.string(), v.email()),
     }),
     v.transform((input) => {

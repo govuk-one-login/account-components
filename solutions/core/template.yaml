@@ -67,7 +67,7 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "GLOBAL_LOGOUT": "a92761ef-213b-4fb6-a53c-5912a931c159"
+          "CREATE_PASSKEY": "TODO"
         }
     build:
       UseCanary: false
@@ -75,7 +75,7 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "GLOBAL_LOGOUT": "a92761ef-213b-4fb6-a53c-5912a931c159"
+          "CREATE_PASSKEY": "TODO"
         }
     staging:
       UseCanary: true
@@ -83,7 +83,7 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "GLOBAL_LOGOUT": "a92761ef-213b-4fb6-a53c-5912a931c159"
+          "CREATE_PASSKEY": "TODO"
         }
     integration:
       UseCanary: true
@@ -91,7 +91,7 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "GLOBAL_LOGOUT": "fb33515d-41cb-40df-93c2-e1bf76c3672a"
+          "CREATE_PASSKEY": "TODO"
         }
     production:
       UseCanary: true
@@ -99,7 +99,7 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "GLOBAL_LOGOUT": "fb33515d-41cb-40df-93c2-e1bf76c3672a"
+          "CREATE_PASSKEY": "TODO"
         }
 
 Globals:
@@ -124,6 +124,9 @@ Globals:
       - UsePermissionsBoundary
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
+    VpcConfig:
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
     Timeout: 15
     MemorySize: 128
     Architectures:
@@ -543,8 +546,6 @@ Resources:
           - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
           - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
           - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdC
-        SecurityGroupIds:
-          - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
       DeploymentPreference:
         Enabled: false
       LoggingConfig:
@@ -778,8 +779,6 @@ Resources:
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
-        SecurityGroupIds:
-          - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
       Environment:
         Variables:
           NOTIFY_API_KEY_SECRET_ARN: !Ref NotifyAPIKeySecret

@@ -120,14 +120,10 @@ const processNotification = async (
   batchItemFailures: SQSBatchItemFailure[],
 ) => {
   try {
-    console.log("MHTEST1");
-
     const messageParsed = v.safeParse(
       v.pipe(v.string(), v.parseJson(), messageSchema),
       record.body,
     );
-
-    console.log("MHTEST2");
 
     if (!messageParsed.success) {
       const errorName = "invalid_message_format";
@@ -138,8 +134,6 @@ const processNotification = async (
       batchItemFailures.push({ itemIdentifier: record.messageId });
       return;
     }
-
-    console.log("MHTEST3");
 
     const message: {
       emailAddress: EmailAddress;
@@ -160,21 +154,8 @@ const processNotification = async (
       return;
     }
 
-    console.log("MHTEST4");
-
     let sendResult: unknown;
     try {
-      console.log(
-        "MHTEST5",
-        ...[
-          templateId,
-          message.emailAddress,
-          {
-            personalisation: message.personalisation,
-            reference: randomUUID(),
-          },
-        ],
-      );
       sendResult = await notifyClient.sendEmail(
         templateId,
         message.emailAddress,
@@ -183,13 +164,8 @@ const processNotification = async (
           reference: randomUUID(),
         },
       );
-      console.log("MHTEST6");
     } catch (error) {
-      console.log("MHTEST7");
-
       if (isAxiosError(error)) {
-        console.log("MHTEST8");
-
         const errorName = "unable_to_send_notification";
         logger.error(errorName, {
           messageId: record.messageId,
@@ -200,8 +176,6 @@ const processNotification = async (
         });
         addSendNotificationFailedMetric(errorName);
       } else {
-        console.log("MHTEST9");
-
         const errorName = "unable_to_send_notification_due_to_an_unknown_error";
         logger.error(errorName, {
           messageId: record.messageId,
@@ -214,8 +188,6 @@ const processNotification = async (
       return;
     }
 
-    console.log("MHTEST10");
-
     const notifySuccessSchema = v.object({
       data: v.object({
         id: v.string(),
@@ -225,8 +197,6 @@ const processNotification = async (
 
     const resultParsed = v.safeParse(notifySuccessSchema, sendResult);
     if (!resultParsed.success) {
-      console.log("MHTEST11");
-
       const errorName = "invalid_result_format";
       logger.error(errorName, {
         messageId: record.messageId,
@@ -237,8 +207,6 @@ const processNotification = async (
       return;
     }
 
-    console.log("MHTEST12");
-
     logger.info("notification_sent", {
       messageId: record.messageId,
       id: resultParsed.output.data.id,
@@ -247,8 +215,6 @@ const processNotification = async (
     });
     metrics.addMetric("SendNotificationSucceeded", MetricUnit.Count, 1);
   } catch (error) {
-    console.log("MHTEST13");
-
     const errorName = "unknown_error";
     logger.error(errorName, {
       messageId: record.messageId,
@@ -263,8 +229,6 @@ const processNotification = async (
 export const handler = async (event: SQSEvent): Promise<SQSBatchResponse> => {
   const batchItemFailures: SQSBatchItemFailure[] = [];
 
-  console.log("MHTESTSTART");
-
   await Promise.allSettled(
     event.Records.map((record) =>
       processNotification(record, batchItemFailures),
@@ -274,8 +238,6 @@ export const handler = async (event: SQSEvent): Promise<SQSBatchResponse> => {
   logger.resetKeys();
   metrics.captureColdStartMetric();
   metrics.publishStoredMetrics();
-
-  console.log("MHTESTEND");
 
   return {
     batchItemFailures,
