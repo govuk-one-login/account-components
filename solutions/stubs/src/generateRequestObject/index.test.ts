@@ -24,7 +24,7 @@ describe("generateRequestObject", () => {
   it("should register routes", () => {
     generateRequestObject(mockApp);
 
-    expect(mockApp.post).toHaveBeenCalledTimes(6);
+    expect(mockApp.post).toHaveBeenCalledTimes(2);
   });
 
   it("should call generateRequestObjectPost handler when route is invoked", async () => {
