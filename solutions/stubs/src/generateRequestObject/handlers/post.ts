@@ -39,7 +39,10 @@ export async function generateRequestObjectPost(
         body.account_management_api_verifyOtpChallenge_scenario,
     });
   authorizeRequestObject.account_data_api_access_token =
-    await generateAccessToken();
+    await generateAccessToken({
+      createPassKey_scenario:
+        body.account_management_api_createPassKey_scenario,
+    });
 
   const scenario = getScenario(authorizeRequestObject);
 
