@@ -10,7 +10,6 @@ import { NotifyClient } from "notifications-node-client";
 import { randomUUID } from "node:crypto";
 import { getSecret } from "@aws-lambda-powertools/parameters/secrets";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
-import assert from "node:assert";
 import { logger } from "../../../commons/utils/logger/index.js";
 import { metrics } from "../../../commons/utils/metrics/index.js";
 // notifications-node-client uses axios under the hood so we have to rely on it here
@@ -20,7 +19,6 @@ import {
   messageSchema,
   NotificationType,
 } from "../../../commons/utils/notifications/index.js";
-import { getAppConfig } from "../../../commons/utils/getAppConfig/index.js";
 
 type EmailAddress = string;
 type Personalisation = Record<string, string>;
@@ -40,103 +38,88 @@ const addSendNotificationFailedMetric = (failureReason: string) => {
   metrics.addMetric("SendNotificationFailed", MetricUnit.Count, 1);
 };
 
-let notifyClient: NotifyClientType | undefined = undefined;
-
-const setUpNotifyClient = async (
-  record: SQSRecord,
-): Promise<NotifyClientType | undefined> => {
-  if (notifyClient) {
-    return notifyClient;
-  }
-
-  assert.ok(
-    process.env["NOTIFY_API_KEY_SECRET_ARN"],
-    "process.env.NOTIFY_API_KEY_SECRET_ARN is not defined",
+if (!process.env["NOTIFY_API_KEY_SECRET_ARN"]) {
+  const errorName = "env_var_NOTIFY_API_KEY_SECRET_ARN_is_undefined";
+  addSendNotificationFailedMetric(errorName);
+  throw new Error(
+    JSON.stringify({
+      msg: errorName,
+    }),
   );
+}
 
-  const notifyApiKeySecretArn = process.env["NOTIFY_API_KEY_SECRET_ARN"];
-  const appConfig = await getAppConfig();
+const notifyApiKeySecretArn = process.env["NOTIFY_API_KEY_SECRET_ARN"];
 
-  const notifyApiKey = await getSecret(notifyApiKeySecretArn, {
-    maxAge: appConfig.notify_api_key_scret_max_age,
-  });
+let notifyApiKey: Awaited<ReturnType<typeof getSecret>>;
+try {
+  notifyApiKey = await getSecret(notifyApiKeySecretArn);
+} catch (error) {
+  const errorName = "error_getting_notify_api_key_secret";
+  addSendNotificationFailedMetric(errorName);
+  throw new Error(
+    JSON.stringify({
+      msg: errorName,
+      error,
+    }),
+  );
+}
 
-  if (!notifyApiKey) {
-    const errorName = "notify_api_key_is_undefined";
-    logger.error(errorName, {
-      messageId: record.messageId,
+if (!notifyApiKey) {
+  const errorName = "notify_api_key_is_undefined";
+  addSendNotificationFailedMetric(errorName);
+  throw new Error(
+    JSON.stringify({
+      msg: errorName,
       notifyApiKeySecretArn,
-    });
-    addSendNotificationFailedMetric(errorName);
-    return;
-  }
+    }),
+  );
+}
 
-  if (
-    typeof notifyApiKey !== "string" // pragma: allowlist secret
-  ) {
-    const errorName = "notify_api_key_is_not_a_string";
-    logger.error(errorName, {
-      messageId: record.messageId,
+if (
+  typeof notifyApiKey !== "string" // pragma: allowlist secret
+) {
+  const errorName = "notify_api_key_is_not_a_string";
+  addSendNotificationFailedMetric(errorName);
+  throw new Error(
+    JSON.stringify({
+      msg: errorName,
       notifyApiKeySecretArn,
-    });
-    addSendNotificationFailedMetric(errorName);
-    return;
-  }
+    }),
+  );
+}
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
-  notifyClient = new NotifyClient(notifyApiKey);
-
-  return notifyClient;
-};
+// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
+const notifyClient: NotifyClientType = new NotifyClient(notifyApiKey);
 
 const notifyTemplateIDsSchema = v.pipe(
   v.string(),
   v.parseJson(),
   v.record(v.enum(NotificationType), v.string()),
 );
-let notifyTemplateIds:
-  | v.InferOutput<typeof notifyTemplateIDsSchema>
-  | undefined = undefined;
 
-const getNotifyTemplateIds = (
-  record: SQSRecord,
-): v.InferOutput<typeof notifyTemplateIDsSchema> | undefined => {
-  if (notifyTemplateIds) {
-    return notifyTemplateIds;
-  }
+const templateIds = v.safeParse(
+  notifyTemplateIDsSchema,
+  process.env["NOTIFY_TEMPLATE_IDS"],
+);
 
-  const templateIds = v.safeParse(
-    notifyTemplateIDsSchema,
-    process.env["NOTIFY_TEMPLATE_IDS"],
-  );
-
-  if (!templateIds.success) {
-    const errorName = "invalid_template_ids_format";
-    logger.error(errorName, {
-      messageId: record.messageId,
+if (!templateIds.success) {
+  const errorName = "invalid_template_ids_format";
+  addSendNotificationFailedMetric(errorName);
+  throw new Error(
+    JSON.stringify({
+      msg: errorName,
       issues: templateIds.issues,
-    });
-    addSendNotificationFailedMetric(errorName);
-    return;
-  }
+    }),
+  );
+}
 
-  notifyTemplateIds = templateIds.output;
-
-  return notifyTemplateIds;
-};
+const notifyTemplateIds = templateIds.output;
 
 const processNotification = async (
   record: SQSRecord,
   batchItemFailures: SQSBatchItemFailure[],
 ) => {
   try {
-    const notifyTemplateIds = getNotifyTemplateIds(record);
-
-    if (!notifyTemplateIds) {
-      batchItemFailures.push({ itemIdentifier: record.messageId });
-      return;
-    }
-
     const messageParsed = v.safeParse(
       v.pipe(v.string(), v.parseJson(), messageSchema),
       record.body,
@@ -171,15 +154,19 @@ const processNotification = async (
       return;
     }
 
-    const notifyClient = await setUpNotifyClient(record);
-
-    if (!notifyClient) {
-      batchItemFailures.push({ itemIdentifier: record.messageId });
-      return;
-    }
-
     let sendResult: unknown;
     try {
+      console.log(
+        "MHTEST",
+        ...[
+          templateId,
+          message.emailAddress,
+          {
+            personalisation: message.personalisation,
+            reference: randomUUID(),
+          },
+        ],
+      );
       sendResult = await notifyClient.sendEmail(
         templateId,
         message.emailAddress,

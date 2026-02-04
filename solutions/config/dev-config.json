@@ -26,6 +26,5 @@
   "auth_code_ttl": 300,
   "jwks_cache_max_age": 60000,
   "jwks_http_timeout": 2500,
-  "journey_outcome_ttl": 60,
-  "notify_api_key_scret_max_age": 300
+  "journey_outcome_ttl": 60
 }
