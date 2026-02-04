@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
-import { passKeys } from "./index.js";
+import { accountDataApi } from "./index.js";
 import type { FastifyInstance } from "fastify";
 
 describe("passkeys stub tests", () => {
@@ -15,7 +15,7 @@ describe("passkeys stub tests", () => {
   });
 
   it("should register routes", () => {
-    passKeys(mockApp);
+    accountDataApi(mockApp);
 
     expect(mockApp.get).toHaveBeenCalledTimes(1);
     expect(mockApp.post).toHaveBeenCalledTimes(1);
