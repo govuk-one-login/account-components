@@ -76,7 +76,7 @@ describe("createRequestObjectPost", () => {
         account_management_api_deleteAccount_scenario: "successful",
         account_management_api_sendOtpChallenge_scenario: "successful",
         account_management_api_verifyOtpChallenge_scenario: "successful",
-        account_management_api_createPassKey_scenario: "successful",
+        account_data_api_createPassKey_scenario: "successful",
       },
     };
 

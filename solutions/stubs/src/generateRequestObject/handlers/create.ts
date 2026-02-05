@@ -28,7 +28,7 @@ export const requestBodySchema = v.object({
   account_management_api_deleteAccount_scenario: v.string(),
   account_management_api_sendOtpChallenge_scenario: v.string(),
   account_management_api_verifyOtpChallenge_scenario: v.string(),
-  account_management_api_createPassKey_scenario: v.string(),
+  account_data_api_createPassKey_scenario: v.string(),
 });
 
 export async function createRequestObjectGet(

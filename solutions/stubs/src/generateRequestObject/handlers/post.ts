@@ -40,8 +40,7 @@ export async function generateRequestObjectPost(
     });
   authorizeRequestObject.account_data_api_access_token =
     await generateAccessToken({
-      createPassKey_scenario:
-        body.account_management_api_createPassKey_scenario,
+      createPassKey_scenario: body.account_data_api_createPassKey_scenario,
     });
 
   const scenario = getScenario(authorizeRequestObject);
