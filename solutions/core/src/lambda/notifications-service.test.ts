@@ -132,6 +132,7 @@ describe("notifications-service", () => {
       "invalid_message_format",
       expect.any(Object),
     );
+    expect(mockSendEmail).not.toHaveBeenCalledWith();
   });
 
   it("adds to batch failures when template ID not found", async () => {
@@ -156,6 +157,7 @@ describe("notifications-service", () => {
         notificationType: "CREATE_PASSKEY",
       }),
     );
+    expect(mockSendEmail).not.toHaveBeenCalledWith();
   });
 
   it("handles axios error when sending notification", async () => {
@@ -188,6 +190,7 @@ describe("notifications-service", () => {
         statusText: "Bad Request",
       }),
     );
+    expect(mockSendEmail).not.toHaveBeenCalledWith();
   });
 
   it("handles non-axios error when sending notification", async () => {
@@ -211,6 +214,7 @@ describe("notifications-service", () => {
         details: "Network failure",
       }),
     );
+    expect(mockSendEmail).not.toHaveBeenCalledWith();
   });
 
   it("adds to batch failures for invalid result format", async () => {
@@ -232,6 +236,7 @@ describe("notifications-service", () => {
       "invalid_result_format",
       expect.any(Object),
     );
+    expect(mockSendEmail).not.toHaveBeenCalledWith();
   });
 
   it("processes multiple records and returns partial failures", async () => {
@@ -262,6 +267,17 @@ describe("notifications-service", () => {
 
     expect(result.batchItemFailures).toHaveLength(1);
     expect(result.batchItemFailures[0]?.itemIdentifier).toBe("msg-2");
+
+    expect(mockLogger.info).toHaveBeenCalledTimes(1);
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      "notification_sent",
+      expect.objectContaining({
+        messageId: "msg-1",
+        id: "notify-1",
+        notificationType: "CREATE_PASSKEY",
+        reference: "ref-1",
+      }),
+    );
   });
 
   it("calls metrics and logger cleanup methods", async () => {
