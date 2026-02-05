@@ -11,5 +11,8 @@ export const paths = {
     verifyOtpChallenge:
       "/account-management-api/verify-otp-challenge/:publicSubjectId",
   },
-  accountDataApi: {},
+  accountDataApi: {
+    createPassKey:
+      "/account-data-api/accounts/:accountId/authenticators/passkeys",
+  },
 } as const;

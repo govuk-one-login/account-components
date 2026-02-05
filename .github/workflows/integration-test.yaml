@@ -56,6 +56,7 @@ jobs:
           AUTH_CODE_TABLE_NAME=components-core-AuthCode
           JOURNEY_OUTCOME_TABLE_NAME=components-core-JourneyOutcome    
           AUTH_FRONTEND_URL=https://signin.account.gov.uk
+          ACCOUNT_DATA_API_URL=http://localhost:6003/account-data-api
           ANALYTICS_COOKIE_DOMAIN=localhost       
           ACCOUNT_MANAGEMENT_API_URL=http://localhost:6003/account-management-api
           CONTACT_URL=https://home.dev.account.gov.uk/contact-gov-uk-one-login          

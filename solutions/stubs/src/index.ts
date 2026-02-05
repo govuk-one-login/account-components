@@ -17,6 +17,7 @@ import { getCurrentUrl } from "../../commons/utils/fastify/getCurrentUrl/index.j
 import { FastifyPowertoolsLogger } from "../../commons/utils/fastify/powertoolsLogger/index.js";
 import { getEnvironment } from "../../commons/utils/getEnvironment/index.js";
 import { accountManagementApi } from "./accountManagementApi/index.js";
+import { accountDataApi } from "./accountDataApi/index.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
@@ -112,6 +113,7 @@ export const initStubs = async function () {
   fastify.register(clientJwks);
   fastify.register(clientCallback);
   fastify.register(accountManagementApi);
+  fastify.register(accountDataApi);
 
   return fastify;
 };
