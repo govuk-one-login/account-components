@@ -738,7 +738,7 @@ Resources:
   SqsKmsKeyAlias:
     Type: AWS::KMS::Alias
     Properties:
-      AliasName: !Sub "alias/${AWS::StackName}/${Environment}/SqsKmsKey"
+      AliasName: !Sub "alias/${AWS::StackName}-SqsKmsKey"
       TargetKeyId: !Ref SqsKmsKey
 
   NotificationsQueue:
@@ -790,11 +790,6 @@ Resources:
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
-            - Effect: Allow
-              Action:
-                - appconfig:GetLatestConfiguration
-                - appconfig:StartConfigurationSession
-              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
             - Effect: Allow
               Action:
                 - sqs:ReceiveMessage
