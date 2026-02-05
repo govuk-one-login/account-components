@@ -139,7 +139,7 @@ export const initFrontend = async function () {
       they might be loaded from (e.g. they could be loaded in templates from within node_modules
       which we can't change) and so we can't append the necessary hash in all loading 
       situations to ensure that the user has the latest version. */
-      addStaticAssetsCachingHeaders(res, false);
+      addStaticAssetsCachingHeaders(res);
     },
   });
 
@@ -159,7 +159,7 @@ export const initFrontend = async function () {
       they might be loaded from (e.g. they could be loaded in templates from within node_modules
       which we can't change) and so we can't append the necessary hash in all loading 
       situations to ensure that the user has the latest version. */
-      addStaticAssetsCachingHeaders(res, false);
+      addStaticAssetsCachingHeaders(res);
     },
   });
 
