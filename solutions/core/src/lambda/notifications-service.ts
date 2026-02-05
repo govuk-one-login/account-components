@@ -20,12 +20,11 @@ import {
   NotificationType,
 } from "../../../commons/utils/notifications/index.js";
 
-type EmailAddress = string;
 type Personalisation = Record<string, string>;
 interface NotifyClientType {
   sendEmail: (
     templateId: string,
-    emailAddress: EmailAddress,
+    emailAddress: string,
     options: {
       personalisation: Personalisation;
       reference: string;
@@ -136,7 +135,7 @@ const processNotification = async (
     }
 
     const message: {
-      emailAddress: EmailAddress;
+      emailAddress: string;
       notificationType: NotificationType;
       personalisation: Personalisation;
     } = messageParsed.output;
