@@ -58,6 +58,7 @@ Mappings:
       yourServicesUrl: https://home.dev.account.gov.uk/your-services
       securityUrl: https://home.dev.account.gov.uk/security
       dynatraceRumUrl: ""
+      accountDataApiUrl: https://stubs.manage.dev.account.gov.uk/account-data-api
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: build.account.gov.uk
@@ -74,6 +75,7 @@ Mappings:
       yourServicesUrl: https://home.build.account.gov.uk/your-services
       securityUrl: https://home.build.account.gov.uk/security
       dynatraceRumUrl: ""
+      accountDataApiUrl: https://stubs.manage.build.account.gov.uk/account-data-api
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: staging.account.gov.uk
@@ -510,6 +512,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               dynatraceRumUrl,
+            ]
+          ACCOUNT_DATA_API_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              accountDataApiUrl,
             ]
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
           REPLAY_ATTACK_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/ReplayAttackTableName}}"
