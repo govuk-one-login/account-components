@@ -72,6 +72,7 @@ describe("createRequestObjectPost", () => {
         iss: "issuer.example.com",
         user: "default",
         state: "example-state",
+        user_email_address: "test@test.com",
         account_management_api_authenticate_scenario: "successful",
         account_management_api_deleteAccount_scenario: "successful",
         account_management_api_sendOtpChallenge_scenario: "successful",

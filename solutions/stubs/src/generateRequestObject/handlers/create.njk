@@ -48,7 +48,7 @@
                                 {% endif %}
                             </div>
                         {% endfor %}
-                    </fieldset>
+                    </fieldset>                    
                     <fieldset>
                         <legend>Nonce (optional)</legend>
                         <input type="text" name="jti" aria-label="Nonce (optional)"/>
@@ -73,6 +73,10 @@
                         <input type="text" name="state"/>
                         <i>Leave blank to auto-generate</i>
                     </fieldset>
+                    <fieldset>
+                        <legend>User email address (optional)</legend>
+                        <input type="email" name="user_email_address" aria-label="User email address (optional)"/>
+                    </fieldset>                    
                     <fieldset>
                         <legend>Account management API scenarios</legend>
                         <div class="api_scenario_selectors">

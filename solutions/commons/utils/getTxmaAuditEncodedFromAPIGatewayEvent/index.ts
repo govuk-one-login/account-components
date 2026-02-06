@@ -1,5 +1,7 @@
 import type { APIGatewayProxyEvent } from "aws-lambda";
 
-export const getTxmaAuditEncodedFromEvent = (event?: APIGatewayProxyEvent) => {
+export const getTxmaAuditEncodedFromAPIGatewayEvent = (
+  event?: APIGatewayProxyEvent,
+) => {
   return event?.headers["txma-audit-encoded"];
 };

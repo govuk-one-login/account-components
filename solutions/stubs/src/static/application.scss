@@ -1,0 +1,48 @@
+body {
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+  margin: 40px;
+}
+fieldset {
+  margin-bottom: 20px;
+  padding: 10px;
+}
+legend {
+  font-weight: bold;
+}
+input[type="text"],
+input[type="number"],
+input[type="email"] {
+  width: 300px;
+  max-width: 100%;
+  padding: 5px;
+  margin-top: 5px;
+}
+select {
+  max-width: 100%;
+  padding: 5px;
+  margin-top: 5px;
+}
+input[type="submit"],
+.button {
+  padding: 10px 20px;
+  background-color: rgb(4, 84, 4);
+  color: white;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 14px;
+}
+pre {
+  white-space: pre-wrap;
+}
+.api_scenario_selectors {
+  display: flex;
+  gap: 18px 32px;
+  flex-wrap: wrap;
+}
+.api_scenario_selector {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}

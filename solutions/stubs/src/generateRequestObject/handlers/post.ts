@@ -17,16 +17,16 @@ export async function generateRequestObjectPost(
   const body = request.body as v.InferOutput<typeof requestBodySchema>;
 
   const authorizeRequestObject: AuthorizeRequestObject = { ...body };
-  delete authorizeRequestObject["account_management_api_authenticate_scenario"];
-  delete authorizeRequestObject[
-    "account_management_api_deleteAccount_scenario"
-  ];
-  delete authorizeRequestObject[
-    "account_management_api_sendOtpChallenge_scenario"
-  ];
-  delete authorizeRequestObject[
-    "account_management_api_verifyOtpChallenge_scenario"
-  ];
+
+  for (const key of Object.keys(authorizeRequestObject)) {
+    if (
+      key.startsWith("account_management_api_") ||
+      key.startsWith("account_data_api_")
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete authorizeRequestObject[key];
+    }
+  }
 
   authorizeRequestObject.account_management_api_access_token =
     await generateAccessToken({

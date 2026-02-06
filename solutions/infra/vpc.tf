@@ -7,15 +7,16 @@ resource "aws_cloudformation_stack" "vpc_stack" {
     CloudWatchApiEnabled          = "Yes"
     CloudFormationEndpointEnabled = contains(["dev", "build"], var.environment) ? "Yes" : "No" # Required for integration tests to run when inside the VPC
     CloudWatchLogsApiEnabled      = contains(["dev", "build"], var.environment) ? "Yes" : "No" # Required for integration tests to run when inside the VPC
-    SecretsManagerApiEnabled      = contains(["dev", "build"], var.environment) ? "Yes" : "No" # Required for integration tests to run when inside the VPC
+    SecretsManagerApiEnabled      = "Yes"
     DynatraceApiEnabled           = "Yes"
     KMSApiEnabled                 = "Yes"
     SSMApiEnabled                 = "Yes"
     DynamoDBApiEnabled            = "Yes"
     AppConfigDataApiEnabled       = "Yes"
     S3ApiEnabled                  = "Yes"
-    AllowRules                    = "pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:\"account.gov.uk\"; endswith; msg:\"Pass TLS to *.account.gov.uk\"; flow:established; sid:2001; rev:1;)"
-    AllowedDomains                = "*.account.gov.uk"
+    SQSApiEnabled                 = "Yes"
+    AllowRules                    = "pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:\".notifications.service.gov.uk\"; endswith; msg:\"Pass TLS to *.notifications.service.gov.uk\"; flow:established; sid:2001; rev:1;)"
+    AllowedDomains                = "*.notifications.service.gov.uk"
     ExecuteApiGatewayEnabled      = "Yes"
   }
 

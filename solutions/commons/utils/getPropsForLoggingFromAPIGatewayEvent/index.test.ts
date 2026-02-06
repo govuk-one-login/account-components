@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda";
-import { getPropsForLoggingFromEvent } from "./index.js";
+import { getPropsForLoggingFromAPIGatewayEvent } from "./index.js";
 
-describe("getPropsForLoggingFromEvent", () => {
+describe("getPropsForLoggingFromAPIGatewayEvent", () => {
   const createMockEvent = (
     headers: Record<string, string> = {},
     sourceIp = "127.0.0.1",
@@ -17,7 +17,7 @@ describe("getPropsForLoggingFromEvent", () => {
     }) as APIGatewayProxyEvent;
 
   it("returns empty object when event is undefined", () => {
-    const result = getPropsForLoggingFromEvent();
+    const result = getPropsForLoggingFromAPIGatewayEvent();
 
     expect(result).toStrictEqual({});
   });
@@ -31,7 +31,7 @@ describe("getPropsForLoggingFromEvent", () => {
       "x-forwarded-for": "192.168.1.1",
     });
 
-    const result = getPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: "header-persistent-123",
@@ -48,7 +48,7 @@ describe("getPropsForLoggingFromEvent", () => {
         "gs=cookie-session.cookie-client; di-persistent-session-id=cookie-persistent; lng=fr",
     });
 
-    const result = getPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: "cookie-persistent",
@@ -70,7 +70,7 @@ describe("getPropsForLoggingFromEvent", () => {
         "gs=cookie-session.cookie-client; di-persistent-session-id=cookie-persistent; lng=fr",
     });
 
-    const result = getPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: "header-persistent",
@@ -84,7 +84,7 @@ describe("getPropsForLoggingFromEvent", () => {
   it("falls back to requestContext sourceIp when x-forwarded-for not available", () => {
     const event = createMockEvent({}, "10.0.0.1");
 
-    const result = getPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -98,7 +98,7 @@ describe("getPropsForLoggingFromEvent", () => {
   it("handles missing cookie header gracefully", () => {
     const event = createMockEvent({});
 
-    const result = getPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -114,7 +114,7 @@ describe("getPropsForLoggingFromEvent", () => {
       cookie: "gs=incomplete; other=value",
     });
 
-    const result = getPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -130,7 +130,7 @@ describe("getPropsForLoggingFromEvent", () => {
       cookie: "gs=; other=value",
     });
 
-    const result = getPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -146,7 +146,7 @@ describe("getPropsForLoggingFromEvent", () => {
       cookie: "other=value; lng=es",
     });
 
-    const result = getPropsForLoggingFromEvent(event);
+    const result = getPropsForLoggingFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,

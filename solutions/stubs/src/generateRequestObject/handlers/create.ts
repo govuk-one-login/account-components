@@ -24,6 +24,7 @@ export const requestBodySchema = v.object({
   iss: v.string(),
   user: v.string(),
   state: v.string(),
+  user_email_address: v.string(),
   account_management_api_authenticate_scenario: v.string(),
   account_management_api_deleteAccount_scenario: v.string(),
   account_management_api_sendOtpChallenge_scenario: v.string(),

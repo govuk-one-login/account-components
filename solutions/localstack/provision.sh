@@ -181,6 +181,16 @@ create_dynamodb_tables() {
   return 0
 }
 
+create_sqs_queues() {
+  echo "Creating SQS queues"
+
+  aws --endpoint-url=http://localhost:4566 sqs create-queue \
+    --queue-name "components-core-NotificationsQueue"
+
+  echo "Finished creating SQS queues"
+  return 0
+}
+
 list_resources() {
   echo "List resources"
   ENDPOINT_URL="http://localhost:4566"
@@ -207,6 +217,9 @@ list_resources() {
   aws --endpoint-url=http://localhost:4566 dynamodb list-tables
   aws --endpoint-url=http://localhost:4567 kms list-keys
   aws --endpoint-url=http://localhost:4567 kms list-aliases
+
+  aws --endpoint-url=http://localhost:4566 sqs list-queues
+  
   return 0
 }
 
@@ -218,6 +231,7 @@ start_kms_local
 create_ssm_parameters
 create_kms_keys
 create_dynamodb_tables
+create_sqs_queues
 list_resources
 
 echo "Localstack provisioned successfully"
