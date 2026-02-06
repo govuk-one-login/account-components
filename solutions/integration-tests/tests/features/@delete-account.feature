@@ -13,7 +13,7 @@ Feature: Delete account
     Given I click the "Start" button
     And the page has finished loading    
     Then the page title is prefixed with "Enter the code sent to your email address"
-    And the page contains the text "someone@example.com"
+    And the page contains the text "testuser@test.null.local"
     And the page looks as expected
     And the page meets our accessibility standards
   
@@ -50,7 +50,7 @@ Feature: Delete account
   
     Given I click the "Delete your GOV.UK One Login" button
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "someone@example.com",'
+    And the page contains the text '"email": "testuser@test.null.local",'
     And the page contains the text:
     """
     "scope": "account-delete",

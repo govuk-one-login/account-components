@@ -3,47 +3,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
         <title>AMC Journey Initiator Stub</title>
-        <style nonce='{{ styleNonce }}'>
-            body {
-                box-sizing: border-box;
-                font-family: Arial, sans-serif;
-                margin: 40px;
-            }
-            fieldset {
-                margin-bottom: 20px;
-                padding: 10px;
-            }
-            legend {
-                font-weight: bold;
-            }
-            input[type="text"] {
-                width: 300px;
-                padding: 5px;
-                margin-top: 5px;
-            }
-            input[type="submit"], .button {
-                padding: 10px 20px;
-                background-color: #4CAF50;
-                color: white;
-                border: none;
-                cursor: pointer;
-                text-decoration: none;
-                font-size: 14px;
-            }
-            pre {
-                white-space: pre-wrap;
-            }
-            .api_scenario_selectors {
-                display: flex;
-                gap: 18px 32px;
-                flex-wrap: wrap;
-            }
-            .api_scenario_selector {
-                display: flex;
-                flex-direction: column;
-                gap: 6px;
-            }
-        </style>
+        <link href="/static/application.css?{{ globals.staticHash }}" rel="stylesheet" nonce='{{ styleNonce }}'>
     </head>
     <body>
       {% block pageContent %}{% endblock %}

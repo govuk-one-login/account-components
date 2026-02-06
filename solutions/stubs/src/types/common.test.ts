@@ -18,7 +18,7 @@ describe("getUsers", () => {
     expect(result).toStrictEqual({
       sub: "urn:fdc:gov.uk:default",
       public_sub: "4c950955-03c3-45a4-a97e-763152c172ff",
-      email: "someone@example.com",
+      email: "testuser@test.null.local",
     });
   });
 
@@ -28,7 +28,7 @@ describe("getUsers", () => {
     expect(result).toStrictEqual({
       sub: "urn:fdc:gov.uk:default",
       public_sub: "4c950955-03c3-45a4-a97e-763152c172ff",
-      email: "someone@example.com",
+      email: "testuser@test.null.local",
     });
   });
 });

@@ -58,6 +58,7 @@ Conditions:
   CanariesEnabled: !Equals
     - !FindInMap [EnvConfig, !Ref Environment, UseCanary]
     - true
+  IsDevEnvironment: !Equals [!Ref Environment, "dev"]
 
 Mappings:
   EnvConfig:
@@ -785,8 +786,10 @@ Resources:
           NOTIFY_TEMPLATE_IDS:
             !FindInMap [EnvConfig, !Ref Environment, notifyTemplateIds]
       DeploymentPreference:
-        Alarms:
-          - !Ref NotificationsServiceFunctionSuccessRate
+        Alarms: !If
+          - IsDevEnvironment
+          - []
+          - - !Ref NotificationsServiceFunctionSuccessRate
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
