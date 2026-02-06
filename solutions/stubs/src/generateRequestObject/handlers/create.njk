@@ -1,131 +1,133 @@
 {% extends "templates/base-page.njk" %}
-
 {% block pageContent %}
     <h1>AMC Journey Initiator Stub</h1>
     {% if not authorizeUrl %}
-    <form method="post" action="/">
-        <fieldset>
-            <legend>Scopes</legend>
-            {% for scope in availableScopes %}
-                <label for="{{ scope }}_scope">
-                    {% if loop.first %}
-                        <input id="{{ scope }}_scope" type="radio" name="scope" value="{{ scope }}" checked=true/> {{ scope }}
-                    {% else %}
-                        <input id="{{ scope }}_scope" type="radio" name="scope" value="{{ scope }}" /> {{ scope }}
-                    {% endif %}
-                </label>
-            {% endfor %}
-        </fieldset>
-        <fieldset>
-            <legend>Scenario</legend>
-            {% for scenario in availableScenarios %}
-            <div>
-                <label for="{{ scenario }}_scenario">
-                {% if loop.first %}
-                    <input id="{{ scenario }}_scenario" type="radio" name="scenario" value="{{ scenario }}" checked=true/> {{ scenario }}
-                {% else %}
-                    <input id="{{ scenario }}_scenario" type="radio" name="scenario" value="{{ scenario }}" /> {{ scenario }}
-                {% endif %}
-            </div>
-            {% endfor %}
-        </fieldset>
-        <fieldset>
-            <legend>Client</legend>
-            <select name="client_id" aria-label="Client">
-                {% for client in availableClients %}
-                    <option value="{{ client.client_id }}">{{ client.client_name }} ({{ client.client_id }})</option>
+        <form method="post" action="/">
+            <fieldset>
+                <legend>Scopes</legend>
+                {% for scope in availableScopes %}
+                    <label for="{{ scope }}_scope">
+                        {% if loop.first %}
+                            <input id="{{ scope }}_scope" type="radio" name="scope" value="{{ scope }}" checked="true"/> {{ scope }}
+                        {% else %}
+                            <input id="{{ scope }}_scope" type="radio" name="scope" value="{{ scope }}"/> {{ scope }}
+                        {% endif %}
+                    </label>
                 {% endfor %}
-            </select>
-        </fieldset>
-        <fieldset>
-            <legend>User</legend>
-            {% for user in availableUsers %}
-            <div>
-                <label for="{{ user }}_user">
-                {% if loop.first %}
-                    <input id="{{ user }}_user" type="radio" name="user" value="{{ user }}" checked=true/> {{ user }}
-                {% else %}
-                    <input id="{{ user }}_user" type="radio" name="user" value="{{ user }}" /> {{ user }}
-                {% endif %}
-            </div>
-            {% endfor %}
-        </fieldset>
-        <fieldset>
-            <legend>Nonce (optional)</legend>
-            <input type="text" name="jti" aria-label="Nonce (optional)" />
-            <i>Leave blank to auto-generate</i>
-        </fieldset>
-        <fieldset>
-            <legend>Expiry (in seconds, optional)</legend>
-            <input type="number" name="exp" min="0"/>
-            <i>Ignored if <b>iatInFuture</b> or <b>expired</b> scenario is chosen</i>
-        </fieldset>
-        <fieldset>
-            <legend>Issuer (optional)</legend>
-            <input type="text" name="iss" aria-label="Issuer (optional)" />
-            <i>Leave blank to be set to client_id</i>
-        </fieldset>
-        <fieldset>
-            <legend>State (optional)</legend>
-            <input type="text" name="state" />
-            <i>Leave blank to auto-generate</i>
-        </fieldset>
-        <fieldset>
-            <legend>Account management API scenarios</legend>
-
-            <div class="api_scenario_selectors">
-                <label class="api_scenario_selector">
-                    Authenticate
-                    <select name="account_management_api_authenticate_scenario">
-                        <option value="successful">Successful</option>
+            </fieldset>
+            <fieldset>
+                <legend>Scenario</legend>
+                {% for scenario in availableScenarios %}
+                    <div>
+                        <label for="{{ scenario }}_scenario">
+                            {% if loop.first %}
+                                <input id="{{ scenario }}_scenario" type="radio" name="scenario" value="{{ scenario }}" checked="true"/> {{ scenario }}
+                            {% else %}
+                                <input id="{{ scenario }}_scenario" type="radio" name="scenario" value="{{ scenario }}"/> {{ scenario }}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </fieldset>
+                <fieldset>
+                    <legend>Client</legend>
+                    <select name="client_id" aria-label="Client">
+                        {% for client in availableClients %}
+                            <option value="{{ client.client_id }}">{{ client.client_name }} ({{ client.client_id }})</option>
+                        {% endfor %}
                     </select>
-                </label>
-
-                <label class="api_scenario_selector">
-                    Delete account
-                    <select name="account_management_api_deleteAccount_scenario">
-                        <option value="successful">Successful</option>
-                    </select>
-                </label> 
-
-                <label class="api_scenario_selector">
-                    Send OTP challenge
-                    <select name="account_management_api_sendOtpChallenge_scenario">
-                        <option value="successful">Successful</option>
-                    </select>
-                </label>  
-
-                <label class="api_scenario_selector">
-                    Verify OTP challenge
-                    <select name="account_management_api_verifyOtpChallenge_scenario">
-                        <option value="successful">Successful</option>
-                        <option value="invalid_otp_code">Invalid OTP code</option>
-                    </select>
-                </label>  
-            </div>                                  
-        </fieldset>
-
-        <fieldset>
-            <legend>Account data API scenarios</legend>
-
-            <div class="api_scenario_selectors">
-  
-            </div>                                  
-        </fieldset>        
-        <input type="submit" value="Generate Request Object">
-    </form>
-    {% endif %}
-    {% if authorizeUrl %}
-        <a href="{{ authorizeUrl }}" class="button">Start AMC Journey</a>
-        <a href="/" class="button">Reset</a>
-        <h2>Options Chosen</h2>
-        <pre>{{ originalRequestBody | dump(2) | safe }}</pre>
-        <h2>JWT Request Object</h2>
-        <h3>Header</h3>
-        <pre>{{ jwtHeader | dump(2) | safe }}</pre>
-        <h3><a href="https://govukverify.atlassian.net/wiki/spaces/DID/pages/5654708312/High+Level#Process-Description">Payload</a></h3>
-        <pre>{{ jwtPayload | dump(2) | safe }}</pre>
-        <h2>Emulated Redirect URL</h2>
-        <pre>{{ authorizeUrl }}</pre>
-    {% endif %}
-{% endblock %}
+                </fieldset>
+                <fieldset>
+                    <legend>User</legend>
+                    {% for user in availableUsers %}
+                        <div>
+                            <label for="{{ user }}_user">
+                                {% if loop.first %}
+                                    <input id="{{ user }}_user" type="radio" name="user" value="{{ user }}" checked="true"/> {{ user }}
+                                {% else %}
+                                    <input id="{{ user }}_user" type="radio" name="user" value="{{ user }}"/> {{ user }}
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </fieldset>
+                    <fieldset>
+                        <legend>Nonce (optional)</legend>
+                        <input type="text" name="jti" aria-label="Nonce (optional)"/>
+                        <i>Leave blank to auto-generate</i>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Expiry (in seconds, optional)</legend>
+                        <input type="number" name="exp" min="0"/>
+                        <i>Ignored if
+                            <b>iatInFuture</b>
+                            or
+                            <b>expired</b>
+                            scenario is chosen</i>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Issuer (optional)</legend>
+                        <input type="text" name="iss" aria-label="Issuer (optional)"/>
+                        <i>Leave blank to be set to client_id</i>
+                    </fieldset>
+                    <fieldset>
+                        <legend>State (optional)</legend>
+                        <input type="text" name="state"/>
+                        <i>Leave blank to auto-generate</i>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Account management API scenarios</legend>
+                        <div class="api_scenario_selectors">
+                            <label class="api_scenario_selector">
+                                Authenticate
+                                <select name="account_management_api_authenticate_scenario">
+                                    <option value="successful">Successful</option>
+                                </select>
+                            </label>
+                            <label class="api_scenario_selector">
+                                Delete account
+                                <select name="account_management_api_deleteAccount_scenario">
+                                    <option value="successful">Successful</option>
+                                </select>
+                            </label>
+                            <label class="api_scenario_selector">
+                                Send OTP challenge
+                                <select name="account_management_api_sendOtpChallenge_scenario">
+                                    <option value="successful">Successful</option>
+                                </select>
+                            </label>
+                            <label class="api_scenario_selector">
+                                Verify OTP challenge
+                                <select name="account_management_api_verifyOtpChallenge_scenario">
+                                    <option value="successful">Successful</option>
+                                    <option value="invalid_otp_code">Invalid OTP code</option>
+                                </select>
+                            </label>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Account data API scenarios</legend>
+                            <div class="api_scenario_selectors">
+                                <label class="api_scenario_selector">
+                                    Create passkey
+                                    <select name="account_data_api_createPassKey_scenario">
+                                        <option value="successful">Successful</option>
+                                    </select>
+                                </label>
+                            </div>
+                        </fieldset>
+                        <input type="submit" value="Generate Request Object"></form>
+                    {% endif %}
+                    {% if authorizeUrl %}
+                        <a href="{{ authorizeUrl }}" class="button">Start AMC Journey</a>
+                        <a href="/" class="button">Reset</a>
+                        <h2>Options Chosen</h2>
+                        <pre>{{ originalRequestBody | dump(2) | safe }}</pre>
+                        <h2>JWT Request Object</h2>
+                        <h3>Header</h3>
+                        <pre>{{ jwtHeader | dump(2) | safe }}</pre>
+                        <h3>
+                            <a href="https://govukverify.atlassian.net/wiki/spaces/DID/pages/5654708312/High+Level#Process-Description">Payload</a>
+                        </h3>
+                        <pre>{{ jwtPayload | dump(2) | safe }}</pre>
+                        <h2>Emulated Redirect URL</h2>
+                        <pre>{{ authorizeUrl }}</pre>
+                    {% endif %}
+                {% endblock %}
