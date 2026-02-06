@@ -21,6 +21,22 @@ export const journeys = {
       requiredClaims: [],
     };
   },
+  [Scope.passkeyCreate]: async () => {
+    const [stateMachineModule, en, cy] = await Promise.all([
+      import("./stateMachines/passkey-create.js"),
+      import("../../translations/journeys/passkey-create/en.json"),
+      import("../../translations/journeys/passkey-create/cy.json"),
+    ]);
+
+    return {
+      stateMachine: stateMachineModule.passkeyCreateStateMachine,
+      translations: {
+        [Lang.English]: en,
+        [Lang.Welsh]: cy,
+      },
+      requiredClaims: ["account_data_api_access_token"],
+    };
+  },
   [Scope.accountDelete]: async () => {
     const [stateMachineModule, en, cy] = await Promise.all([
       import("./stateMachines/account-delete.js"),
