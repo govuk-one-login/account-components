@@ -22,16 +22,16 @@ describe("addStaticAssetsCachingHeaders", () => {
       vi.mocked(getEnvironment).mockReturnValue("production");
     });
 
-    it("should set cache headers with default cache=true", () => {
+    it("should set short cache headers with default allUrlsAreImmutable=false", () => {
       addStaticAssetsCachingHeaders(mockRes);
 
       expect(mockSetHeader).toHaveBeenCalledExactlyOnceWith(
         "cache-control",
-        "public, max-age=86400, immutable",
+        "public, max-age=300",
       );
     });
 
-    it("should set cache headers when cache=true", () => {
+    it("should set immutable cache headers when allUrlsAreImmutable=true", () => {
       addStaticAssetsCachingHeaders(mockRes, true);
 
       expect(mockSetHeader).toHaveBeenCalledExactlyOnceWith(
@@ -40,12 +40,12 @@ describe("addStaticAssetsCachingHeaders", () => {
       );
     });
 
-    it("should set no-cache headers when cache=false", () => {
+    it("should set short cache headers when allUrlsAreImmutable=false", () => {
       addStaticAssetsCachingHeaders(mockRes, false);
 
       expect(mockSetHeader).toHaveBeenCalledExactlyOnceWith(
         "cache-control",
-        "no-cache",
+        "public, max-age=300",
       );
     });
   });
@@ -56,19 +56,19 @@ describe("addStaticAssetsCachingHeaders", () => {
       vi.mocked(getEnvironment).mockReturnValue("local");
     });
 
-    it("should not set headers with default cache=true", () => {
+    it("should not set headers with default allUrlsAreImmutable=false", () => {
       addStaticAssetsCachingHeaders(mockRes);
 
       expect(mockSetHeader).not.toHaveBeenCalled();
     });
 
-    it("should not set headers when cache=true", () => {
+    it("should not set headers when allUrlsAreImmutable=true", () => {
       addStaticAssetsCachingHeaders(mockRes, true);
 
       expect(mockSetHeader).not.toHaveBeenCalled();
     });
 
-    it("should not set headers when cache=false", () => {
+    it("should not set headers when allUrlsAreImmutable=false", () => {
       addStaticAssetsCachingHeaders(mockRes, false);
 
       expect(mockSetHeader).not.toHaveBeenCalled();

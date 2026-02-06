@@ -1,3 +1,4 @@
+export const fiveMinutesInSeconds = 300;
 export const oneDayInSeconds = 86400;
 export const oneYearInSeconds = 31536000;
 

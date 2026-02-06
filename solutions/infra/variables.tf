@@ -47,11 +47,6 @@ variable "signer_allowed_accounts" {
   description = "The AWS account IDs that can read the code signing KMS key"
 }
 
-variable "container_signer_key_arn" {
-  type        = string
-  description = "The ARN of the KMS key used to sign containers. This is the shared key deployed in build from the container-signer stack"
-}
-
 variable "signing_profile_arn" {
   type        = string
   description = "The ARN of the signing profile used to sign Lambda code. This is the shared profile deployed in build from the signer stack"

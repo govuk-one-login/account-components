@@ -2,7 +2,6 @@ environment                                          = "staging"
 hosted_zone_domain                                   = "manage.staging.account.gov.uk"
 api_domain                                           = "api.manage.staging.account.gov.uk"
 signer_allowed_accounts                              = []
-container_signer_key_arn                             = "arn:aws:kms:eu-west-2:629382882013:key/6d5cec29-dda4-42cb-a6bb-ea317123cd4c"
 signing_profile_arn                                  = "arn:aws:signer:eu-west-2:629382882013:/signing-profiles/SigningProfile_VLTxKzC7V3x8"
 signing_profile_version_arn                          = "arn:aws:signer:eu-west-2:629382882013:/signing-profiles/SigningProfile_VLTxKzC7V3x8/RvyUVgeXLz"
 allowed_promotion_accounts                           = ["549834518434", "494066295151"]
