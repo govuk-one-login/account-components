@@ -151,13 +151,18 @@ Resources:
           numMinDelayRetries: 1
           backoffFunction: linear
 
-Outputs:
-  HighSeveritySNSTopicArn:
-    Description: The ARN of the high severity SNS topic.
-    Value: !Ref HighSeveritySNSTopic
-  LowSeveritySNSTopicArn:
-    Description: The ARN of the low severity SNS topic.
-    Value: !Ref LowSeveritySNSTopic
-  HighSeverityChatbotIAMRoleArn:
-    Description: The ARN of the IAM Role for the high severity Slack Chatbot.
-    Value: !GetAtt HighSeveritySlackChatbotIAMRole.Arn
+  HighSeveritySNSTopicArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/HighSeveritySNSTopicArn"
+      Type: String
+      Value: !Ref HighSeveritySNSTopic
+      Description: ARN of the high severity SNS topic
+
+  LowSeveritySNSTopicArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/LowSeveritySNSTopicArn"
+      Type: String
+      Value: !Ref LowSeveritySNSTopic
+      Description: ARN of the low severity SNS topic

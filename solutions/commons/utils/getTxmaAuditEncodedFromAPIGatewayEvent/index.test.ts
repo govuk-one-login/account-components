@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda";
-import { getTxmaAuditEncodedFromEvent } from "./index.js";
+import { getTxmaAuditEncodedFromAPIGatewayEvent } from "./index.js";
 
-describe("getTxmaAuditEncodedFromEvent", () => {
+describe("getTxmaAuditEncodedFromAPIGatewayEvent", () => {
   it("returns undefined when event is undefined", () => {
-    const result = getTxmaAuditEncodedFromEvent();
+    const result = getTxmaAuditEncodedFromAPIGatewayEvent();
 
     expect(result).toBeUndefined();
   });
@@ -16,7 +16,7 @@ describe("getTxmaAuditEncodedFromEvent", () => {
       },
     } as unknown as APIGatewayProxyEvent;
 
-    const result = getTxmaAuditEncodedFromEvent(event);
+    const result = getTxmaAuditEncodedFromAPIGatewayEvent(event);
 
     expect(result).toBeUndefined();
   });
@@ -28,7 +28,7 @@ describe("getTxmaAuditEncodedFromEvent", () => {
       },
     } as unknown as APIGatewayProxyEvent;
 
-    const result = getTxmaAuditEncodedFromEvent(event);
+    const result = getTxmaAuditEncodedFromAPIGatewayEvent(event);
 
     expect(result).toBe("encoded-audit-data");
   });
@@ -42,7 +42,7 @@ describe("getTxmaAuditEncodedFromEvent", () => {
       },
     } as unknown as APIGatewayProxyEvent;
 
-    const result = getTxmaAuditEncodedFromEvent(event);
+    const result = getTxmaAuditEncodedFromAPIGatewayEvent(event);
 
     expect(result).toBe("audit-123");
   });

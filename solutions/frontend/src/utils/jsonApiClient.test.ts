@@ -7,24 +7,26 @@ const mockLogger = vi.hoisted(() => ({
   error: vi.fn(),
 }));
 
-const mockGetPropsForLoggingFromEvent = vi.hoisted(() => vi.fn());
+const mockGetPropsForLoggingFromAPIGatewayEvent = vi.hoisted(() => vi.fn());
 
 // @ts-expect-error
 vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
   logger: mockLogger,
 }));
-const mockGetTxmaAuditEncodedFromEvent = vi.hoisted(() => vi.fn());
+const mockGetTxmaAuditEncodedFromAPIGatewayEvent = vi.hoisted(() => vi.fn());
 
 vi.mock(
-  import("../../../commons/utils/getPropsForLoggingFromEvent/index.js"),
+  import("../../../commons/utils/getPropsForLoggingFromAPIGatewayEvent/index.js"),
   () => ({
-    getPropsForLoggingFromEvent: mockGetPropsForLoggingFromEvent,
+    getPropsForLoggingFromAPIGatewayEvent:
+      mockGetPropsForLoggingFromAPIGatewayEvent,
   }),
 );
 vi.mock(
-  import("../../../commons/utils/getTxmaAuditEncodedFromEvent/index.js"),
+  import("../../../commons/utils/getTxmaAuditEncodedFromAPIGatewayEvent/index.js"),
   () => ({
-    getTxmaAuditEncodedFromEvent: mockGetTxmaAuditEncodedFromEvent,
+    getTxmaAuditEncodedFromAPIGatewayEvent:
+      mockGetTxmaAuditEncodedFromAPIGatewayEvent,
   }),
 );
 class TestJsonApiClient extends JsonApiClient {
@@ -68,8 +70,8 @@ describe("jsonApiClient", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockGetPropsForLoggingFromEvent.mockReturnValue({});
-    mockGetTxmaAuditEncodedFromEvent.mockReturnValue(undefined);
+    mockGetPropsForLoggingFromAPIGatewayEvent.mockReturnValue({});
+    mockGetTxmaAuditEncodedFromAPIGatewayEvent.mockReturnValue(undefined);
     client = new TestJsonApiClient("TestService");
   });
 
@@ -80,26 +82,30 @@ describe("jsonApiClient", () => {
   describe("constructor", () => {
     it("should initialize with empty commonHeaders when no event provided", () => {
       vi.clearAllMocks();
-      mockGetPropsForLoggingFromEvent.mockReturnValue({});
-      mockGetTxmaAuditEncodedFromEvent.mockReturnValue(undefined);
+      mockGetPropsForLoggingFromAPIGatewayEvent.mockReturnValue({});
+      mockGetTxmaAuditEncodedFromAPIGatewayEvent.mockReturnValue(undefined);
       const testClient = new TestJsonApiClient("TestService");
 
       expect(testClient.testCommonHeaders).toStrictEqual({});
-      expect(mockGetPropsForLoggingFromEvent).toHaveBeenCalledWith(undefined);
-      expect(mockGetTxmaAuditEncodedFromEvent).toHaveBeenCalledWith(undefined);
+      expect(mockGetPropsForLoggingFromAPIGatewayEvent).toHaveBeenCalledWith(
+        undefined,
+      );
+      expect(mockGetTxmaAuditEncodedFromAPIGatewayEvent).toHaveBeenCalledWith(
+        undefined,
+      );
     });
 
     it("should initialize commonHeaders from event", () => {
       vi.clearAllMocks();
       const mockEvent = {} as unknown as APIGatewayProxyEvent;
-      mockGetPropsForLoggingFromEvent.mockReturnValue({
+      mockGetPropsForLoggingFromAPIGatewayEvent.mockReturnValue({
         persistentSessionId: "persistent-123",
         sessionId: "session-456",
         clientSessionId: "client-789",
         userLanguage: "en",
         sourceIp: "192.168.1.1",
       });
-      mockGetTxmaAuditEncodedFromEvent.mockReturnValue("audit-data");
+      mockGetTxmaAuditEncodedFromAPIGatewayEvent.mockReturnValue("audit-data");
 
       const clientWithEvent = new TestJsonApiClient("TestService", mockEvent);
 
@@ -111,18 +117,22 @@ describe("jsonApiClient", () => {
         "x-forwarded-for": "192.168.1.1",
         "txma-audit-encoded": "audit-data",
       });
-      expect(mockGetPropsForLoggingFromEvent).toHaveBeenCalledWith(mockEvent);
-      expect(mockGetTxmaAuditEncodedFromEvent).toHaveBeenCalledWith(mockEvent);
+      expect(mockGetPropsForLoggingFromAPIGatewayEvent).toHaveBeenCalledWith(
+        mockEvent,
+      );
+      expect(mockGetTxmaAuditEncodedFromAPIGatewayEvent).toHaveBeenCalledWith(
+        mockEvent,
+      );
     });
 
     it("should handle partial props from event", () => {
       vi.clearAllMocks();
       const mockEvent = {} as APIGatewayProxyEvent;
-      mockGetPropsForLoggingFromEvent.mockReturnValue({
+      mockGetPropsForLoggingFromAPIGatewayEvent.mockReturnValue({
         sessionId: "session-only",
         sourceIp: "10.0.0.1",
       });
-      mockGetTxmaAuditEncodedFromEvent.mockReturnValue(undefined);
+      mockGetTxmaAuditEncodedFromAPIGatewayEvent.mockReturnValue(undefined);
 
       const clientWithEvent = new TestJsonApiClient("TestService", mockEvent);
 

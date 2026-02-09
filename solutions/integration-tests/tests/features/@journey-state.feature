@@ -51,7 +51,7 @@ Feature: Journey state
 
     Given I click the "Complete testing journey" button
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "someone@example.com",'    
+    And the page contains the text '"email": "testuser@test.null.local",'    
     And the page contains the text:
     """
     "scope": "testing-journey",

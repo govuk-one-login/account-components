@@ -116,6 +116,7 @@ export function getJwtPayload(
     scope: bodyScope,
     exp: bodyExp,
     iss: bodyIss,
+    user_email_address: bodyUserEmailAddress,
     ...payload
   } = requestObjectOptions;
 
@@ -133,6 +134,10 @@ export function getJwtPayload(
       ? bodyIss
       : // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         (requestObjectOptions["client_id"] as string);
+  const userEmailAddress =
+    typeof bodyUserEmailAddress === "string" && bodyUserEmailAddress.length > 0
+      ? bodyUserEmailAddress
+      : user.email;
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   return {
     ...payload,
@@ -159,7 +164,7 @@ export function getJwtPayload(
     iss,
     sub: user.sub,
     public_sub: user.public_sub,
-    email: user.email,
+    email: userEmailAddress,
     govuk_signin_journey_id: Buffer.from(randomBytes(10)).toString("hex"),
   } as JWTPayload;
 }
