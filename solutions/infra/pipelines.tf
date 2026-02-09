@@ -7,7 +7,6 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
     SAMStackName                            = "components-main"
     Environment                             = var.environment
     VpcStackName                            = "vpc"
-    ContainerSignerKmsKeyArn                = var.container_signer_key_arn
     SigningProfileArn                       = var.signing_profile_arn
     SigningProfileVersionArn                = var.signing_profile_version_arn
     AdditionalCodeSigningVersionArns        = var.additional_code_signing_version_arns
@@ -44,7 +43,6 @@ resource "aws_cloudformation_stack" "api_pipeline_stack" {
     SAMStackName                            = "components-api"
     Environment                             = var.environment
     VpcStackName                            = "vpc"
-    ContainerSignerKmsKeyArn                = var.container_signer_key_arn
     SigningProfileArn                       = var.signing_profile_arn
     SigningProfileVersionArn                = var.signing_profile_version_arn
     AdditionalCodeSigningVersionArns        = var.additional_code_signing_version_arns
@@ -81,7 +79,6 @@ resource "aws_cloudformation_stack" "core_pipeline_stack" {
     SAMStackName                            = "components-core"
     Environment                             = var.environment
     VpcStackName                            = "vpc"
-    ContainerSignerKmsKeyArn                = var.container_signer_key_arn
     SigningProfileArn                       = var.signing_profile_arn
     SigningProfileVersionArn                = var.signing_profile_version_arn
     AdditionalCodeSigningVersionArns        = var.additional_code_signing_version_arns
@@ -113,7 +110,6 @@ resource "aws_cloudformation_stack" "alarms_pipeline_stack" {
     SAMStackName                            = "components-alarms"
     Environment                             = var.environment
     VpcStackName                            = "vpc"
-    ContainerSignerKmsKeyArn                = var.container_signer_key_arn
     SigningProfileArn                       = var.signing_profile_arn
     SigningProfileVersionArn                = var.signing_profile_version_arn
     AdditionalCodeSigningVersionArns        = var.additional_code_signing_version_arns
@@ -140,7 +136,6 @@ resource "aws_cloudformation_stack" "mocks_pipeline_stack" {
     SAMStackName                     = "components-mocks"
     Environment                      = var.environment
     VpcStackName                     = "vpc"
-    ContainerSignerKmsKeyArn         = var.container_signer_key_arn
     SigningProfileArn                = var.signing_profile_arn
     SigningProfileVersionArn         = var.signing_profile_version_arn
     AdditionalCodeSigningVersionArns = var.additional_code_signing_version_arns
