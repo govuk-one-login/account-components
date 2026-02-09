@@ -112,7 +112,7 @@ export const initFrontend = async function () {
     ),
     prefix: "/fingerprint",
     setHeaders: (res) => {
-      addStaticAssetsCachingHeaders(res);
+      addStaticAssetsCachingHeaders(res, true);
     },
   });
 
@@ -122,7 +122,7 @@ export const initFrontend = async function () {
     decorateReply: false,
     cacheControl: false,
     setHeaders: (res) => {
-      addStaticAssetsCachingHeaders(res);
+      addStaticAssetsCachingHeaders(res, true);
     },
   });
 
@@ -135,11 +135,7 @@ export const initFrontend = async function () {
     decorateReply: false,
     cacheControl: false,
     setHeaders: (res) => {
-      /* We don't want these files to be cached because we aren't in control of everywhere
-      they might be loaded from (e.g. they could be loaded in templates from within node_modules
-      which we can't change) and so we can't append the necessary hash in all loading 
-      situations to ensure that the user has the latest version. */
-      addStaticAssetsCachingHeaders(res, false);
+      addStaticAssetsCachingHeaders(res);
     },
   });
 
@@ -155,11 +151,7 @@ export const initFrontend = async function () {
     decorateReply: false,
     cacheControl: false,
     setHeaders: (res) => {
-      /* We don't want these files to be cached because we aren't in control of everywhere
-      they might be loaded from (e.g. they could be loaded in templates from within node_modules
-      which we can't change) and so we can't append the necessary hash in all loading 
-      situations to ensure that the user has the latest version. */
-      addStaticAssetsCachingHeaders(res, false);
+      addStaticAssetsCachingHeaders(res);
     },
   });
 
