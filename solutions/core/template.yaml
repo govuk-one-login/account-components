@@ -70,6 +70,7 @@ Mappings:
         {
           "CREATE_PASSKEY": "TODO"
         }
+      notificationsMaxReceiveCount: 5
     build:
       UseCanary: false
       LambdaLogLevel: INFO
@@ -78,6 +79,7 @@ Mappings:
         {
           "CREATE_PASSKEY": "TODO"
         }
+      notificationsMaxReceiveCount: 5
     staging:
       UseCanary: true
       LambdaLogLevel: INFO
@@ -86,6 +88,7 @@ Mappings:
         {
           "CREATE_PASSKEY": "TODO"
         }
+      notificationsMaxReceiveCount: 5
     integration:
       UseCanary: true
       LambdaLogLevel: INFO
@@ -94,6 +97,7 @@ Mappings:
         {
           "CREATE_PASSKEY": "TODO"
         }
+      notificationsMaxReceiveCount: 5760
     production:
       UseCanary: true
       LambdaLogLevel: INFO
@@ -102,6 +106,7 @@ Mappings:
         {
           "CREATE_PASSKEY": "TODO"
         }
+      notificationsMaxReceiveCount: 5760
 
 Globals:
   Function:
@@ -746,13 +751,13 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       MessageRetentionPeriod: 1209600
-      VisibilityTimeout: 20
       KmsMasterKeyId: !GetAtt SqsKmsKey.Arn
       RedriveAllowPolicy:
         redrivePermission: denyAll
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt NotificationsDLQ.Arn
-        maxReceiveCount: 5
+        maxReceiveCount:
+          !FindInMap [EnvConfig, !Ref Environment, notificationsMaxReceiveCount]
 
   NotificationsDLQ:
     Type: AWS::SQS::Queue
