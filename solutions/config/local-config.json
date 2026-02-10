@@ -1,7 +1,7 @@
 {
   "client_registry": [
     {
-      "client_id": "ABCDEF12345678901234567890123456",
+      "client_id": "ef2b684f972a41f7915369979128ba5b",
       "scope": "testing-journey account-delete",
       "redirect_uris": ["http://localhost:6003/auth/callback"],
       "client_name": "Auth",
@@ -10,7 +10,7 @@
       "consider_user_logged_in": false
     },
     {
-      "client_id": "23456789012345678901234567890123",
+      "client_id": "537595decf204d96a3f9b6808c4122ce",
       "scope": "testing-journey account-delete",
       "redirect_uris": ["http://localhost:6003/home/callback"],
       "client_name": "Home",

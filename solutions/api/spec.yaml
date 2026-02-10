@@ -186,21 +186,6 @@ paths:
                           error:
                             code: 1001
                             description: UserSignedOut
-                failed_journey__user_aborted_journey:
-                  value:
-                    outcome_id: 8bc3d34e7e22bbdc88beaa37283d0ace4d80e5d1505aa30
-                    sub: urn:fdc:gov.uk:2022:JG0RJI1pYbnanbvPs-j4j5-a-PFcmhry9Qu9NCEp5d4
-                    email: user@example.com
-                    scope: account-delete
-                    success: false
-                    journeys:
-                      - journey: account-delete
-                        timestamp: 1760718467000
-                        success: false
-                        details:
-                          error:
-                            code: 1002
-                            description: UserAbortedJourney
         "400":
           description: Bad request - invalid authorization header, access token, or outcome mismatch
           content:
