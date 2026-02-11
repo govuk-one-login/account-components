@@ -101,6 +101,7 @@ Mappings:
       yourServicesUrl: https://home.staging.account.gov.uk/your-services
       securityUrl: https://home.staging.account.gov.uk/security
       dynatraceRumUrl: TODO
+      accountDataApiUrl: TODO
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
@@ -120,6 +121,7 @@ Mappings:
       yourServicesUrl: https://home.integration.account.gov.uk/your-services
       securityUrl: https://home.integration.account.gov.uk/security
       dynatraceRumUrl: TODO
+      accountDataApiUrl: TODO
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
@@ -139,6 +141,7 @@ Mappings:
       yourServicesUrl: https://home.account.gov.uk/your-services
       securityUrl: https://home.account.gov.uk/security
       dynatraceRumUrl: TODO
+      accountDataApiUrl: TODO
 
 Conditions:
   UseCodeSigning:
@@ -473,6 +476,7 @@ Resources:
               !Ref Environment,
               rootCookieDomain,
             ]
+          NOTIFICATIONS_QUEUE_URL: !Sub "{{resolve:ssm:/${CoreStackName}/NotificationsQueueUrl}}"
           AUTH_CODE_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableName}}"
           JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableName}}"
           AUTHORIZE_ENDPOINT_URL:
@@ -587,6 +591,14 @@ Resources:
                 - appconfig:GetLatestConfiguration
                 - appconfig:StartConfigurationSession
               Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/NotificationsQueueArn}}"
+            - Effect: Allow
+              Action:
+                - kms:GenerateDataKey
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/SqsKmsKeyArn}}"
 
   FrontendLambdaLogGroup:
     Type: AWS::Logs::LogGroup

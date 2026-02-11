@@ -18,8 +18,23 @@ describe("passkeys handlers tests", () => {
   });
 
   describe("passkeys post handler", async () => {
+    it("should return 401 when authorization header is missing", async () => {
+      mockRequest = {
+        headers: {},
+        params: {
+          accountId: "user1",
+        },
+      } as unknown as FastifyRequest;
+      await passkeysPostHandler(mockRequest, mockReply);
+
+      expect(replyStatusMock).toHaveBeenCalledWith(401);
+    });
+
     it("should return 404 for non existing user", async () => {
       mockRequest = {
+        headers: {
+          authorization: "Bearer token",
+        },
         params: {
           accountId: "non-existing",
         },
@@ -34,6 +49,9 @@ describe("passkeys handlers tests", () => {
 
     it("should return 409 for existing passkey", async () => {
       mockRequest = {
+        headers: {
+          authorization: "Bearer token",
+        },
         params: {
           accountId: "user1",
         },

@@ -54,11 +54,61 @@ describe("accountManagementApi", () => {
   it("should handle verifyOtpChallenge without invalid scenario", async () => {
     accountManagementApi(mockApp);
 
+    const token = await new SignJWT({})
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(new TextEncoder().encode("secret"));
+
+    mockRequest.headers = { authorization: `Bearer ${token}` };
+
     const registeredHandler = vi.mocked(mockApp.post).mock
       .calls[3]![1] as unknown as (...args: any) => any;
 
     await registeredHandler(mockRequest, mockReply);
 
     expect(mockReply.send).toHaveBeenCalledWith();
+  });
+
+  it("should return 401 for authenticate without authorization header", async () => {
+    accountManagementApi(mockApp);
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[0]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(401);
+  });
+
+  it("should return 401 for deleteAccount without authorization header", async () => {
+    accountManagementApi(mockApp);
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[1]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(401);
+  });
+
+  it("should return 401 for sendOtpChallenge without authorization header", async () => {
+    accountManagementApi(mockApp);
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[2]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(401);
+  });
+
+  it("should return 401 for verifyOtpChallenge without authorization header", async () => {
+    accountManagementApi(mockApp);
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[3]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(401);
   });
 });

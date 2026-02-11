@@ -1,8 +1,8 @@
 import * as v from "valibot";
 import { logger } from "../../../commons/utils/logger/index.js";
-import { getPropsForLoggingFromEvent } from "../../../commons/utils/getPropsForLoggingFromEvent/index.js";
+import { getPropsForLoggingFromAPIGatewayEvent } from "../../../commons/utils/getPropsForLoggingFromAPIGatewayEvent/index.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
-import { getTxmaAuditEncodedFromEvent } from "../../../commons/utils/getTxmaAuditEncodedFromEvent/index.js";
+import { getTxmaAuditEncodedFromAPIGatewayEvent } from "../../../commons/utils/getTxmaAuditEncodedFromAPIGatewayEvent/index.js";
 
 export abstract class JsonApiClient {
   private readonly errorScope: string;
@@ -16,8 +16,9 @@ export abstract class JsonApiClient {
   constructor(errorScope: string, event?: APIGatewayProxyEvent) {
     this.errorScope = errorScope;
 
-    const propsForLoggingFromEvent = getPropsForLoggingFromEvent(event);
-    const txmaAuditEncoded = getTxmaAuditEncodedFromEvent(event);
+    const propsForLoggingFromEvent =
+      getPropsForLoggingFromAPIGatewayEvent(event);
+    const txmaAuditEncoded = getTxmaAuditEncodedFromAPIGatewayEvent(event);
 
     this.commonHeaders = {
       ...(propsForLoggingFromEvent.persistentSessionId

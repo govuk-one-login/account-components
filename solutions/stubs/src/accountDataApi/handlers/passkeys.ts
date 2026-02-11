@@ -36,6 +36,11 @@ export async function passkeysPostHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
+  if (!request.headers.authorization) {
+    reply.status(401);
+    return reply;
+  }
+
   const { accountId } = v.parse(
     v.object({
       accountId: v.string(),

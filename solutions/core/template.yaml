@@ -29,6 +29,20 @@ Parameters:
     Type: String
     Description: >
       The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
+  AlertingStackName:
+    Type: String
+    Description: The name of the alerting stack that contains SNS topics for alarms
+    Default: "component-alarms"
+  LambdaDeploymentPreference:
+    Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
+    Type: String
+    Default: "Canary10Percent10Minutes"
+    AllowedValues:
+      - AllAtOnce
+      - Canary10Percent5Minutes
+      - Canary10Percent10Minutes
+      - Canary10Percent15Minutes
+      - Canary10Percent30Minutes
 
 Conditions:
   UseCodeSigning:
@@ -41,28 +55,70 @@ Conditions:
       - Fn::Equals:
           - !Ref PermissionsBoundary
           - "none"
+  CanariesEnabled: !Equals
+    - !FindInMap [EnvConfig, !Ref Environment, UseCanary]
+    - true
+  IsDevEnvironment: !Equals [!Ref Environment, "dev"]
 
 Mappings:
   EnvConfig:
     dev:
+      UseCanary: false
       LambdaLogLevel: DEBUG
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+      notifyTemplateIds: |
+        {
+          "CREATE_PASSKEY": "TODO"
+        }
+      notificationsMaxReceiveCount: 5
     build:
+      UseCanary: false
       LambdaLogLevel: INFO
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+      notifyTemplateIds: |
+        {
+          "CREATE_PASSKEY": "TODO"
+        }
+      notificationsMaxReceiveCount: 5
     staging:
+      UseCanary: true
       LambdaLogLevel: INFO
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+      notifyTemplateIds: |
+        {
+          "CREATE_PASSKEY": "TODO"
+        }
+      notificationsMaxReceiveCount: 5
     integration:
+      UseCanary: true
       LambdaLogLevel: INFO
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
+      notifyTemplateIds: |
+        {
+          "CREATE_PASSKEY": "TODO"
+        }
+      notificationsMaxReceiveCount: 5760
     production:
+      UseCanary: true
       LambdaLogLevel: INFO
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables #pragma: allowlist secret
+      notifyTemplateIds: |
+        {
+          "CREATE_PASSKEY": "TODO"
+        }
+      notificationsMaxReceiveCount: 5760
 
 Globals:
   Function:
+    DeploymentPreference:
+      Type: !If
+        - CanariesEnabled
+        - !Ref LambdaDeploymentPreference
+        - AllAtOnce
+      Alarms: []
+      Role: !GetAtt CodeDeployServiceRole.Arn
     Tracing: Active
+    AutoPublishAlias: live
     KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
     Layers:
       - "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_323_2_20250822-051314_with_collector_nodejs:1"
@@ -75,10 +131,6 @@ Globals:
       - !Ref PermissionsBoundary
       - !Ref AWS::NoValue
     VpcConfig:
-      SubnetIds:
-        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
-        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
-        - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdC
       SecurityGroupIds:
         - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
     Timeout: 15
@@ -121,6 +173,27 @@ Globals:
         DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
 
 Resources:
+  CodeDeployServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
+      PermissionsBoundary:
+        !If [
+          UsePermissionsBoundary,
+          !Ref PermissionsBoundary,
+          !Ref AWS::NoValue,
+        ]
+
   DynamoDbSSEKey:
     Type: AWS::KMS::Key
     Properties:
@@ -474,6 +547,11 @@ Resources:
     Properties:
       Description: "Creates a JWKS doc and stores it into a S3 Bucket"
       Handler: jwks-creator.handler
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdC
       DeploymentPreference:
         Enabled: false
       LoggingConfig:
@@ -624,6 +702,237 @@ Resources:
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-replay_attack"
+
+  SecretsKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+
+  SecretsKmsKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-SecretsKmsKey"
+      TargetKeyId: !GetAtt SecretsKmsKey.Arn
+
+  NotifyAPIKeySecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      KmsKeyId: !Ref SecretsKmsKey
+      SecretString: set-me # pragma: allowlist secret
+
+  SqsKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: kms:*
+            Resource:
+              - "*"
+
+  SqsKmsKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-SqsKmsKey"
+      TargetKeyId: !Ref SqsKmsKey
+
+  NotificationsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+      KmsMasterKeyId: !GetAtt SqsKmsKey.Arn
+      RedriveAllowPolicy:
+        redrivePermission: denyAll
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt NotificationsDLQ.Arn
+        maxReceiveCount:
+          !FindInMap [EnvConfig, !Ref Environment, notificationsMaxReceiveCount]
+
+  NotificationsDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: !GetAtt SqsKmsKey.Arn
+      MessageRetentionPeriod: 1209600
+
+  NotificationsServiceLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      LoggingConfig:
+        LogGroup: !Ref NotificationsServiceLambdaLogGroup
+      Events:
+        NotificationsQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt NotificationsQueue.Arn
+            BatchSize: 10
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+      Handler: notifications-service.handler
+      Runtime: nodejs22.x # as at 2026-02-03 the notifications-node-client library does not work with Node 24 or newer
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
+      Environment:
+        Variables:
+          NOTIFY_API_KEY_SECRET_ARN: !Ref NotifyAPIKeySecret
+          NOTIFY_TEMPLATE_IDS:
+            !FindInMap [EnvConfig, !Ref Environment, notifyTemplateIds]
+      DeploymentPreference:
+        Alarms: !If
+          - IsDevEnvironment
+          - []
+          - - !Ref NotificationsServiceFunctionSuccessRate
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:ReceiveMessage
+                - sqs:DeleteMessage
+                - sqs:GetQueueAttributes
+              Resource: !GetAtt NotificationsQueue.Arn
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource: !GetAtt SqsKmsKey.Arn
+            - Effect: Allow
+              Action:
+                - "kms:Decrypt"
+              Resource:
+                - !GetAtt SecretsKmsKey.Arn
+            - Effect: Allow
+              Action: secretsmanager:GetSecretValue # pragma: allowlist secret
+              Resource: !Ref NotifyAPIKeySecret
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Target: es2022 # as at 2026-02-03 the notifications-node-client library does not work with Node 24 or newer
+        Sourcemap: true
+        EntryPoints:
+          - solutions/core/src/lambda/notifications-service.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+
+  NotificationsServiceLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/NotificationsService"
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  NotificationsServiceFunctionSuccessRate:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: Errors
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref NotificationsServiceLambda
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: Invocations
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref NotificationsServiceLambda
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Id: successRate
+          Expression: "1 - (errors / invocations)"
+          Label: "Success Rate"
+          ReturnData: true
+      Threshold: 0.95
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !Sub "{{resolve:ssm:/${AlertingStackName}/LowSeveritySNSTopicArn}}"
+
+  NotificationsQueueProcessingTooSlow:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "{{resolve:ssm:/${AlertingStackName}/LowSeveritySNSTopicArn}}"
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 600
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt NotificationsQueue.QueueName
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      Period: 60
+      Statistic: Maximum
+
+  NotificationsDLQHasMessages:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "{{resolve:ssm:/${AlertingStackName}/LowSeveritySNSTopicArn}}"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 1
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt NotificationsDLQ.QueueName
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Period: 60
+      Statistic: Maximum
+
+  SqsKmsKeyArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/SqsKmsKeyArn"
+      Type: String
+      Value: !GetAtt SqsKmsKey.Arn
+      Description: ARN of the KMS key used to encrypt SQS queues
+
+  NotificationsQueueArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/NotificationsQueueArn"
+      Type: String
+      Value: !GetAtt NotificationsQueue.Arn
+      Description: ARN of the notifications queue
+
+  NotificationsQueueUrlParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/NotificationsQueueUrl"
+      Type: String
+      Value: !GetAtt NotificationsQueue.QueueUrl
+      Description: URL of the notifications queue
 
   JourneyOutcomeTableArnParameter:
     Type: AWS::SSM::Parameter

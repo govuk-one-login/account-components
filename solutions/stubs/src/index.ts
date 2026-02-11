@@ -93,7 +93,7 @@ export const initStubs = async function () {
     decorateReply: false,
     cacheControl: false,
     setHeaders: (res) => {
-      addStaticAssetsCachingHeaders(res);
+      addStaticAssetsCachingHeaders(res, true);
     },
   });
 
