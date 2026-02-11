@@ -12,6 +12,8 @@ import {
 import { isoUint8Array } from "@simplewebauthn/server/helpers";
 import { completeJourney } from "../../utils/completeJourney.js";
 import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
+import { AccountDataApiClient } from "../../../utils/accountDataApiClient.js";
+import { decodeAttestationObject } from "@simplewebauthn/server/helpers";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
@@ -109,7 +111,36 @@ export async function postHandler(
     );
   }
 
-  // TODO send passkey to account management API to save it (https://simplewebauthn.dev/docs/packages/server#3-post-registration-responsibilities)
+  assert.ok(request.session.claims.account_data_api_access_token);
+  const accountDataApiClient = new AccountDataApiClient(
+    request.session.claims.account_data_api_access_token,
+    request.awsLambda?.event,
+  );
+
+  const decodedAttestation = decodeAttestationObject(
+    verification.registrationInfo.attestationObject,
+  );
+  const attestationStatement = decodedAttestation.get("attStmt");
+  const attestationSignature = attestationStatement.get("sig");
+
+  assert.ok(attestationSignature);
+
+  const result = await accountDataApiClient.createPasskey(
+    request.session.claims.public_sub,
+    {
+      credential: Buffer.from(
+        verification.registrationInfo.credential.publicKey,
+      ).toString("base64"), // TODO base64 correct?
+      id: verification.registrationInfo.credential.id,
+      aaguid: verification.registrationInfo.aaguid,
+      attestationSignature:
+        Buffer.from(attestationSignature).toString("base64"), // TODO base64 correct?
+    },
+  );
+
+  if (!result.success) {
+    throw new Error(result.error);
+  }
 
   return await completeJourney(request, reply, {}, true);
 }
