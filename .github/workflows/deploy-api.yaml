@@ -88,7 +88,7 @@ jobs:
         run: npm run build:api
 
       - name: Deploy API
-        uses: govuk-one-login/devplatform-upload-action@abbf25e43a88b3512b1a43621f9aef4cbea1b648
+        uses: govuk-one-login/devplatform-upload-action@b7bc01ed6e0b61d54f42e7f3d12dd3fdbb0f172a
         with:
           artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET_NAME_API }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
