@@ -61,9 +61,6 @@ Mappings:
       issuerUrl: https://manage.dev.account.gov.uk
       tokenEndpointUrl: https://api.manage.dev.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.dev.account.gov.uk/journeyoutcome
-      apiAllowedVpceIds:
-        - "vpce-0a7dad1503be13796" # di-account-components-dev
-      apiAllowedVpcIds: []
       LambdaLogLevel: DEBUG
       UseCanary: false
       frontendUrl: https://manage.dev.account.gov.uk
@@ -75,9 +72,6 @@ Mappings:
       issuerUrl: https://manage.build.account.gov.uk
       tokenEndpointUrl: https://api.manage.build.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.build.account.gov.uk/journeyoutcome
-      apiAllowedVpceIds:
-        - "vpce-0f4845b63ae267db4" # di-account-components-build
-      apiAllowedVpcIds: []
       LambdaLogLevel: INFO
       UseCanary: false
       frontendUrl: https://manage.build.account.gov.uk
@@ -89,10 +83,14 @@ Mappings:
       issuerUrl: https://manage.staging.account.gov.uk
       tokenEndpointUrl: https://api.manage.staging.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.staging.account.gov.uk/journeyoutcome
-      apiAllowedVpceIds:
-        - "vpce-07078f5f005fe5efc" # di-authentication-staging
       apiAllowedVpcIds:
+        - "vpc-04163263e42ae55ee" # di-account-staging
         - "vpc-07cf1e76e27f28e86" # di-authentication-staging
+      apiAllowedVpceIds:
+        - "vpce-0c9ce65be09f99db7" # di-account-staging
+        - "vpce-07078f5f005fe5efc" # di-authentication-staging
+      homeVpceId: vpce-0c9ce65be09f99db7 # di-account-staging
+      authVpceId: vpce-07078f5f005fe5efc # di-authentication-staging
       LambdaLogLevel: INFO
       UseCanary: true
       frontendUrl: https://manage.staging.account.gov.uk
@@ -104,10 +102,14 @@ Mappings:
       issuerUrl: https://manage.integration.account.gov.uk
       tokenEndpointUrl: https://api.manage.integration.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.integration.account.gov.uk/journeyoutcome
-      apiAllowedVpceIds:
-        - "vpce-0df10df14d851e1c9" # di-authentication-integration
       apiAllowedVpcIds:
+        - "vpc-048c9133a5998efe7" # di-account-staging
         - "vpc-04796e8a5bf41b046" # di-authentication-integration
+      apiAllowedVpceIds:
+        - "vpce-0e594accb3d775457" # di-account-integration
+        - "vpce-0df10df14d851e1c9" # di-authentication-integration
+      homeVpceId: vpce-0e594accb3d775457 # di-account-integration
+      authVpceId: vpce-0df10df14d851e1c9 # di-authentication-integration
       LambdaLogLevel: INFO
       UseCanary: true
       frontendUrl: https://manage.integration.account.gov.uk
@@ -119,10 +121,14 @@ Mappings:
       issuerUrl: https://manage.account.gov.uk
       tokenEndpointUrl: https://api.manage.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.account.gov.uk/journeyoutcome
-      apiAllowedVpceIds:
-        - "vpce-0db136878c87bf2d0" # di-authentication-production
       apiAllowedVpcIds:
+        - "vpc-0c94e753d20410154" # di-account-staging
         - "vpc-06a7d758af9eefddb" # di-authentication-production
+      apiAllowedVpceIds:
+        - "vpce-0d7972874707185a0" # di-account-production
+        - "vpce-0db136878c87bf2d0" # di-authentication-production
+      homeVpceId: vpce-0d7972874707185a0 # di-account-production
+      authVpceId: vpce-0db136878c87bf2d0 # di-authentication-production
       LambdaLogLevel: INFO
       UseCanary: true
       frontendUrl: https://manage.account.gov.uk
@@ -149,6 +155,7 @@ Conditions:
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
   IsBuildEnvironment: !Equals [!Ref Environment, "build"]
   IsDevOrBuild: !Or [Condition: IsDevEnvironment, Condition: IsBuildEnvironment]
+  IsNotDevOrBuild: !Not [Condition: IsDevOrBuild]
   IsLocalOrDev: !Or [Condition: IsDevEnvironment, Condition: IsLocal]
 
 Globals:
@@ -320,6 +327,7 @@ Resources:
         Types:
           - PRIVATE
       SecurityPolicy: SecurityPolicy_TLS13_1_2_FIPS_PQ_2025_09
+      EndpointAccessMode: STRICT
       Policy:
         Version: "2012-10-17"
         Statement:
@@ -329,12 +337,13 @@ Resources:
             Resource: "*"
             Condition:
               StringEquals:
-                aws:sourceVpce:
-                  !FindInMap [
-                    EnvironmentConfiguration,
-                    !Ref Environment,
-                    apiAllowedVpceIds,
-                  ]
+                aws:sourceVpce: !If
+                  - IsDevOrBuild
+                  - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+                  - !FindInMap
+                    - EnvironmentConfiguration
+                    - !Ref Environment
+                    - apiAllowedVpceIds
 
   BasePathMapping:
     Type: AWS::ApiGateway::BasePathMappingV2
@@ -344,6 +353,54 @@ Resources:
       DomainNameArn: !GetAtt ApiDomain.DomainNameArn
       RestApiId: !Ref ApiGateway
       Stage: !Ref ApiStageName
+
+  ApiDomainRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: IsDevOrBuild
+    Properties:
+      HostedZoneId:
+        Fn::ImportValue: hosted-zone-HostedZoneID
+      Name: !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
+      Type: A
+      AliasTarget:
+        #        Temporary fix until https://govukverify.atlassian.net/browse/PSREDEV-3033 is done
+        DNSName: !If
+          - IsDevEnvironment
+          - "vpce-0a7dad1503be13796-1qvf1azf.execute-api.eu-west-2.vpce.amazonaws.com"
+          - "vpce-0f4845b63ae267db4-p0gt4n6p.execute-api.eu-west-2.vpce.amazonaws.com"
+        #        DNSName:
+        #          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointDnsName"
+        #        HostedZoneId:
+        #          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointHostedZoneId"
+        HostedZoneId: "Z7K1066E3PUKB" # Canonical hosted zone ID for VPC interface endpoint in eu-west-2 (eu-west-2.vpce.amazonaws.com.)
+        EvaluateTargetHealth: false
+
+  AmcDomainNameAccessAssociation:
+    Type: AWS::ApiGateway::DomainNameAccessAssociation
+    Condition: IsDevOrBuild
+    Properties:
+      DomainNameArn: !GetAtt ApiDomain.DomainNameArn
+      AccessAssociationSource:
+        Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+      AccessAssociationSourceType: VPCE
+
+  HomeDomainNameAccessAssociation:
+    Type: AWS::ApiGateway::DomainNameAccessAssociation
+    Condition: IsNotDevOrBuild
+    Properties:
+      DomainNameArn: !GetAtt ApiDomain.DomainNameArn
+      AccessAssociationSource:
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, homeVpceId]
+      AccessAssociationSourceType: VPCE
+
+  AuthDomainNameAccessAssociation:
+    Type: AWS::ApiGateway::DomainNameAccessAssociation
+    Condition: IsNotDevOrBuild
+    Properties:
+      DomainNameArn: !GetAtt ApiDomain.DomainNameArn
+      AccessAssociationSource:
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, authVpceId]
+      AccessAssociationSourceType: VPCE
 
   ApiGateway:
     Type: AWS::Serverless::Api
@@ -355,16 +412,13 @@ Resources:
       TracingEnabled: true
       Auth:
         ResourcePolicy:
-          IntrinsicVpcWhitelist: !Join
-            - ""
-            - - !If
-                - IsDevOrBuild
-                - - Fn::ImportValue: !Sub "${VpcStackName}-VpcId"
-                - []
-              - !FindInMap
-                - EnvironmentConfiguration
-                - !Ref Environment
-                - apiAllowedVpcIds
+          IntrinsicVpcWhitelist: !If
+            - IsDevOrBuild
+            - - Fn::ImportValue: !Sub "${VpcStackName}-VpcId"
+            - !FindInMap
+              - EnvironmentConfiguration
+              - !Ref Environment
+              - apiAllowedVpcIds
 
       EndpointConfiguration:
         Type: PRIVATE
@@ -409,12 +463,13 @@ Resources:
             Resource: "*"
             Condition:
               StringEquals:
-                aws:sourceVpce:
-                  !FindInMap [
-                    EnvironmentConfiguration,
-                    !Ref Environment,
-                    apiAllowedVpceIds,
-                  ]
+                aws:sourceVpce: !If
+                  - IsDevOrBuild
+                  - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+                  - !FindInMap
+                    - EnvironmentConfiguration
+                    - !Ref Environment
+                    - apiAllowedVpceIds
       Variables:
         ApiDomain:
           !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
