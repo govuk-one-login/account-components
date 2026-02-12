@@ -1,12 +1,21 @@
 {
   "client_registry": [
     {
-      "client_id": "12345678901234567890123456789012",
-      "scope": "account-delete",
-      "redirect_uris": ["https://signin.account.gov.uk/auth/callback"],
-      "client_name": "dummy_auth",
-      "jwks_uri": "https://signin.account.gov.uk/.well-known/jwks.json",
+      "client_id": "be05e73e93e94626917b2bc0d7627cfa",
+      "scope": "account-delete passkey-create",
+      "redirect_uris": ["https://TODO.com"],
+      "client_name": "Auth",
+      "jwks_uri": "https://TODO.com",
       "consider_user_logged_in": false
+    },
+    {
+      "client_id": "261b31a23ea2408094b7f8480d486fad",
+      "scope": "passkey-create",
+      "redirect_uris": ["https://home.account.gov.uk/amc/callback"],
+      "client_name": "Home",
+      "jwks_uri": "https://home.account.gov.uk/.well-known/jwks.json",
+      "consider_user_logged_in": true,
+      "homepage_url": "https://home.account.gov.uk/your-services"
     }
   ],
   "jti_nonce_ttl_in_seconds": 7200,

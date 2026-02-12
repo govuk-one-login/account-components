@@ -309,28 +309,6 @@ Resources:
                 Action: kms:Decrypt
                 Resource: !Sub "{{resolve:ssm:/${CoreStackName}/S3SSEKeyArn}}"
 
-  # required to allow stub to call private api via custom domain name
-  ApiDomainRecord:
-    Condition: IsDevOrBuild
-    Type: AWS::Route53::RecordSet
-    Properties:
-      HostedZoneId:
-        Fn::ImportValue: hosted-zone-HostedZoneID
-      Name: !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
-      Type: A
-      AliasTarget:
-        #        Temporary fix until https://govukverify.atlassian.net/browse/PSREDEV-3033 is done
-        DNSName: !If
-          - IsDevEnvironment
-          - "vpce-0a7dad1503be13796-1qvf1azf.execute-api.eu-west-2.vpce.amazonaws.com"
-          - "vpce-0f4845b63ae267db4-p0gt4n6p.execute-api.eu-west-2.vpce.amazonaws.com"
-        #        DNSName:
-        #          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointDnsName"
-        #        HostedZoneId:
-        #          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointHostedZoneId"
-        HostedZoneId: "Z7K1066E3PUKB" # Canonical hosted zone ID for VPC interface endpoint in eu-west-2 (eu-west-2.vpce.amazonaws.com.)
-        EvaluateTargetHealth: false
-
   ApiDomain:
     Type: AWS::ApiGateway::DomainNameV2
     Properties:
@@ -342,7 +320,6 @@ Resources:
         Types:
           - PRIVATE
       SecurityPolicy: SecurityPolicy_TLS13_1_2_FIPS_PQ_2025_09
-      EndpointAccessMode: STRICT
       Policy:
         Version: "2012-10-17"
         Statement:
@@ -367,14 +344,6 @@ Resources:
       DomainNameArn: !GetAtt ApiDomain.DomainNameArn
       RestApiId: !Ref ApiGateway
       Stage: !Ref ApiStageName
-
-  DomainNameAccessAssociation:
-    Type: AWS::ApiGateway::DomainNameAccessAssociation
-    Properties:
-      DomainNameArn: !GetAtt ApiDomain.DomainNameArn
-      AccessAssociationSource:
-        Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
-      AccessAssociationSourceType: VPCE
 
   ApiGateway:
     Type: AWS::Serverless::Api

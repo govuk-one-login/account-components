@@ -99,13 +99,13 @@ export async function postHandler(
 
     // TODO is this the right thing to do here or should we allow the user to try again?
     // If we allow the user to try again then the registration options should be regrenerated and resaved to the session to prevent replay attacks.
-    // If this is the right thing to do then don't use userAbortedJourney. Add a specific error code
+    // If this is the right thing to do then don't use userSignedOut. Add a specific error code
     // to failedJourneyErrors and also update the private API spec with this code.
     return await completeJourney(
       request,
       reply,
       {
-        error: failedJourneyErrors.userAbortedJourney,
+        error: failedJourneyErrors.userSignedOut,
       },
       false,
     );

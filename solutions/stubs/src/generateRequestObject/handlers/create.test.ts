@@ -3,6 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const ORIGINAL_ENV = { ...process.env };
 
+vi.mock(import("../utils/getClientRegistryWithInvalidClient/index.js"), () => ({
+  getClientRegistryWithInvalidClient: vi.fn().mockResolvedValue([
+    {
+      client_id: "23456789012345678901234567890123",
+      redirect_uris: ["http://localhost:6003/home/callback"],
+    },
+  ]),
+}));
+
 describe("createRequestObjectGet", () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;

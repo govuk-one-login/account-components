@@ -16,10 +16,6 @@ export const journeyRoutes = function (fastify: FastifyInstance) {
     await onSend(request, reply);
   });
 
-  fastify.get(
-    paths.journeys.others.completeFailedJourney.path,
-    completeFailedJourneyHandler,
-  );
   fastify.post(
     paths.journeys.others.completeFailedJourney.path,
     completeFailedJourneyHandler,

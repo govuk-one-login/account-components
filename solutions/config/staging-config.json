@@ -1,19 +1,19 @@
 {
   "client_registry": [
     {
-      "client_id": "ABCDEF12345678901234567890123456",
-      "scope": "account-delete",
-      "redirect_uris": ["https://signin.staging.account.gov.uk/auth/callback"],
-      "client_name": "dummy_auth",
-      "jwks_uri": "https://signin.staging.account.gov.uk/.well-known/jwks.json",
+      "client_id": "bb8ba862f42b4e5eb97cc0950f6419ca",
+      "scope": "account-delete passkey-create",
+      "redirect_uris": ["https://TODO.com"],
+      "client_name": "Auth",
+      "jwks_uri": "https://TODO.com",
       "consider_user_logged_in": false
     },
     {
-      "client_id": "23456789012345678901234567890123",
-      "scope": "account-delete",
-      "redirect_uris": ["https://home.staging.account.gov.uk/home/callback"],
-      "client_name": "dummy_home",
-      "jwks_uri": "https://home.build.staging.gov.uk/.well-known/jwks.json",
+      "client_id": "63385eefbc1649f9bc50eb9fd7c04de0",
+      "scope": "passkey-create",
+      "redirect_uris": ["https://home.staging.account.gov.uk/amc/callback"],
+      "client_name": "Home",
+      "jwks_uri": "https://home.staging.account.gov.uk/.well-known/jwks.json",
       "consider_user_logged_in": true,
       "homepage_url": "https://home.staging.account.gov.uk/your-services"
     }
