@@ -61,6 +61,10 @@ Mappings:
       issuerUrl: https://manage.dev.account.gov.uk
       tokenEndpointUrl: https://api.manage.dev.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.dev.account.gov.uk/journeyoutcome
+      apiAllowedVpcIds: ""
+      apiAllowedVpceIds: ""
+      homeVpceId: ""
+      authVpceId: ""
       LambdaLogLevel: DEBUG
       UseCanary: false
       frontendUrl: https://manage.dev.account.gov.uk
@@ -72,6 +76,10 @@ Mappings:
       issuerUrl: https://manage.build.account.gov.uk
       tokenEndpointUrl: https://api.manage.build.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.build.account.gov.uk/journeyoutcome
+      apiAllowedVpcIds: ""
+      apiAllowedVpceIds: ""
+      homeVpceId: ""
+      authVpceId: ""
       LambdaLogLevel: INFO
       UseCanary: false
       frontendUrl: https://manage.build.account.gov.uk
