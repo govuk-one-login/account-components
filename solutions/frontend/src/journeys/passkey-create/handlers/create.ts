@@ -6,13 +6,8 @@ import {
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
 import * as v from "valibot";
-import {
-  checkValueForFormErrors,
-  getFormErrorsList,
-} from "../../../utils/formErrorsHelpers.js";
 import { isoUint8Array } from "@simplewebauthn/server/helpers";
 import { completeJourney } from "../../utils/completeJourney.js";
-import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
 import { AccountDataApiClient } from "../../../utils/accountDataApiClient.js";
 import { decodeAttestationObject } from "@simplewebauthn/server/helpers";
 import { resolveEnvVarToBool } from "../../../../../commons/utils/resolveEnvVarToBool/index.js";
@@ -73,19 +68,28 @@ export async function postHandler(
   assert.ok(registrationOptions);
 
   const bodySchema = v.object({
+    error: v.optional(v.string()),
     registrationResponse: v.pipe(v.string(), v.parseJson()),
   });
-  const bodyValidation = checkValueForFormErrors(request.body, bodySchema);
 
-  if (!bodyValidation.success) {
-    await render(reply, {
-      errors: bodyValidation.formErrors,
-      errorList: getFormErrorsList(bodyValidation.formErrors),
-    });
-    return reply;
+  const bodyParseResult = v.safeParse(bodySchema, request.body);
+
+  if (!bodyParseResult.success) {
+    request.log.error(
+      { issues: bodyParseResult.issues },
+      "Register passkey - invalid request body",
+    );
+    // TODO go to error screen with radio buttons?
+    return;
   }
 
-  const body = bodyValidation.parsedValue;
+  const body = bodyParseResult.output;
+
+  if (body.error !== undefined) {
+    request.log.error({ error: body.error }, "Register passkey - client error");
+    // TODO go to error screen with radio buttons?
+    return;
+  }
 
   assert.ok(process.env["PASSKEYS_RP_ID"]);
   assert.ok(process.env["PASSKEYS_EXPECTED_ORIGIN"]);
@@ -101,21 +105,9 @@ export async function postHandler(
   });
 
   if (!verification.verified) {
-    request.log.error("Create passkey verification failed");
-    assert.ok(request.session.claims);
-
-    // TODO is this the right thing to do here or should we allow the user to try again?
-    // If we allow the user to try again then the registration options should be regrenerated and resaved to the session to prevent replay attacks.
-    // If this is the right thing to do then don't use userSignedOut. Add a specific error code
-    // to failedJourneyErrors and also update the private API spec with this code.
-    return await completeJourney(
-      request,
-      reply,
-      {
-        error: failedJourneyErrors.userSignedOut,
-      },
-      false,
-    );
+    request.log.error("Register passkey - verification failed");
+    // TODO go to error screen with radio buttons?
+    return;
   }
 
   assert.ok(request.session.claims.account_data_api_access_token);
