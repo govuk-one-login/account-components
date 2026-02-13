@@ -2,7 +2,7 @@ Feature: Passkey create
 
   # Should fail because of known accessibility issues
   @failMobile
-  Scenario: Successfully create passkey
+  Scenario: Successfully create passkey TODO
     Given I go to the journey initiator
     And I begin a "passkey-create" journey
     And the page has finished loading    

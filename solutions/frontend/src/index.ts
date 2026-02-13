@@ -168,7 +168,7 @@ export const initFrontend = async function () {
     decorateReply: false,
     cacheControl: false,
     setHeaders: (res) => {
-      addStaticAssetsCachingHeaders(res);
+      addStaticAssetsCachingHeaders(res, true);
     },
   });
 
