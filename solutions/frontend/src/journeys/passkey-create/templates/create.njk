@@ -1,0 +1,54 @@
+{% extends "templates/layout/base-page.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/details/macro.njk" import govukDetails %}
+
+{% set pageTitleName = 'journey:create.pageTitle' | translate %}
+
+{% block pageContent %}
+  <h1 class="govuk-heading-l">{{ 'journey:create.heading' | translate }}</h1>
+
+  <form method="post" id="verifyPasskeyForm" data-registration-options="{{ registrationOptions }}">
+    <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
+    <input type="hidden" name="registrationResponse" value='""'>
+    <input type="hidden" name="error" value="JavaScriptNotEnabled"> 
+
+    {{ govukButton({
+      text: 'journey:create.buttonLabel' | translate,
+      preventDoubleClick: true
+    }) }}
+  </form>
+
+  <p class="govuk-body"><a href="#TODO" class="govuk-link govuk-link--no-visited-state">{{ 'journey:create.exitJourneyLinkText' | translate }}</a></p>  
+{% endblock %}
+
+{% block scripts %}
+<script src="/@simplewebauthn/browser/index.es5.umd.min.js?{{ globals.simpleWebAuthNBrowserStaticHash }}" nonce='{{ cspNonce }}'></script>
+
+<script id="verifyPasskeyScript" nonce="{{ cspNonce }}">
+  const verifyPasskeyForm = document.getElementById('verifyPasskeyForm');
+
+  async function registerPasskey(event) {
+    try {
+      event.preventDefault();
+
+      if (SimpleWebAuthnBrowser.browserSupportsWebAuthn()) {
+        const registrationOptions = JSON.parse(verifyPasskeyForm.dataset.registrationOptions);
+        const registrationResponse = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: registrationOptions });
+
+        verifyPasskeyForm.querySelector('input[name="registrationResponse"]').value = JSON.stringify(registrationResponse);
+        const errorField = verifyPasskeyForm.querySelector('input[name="error"]');
+        errorField.parentNode.removeChild(errorField);
+        verifyPasskeyForm.submit();
+      } else {
+        throw new Error("BrowserDoesNotSupportWebAuthn");
+      }
+    } catch (error) {
+      console.error(error);
+      verifyPasskeyForm.querySelector('input[name="error"]').value = error.message;
+      verifyPasskeyForm.submit();
+    }
+  }
+
+  verifyPasskeyForm.addEventListener('submit', registerPasskey);
+</script>
+{% endblock %}

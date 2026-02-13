@@ -7,6 +7,7 @@ import type {
 export enum Scope {
   testingJourney = "testing-journey",
   accountDelete = "account-delete",
+  passkeyCreate = "passkey-create",
 }
 
 export type APIGatewayProxyHandler = (
