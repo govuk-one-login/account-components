@@ -29,7 +29,11 @@ export class AccountDataApiClient extends JsonApiClient {
       credential: string;
       id: string;
       aaguid: string;
-      attestationSignature: string;
+      isAttested: boolean;
+      signCount: number;
+      transports: string[];
+      isBackUpEligible: boolean;
+      isBackedUp: boolean;
     },
   ) {
     return this.logOnError("createPasskey", async () => {

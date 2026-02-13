@@ -29,7 +29,7 @@
     async function registerPasskey() {
       const thisScript = document.getElementById('verifyPasskeyScript');
       const registrationOptions = JSON.parse(thisScript.dataset.registrationOptions);
-      const registrationResponse = await SimpleWebAuthnBrowser.startRegistration(registrationOptions);
+      const registrationResponse = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: registrationOptions });
 
       const verifyPasskeyForm = document.getElementById('verifyPasskeyForm');
       verifyPasskeyForm.querySelector('input[name="registrationResponse"]').value = JSON.stringify(registrationResponse);

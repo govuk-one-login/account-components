@@ -8,6 +8,7 @@ export const accountManagementApi = function (app: FastifyInstance) {
     async function (request, reply) {
       if (!request.headers.authorization) {
         reply.status(401);
+        reply.send();
         return reply;
       }
 
@@ -21,6 +22,7 @@ export const accountManagementApi = function (app: FastifyInstance) {
     async function (request, reply) {
       if (!request.headers.authorization) {
         reply.status(401);
+        reply.send();
         return reply;
       }
 
@@ -34,6 +36,7 @@ export const accountManagementApi = function (app: FastifyInstance) {
     async function (request, reply) {
       if (!request.headers.authorization) {
         reply.status(401);
+        reply.send();
         return reply;
       }
 
@@ -47,6 +50,7 @@ export const accountManagementApi = function (app: FastifyInstance) {
     async function (request, reply) {
       if (!request.headers.authorization) {
         reply.status(401);
+        reply.send();
         return reply;
       }
 

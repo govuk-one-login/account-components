@@ -70,7 +70,11 @@ describe("accountDataApiClient", () => {
         credential: "test-credential",
         id: "test-id",
         aaguid: "test-aaguid",
-        attestationSignature: "test-signature",
+        isAttested: true,
+        signCount: 0,
+        transports: ["usb", "nfc"],
+        isBackUpEligible: true,
+        isBackedUp: false,
       };
 
       mockFetch.mockResolvedValueOnce(new Response());
@@ -105,7 +109,11 @@ describe("accountDataApiClient", () => {
         credential: "test-credential",
         id: "test-id",
         aaguid: "test-aaguid",
-        attestationSignature: "test-signature",
+        isAttested: true,
+        signCount: 0,
+        transports: ["usb", "nfc"],
+        isBackUpEligible: true,
+        isBackedUp: false,
       });
 
       expect(result).toStrictEqual({ success: false, error: "UnknownError" });
