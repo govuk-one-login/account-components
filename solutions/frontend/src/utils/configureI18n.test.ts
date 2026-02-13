@@ -51,6 +51,7 @@ describe("configureI18n", () => {
     expect(i18next.use).toHaveBeenCalledExactlyOnceWith(LanguageDetector);
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(i18next.init).toHaveBeenCalledExactlyOnceWith({
+      showSupportNotice: false,
       fallbackLng: [Lang.English],
       supportedLngs: [Lang.English, Lang.Welsh],
       resources: {
