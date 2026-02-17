@@ -45,13 +45,14 @@ const setRegistrationOptions = async (
     userID: isoUint8Array.fromUTF8String(request.session.claims.public_sub),
     attestationType: "direct",
     authenticatorSelection: {
-      residentKey: "required",
-      requireResidentKey: true,
       userVerification: "required",
     },
     excludeCredentials: idsOfCredentialsToExclude.map((id) => ({
       id,
     })),
+    extensions: {
+      credProps: true,
+    },
   });
 
   reply.journeyStates["passkey-create"].send({
@@ -229,6 +230,16 @@ export async function postHandler(
   const attestationStatement = decodedAttestation.get("attStmt");
   const attestationSignature = attestationStatement.get("sig");
 
+  const authenticatorExtensionResultsSchema = v.object({
+    credProps: v.object({
+      rk: v.boolean(),
+    }),
+  });
+  const authenticatorExtensionResults = v.safeParse(
+    authenticatorExtensionResultsSchema,
+    verification.registrationInfo.authenticatorExtensionResults,
+  );
+
   const savePasskeyResult = await accountDataApiClient.createPasskey(
     request.session.claims.public_sub,
     {
@@ -243,7 +254,9 @@ export async function postHandler(
       isBackedUp: verification.registrationInfo.credentialBackedUp,
       isBackUpEligible:
         verification.registrationInfo.credentialDeviceType === "multiDevice",
-      isResidentKey: true,
+      isResidentKey: authenticatorExtensionResults.success
+        ? authenticatorExtensionResults.output.credProps.rk
+        : false,
     },
   );
 

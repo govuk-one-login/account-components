@@ -313,6 +313,11 @@ describe("passkey-create handlers", () => {
             credentialBackedUp: true,
             credentialDeviceType: "multiDevice",
             attestationObject: new Uint8Array([4, 5, 6]),
+            authenticatorExtensionResults: {
+              credProps: {
+                rk: true,
+              },
+            },
           },
         });
 
@@ -395,6 +400,11 @@ describe("passkey-create handlers", () => {
             credentialBackedUp: false,
             credentialDeviceType: "singleDevice",
             attestationObject: new Uint8Array([4, 5, 6]),
+            authenticatorExtensionResults: {
+              credProps: {
+                rk: false,
+              },
+            },
           },
         });
 
@@ -408,6 +418,38 @@ describe("passkey-create handlers", () => {
           expect.objectContaining({
             isBackUpEligible: false,
             transports: [],
+            isResidentKey: false,
+          }),
+        );
+      });
+
+      it("should handle missing authenticator extension results", async () => {
+        mockVerifyRegistrationResponse.mockResolvedValue({
+          verified: true,
+          registrationInfo: {
+            credential: {
+              id: "credential-id",
+              publicKey: new Uint8Array([1, 2, 3]),
+              counter: 0,
+              transports: ["usb"],
+            },
+            aaguid: "aaguid-123",
+            credentialBackedUp: false,
+            credentialDeviceType: "multiDevice",
+            attestationObject: new Uint8Array([4, 5, 6]),
+            authenticatorExtensionResults: {},
+          },
+        });
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockCreatePasskey).toHaveBeenCalledWith(
+          "user-123",
+          expect.objectContaining({
+            isResidentKey: false,
           }),
         );
       });
