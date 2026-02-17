@@ -10,6 +10,7 @@ export enum Lang {
 
 export const configureI18n = async (translations: Record<Lang, object>) => {
   await i18next.use(LanguageDetector).init({
+    showSupportNotice: false,
     fallbackLng: [Lang.English],
     supportedLngs: Object.values(Lang),
     resources: {
