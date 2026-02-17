@@ -6,10 +6,12 @@ import {
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
 import * as v from "valibot";
-import { isoUint8Array } from "@simplewebauthn/server/helpers";
+import {
+  decodeAttestationObject,
+  isoUint8Array,
+} from "@simplewebauthn/server/helpers";
 import { completeJourney } from "../../utils/completeJourney.js";
 import { AccountDataApiClient } from "../../../utils/accountDataApiClient.js";
-import { decodeAttestationObject } from "@simplewebauthn/server/helpers";
 import { resolveEnvVarToBool } from "../../../../../commons/utils/resolveEnvVarToBool/index.js";
 import {
   getFormErrors,
