@@ -44,7 +44,7 @@
       "skipRadioButtonLabel_signedOut": "Skip for now",
       "skipRadioButtonLabel_signedIn": "TODO skip",
 
-      "mustSelectAnActionErrorMessage_signedOut": "TODO you must select an action",
+      "mustSelectAnActionErrorMessage_signedOut": "Select what you would like to do",
       "mustSelectAnActionErrorMessage_signedIn": "TODO you must select an action",
 
       "buttonLabel_signedOut": "Continue",
