@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components API
-  version: 0.0.13
+  version: 0.0.12
   description: |
     OAuth 2.0 provider endpoints, including:
     - POST /token (supports client assertions via private_key_jwt)
@@ -191,10 +191,10 @@ paths:
                     outcome_id: 8bc3d34e7e22bbdc88beaa37283d0ace4d80e5d1505aa30
                     sub: urn:fdc:gov.uk:2022:JG0RJI1pYbnanbvPs-j4j5-a-PFcmhry9Qu9NCEp5d4
                     email: user@example.com
-                    scope: create-passkey
+                    scope: passkey-create
                     success: false
                     journeys:
-                      - journey: create-passkey
+                      - journey: passkey-create
                         timestamp: 1760718467000
                         success: false
                         details:

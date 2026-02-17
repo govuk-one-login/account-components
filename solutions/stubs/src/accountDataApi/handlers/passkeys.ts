@@ -11,7 +11,7 @@ export async function passkeysGetHandler(
     return reply;
   }
 
-  const { publicSubjectId } = v.parse(
+  v.parse(
     v.object({
       publicSubjectId: v.string(),
     }),
@@ -35,7 +35,7 @@ export async function passkeysPostHandler(
     return reply;
   }
 
-  const { publicSubjectId } = v.parse(
+  v.parse(
     v.object({
       publicSubjectId: v.string(),
     }),

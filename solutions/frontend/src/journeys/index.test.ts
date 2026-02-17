@@ -2,6 +2,7 @@ import type { Mock } from "vitest";
 import { expect, it, describe, vi, beforeEach } from "vitest";
 import { journeyRoutes } from "./index.js";
 import { accountDelete } from "./account-delete/index.js";
+import { passkeyCreate } from "./passkey-create/index.js";
 import type { FastifyInstance } from "fastify";
 import { testingJourney } from "./testing-journey/index.js";
 import { onRequest } from "./utils/onRequest.js";
@@ -95,6 +96,12 @@ describe("journeyRoutes plugin", () => {
     journeyRoutes(mockFastify);
 
     expect(mockRegister).toHaveBeenCalledWith(accountDelete);
+  });
+
+  it("registers passkeyCreate", () => {
+    journeyRoutes(mockFastify);
+
+    expect(mockRegister).toHaveBeenCalledWith(passkeyCreate);
   });
 
   it("registers completeFailedJourneyHandler routes", () => {
