@@ -30,6 +30,7 @@ export const requestBodySchema = v.object({
   account_management_api_sendOtpChallenge_scenario: v.string(),
   account_management_api_verifyOtpChallenge_scenario: v.string(),
   account_data_api_createPasskey_scenario: v.string(),
+  account_data_api_getPasskeys_scenario: v.string(),
 });
 
 export async function createRequestObjectGet(

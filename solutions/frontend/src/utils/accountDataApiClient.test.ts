@@ -62,6 +62,43 @@ describe("accountDataApiClient", () => {
     });
   });
 
+  describe("getPasskeys", () => {
+    it("should make correct API call", async () => {
+      const client = new AccountDataApiClient(mockAccessToken, mockEvent);
+      const publicSubjectId = "test-public-subject-id";
+
+      mockFetch.mockResolvedValueOnce(new Response());
+
+      await client.getPasskeys(publicSubjectId);
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://api.example.com/accounts/test-public-subject-id/authenticators/passkeys",
+        {
+          headers: {
+            "di-persistent-session-id": "test-persistent-session-id",
+            "session-id": "test-session-id",
+            "client-session-id": "test-client-session-id",
+            "user-language": "en",
+            "x-forwarded-for": "192.168.1.1",
+            "txma-audit-encoded": "test-txma-audit",
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${mockAccessToken}`,
+          },
+        },
+      );
+    });
+
+    it("should return unknown error when fetch throws", async () => {
+      const client = new AccountDataApiClient(mockAccessToken, mockEvent);
+
+      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+
+      const result = await client.getPasskeys("test-public-subject-id");
+
+      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
+    });
+  });
+
   describe("createPasskey", () => {
     it("should make correct API call", async () => {
       const client = new AccountDataApiClient(mockAccessToken, mockEvent);
