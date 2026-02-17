@@ -60,6 +60,7 @@ Mappings:
       passkeysExpectedOrigin: https://manage.dev.account.gov.uk
       yourServicesUrl: https://home.dev.account.gov.uk/your-services
       securityUrl: https://home.dev.account.gov.uk/security
+      authCreatePasskeyUrl: https://signin.dev.account.gov.uk/create-passkey
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.dev.account.gov.uk/account-data-api
     build:
@@ -80,6 +81,7 @@ Mappings:
       passkeysExpectedOrigin: https://manage.build.account.gov.uk
       yourServicesUrl: https://home.build.account.gov.uk/your-services
       securityUrl: https://home.build.account.gov.uk/security
+      authCreatePasskeyUrl: https://signin.build.account.gov.uk/create-passkey
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.build.account.gov.uk/account-data-api
     staging:
@@ -100,6 +102,7 @@ Mappings:
       passkeysExpectedOrigin: https://manage.staging.account.gov.uk
       yourServicesUrl: https://home.staging.account.gov.uk/your-services
       securityUrl: https://home.staging.account.gov.uk/security
+      authCreatePasskeyUrl: https://signin.staging.account.gov.uk/create-passkey
       dynatraceRumUrl: TODO
       accountDataApiUrl: TODO
     integration:
@@ -120,6 +123,7 @@ Mappings:
       passkeysExpectedOrigin: https://manage.integration.account.gov.uk
       yourServicesUrl: https://home.integration.account.gov.uk/your-services
       securityUrl: https://home.integration.account.gov.uk/security
+      authCreatePasskeyUrl: https://signin.integration.account.gov.uk/create-passkey
       dynatraceRumUrl: TODO
       accountDataApiUrl: TODO
     production:
@@ -140,6 +144,7 @@ Mappings:
       passkeysExpectedOrigin: https://manage.account.gov.uk
       yourServicesUrl: https://home.account.gov.uk/your-services
       securityUrl: https://home.account.gov.uk/security
+      authCreatePasskeyUrl: https://signin.account.gov.uk/create-passkey
       dynatraceRumUrl: TODO
       accountDataApiUrl: TODO
 
@@ -537,6 +542,12 @@ Resources:
             ]
           SECURITY_URL:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, securityUrl]
+          AUTH_CREATE_PASSKEY_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              authCreatePasskeyUrl,
+            ]
           ANALYTICS_ENABLED:
             !FindInMap [
               EnvironmentConfiguration,

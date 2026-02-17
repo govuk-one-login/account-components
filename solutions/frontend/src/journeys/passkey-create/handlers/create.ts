@@ -11,21 +11,24 @@ import { completeJourney } from "../../utils/completeJourney.js";
 import { AccountDataApiClient } from "../../../utils/accountDataApiClient.js";
 import { decodeAttestationObject } from "@simplewebauthn/server/helpers";
 import { resolveEnvVarToBool } from "../../../../../commons/utils/resolveEnvVarToBool/index.js";
+import {
+  getFormErrors,
+  getFormErrorsList,
+} from "../../../utils/formErrorsHelpers.js";
+import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
 
 await MetadataService.initialize({
   verificationMode: resolveEnvVarToBool("IS_INTEGRATION_TEST")
-    ? "permissive"
+    ? "permissive" // Required during integration tests because the emulated authenticator will send aaguids not recognised by the metadata service
     : "strict",
   // TODO if we are using our own metadata service then change the config here appropriately
 });
 
-const render = async (reply: FastifyReply, options?: object) => {
-  assert.ok(reply.render);
-
-  await reply.render("journeys/passkey-create/templates/create.njk", options);
-};
-
-export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
+const setRegistrationOptions = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+  idsOfCredentialsToExclude: string[],
+) => {
   assert.ok(request.session.claims);
   assert.ok(reply.journeyStates?.["passkey-create"]);
   assert.ok(process.env["PASSKEYS_RP_ID"]);
@@ -40,8 +43,13 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
     userID: isoUint8Array.fromUTF8String(request.session.claims.public_sub),
     attestationType: "direct",
     authenticatorSelection: {
+      residentKey: "required",
+      requireResidentKey: true,
       userVerification: "required",
     },
+    excludeCredentials: idsOfCredentialsToExclude.map((id) => ({
+      id,
+    })),
   });
 
   reply.journeyStates["passkey-create"].send({
@@ -49,9 +57,62 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
     registrationOptions,
   });
 
-  await render(reply, {
+  return registrationOptions;
+};
+
+const getStringsSuffix = (reply: FastifyReply) => {
+  return reply.client?.consider_user_logged_in ? "_signedIn" : "_signedOut";
+};
+
+const render = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+  options?: {
+    stringsSuffix: "_signedIn" | "_signedOut";
+    showErrorUi?: boolean;
+    [key: string]: unknown;
+  },
+) => {
+  const stringsSuffix = getStringsSuffix(reply);
+
+  const backLink =
+    !reply.client?.consider_user_logged_in && !options?.showErrorUi
+      ? process.env["AUTH_CREATE_PASSKEY_URL"]
+      : undefined;
+
+  assert.ok(request.session.claims);
+  assert.ok(request.session.claims.account_data_api_access_token);
+  const accountDataApiClient = new AccountDataApiClient(
+    request.session.claims.account_data_api_access_token,
+    request.awsLambda?.event,
+  );
+
+  const getPasskeysResult = await accountDataApiClient.getPasskeys(
+    request.session.claims.public_sub,
+  );
+
+  if (!getPasskeysResult.success) {
+    throw new Error(getPasskeysResult.error);
+  }
+
+  const registrationOptions = await setRegistrationOptions(
+    request,
+    reply,
+    getPasskeysResult.result.passkeys.map((pk) => pk.id),
+  );
+
+  assert.ok(reply.render);
+
+  await reply.render("journeys/passkey-create/templates/create.njk", {
+    ...options,
     registrationOptions: JSON.stringify(registrationOptions),
+    stringsSuffix,
+    backLink,
   });
+};
+
+export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
+  await render(request, reply);
   return reply;
 }
 
@@ -59,16 +120,11 @@ export async function postHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(request.session.claims);
-  assert.ok(reply.journeyStates?.["passkey-create"]);
-
-  const registrationOptions =
-    reply.journeyStates["passkey-create"].getSnapshot().context
-      .registrationOptions;
-  assert.ok(registrationOptions);
+  const stringsSuffix = getStringsSuffix(reply);
 
   const bodySchema = v.object({
-    error: v.optional(v.string()),
+    action: v.optional(v.picklist(["register", "skip"])),
+    registrationError: v.optional(v.string()),
     registrationResponse: v.pipe(v.string(), v.parseJson()),
   });
 
@@ -79,20 +135,65 @@ export async function postHandler(
       { issues: bodyParseResult.issues },
       "Register passkey - invalid request body",
     );
-    // TODO go to error screen with radio buttons?
-    return;
+    await render(request, reply, {
+      stringsSuffix,
+      showErrorUi: true,
+    });
+    return reply;
   }
 
   const body = bodyParseResult.output;
 
-  if (body.error !== undefined) {
-    request.log.error({ error: body.error }, "Register passkey - client error");
-    // TODO go to error screen with radio buttons?
-    return;
+  if (body.action === undefined) {
+    const formErrors = getFormErrors([
+      {
+        msg: request.i18n.t(
+          `journey:create.error.mustSelectAnActionErrorMessage${stringsSuffix}`,
+        ),
+        fieldId: "action",
+      },
+    ]);
+
+    await render(request, reply, {
+      stringsSuffix,
+      showErrorUi: true,
+      errors: formErrors,
+      errorList: getFormErrorsList(formErrors),
+    });
+    return reply;
+  }
+
+  if (body.action === "skip") {
+    return await completeJourney(
+      request,
+      reply,
+      {
+        error: failedJourneyErrors.userAbortedJourney,
+      },
+      false,
+    );
+  }
+
+  if (body.registrationError !== undefined) {
+    request.log.warn(
+      { error: body.registrationError },
+      "Register passkey - client error",
+    );
+    await render(request, reply, {
+      stringsSuffix,
+      showErrorUi: true,
+    });
+    return reply;
   }
 
   assert.ok(process.env["PASSKEYS_RP_ID"]);
   assert.ok(process.env["PASSKEYS_EXPECTED_ORIGIN"]);
+  assert.ok(reply.journeyStates?.["passkey-create"]);
+
+  const registrationOptions =
+    reply.journeyStates["passkey-create"].getSnapshot().context
+      .registrationOptions;
+  assert.ok(registrationOptions);
 
   const verification = await verifyRegistrationResponse({
     // @ts-expect-error - the library's typing is too strict. This function
@@ -106,10 +207,14 @@ export async function postHandler(
 
   if (!verification.verified) {
     request.log.error("Register passkey - verification failed");
-    // TODO go to error screen with radio buttons?
-    return;
+    await render(request, reply, {
+      stringsSuffix,
+      showErrorUi: true,
+    });
+    return reply;
   }
 
+  assert.ok(request.session.claims);
   assert.ok(request.session.claims.account_data_api_access_token);
   const accountDataApiClient = new AccountDataApiClient(
     request.session.claims.account_data_api_access_token,
@@ -122,7 +227,7 @@ export async function postHandler(
   const attestationStatement = decodedAttestation.get("attStmt");
   const attestationSignature = attestationStatement.get("sig");
 
-  const result = await accountDataApiClient.createPasskey(
+  const savePasskeyResult = await accountDataApiClient.createPasskey(
     request.session.claims.public_sub,
     {
       credential: Buffer.from(
@@ -136,11 +241,20 @@ export async function postHandler(
       isBackedUp: verification.registrationInfo.credentialBackedUp,
       isBackUpEligible:
         verification.registrationInfo.credentialDeviceType === "multiDevice",
+      isResidentKey: true,
     },
   );
 
-  if (!result.success) {
-    throw new Error(result.error);
+  if (!savePasskeyResult.success) {
+    request.log.error(
+      { error: savePasskeyResult.error },
+      "Register passkey - save failed",
+    );
+    await render(request, reply, {
+      stringsSuffix,
+      showErrorUi: true,
+    });
+    return reply;
   }
 
   return await completeJourney(request, reply, {}, true);

@@ -2,6 +2,16 @@ import type { FastifyInstance } from "fastify";
 import { paths } from "../utils/paths.js";
 
 export const accountDataApi = function (fastify: FastifyInstance) {
+  fastify.get(
+    paths.accountDataApi.getPasskeys,
+    async function (request, reply) {
+      return (await import("./handlers/passkeys.js")).passkeysGetHandler(
+        request,
+        reply,
+      );
+    },
+  );
+
   fastify.post(
     paths.accountDataApi.createPasskey,
     async function (request, reply) {

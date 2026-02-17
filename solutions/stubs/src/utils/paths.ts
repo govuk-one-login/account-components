@@ -12,6 +12,8 @@ export const paths = {
       "/account-management-api/verify-otp-challenge/:publicSubjectId",
   },
   accountDataApi: {
+    getPasskeys:
+      "/account-data-api/accounts/:publicSubjectId/authenticators/passkeys",
     createPasskey:
       "/account-data-api/accounts/:publicSubjectId/authenticators/passkeys",
   },

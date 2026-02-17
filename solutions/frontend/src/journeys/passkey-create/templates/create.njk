@@ -1,24 +1,89 @@
 {% extends "templates/layout/base-page.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/details/macro.njk" import govukDetails %}
+{% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 
-{% set pageTitleName = 'journey:create.pageTitle' | translate %}
+{% if showErrorUi %}        
+  {% set pageTitleName = ['journey:create.error.pageTitle', stringsSuffix] | join | translate %}
+  {% set heading = ['journey:create.error.heading', stringsSuffix] | join | translate %}
+  {% set submitButtonLabel = ['journey:create.error.buttonLabel', stringsSuffix] | join | translate %}      
+{% else %}  
+  {% set pageTitleName = ['journey:create.pageTitle', stringsSuffix] | join | translate %}
+  {% set heading = ['journey:create.heading', stringsSuffix] | join | translate %}  
+  {% set submitButtonLabel = ['journey:create.buttonLabel', stringsSuffix] | join | translate %}    
+{% endif %}
 
 {% block pageContent %}
-  <h1 class="govuk-heading-l">{{ 'journey:create.heading' | translate }}</h1>
+  <h1 class="govuk-heading-l">{{ heading }}</h1>
+
+  {% if not showErrorUi %} 
+    {% set paragraphs = ['journey:create.paragraphs', stringsSuffix] | join | translate({ returnObjects: true }) %}
+    {% for paragraph in paragraphs %}
+      <p class="govuk-body">{{ paragraph }}</p>
+    {% endfor %}
+
+    {% set insetText = ['journey:create.insetText', stringsSuffix] | join | translate %}
+    {% if insetText !== ['create.insetText', stringsSuffix] | join %}  
+      {{ govukInsetText({
+        text: insetText
+      }) }}
+    {% endif %}
+
+    {% set detailsHtml %}
+      {% set paragraphs = ['journey:create.detailsParagraphs', stringsSuffix] | join | translate({ returnObjects: true }) %}
+      {% for paragraph in paragraphs %}
+        <p class="govuk-body">{{ paragraph }}</p>
+      {% endfor %}
+    {% endset %}
+
+    {{ govukDetails({
+      summaryText: ['journey:create.detailsTitle', stringsSuffix] | join | translate,
+      html: detailsHtml
+    }) }}
+  {% endif %} 
 
   <form method="post" id="verifyPasskeyForm" data-registration-options="{{ registrationOptions }}">
+    {% if showErrorUi %}        
+      {{ govukRadios({
+        name: "action",
+        fieldset: {
+          legend: {
+            text: ['journey:create.error.radioButtonsLegendText', stringsSuffix] | join | translate
+          }
+        },
+        items: [
+          {
+            value: "register",
+            text: ['journey:create.error.registerRadioButtonLabel', stringsSuffix] | join | translate
+          },
+          {
+            value: "skip",
+            text: ['journey:create.error.skipRadioButtonLabel', stringsSuffix] | join | translate
+          }
+        ],
+        errorMessage: {
+          text: errors["action"].text
+        } if(errors["action"])        
+      }) }}
+    {% else  %}
+      <input type="hidden" name="action" value="register"> 
+    {% endif %}  
+
     <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
     <input type="hidden" name="registrationResponse" value='""'>
-    <input type="hidden" name="error" value="JavaScriptNotEnabled"> 
+    <input type="hidden" name="registrationError" value="JavaScriptNotEnabled">   
 
     {{ govukButton({
-      text: 'journey:create.buttonLabel' | translate,
+      text: submitButtonLabel,
       preventDoubleClick: true
     }) }}
   </form>
 
-  <p class="govuk-body"><a href="#TODO" class="govuk-link govuk-link--no-visited-state">{{ 'journey:create.exitJourneyLinkText' | translate }}</a></p>  
+  {% if not showErrorUi %} 
+    {% set skipUrl = globals.buildCompleteFailedJourneyUri(globals.failedJourneyErrors.userAbortedJourney) %}
+    <p class="govuk-body"><a href="{{ skipUrl }}" class="govuk-link govuk-link--no-visited-state">{{ ['journey:create.skipLinkText', stringsSuffix] | join | translate }}</a></p>  
+  {% endif %} 
 {% endblock %}
 
 {% block scripts %}
@@ -27,28 +92,32 @@
 <script id="verifyPasskeyScript" nonce="{{ cspNonce }}">
   const verifyPasskeyForm = document.getElementById('verifyPasskeyForm');
 
-  async function registerPasskey(event) {
-    try {
-      event.preventDefault();
+  async function handleSubmit(event) {
+    const actionField = verifyPasskeyForm.querySelector('input[name="action"][type="hidden"], input[name="action"][type="radio"]:checked');
 
-      if (SimpleWebAuthnBrowser.browserSupportsWebAuthn()) {
-        const registrationOptions = JSON.parse(verifyPasskeyForm.dataset.registrationOptions);
-        const registrationResponse = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: registrationOptions });
+    if (actionField.value === "register") {
+      try {
+        event.preventDefault();
 
-        verifyPasskeyForm.querySelector('input[name="registrationResponse"]').value = JSON.stringify(registrationResponse);
-        const errorField = verifyPasskeyForm.querySelector('input[name="error"]');
-        errorField.parentNode.removeChild(errorField);
+        if (SimpleWebAuthnBrowser.browserSupportsWebAuthn()) {
+          const registrationOptions = JSON.parse(verifyPasskeyForm.dataset.registrationOptions);
+          const registrationResponse = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: registrationOptions });
+
+          verifyPasskeyForm.querySelector('input[name="registrationResponse"]').value = JSON.stringify(registrationResponse);
+          const registrationErrorField = verifyPasskeyForm.querySelector('input[name="registrationError"]');
+          registrationErrorField.parentNode.removeChild(registrationErrorField);
+          verifyPasskeyForm.submit();
+        } else {
+          throw new Error("BrowserDoesNotSupportWebAuthn");
+        }
+      } catch (error) {
+        console.error(error);
+        verifyPasskeyForm.querySelector('input[name="registrationError"]').value = error.message;
         verifyPasskeyForm.submit();
-      } else {
-        throw new Error("BrowserDoesNotSupportWebAuthn");
       }
-    } catch (error) {
-      console.error(error);
-      verifyPasskeyForm.querySelector('input[name="error"]').value = error.message;
-      verifyPasskeyForm.submit();
     }
   }
 
-  verifyPasskeyForm.addEventListener('submit', registerPasskey);
+  verifyPasskeyForm.addEventListener('submit', handleSubmit);
 </script>
 {% endblock %}

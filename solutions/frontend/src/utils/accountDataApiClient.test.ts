@@ -75,6 +75,7 @@ describe("accountDataApiClient", () => {
         transports: ["usb", "nfc"],
         isBackUpEligible: true,
         isBackedUp: false,
+        isResidentKey: true,
       };
 
       mockFetch.mockResolvedValueOnce(new Response());
@@ -114,6 +115,7 @@ describe("accountDataApiClient", () => {
         transports: ["usb", "nfc"],
         isBackUpEligible: true,
         isBackedUp: false,
+        isResidentKey: true,
       });
 
       expect(result).toStrictEqual({ success: false, error: "UnknownError" });

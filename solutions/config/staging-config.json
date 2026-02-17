@@ -3,7 +3,7 @@
     {
       "client_id": "bb8ba862f42b4e5eb97cc0950f6419ca",
       "scope": "account-delete passkey-create",
-      "redirect_uris": ["https://TODO.com"],
+      "redirect_uris": ["https://signin.staging.account.gov.uk/amc-callback"],
       "client_name": "Auth",
       "jwks_uri": "https://TODO.com",
       "consider_user_logged_in": false

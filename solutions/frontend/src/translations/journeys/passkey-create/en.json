@@ -1,8 +1,49 @@
 {
   "create": {
-    "pageTitle": "TODO create passkey",
-    "heading": "TODO create passkey",
-    "buttonLabel": "TODO create passkey",
-    "exitJourneyLinkText": "TODO skip"
+    "pageTitle_signedOut": "TODO create passkey",
+    "pageTitle_signedIn": "TODO create passkey",
+
+    "heading_signedOut": "TODO create passkey",
+    "heading_signedIn": "TODO create passkey",
+
+    "paragraphs_signedOut": ["TODO paragraph1"],
+    "paragraphs_signedIn": ["TODO paragraph1", "TODO paragraph2"],
+
+    "insetText_signedIn": "TODO inset text",
+
+    "detailsTitle_signedOut": "TODO where will my passkey be saved?",
+    "detailsTitle_signedIn": "TODO where will my passkey be saved?",
+
+    "detailsParagraphs_signedOut": ["TODO paragraph1", "TODO paragraph2"],
+    "detailsParagraphs_signedIn": ["TODO paragraph1", "TODO paragraph2"],
+
+    "buttonLabel_signedOut": "TODO create passkey",
+    "buttonLabel_signedIn": "TODO create passkey",
+
+    "skipLinkText_signedOut": "TODO skip",
+    "skipLinkText_signedIn": "TODO skip",
+
+    "error": {
+      "pageTitle_signedOut": "TODO create passkey error",
+      "pageTitle_signedIn": "TODO create passkey error",
+
+      "heading_signedOut": "TODO create passkey error",
+      "heading_signedIn": "TODO create passkey error",
+
+      "radioButtonsLegendText_signedOut": "TODO legendText",
+      "radioButtonsLegendText_signedIn": "TODO legendText",
+
+      "registerRadioButtonLabel_signedOut": "TODO try again",
+      "registerRadioButtonLabel_signedIn": "TODO try again",
+
+      "mustSelectAnActionErrorMessage_signedOut": "TODO you must select an action",
+      "mustSelectAnActionErrorMessage_signedIn": "TODO you must select an action",
+
+      "skipRadioButtonLabel_signedOut": "TODO skip",
+      "skipRadioButtonLabel_signedIn": "TODO skip",
+
+      "buttonLabel_signedOut": "TODO submit",
+      "buttonLabel_signedIn": "TODO submit"
+    }
   }
 }
