@@ -226,7 +226,9 @@ describe("passkey-create handlers", () => {
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
             showErrorUi: true,
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             errors: expect.any(Object),
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             errorList: expect.any(Array),
           }),
         );
@@ -273,10 +275,10 @@ describe("passkey-create handlers", () => {
           mockRequest,
           mockReply,
           expect.objectContaining({
-            error: expect.objectContaining({
-              code: expect.any(Number),
-              description: expect.any(String),
-            }),
+            error: {
+              code: 1002,
+              description: "UserAbortedJourney",
+            },
           }),
           false,
         );
