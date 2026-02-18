@@ -17,10 +17,12 @@ import {
   getFormErrorsList,
 } from "../../../utils/formErrorsHelpers.js";
 import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
+import { getEnvironment } from "../../../../../commons/utils/getEnvironment/index.js";
 
 await MetadataService.initialize({
-  verificationMode: "permissive", // Required during integration tests because the emulated authenticator will send aaguids not recognised by the metadata service
-
+  verificationMode: ["local", "dev", "build"].includes(getEnvironment())
+    ? "permissive" // Required during integration tests because the emulated authenticator will send aaguids not recognised by the metadata service
+    : "strict",
   // TODO if we are using our own metadata service then change the config here appropriately
 });
 
@@ -199,15 +201,25 @@ export async function postHandler(
       .registrationOptions;
   assert.ok(registrationOptions);
 
-  const verification = await verifyRegistrationResponse({
-    // @ts-expect-error - the library's typing is too strict. This function
-    // should accept any type for `response` because it is this function
-    // which does the validation.
-    response: body.registrationResponse,
-    expectedChallenge: registrationOptions.challenge,
-    expectedOrigin: process.env["PASSKEYS_EXPECTED_ORIGIN"],
-    expectedRPID: process.env["PASSKEYS_RP_ID"],
-  });
+  let verification: Awaited<ReturnType<typeof verifyRegistrationResponse>>;
+  try {
+    verification = await verifyRegistrationResponse({
+      // @ts-expect-error - the library's typing is too strict. This function
+      // should accept any type for `response` because it is this function
+      // which does the validation.
+      response: body.registrationResponse,
+      expectedChallenge: registrationOptions.challenge,
+      expectedOrigin: process.env["PASSKEYS_EXPECTED_ORIGIN"],
+      expectedRPID: process.env["PASSKEYS_RP_ID"],
+    });
+  } catch (error) {
+    request.log.warn({ error }, "Register passkey - verification error");
+    await render(request, reply, {
+      stringsSuffix,
+      showErrorUi: true,
+    });
+    return reply;
+  }
 
   if (!verification.verified) {
     request.log.warn("Register passkey - verification failed");

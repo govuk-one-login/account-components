@@ -491,6 +491,28 @@ describe("passkey-create handlers", () => {
         );
       });
 
+      it("should show error when verification throws an error", async () => {
+        mockVerifyRegistrationResponse.mockRejectedValue(
+          new Error("Verification error"),
+        );
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockReply.render).toHaveBeenCalledWith(
+          "journeys/passkey-create/templates/create.njk",
+          expect.objectContaining({
+            showErrorUi: true,
+          }),
+        );
+        expect(mockRequest.log?.warn).toHaveBeenCalledWith(
+          { error: new Error("Verification error") },
+          "Register passkey - verification error",
+        );
+      });
+
       it("should show error when verification fails", async () => {
         mockVerifyRegistrationResponse.mockResolvedValue({
           verified: false,
