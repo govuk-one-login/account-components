@@ -83,7 +83,7 @@ describe("token handler", () => {
       body: {
         access_token: "mock-access-token",
         token_type: "Bearer",
-        expires_in: 3600,
+        expires_in: 300,
       },
     });
   });
