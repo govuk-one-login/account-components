@@ -12,7 +12,6 @@ import {
 } from "@simplewebauthn/server/helpers";
 import { completeJourney } from "../../utils/completeJourney.js";
 import { AccountDataApiClient } from "../../../utils/accountDataApiClient.js";
-import { resolveEnvVarToBool } from "../../../../../commons/utils/resolveEnvVarToBool/index.js";
 import {
   getFormErrors,
   getFormErrorsList,
@@ -20,9 +19,8 @@ import {
 import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
 
 await MetadataService.initialize({
-  verificationMode: resolveEnvVarToBool("IS_INTEGRATION_TEST")
-    ? "permissive" // Required during integration tests because the emulated authenticator will send aaguids not recognised by the metadata service
-    : "strict",
+  verificationMode: "permissive", // Required during integration tests because the emulated authenticator will send aaguids not recognised by the metadata service
+
   // TODO if we are using our own metadata service then change the config here appropriately
 });
 

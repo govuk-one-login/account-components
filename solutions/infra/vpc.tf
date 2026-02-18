@@ -15,8 +15,8 @@ resource "aws_cloudformation_stack" "vpc_stack" {
     AppConfigDataApiEnabled       = "Yes"
     S3ApiEnabled                  = "Yes"
     SQSApiEnabled                 = "Yes"
-    AllowRules                    = "pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:\".notifications.service.gov.uk\"; endswith; msg:\"Pass TLS to *.notifications.service.gov.uk\"; flow:established; sid:2001; rev:1;)"
-    AllowedDomains                = "*.notifications.service.gov.uk"
+    AllowRules                    = "pass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:\".notifications.service.gov.uk\"; endswith; msg:\"Pass TLS to *.notifications.service.gov.uk\"; flow:established; sid:2001; rev:1;)\npass tls $HOME_NET any -> $EXTERNAL_NET 443 (tls.sni; content:\".fidoalliance.org\"; endswith; msg:\"Pass TLS to *.fidoalliance.org\"; flow:established; sid:2002; rev:1;)"
+    AllowedDomains                = "*.notifications.service.gov.uk,*.fidoalliance.org"
     ExecuteApiGatewayEnabled      = "Yes"
   }
 
