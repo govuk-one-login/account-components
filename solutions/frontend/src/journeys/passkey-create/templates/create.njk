@@ -94,12 +94,13 @@
   const verifyPasskeyForm = document.getElementById('verifyPasskeyForm');
 
   async function handleSubmit(event) {
-    const actionField = verifyPasskeyForm.querySelector('input[name="action"][type="hidden"], input[name="action"][type="radio"]:checked');
+    event.preventDefault();
 
-    if (actionField.value === "register") {
+    const formData = new FormData(verifyPasskeyForm);
+    const actionValue = formData.get('action');
+
+    if (actionValue === "register") {
       try {
-        event.preventDefault();
-
         if (SimpleWebAuthnBrowser.browserSupportsWebAuthn()) {
           const registrationOptions = JSON.parse(verifyPasskeyForm.dataset.registrationOptions);
           const registrationResponse = await SimpleWebAuthnBrowser.startRegistration({ optionsJSON: registrationOptions });
@@ -107,16 +108,16 @@
           verifyPasskeyForm.querySelector('input[name="registrationResponse"]').value = JSON.stringify(registrationResponse);
           const registrationErrorField = verifyPasskeyForm.querySelector('input[name="registrationError"]');
           registrationErrorField.parentNode.removeChild(registrationErrorField);
-          verifyPasskeyForm.submit();
         } else {
           throw new Error("BrowserDoesNotSupportWebAuthn");
         }
       } catch (error) {
         console.error(error);
-        verifyPasskeyForm.querySelector('input[name="registrationError"]').value = error.message;
-        verifyPasskeyForm.submit();
+        verifyPasskeyForm.querySelector('input[name="registrationError"]').value = `${error.name} - ${error.message}`;
       }
     }
+
+    verifyPasskeyForm.submit();
   }
 
   verifyPasskeyForm.addEventListener('submit', handleSubmit);

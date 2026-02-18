@@ -77,7 +77,6 @@ describe("passkey-create handlers", () => {
       } as FastifySessionObject,
       body: {},
       log: {
-        error: vi.fn(),
         warn: vi.fn(),
       } as unknown as FastifyRequest["log"],
       i18n: {
@@ -248,7 +247,7 @@ describe("passkey-create handlers", () => {
             showErrorUi: true,
           }),
         );
-        expect(mockRequest.log?.error).toHaveBeenCalledWith(
+        expect(mockRequest.log?.warn).toHaveBeenCalledWith(
           expect.objectContaining({
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             issues: expect.any(Object),
@@ -423,7 +422,7 @@ describe("passkey-create handlers", () => {
         );
       });
 
-      it("should handle missing authenticator extension results", async () => {
+      it("should default to isResidentKey true when credProps.rk is missing", async () => {
         mockVerifyRegistrationResponse.mockResolvedValue({
           verified: true,
           registrationInfo: {
@@ -449,8 +448,46 @@ describe("passkey-create handlers", () => {
         expect(mockCreatePasskey).toHaveBeenCalledWith(
           "user-123",
           expect.objectContaining({
-            isResidentKey: false,
+            isResidentKey: true,
           }),
+        );
+      });
+
+      it("should show error when authenticator extension results are invalid", async () => {
+        mockVerifyRegistrationResponse.mockResolvedValue({
+          verified: true,
+          registrationInfo: {
+            credential: {
+              id: "credential-id",
+              publicKey: new Uint8Array([1, 2, 3]),
+              counter: 0,
+              transports: ["usb"],
+            },
+            aaguid: "aaguid-123",
+            credentialBackedUp: false,
+            credentialDeviceType: "multiDevice",
+            attestationObject: new Uint8Array([4, 5, 6]),
+            authenticatorExtensionResults: { credProps: { rk: "invalid" } },
+          },
+        });
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockReply.render).toHaveBeenCalledWith(
+          "journeys/passkey-create/templates/create.njk",
+          expect.objectContaining({
+            showErrorUi: true,
+          }),
+        );
+        expect(mockRequest.log?.warn).toHaveBeenCalledWith(
+          expect.objectContaining({
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            issues: expect.any(Object),
+          }),
+          "Register passkey - invalid authenticator extension results",
         );
       });
 
@@ -470,32 +507,20 @@ describe("passkey-create handlers", () => {
             showErrorUi: true,
           }),
         );
-        expect(mockRequest.log?.error).toHaveBeenCalledWith(
+        expect(mockRequest.log?.warn).toHaveBeenCalledWith(
           "Register passkey - verification failed",
         );
       });
 
-      it("should show error when createPasskey fails", async () => {
+      it("should throw error when createPasskey fails", async () => {
         mockCreatePasskey.mockResolvedValue({
           success: false,
           error: "Database error",
         });
 
-        await postHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        );
-
-        expect(mockReply.render).toHaveBeenCalledWith(
-          "journeys/passkey-create/templates/create.njk",
-          expect.objectContaining({
-            showErrorUi: true,
-          }),
-        );
-        expect(mockRequest.log?.error).toHaveBeenCalledWith(
-          { error: "Database error" },
-          "Register passkey - save failed",
-        );
+        await expect(
+          postHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
+        ).rejects.toThrowError("Database error");
       });
 
       it("should show error when registrationError is present", async () => {
