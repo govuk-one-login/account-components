@@ -1,55 +1,112 @@
-import { beforeEach, describe, it, expect, vi } from "vitest";
-import { passkeysPostHandler } from "./passkeys.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { passkeysGetHandler, passkeysPostHandler } from "./passkeys.js";
 
-describe("passkeys handlers tests", () => {
-  let mockRequest: FastifyRequest;
-  let mockReply: FastifyReply;
-  let replyStatusMock: ReturnType<typeof vi.fn>;
-  let replySendMock: ReturnType<typeof vi.fn>;
+describe("passkeysGetHandler", () => {
+  let mockRequest: Partial<FastifyRequest>;
+  let mockReply: Partial<FastifyReply>;
 
   beforeEach(() => {
-    replyStatusMock = vi.fn();
-    replySendMock = vi.fn();
+    vi.clearAllMocks();
+
+    mockRequest = {
+      headers: {},
+      params: {},
+    };
+
     mockReply = {
-      status: replyStatusMock,
-      send: replySendMock,
-    } as unknown as FastifyReply;
+      status: vi.fn().mockReturnThis(),
+      send: vi.fn().mockReturnThis(),
+    };
   });
 
-  describe("passkeys post handler", async () => {
-    it("should return 404 for non existing user", async () => {
-      mockRequest = {
-        params: {
-          accountId: "non-existing",
-        },
-      } as unknown as FastifyRequest;
-      await passkeysPostHandler(mockRequest, mockReply);
+  it("should return 401 when authorization header is missing", async () => {
+    await passkeysGetHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
 
-      expect(replyStatusMock).toHaveBeenCalledWith(404);
-      expect(replySendMock).toHaveBeenCalledWith({
-        message: "User not found",
-      });
-    });
+    expect(mockReply.status).toHaveBeenCalledWith(401);
+    expect(mockReply.send).toHaveBeenCalledWith();
+  });
 
-    it("should return 409 for existing passkey", async () => {
-      mockRequest = {
-        params: {
-          accountId: "user1",
-        },
-        body: {
-          id: "passkey1",
-          aaguid: "123e4567-e89b-12d3-a456-426614174000",
-          attestationSignature: "attest",
-          credential: "public-key",
-        },
-      } as unknown as FastifyRequest;
-      await passkeysPostHandler(mockRequest, mockReply);
+  it("should return empty passkeys array for valid request", async () => {
+    mockRequest.headers = { authorization: "Bearer token" };
+    mockRequest.params = { publicSubjectId: "test-subject-id" };
 
-      expect(replyStatusMock).toHaveBeenCalledWith(409);
-      expect(replySendMock).toHaveBeenCalledWith({
-        message: "Passkey already exists",
-      });
-    });
+    await passkeysGetHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockReply.send).toHaveBeenCalledWith({ passkeys: [] });
+  });
+
+  it("should throw error when publicSubjectId is missing", async () => {
+    mockRequest.headers = { authorization: "Bearer token" };
+    mockRequest.params = {};
+
+    await expect(
+      passkeysGetHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      ),
+      // eslint-disable-next-line vitest/require-to-throw-message
+    ).rejects.toThrowError();
+  });
+});
+
+describe("passkeysPostHandler", () => {
+  let mockRequest: Partial<FastifyRequest>;
+  let mockReply: Partial<FastifyReply>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    mockRequest = {
+      headers: {},
+      params: {},
+    };
+
+    mockReply = {
+      status: vi.fn().mockReturnThis(),
+      send: vi.fn().mockReturnThis(),
+    };
+  });
+
+  it("should return 401 when authorization header is missing", async () => {
+    await passkeysPostHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockReply.status).toHaveBeenCalledWith(401);
+    expect(mockReply.send).toHaveBeenCalledWith();
+  });
+
+  it("should return 201 for valid request", async () => {
+    mockRequest.headers = { authorization: "Bearer token" };
+    mockRequest.params = { publicSubjectId: "test-subject-id" };
+
+    await passkeysPostHandler(
+      mockRequest as FastifyRequest,
+      mockReply as FastifyReply,
+    );
+
+    expect(mockReply.status).toHaveBeenCalledWith(201);
+    expect(mockReply.send).toHaveBeenCalledWith();
+  });
+
+  it("should throw error when publicSubjectId is missing", async () => {
+    mockRequest.headers = { authorization: "Bearer token" };
+    mockRequest.params = {};
+
+    await expect(
+      passkeysPostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      ),
+      // eslint-disable-next-line vitest/require-to-throw-message
+    ).rejects.toThrowError();
   });
 });

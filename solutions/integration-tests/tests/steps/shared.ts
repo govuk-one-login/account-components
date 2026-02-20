@@ -135,13 +135,15 @@ Given(
   async (
     { page },
     radioButtonGroupOptionPartialLabel: string,
-    inputName: string,
+    radioButtonGroupPartialLabel: string,
   ) => {
-    const radioButton = page
-      .getByRole("radio", {
-        name: new RegExp(`^${radioButtonGroupOptionPartialLabel}`),
-      })
-      .and(page.locator(`[name="${inputName}"]`));
+    const radioButtonGroup = page.getByRole("group", {
+      name: new RegExp(`^${radioButtonGroupPartialLabel}`),
+    });
+
+    const radioButton = radioButtonGroup.getByRole("radio", {
+      name: new RegExp(`^${radioButtonGroupOptionPartialLabel}`),
+    });
 
     await expect(radioButton).toHaveCount(1);
 

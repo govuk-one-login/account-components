@@ -2,7 +2,7 @@
   "client_registry": [
     {
       "client_id": "d449cdc5a9ff4958a855a0ea636b04c3",
-      "scope": "testing-journey account-delete",
+      "scope": "testing-journey account-delete passkey-create",
       "redirect_uris": [
         "https://stubs.manage.dev.account.gov.uk/auth/callback"
       ],
@@ -12,7 +12,7 @@
     },
     {
       "client_id": "8d74d191ee39446fb20a39c1f20e48cc",
-      "scope": "testing-journey account-delete",
+      "scope": "testing-journey passkey-create",
       "redirect_uris": [
         "https://stubs.manage.dev.account.gov.uk/home/callback"
       ],

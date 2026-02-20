@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components API
-  version: 0.0.11
+  version: 0.0.12
   description: |
     OAuth 2.0 provider endpoints, including:
     - POST /token (supports client assertions via private_key_jwt)
@@ -186,6 +186,21 @@ paths:
                           error:
                             code: 1001
                             description: UserSignedOut
+                failed_journey__user_aborted_journey:
+                  value:
+                    outcome_id: 8bc3d34e7e22bbdc88beaa37283d0ace4d80e5d1505aa30
+                    sub: urn:fdc:gov.uk:2022:JG0RJI1pYbnanbvPs-j4j5-a-PFcmhry9Qu9NCEp5d4
+                    email: user@example.com
+                    scope: passkey-create
+                    success: false
+                    journeys:
+                      - journey: passkey-create
+                        timestamp: 1760718467000
+                        success: false
+                        details:
+                          error:
+                            code: 1002
+                            description: UserAbortedJourney
         "400":
           description: Bad request - invalid authorization header, access token, or outcome mismatch
           content:
@@ -297,7 +312,8 @@ paths:
                     response_types_supported: [code]
                     token_endpoint_auth_methods_supported: [private_key_jwt]
                     token_endpoint_auth_signing_alg_values_supported: [ES256]
-                    scopes_supported: [testing-journey, account-delete]
+                    scopes_supported:
+                      [testing-journey, account-delete, passkey-create]
                     grant_types_supported: [authorization_code]
 
 components:
@@ -417,7 +433,7 @@ components:
           example: someone@something.com
         scope:
           type: string
-          enum: ["account-delete", "testing-journey"]
+          enum: ["account-delete", "testing-journey", "passkey-create"]
           description: The scope of the journey
         success:
           type: boolean
@@ -432,7 +448,7 @@ components:
             properties:
               journey:
                 type: string
-                enum: ["account-delete", "testing-journey"]
+                enum: ["account-delete", "testing-journey", "passkey-create"]
                 description: The scope of the journey
               timestamp:
                 type: integer

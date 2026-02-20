@@ -58,15 +58,19 @@ jobs:
           AUTH_FRONTEND_URL=https://signin.account.gov.uk
           ACCOUNT_DATA_API_URL=http://localhost:6003/account-data-api
           ANALYTICS_COOKIE_DOMAIN=localhost       
+          PASSKEYS_RP_ID=localhost
+          PASSKEYS_RP_NAME="GOV.UK One Login (local)"          
+          PASSKEYS_EXPECTED_ORIGIN=http://localhost:6002                    
           ACCOUNT_MANAGEMENT_API_URL=http://localhost:6003/account-management-api
-          CONTACT_URL=https://home.dev.account.gov.uk/contact-gov-uk-one-login          
           GA4_CONTAINER_ID=GTM-KD86CMZ
           ANALYTICS_ENABLED=1
           YOUR_SERVICES_URL=https://home.dev.account.gov.uk/your-services
-          SECURITY_URL=https://home.dev.account.gov.uk/security
+          SECURITY_URL=https://home.dev.account.gov.uk/security  
+          CONTACT_URL=https://home.dev.account.gov.uk/contact-gov-uk-one-login         
           JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/components-core-JARRSAEncryptionKey
           REPLAY_ATTACK_TABLE_NAME=components-core-ReplayAttack  
           NOTIFICATIONS_QUEUE_URL=http://sqs.eu-west-2.localhost.localstack.cloud:4566/000000000000/components-core-NotificationsQueue              
+          AUTH_CREATE_PASSKEY_URL=https://signin.dev.account.gov.uk/create-passkey          
           EOF
 
       - name: Configure stubs environment
