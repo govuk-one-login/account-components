@@ -215,7 +215,7 @@ const verify = async (
   redirectUri: string,
   state?: string,
 ) => {
-  let payload: JWTPayload | undefined = undefined;
+  let payload: JWTPayload;
 
   const appConfig = await getAppConfig();
 

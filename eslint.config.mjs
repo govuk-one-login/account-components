@@ -94,6 +94,7 @@ export default defineConfig(
           allowed: ["dotenv"],
         },
       ],
+      "preserve-caught-error": "off",
     },
   },
   {
