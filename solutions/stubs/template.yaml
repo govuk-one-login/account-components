@@ -35,12 +35,14 @@ Mappings:
       LambdaLogLevel: DEBUG
       apiTokenEndpointUrl: https://api.manage.dev.account.gov.uk/token
       apiJourneyOutcomeEndpointUrl: https://api.manage.dev.account.gov.uk/journeyoutcome
+      rootDomain: dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       stubsDomain: stubs.manage.build.account.gov.uk
       LambdaLogLevel: INFO
       apiTokenEndpointUrl: https://api.manage.build.account.gov.uk/token
       apiJourneyOutcomeEndpointUrl: https://api.manage.build.account.gov.uk/journeyoutcome
+      rootDomain: build.account.gov.uk
 
 Conditions:
   UseCodeSigning:
@@ -287,6 +289,8 @@ Resources:
               !Ref Environment,
               apiJourneyOutcomeEndpointUrl,
             ]
+          ROOT_DOMAIN:
+            !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:

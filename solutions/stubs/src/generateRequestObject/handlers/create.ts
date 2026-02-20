@@ -14,6 +14,9 @@ import { paths } from "../../utils/paths.js";
 import assert from "node:assert";
 import * as v from "valibot";
 import type { JWTPayload } from "jose";
+import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.js";
+import { createHash } from "node:crypto";
+import { checkUserAgentCookieName } from "../../../../commons/utils/constants.js";
 
 export const requestBodySchema = v.object({
   client_id: v.string(),
@@ -100,6 +103,18 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
     if (typeof result.jwtPayload["state"] === "string") {
       url.searchParams.append("state", result.jwtPayload["state"]);
     }
+
+    assert.ok(process.env["ROOT_DOMAIN"]);
+
+    reply.setCookie(
+      checkUserAgentCookieName,
+      createHash("sha256").update(result.encryptedJar).digest("hex"),
+      {
+        secure: getEnvironment() !== "local",
+        httpOnly: true,
+        domain: process.env["ROOT_DOMAIN"],
+      },
+    );
 
     await createRequestObjectGet(
       request,
