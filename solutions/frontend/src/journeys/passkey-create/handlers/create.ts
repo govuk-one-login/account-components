@@ -43,13 +43,9 @@ const setRegistrationOptions = async (
     userID: isoUint8Array.fromUTF8String(request.session.claims.public_sub),
     attestationType: "direct",
     authenticatorSelection: {
+      residentKey: "preferred",
       userVerification: "required",
     },
-    supportedAlgorithmIDs: [
-      -8, // EdDSA
-      -7, // ES256
-      -257, // RS256
-    ],
     excludeCredentials: idsOfCredentialsToExclude.map((id) => ({
       id,
     })),
