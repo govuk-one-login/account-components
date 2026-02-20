@@ -5,7 +5,7 @@
       "scope": "account-delete passkey-create",
       "redirect_uris": ["https://signin.account.gov.uk/amc-callback"],
       "client_name": "Auth",
-      "jwks_uri": "https://TODO.com",
+      "jwks_uri": "https://signin.account.gov.uk/.well-known/amc-jwks.json",
       "consider_user_logged_in": false
     },
     {
