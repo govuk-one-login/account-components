@@ -7,6 +7,64 @@ import nodeEslint from "eslint-plugin-n";
 import playwrightEslint from "eslint-plugin-playwright";
 import { defineConfig } from "eslint/config";
 import dependEslint from "eslint-plugin-depend";
+import * as path from "node:path";
+
+const solutionImportRestriction = {
+  meta: { type: "problem" },
+  create(context) {
+    return {
+      ImportDeclaration(node) {
+        const importPath = node.source.value;
+        const filePathAbsolute = context.filename;
+        const isNodeModuleImport = !(
+          importPath.startsWith("./") ||
+          importPath.startsWith("../") ||
+          importPath.startsWith("/")
+        );
+
+        if (!isNodeModuleImport) {
+          if (path.isAbsolute(importPath)) {
+            context.report({
+              node,
+              message: `Imports must use relative paths not absolute paths - "${importPath}"`,
+            });
+            return;
+          }
+
+          const importPathAbsolute = path.resolve(
+            path.dirname(filePathAbsolute),
+            importPath,
+          );
+
+          const importPathRelativeToThisFile = importPathAbsolute.replace(
+            new RegExp(`^${RegExp.escape(import.meta.dirname)}`),
+            "",
+          );
+
+          const filePathRelativeToThisFile = filePathAbsolute.replace(
+            new RegExp(`^${RegExp.escape(import.meta.dirname)}`),
+            "",
+          );
+
+          const solutionRegex = /^\/solutions\/(.+?)\//;
+
+          const importSolution =
+            importPathRelativeToThisFile.match(solutionRegex)[1];
+          const fileSolution =
+            filePathRelativeToThisFile.match(solutionRegex)[1];
+
+          if (importSolution !== "commons" && importSolution !== fileSolution) {
+            context.report({
+              node,
+              message: `Cannot import from solution "${importSolution}" in solution "${fileSolution}". Only imports from "commons" or the same solution are allowed.`,
+            });
+            return;
+          }
+        }
+      },
+    };
+  },
+};
 
 // eslint-disable-next-line no-restricted-exports
 export default defineConfig(
@@ -124,5 +182,14 @@ export default defineConfig(
       ...playwrightEslint.configs["flat/recommended"].rules,
       "playwright/no-standalone-expect": "off",
     },
+  },
+  {
+    files: ["solutions/**"],
+    plugins: {
+      "solution-imports": {
+        rules: { "restrict-cross-solution": solutionImportRestriction },
+      },
+    },
+    rules: { "solution-imports/restrict-cross-solution": "error" },
   },
 );
