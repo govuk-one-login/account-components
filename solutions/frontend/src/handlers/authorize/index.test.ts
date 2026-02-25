@@ -63,6 +63,8 @@ describe("getHandler", () => {
 
   it("returns error when checkSameUserAgent fails", async () => {
     const { getQueryParams } = await import("./utils/getQueryParams.js");
+    const { getClient } = await import("./utils/getClient.js");
+    const { decryptJar } = await import("./utils/decryptJar.js");
     const { checkSameUserAgent } =
       await import("./utils/checkSameUserAgent.js");
 
@@ -74,9 +76,20 @@ describe("getHandler", () => {
       redirect_uri: "https://example.com/callback",
     };
 
+    const mockClient = {
+      client_id: "test-client",
+      scope: "test-scope",
+      redirect_uris: ["https://example.com/callback"],
+      client_name: "Test Client",
+      jwks_uri: "https://example.com/jwks",
+      consider_user_logged_in: false,
+    };
+
     vi.mocked(getQueryParams).mockReturnValue(
       queryParams as ReturnType<typeof getQueryParams>,
     );
+    vi.mocked(getClient).mockResolvedValue(mockClient);
+    vi.mocked(decryptJar).mockResolvedValue("signed-jwt");
     vi.mocked(checkSameUserAgent).mockResolvedValue(
       new ErrorResponse(mockReply),
     );
@@ -84,14 +97,14 @@ describe("getHandler", () => {
     const result = await getHandler(mockRequest, mockReply);
 
     expect(getQueryParams).toHaveBeenCalledTimes(1);
+    expect(getClient).toHaveBeenCalledTimes(1);
+    expect(decryptJar).toHaveBeenCalledTimes(1);
     expect(checkSameUserAgent).toHaveBeenCalledTimes(1);
     expect(result).toBe(mockReply);
   });
 
   it("returns error when getClient fails", async () => {
     const { getQueryParams } = await import("./utils/getQueryParams.js");
-    const { checkSameUserAgent } =
-      await import("./utils/checkSameUserAgent.js");
     const { getClient } = await import("./utils/getClient.js");
 
     const queryParams = {
@@ -105,21 +118,17 @@ describe("getHandler", () => {
     vi.mocked(getQueryParams).mockReturnValue(
       queryParams as ReturnType<typeof getQueryParams>,
     );
-    vi.mocked(checkSameUserAgent).mockResolvedValue(true);
     vi.mocked(getClient).mockResolvedValue(new ErrorResponse(mockReply));
 
     const result = await getHandler(mockRequest, mockReply);
 
     expect(getQueryParams).toHaveBeenCalledTimes(1);
-    expect(checkSameUserAgent).toHaveBeenCalledTimes(1);
     expect(getClient).toHaveBeenCalledTimes(1);
     expect(result).toBe(mockReply);
   });
 
   it("returns error when decryptJar fails", async () => {
     const { getQueryParams } = await import("./utils/getQueryParams.js");
-    const { checkSameUserAgent } =
-      await import("./utils/checkSameUserAgent.js");
     const { getClient } = await import("./utils/getClient.js");
     const { decryptJar } = await import("./utils/decryptJar.js");
 
@@ -143,14 +152,12 @@ describe("getHandler", () => {
     vi.mocked(getQueryParams).mockReturnValue(
       queryParams as ReturnType<typeof getQueryParams>,
     );
-    vi.mocked(checkSameUserAgent).mockResolvedValue(true);
     vi.mocked(getClient).mockResolvedValue(mockClient);
     vi.mocked(decryptJar).mockResolvedValue(new ErrorResponse(mockReply));
 
     const result = await getHandler(mockRequest, mockReply);
 
     expect(getQueryParams).toHaveBeenCalledTimes(1);
-    expect(checkSameUserAgent).toHaveBeenCalledTimes(1);
     expect(getClient).toHaveBeenCalledTimes(1);
     expect(decryptJar).toHaveBeenCalledTimes(1);
     expect(result).toBe(mockReply);
@@ -158,10 +165,10 @@ describe("getHandler", () => {
 
   it("returns error when verifyJwt fails", async () => {
     const { getQueryParams } = await import("./utils/getQueryParams.js");
-    const { checkSameUserAgent } =
-      await import("./utils/checkSameUserAgent.js");
     const { getClient } = await import("./utils/getClient.js");
     const { decryptJar } = await import("./utils/decryptJar.js");
+    const { checkSameUserAgent } =
+      await import("./utils/checkSameUserAgent.js");
     const { verifyJwt } = await import("./utils/verifyJwt.js");
 
     const queryParams = {
@@ -184,27 +191,27 @@ describe("getHandler", () => {
     vi.mocked(getQueryParams).mockReturnValue(
       queryParams as ReturnType<typeof getQueryParams>,
     );
-    vi.mocked(checkSameUserAgent).mockResolvedValue(true);
     vi.mocked(getClient).mockResolvedValue(mockClient);
     vi.mocked(decryptJar).mockResolvedValue("signed-jwt");
+    vi.mocked(checkSameUserAgent).mockResolvedValue(true);
     vi.mocked(verifyJwt).mockResolvedValue(new ErrorResponse(mockReply));
 
     const result = await getHandler(mockRequest, mockReply);
 
     expect(getQueryParams).toHaveBeenCalledTimes(1);
-    expect(checkSameUserAgent).toHaveBeenCalledTimes(1);
     expect(getClient).toHaveBeenCalledTimes(1);
     expect(decryptJar).toHaveBeenCalledTimes(1);
+    expect(checkSameUserAgent).toHaveBeenCalledTimes(1);
     expect(verifyJwt).toHaveBeenCalledTimes(1);
     expect(result).toBe(mockReply);
   });
 
   it("returns error when checkJtiUnused fails", async () => {
     const { getQueryParams } = await import("./utils/getQueryParams.js");
-    const { checkSameUserAgent } =
-      await import("./utils/checkSameUserAgent.js");
     const { getClient } = await import("./utils/getClient.js");
     const { decryptJar } = await import("./utils/decryptJar.js");
+    const { checkSameUserAgent } =
+      await import("./utils/checkSameUserAgent.js");
     const { verifyJwt } = await import("./utils/verifyJwt.js");
     const { checkJtiUnused } = await import("./utils/checkJtiUnused.js");
 
@@ -234,9 +241,9 @@ describe("getHandler", () => {
     vi.mocked(getQueryParams).mockReturnValue(
       queryParams as ReturnType<typeof getQueryParams>,
     );
-    vi.mocked(checkSameUserAgent).mockResolvedValue(true);
     vi.mocked(getClient).mockResolvedValue(mockClient);
     vi.mocked(decryptJar).mockResolvedValue("signed-jwt");
+    vi.mocked(checkSameUserAgent).mockResolvedValue(true);
     vi.mocked(verifyJwt).mockResolvedValue(
       mockClaims as Awaited<ReturnType<typeof verifyJwt>>,
     );
@@ -245,9 +252,9 @@ describe("getHandler", () => {
     const result = await getHandler(mockRequest, mockReply);
 
     expect(getQueryParams).toHaveBeenCalledTimes(1);
-    expect(checkSameUserAgent).toHaveBeenCalledTimes(1);
     expect(getClient).toHaveBeenCalledTimes(1);
     expect(decryptJar).toHaveBeenCalledTimes(1);
+    expect(checkSameUserAgent).toHaveBeenCalledTimes(1);
     expect(verifyJwt).toHaveBeenCalledTimes(1);
     expect(checkJtiUnused).toHaveBeenCalledTimes(1);
     expect(result).toBe(mockReply);
@@ -255,10 +262,10 @@ describe("getHandler", () => {
 
   it("returns error when startSessionAndGoToJourney fails", async () => {
     const { getQueryParams } = await import("./utils/getQueryParams.js");
-    const { checkSameUserAgent } =
-      await import("./utils/checkSameUserAgent.js");
     const { getClient } = await import("./utils/getClient.js");
     const { decryptJar } = await import("./utils/decryptJar.js");
+    const { checkSameUserAgent } =
+      await import("./utils/checkSameUserAgent.js");
     const { verifyJwt } = await import("./utils/verifyJwt.js");
     const { checkJtiUnused } = await import("./utils/checkJtiUnused.js");
     const { startSessionAndGoToJourney } =
@@ -290,9 +297,9 @@ describe("getHandler", () => {
     vi.mocked(getQueryParams).mockReturnValue(
       queryParams as ReturnType<typeof getQueryParams>,
     );
-    vi.mocked(checkSameUserAgent).mockResolvedValue(true);
     vi.mocked(getClient).mockResolvedValue(mockClient);
     vi.mocked(decryptJar).mockResolvedValue("signed-jwt");
+    vi.mocked(checkSameUserAgent).mockResolvedValue(true);
     vi.mocked(verifyJwt).mockResolvedValue(
       mockClaims as Awaited<ReturnType<typeof verifyJwt>>,
     );
@@ -304,9 +311,9 @@ describe("getHandler", () => {
     const result = await getHandler(mockRequest, mockReply);
 
     expect(getQueryParams).toHaveBeenCalledTimes(1);
-    expect(checkSameUserAgent).toHaveBeenCalledTimes(1);
     expect(getClient).toHaveBeenCalledTimes(1);
     expect(decryptJar).toHaveBeenCalledTimes(1);
+    expect(checkSameUserAgent).toHaveBeenCalledTimes(1);
     expect(verifyJwt).toHaveBeenCalledTimes(1);
     expect(checkJtiUnused).toHaveBeenCalledTimes(1);
     expect(startSessionAndGoToJourney).toHaveBeenCalledTimes(1);
@@ -315,10 +322,10 @@ describe("getHandler", () => {
 
   it("successfully completes authorization flow", async () => {
     const { getQueryParams } = await import("./utils/getQueryParams.js");
-    const { checkSameUserAgent } =
-      await import("./utils/checkSameUserAgent.js");
     const { getClient } = await import("./utils/getClient.js");
     const { decryptJar } = await import("./utils/decryptJar.js");
+    const { checkSameUserAgent } =
+      await import("./utils/checkSameUserAgent.js");
     const { verifyJwt } = await import("./utils/verifyJwt.js");
     const { checkJtiUnused } = await import("./utils/checkJtiUnused.js");
     const { startSessionAndGoToJourney } =
@@ -354,9 +361,9 @@ describe("getHandler", () => {
     vi.mocked(getQueryParams).mockReturnValue(
       queryParams as ReturnType<typeof getQueryParams>,
     );
-    vi.mocked(checkSameUserAgent).mockResolvedValue(true);
     vi.mocked(getClient).mockResolvedValue(mockClient);
     vi.mocked(decryptJar).mockResolvedValue("signed-jwt");
+    vi.mocked(checkSameUserAgent).mockResolvedValue(true);
     vi.mocked(verifyJwt).mockResolvedValue(
       mockClaims as Awaited<ReturnType<typeof verifyJwt>>,
     );
@@ -367,9 +374,9 @@ describe("getHandler", () => {
     const result = await getHandler(mockRequest, mockReply);
 
     expect(getQueryParams).toHaveBeenCalledTimes(1);
-    expect(checkSameUserAgent).toHaveBeenCalledTimes(1);
     expect(getClient).toHaveBeenCalledTimes(1);
     expect(decryptJar).toHaveBeenCalledTimes(1);
+    expect(checkSameUserAgent).toHaveBeenCalledTimes(1);
     expect(verifyJwt).toHaveBeenCalledTimes(1);
     expect(checkJtiUnused).toHaveBeenCalledTimes(1);
     expect(startSessionAndGoToJourney).toHaveBeenCalledTimes(1);

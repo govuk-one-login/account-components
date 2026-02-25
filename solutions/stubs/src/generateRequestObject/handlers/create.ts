@@ -87,6 +87,7 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
       encryptedJar: string;
       jwtPayload: JWTPayload;
       jwtHeader: JwtHeader;
+      token: string;
     }
     const { body } = response;
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
@@ -108,7 +109,7 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
 
     reply.setCookie(
       checkUserAgentCookieName,
-      createHash("sha256").update(result.encryptedJar).digest("hex"),
+      createHash("sha256").update(result.token).digest("hex"),
       {
         secure: getEnvironment() !== "local",
         httpOnly: true,

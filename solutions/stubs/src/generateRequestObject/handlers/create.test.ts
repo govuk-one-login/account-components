@@ -75,6 +75,7 @@ describe("createRequestObjectPost", () => {
           encryptedJar: "mock-request-object",
           jwtPayload: { foo: "bar" },
           jwtHeader: { alg: "ES256" },
+          token: "mock-token",
         }),
       } as unknown as Response),
     };

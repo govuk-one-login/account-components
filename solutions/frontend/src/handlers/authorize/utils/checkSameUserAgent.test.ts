@@ -29,7 +29,9 @@ vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
 
 describe("checkSameUserAgent", () => {
   const clientId = "test-client";
-  const requestJwe = "test-jwe-token";
+  const requestJws = "test-jws-token";
+  const redirectUri = "https://example.com/callback";
+  const state = "test-state";
   const validHash = "valid-hash";
 
   let request: FastifyRequest;
@@ -58,8 +60,10 @@ describe("checkSameUserAgent", () => {
     const result = await checkSameUserAgent(
       request,
       reply,
-      requestJwe,
+      requestJws,
       clientId,
+      redirectUri,
+      state,
     );
 
     expect(result).toBe(true);
@@ -71,8 +75,10 @@ describe("checkSameUserAgent", () => {
     const result = await checkSameUserAgent(
       request,
       reply,
-      requestJwe,
+      requestJws,
       clientId,
+      redirectUri,
+      state,
     );
 
     expect(result).toBeInstanceOf(ErrorResponse);
@@ -84,8 +90,10 @@ describe("checkSameUserAgent", () => {
     const result = await checkSameUserAgent(
       request,
       reply,
-      requestJwe,
+      requestJws,
       clientId,
+      redirectUri,
+      state,
     );
 
     expect(result).toBeInstanceOf(ErrorResponse);

@@ -1,16 +1,22 @@
 import { logger } from "../../../../../commons/utils/logger/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
-import { getBadRequestReply, ErrorResponse } from "./common.js";
+import {
+  ErrorResponse,
+  getRedirectToClientRedirectUriResponse,
+} from "./common.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { createHash } from "node:crypto";
 import { checkUserAgentCookieName } from "../../../../../commons/utils/constants.js";
+import { authorizeErrors } from "../../../utils/authorizeErrors.js";
 
 export const checkSameUserAgent = async (
   request: FastifyRequest,
   reply: FastifyReply,
-  requestJwe: string,
+  requestJws: string,
   clientId: string,
+  redirectUri: string,
+  state?: string,
 ) => {
   const cookie = request.cookies[checkUserAgentCookieName];
 
@@ -19,10 +25,17 @@ export const checkSameUserAgent = async (
       client_id: clientId,
     });
     metrics.addMetric("CookieForCheckingUserAgentNotSet", MetricUnit.Count, 1);
-    return new ErrorResponse(getBadRequestReply(reply));
+    return new ErrorResponse(
+      getRedirectToClientRedirectUriResponse(
+        reply,
+        redirectUri,
+        authorizeErrors.cookieForCheckingUserAgentNotSet,
+        state,
+      ),
+    );
   }
 
-  const hash = createHash("sha256").update(requestJwe).digest("hex");
+  const hash = createHash("sha256").update(requestJws).digest("hex");
 
   if (hash !== cookie) {
     logger.warn("User agent mismatch", {
@@ -31,7 +44,14 @@ export const checkSameUserAgent = async (
       calculated_hash: hash,
     });
     metrics.addMetric("UserAgentMismatch", MetricUnit.Count, 1);
-    return new ErrorResponse(getBadRequestReply(reply));
+    return new ErrorResponse(
+      getRedirectToClientRedirectUriResponse(
+        reply,
+        redirectUri,
+        authorizeErrors.userAgentMismatch,
+        state,
+      ),
+    );
   }
 
   return true;

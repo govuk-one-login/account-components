@@ -25,16 +25,6 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
       client_id: queryParams.client_id,
     });
 
-    const sameUserAgent = await checkSameUserAgent(
-      request,
-      reply,
-      queryParams.request,
-      queryParams.client_id,
-    );
-    if (sameUserAgent instanceof ErrorResponse) {
-      return await sameUserAgent.reply;
-    }
-
     const client = await getClient(
       reply,
       queryParams.client_id,
@@ -53,6 +43,18 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
     );
     if (signedJwt instanceof ErrorResponse) {
       return await signedJwt.reply;
+    }
+
+    const sameUserAgent = await checkSameUserAgent(
+      request,
+      reply,
+      signedJwt,
+      queryParams.client_id,
+      queryParams.redirect_uri,
+      queryParams.state,
+    );
+    if (sameUserAgent instanceof ErrorResponse) {
+      return await sameUserAgent.reply;
     }
 
     const claims = await verifyJwt(
