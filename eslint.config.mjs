@@ -41,10 +41,23 @@ const solutionImportRestriction = {
             "",
           );
 
+          if (
+            importPathRelativeToThisFile === "/solutions/config/schema/types.js"
+          ) {
+            return;
+          }
+
           const filePathRelativeToThisFile = filePathAbsolute.replace(
             new RegExp(`^${RegExp.escape(import.meta.dirname)}`),
             "",
           );
+
+          if (
+            filePathRelativeToThisFile ===
+            "/solutions/commons/utils/fastify/types.d.ts"
+          ) {
+            return;
+          }
 
           const solutionRegex = /^\/solutions\/(.+?)\//;
 
