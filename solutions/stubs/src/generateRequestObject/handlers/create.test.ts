@@ -3,6 +3,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const ORIGINAL_ENV = { ...process.env };
 
+// @ts-expect-error
+vi.mock(import("node:crypto"), () => ({
+  createHash: vi.fn(() => ({
+    update: vi.fn().mockReturnThis(),
+    digest: vi.fn(() => "mocked-hash"),
+  })),
+}));
+
 vi.mock(import("../utils/getClientRegistryWithInvalidClient/index.js"), () => ({
   getClientRegistryWithInvalidClient: vi.fn().mockResolvedValue([
     {
@@ -67,6 +75,7 @@ describe("createRequestObjectPost", () => {
           encryptedJar: "mock-request-object",
           jwtPayload: { foo: "bar" },
           jwtHeader: { alg: "ES256" },
+          token: "mock-token",
         }),
       } as unknown as Response),
     };
@@ -93,6 +102,7 @@ describe("createRequestObjectPost", () => {
 
     mockReply = {
       render: vi.fn(),
+      setCookie: vi.fn(),
     };
   });
 
@@ -106,9 +116,21 @@ describe("createRequestObjectPost", () => {
   it("should process request and render page with the correct data", async () => {
     const { createRequestObjectPost } = await import("./create.js");
     process.env["AUTHORIZE_URL"] = "http://localhost:6002/authorize";
+    process.env["ROOT_DOMAIN"] = "example.com";
+    process.env["ENVIRONMENT"] = "production";
     const handler = createRequestObjectPost(mockFastify as FastifyInstance);
 
     await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+    expect(mockReply.setCookie).toHaveBeenCalledWith(
+      "amc",
+      "mocked-hash",
+      expect.objectContaining({
+        secure: true,
+        httpOnly: true,
+        domain: "example.com",
+      }),
+    );
 
     expect(mockReply.render).toHaveBeenCalledWith(
       "generateRequestObject/handlers/create.njk",
@@ -118,6 +140,26 @@ describe("createRequestObjectPost", () => {
         jwtPayload: { foo: "bar" },
         jwtHeader: { alg: "ES256" },
         originalRequestBody: mockRequest.body,
+      }),
+    );
+  });
+
+  it("should set secure to false when environment is local", async () => {
+    const { createRequestObjectPost } = await import("./create.js");
+    process.env["AUTHORIZE_URL"] = "http://localhost:6002/authorize";
+    process.env["ROOT_DOMAIN"] = "example.com";
+    process.env["ENVIRONMENT"] = "local";
+    const handler = createRequestObjectPost(mockFastify as FastifyInstance);
+
+    await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+    expect(mockReply.setCookie).toHaveBeenCalledWith(
+      "amc",
+      "mocked-hash",
+      expect.objectContaining({
+        secure: false,
+        httpOnly: true,
+        domain: "example.com",
       }),
     );
   });

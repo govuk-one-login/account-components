@@ -77,6 +77,7 @@ describe("generateRequestObjectPost should process request and return encrypted 
       encryptedJar: mockEncryptedJar,
       jwtPayload: {},
       jwtHeader: { alg: Algorithms.EC },
+      token: mockJwtToken,
     });
   });
 });
