@@ -52,6 +52,14 @@ export const authorizeErrors = {
     description: "E1010",
     type: "invalid_request",
   },
+  cookieForCheckingUserAgentNotSet: {
+    description: "E1011",
+    type: "invalid_request",
+  },
+  userAgentMismatch: {
+    description: "E1012",
+    type: "invalid_request",
+  },
   jwksTimeout: {
     description: "E2001",
     type: "unauthorized_client",
