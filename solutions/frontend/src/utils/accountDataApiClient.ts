@@ -2,17 +2,7 @@ import assert from "node:assert";
 import { JsonApiClient } from "./jsonApiClient.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import * as v from "valibot";
-
-const passkeyDetailsSchema = v.object({
-  credential: v.string(),
-  id: v.string(),
-  aaguid: v.string(),
-  isAttested: v.boolean(),
-  signCount: v.number(),
-  transports: v.array(v.string()),
-  isBackUpEligible: v.boolean(),
-  isBackedUp: v.boolean(),
-});
+import { passkeyDetailsSchema } from "../../../commons/utils/constants.js";
 
 export class AccountDataApiClient extends JsonApiClient {
   private readonly baseUrl: string;
@@ -46,7 +36,7 @@ export class AccountDataApiClient extends JsonApiClient {
         );
 
         const errorsCodesMap = {
-          // TODO add error codes once the spec has been updated to include numeric codes for each error - https://github.com/govuk-one-login/authentication-api/blob/8c15424012568dba52a456de364386d93869f974/ci/openAPI/AccountDataApi.yaml#L45
+          "5000": "invalid_request_body",
         } as const;
 
         return await AccountDataApiClient.processResponse(
@@ -90,7 +80,13 @@ export class AccountDataApiClient extends JsonApiClient {
         );
 
         const errorsCodesMap = {
-          // TODO add error codes once the spec has been updated to include numeric codes for each error - https://github.com/govuk-one-login/authentication-api/blob/8c15424012568dba52a456de364386d93869f974/ci/openAPI/AccountDataApi.yaml#L45
+          "4000": "invalid_request_body",
+          "4001": "missing_required_fields",
+          "4090": "passkey_already_exists",
+          "4220": "invalid_credential_format",
+          "4221": "invalid_aaguid_format",
+          "4222": "invalid_attestation_signature",
+          "5000": "invalid_request_body",
         } as const;
 
         return await AccountDataApiClient.processResponse(

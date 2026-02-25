@@ -28,6 +28,22 @@ vi.mock(import("./jsonApiClient.js"), () => ({
   },
 }));
 
+vi.mock(import("../../../commons/utils/constants.js"), async () => {
+  const v = await import("valibot");
+  return {
+    passkeyDetailsSchema: v.object({
+      credential: v.string(),
+      id: v.string(),
+      aaguid: v.string(),
+      isAttested: v.boolean(),
+      signCount: v.number(),
+      transports: v.array(v.string()),
+      isBackUpEligible: v.boolean(),
+      isBackedUp: v.boolean(),
+    }),
+  };
+});
+
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
