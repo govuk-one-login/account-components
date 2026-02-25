@@ -77,7 +77,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, validClaims);
@@ -101,7 +100,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, validClaims);
@@ -127,7 +125,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, validClaims);
@@ -153,7 +150,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, invalidClaims);
@@ -179,7 +175,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, invalidClaims);
@@ -205,7 +200,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, invalidClaims);
@@ -231,7 +225,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, invalidClaims);
@@ -257,7 +250,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, invalidClaims);
@@ -283,7 +275,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, invalidClaims);
@@ -309,7 +300,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, invalidClaims);
@@ -335,7 +325,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, invalidClaims);
@@ -361,7 +350,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, invalidClaims);
@@ -387,7 +375,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "invalid-email",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, invalidClaims);
@@ -418,7 +405,6 @@ describe("getClaimsSchema", () => {
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
-      govuk_signin_journey_id: "journey-123",
     };
 
     const result = v.safeParse(schema, validClaims);
