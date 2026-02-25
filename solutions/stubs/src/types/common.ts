@@ -63,7 +63,6 @@ export interface AuthorizeRequestObject {
   sub?: string;
   public_sub?: string;
   email?: string;
-  govuk_signin_journey_id?: string;
   scenario?: string;
   [key: string]: unknown;
 }
