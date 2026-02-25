@@ -9,6 +9,7 @@ import { verifyJwt } from "./utils/verifyJwt.js";
 import { checkJtiUnused } from "./utils/checkJtiUnused.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { startSessionAndGoToJourney } from "./utils/startSessionAndGoToJourney.js";
+import { checkSameUserAgent } from "./utils/checkSameUserAgent.js";
 
 export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
@@ -42,6 +43,18 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
     );
     if (signedJwt instanceof ErrorResponse) {
       return await signedJwt.reply;
+    }
+
+    const sameUserAgent = await checkSameUserAgent(
+      request,
+      reply,
+      signedJwt,
+      queryParams.client_id,
+      queryParams.redirect_uri,
+      queryParams.state,
+    );
+    if (sameUserAgent instanceof ErrorResponse) {
+      return await sameUserAgent.reply;
     }
 
     const claims = await verifyJwt(

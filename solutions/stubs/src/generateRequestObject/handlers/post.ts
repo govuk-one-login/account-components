@@ -51,6 +51,6 @@ export async function generateRequestObjectPost(
   );
   const encryptedJar = await buildJar(token);
 
-  await reply.send({ encryptedJar, jwtPayload, jwtHeader });
+  await reply.send({ encryptedJar, jwtPayload, jwtHeader, token });
   return reply;
 }
