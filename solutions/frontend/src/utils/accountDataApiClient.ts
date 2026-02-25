@@ -12,7 +12,6 @@ const passkeyDetailsSchema = v.object({
   transports: v.array(v.string()),
   isBackUpEligible: v.boolean(),
   isBackedUp: v.boolean(),
-  isResidentKey: v.boolean(),
 });
 
 export class AccountDataApiClient extends JsonApiClient {

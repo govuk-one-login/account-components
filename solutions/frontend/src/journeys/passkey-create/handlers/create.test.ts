@@ -312,11 +312,6 @@ describe("passkey-create handlers", () => {
             credentialBackedUp: true,
             credentialDeviceType: "multiDevice",
             attestationObject: new Uint8Array([4, 5, 6]),
-            authenticatorExtensionResults: {
-              credProps: {
-                rk: true,
-              },
-            },
           },
         });
 
@@ -355,7 +350,6 @@ describe("passkey-create handlers", () => {
             transports: ["usb", "nfc"],
             isBackedUp: true,
             isBackUpEligible: true,
-            isResidentKey: true,
           }),
         );
 
@@ -399,11 +393,6 @@ describe("passkey-create handlers", () => {
             credentialBackedUp: false,
             credentialDeviceType: "singleDevice",
             attestationObject: new Uint8Array([4, 5, 6]),
-            authenticatorExtensionResults: {
-              credProps: {
-                rk: false,
-              },
-            },
           },
         });
 
@@ -417,77 +406,7 @@ describe("passkey-create handlers", () => {
           expect.objectContaining({
             isBackUpEligible: false,
             transports: [],
-            isResidentKey: false,
           }),
-        );
-      });
-
-      it("should default to isResidentKey true when credProps.rk is missing", async () => {
-        mockVerifyRegistrationResponse.mockResolvedValue({
-          verified: true,
-          registrationInfo: {
-            credential: {
-              id: "credential-id",
-              publicKey: new Uint8Array([1, 2, 3]),
-              counter: 0,
-              transports: ["usb"],
-            },
-            aaguid: "aaguid-123",
-            credentialBackedUp: false,
-            credentialDeviceType: "multiDevice",
-            attestationObject: new Uint8Array([4, 5, 6]),
-            authenticatorExtensionResults: {},
-          },
-        });
-
-        await postHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        );
-
-        expect(mockCreatePasskey).toHaveBeenCalledWith(
-          "user-123",
-          expect.objectContaining({
-            isResidentKey: true,
-          }),
-        );
-      });
-
-      it("should show error when authenticator extension results are invalid", async () => {
-        mockVerifyRegistrationResponse.mockResolvedValue({
-          verified: true,
-          registrationInfo: {
-            credential: {
-              id: "credential-id",
-              publicKey: new Uint8Array([1, 2, 3]),
-              counter: 0,
-              transports: ["usb"],
-            },
-            aaguid: "aaguid-123",
-            credentialBackedUp: false,
-            credentialDeviceType: "multiDevice",
-            attestationObject: new Uint8Array([4, 5, 6]),
-            authenticatorExtensionResults: { credProps: { rk: "invalid" } },
-          },
-        });
-
-        await postHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        );
-
-        expect(mockReply.render).toHaveBeenCalledWith(
-          "journeys/passkey-create/templates/create.njk",
-          expect.objectContaining({
-            showErrorUi: true,
-          }),
-        );
-        expect(mockRequest.log?.warn).toHaveBeenCalledWith(
-          expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            issues: expect.any(Object),
-          }),
-          "Register passkey - invalid authenticator extension results",
         );
       });
 

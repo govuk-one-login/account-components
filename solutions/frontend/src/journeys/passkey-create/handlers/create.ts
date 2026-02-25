@@ -43,15 +43,12 @@ const setRegistrationOptions = async (
     userID: isoUint8Array.fromUTF8String(request.session.claims.public_sub),
     attestationType: "direct",
     authenticatorSelection: {
-      residentKey: "preferred",
+      residentKey: "required",
       userVerification: "required",
     },
     excludeCredentials: idsOfCredentialsToExclude.map((id) => ({
       id,
     })),
-    extensions: {
-      credProps: true,
-    },
   });
 
   reply.journeyStates["passkey-create"].send({
@@ -226,32 +223,6 @@ export async function postHandler(
     return reply;
   }
 
-  const authenticatorExtensionResultsSchema = v.optional(
-    v.object({
-      credProps: v.optional(
-        v.object({
-          rk: v.optional(v.boolean()),
-        }),
-      ),
-    }),
-  );
-  const authenticatorExtensionResults = v.safeParse(
-    authenticatorExtensionResultsSchema,
-    verification.registrationInfo.authenticatorExtensionResults,
-  );
-
-  if (!authenticatorExtensionResults.success) {
-    request.log.warn(
-      { issues: authenticatorExtensionResults.issues },
-      "Register passkey - invalid authenticator extension results",
-    );
-    await render(request, reply, {
-      stringsSuffix,
-      showErrorUi: true,
-    });
-    return reply;
-  }
-
   const decodedAttestation = decodeAttestationObject(
     verification.registrationInfo.attestationObject,
   );
@@ -279,8 +250,6 @@ export async function postHandler(
       isBackedUp: verification.registrationInfo.credentialBackedUp,
       isBackUpEligible:
         verification.registrationInfo.credentialDeviceType === "multiDevice",
-      isResidentKey:
-        authenticatorExtensionResults.output?.credProps?.rk ?? true, // TODO is it the correct behaviour to default to true here?
     },
   );
 

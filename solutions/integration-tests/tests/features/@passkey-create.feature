@@ -41,6 +41,7 @@ Feature: Passkey create
     """
     hasUserVerification: false
     isUserVerified: false
+    hasResidentKey: false
     """    
     And I click the "Continue" button to continue to create passkey journey
     And the page has finished loading
@@ -125,6 +126,7 @@ Feature: Passkey create
     """
     hasUserVerification: false
     isUserVerified: false
+    hasResidentKey: false
     """    
     And I click the "TODO create passkey" button to continue to create passkey journey
     And the page has finished loading
@@ -173,6 +175,7 @@ Feature: Passkey create
     """
     hasUserVerification: true
     isUserVerified: true
+    hasResidentKey: true
     """    
     And I click the "Continue" button to continue to create passkey journey
     And the page has finished loading
@@ -198,6 +201,7 @@ Feature: Passkey create
     """
     hasUserVerification: false
     isUserVerified: false
+    hasResidentKey: false
     """    
     And I click the "Continue" button to continue to create passkey journey
     And the page has finished loading
@@ -208,6 +212,7 @@ Feature: Passkey create
     """
     hasUserVerification: true
     isUserVerified: true
+    hasResidentKey: true
     """ 
     And I select the option beginning with "Try setting up a passkey again" in the "What would you like to do?" radio button group   
     And I click the "Continue" button to continue to create passkey journey
@@ -234,6 +239,7 @@ Feature: Passkey create
     """
     hasUserVerification: false
     isUserVerified: false
+    hasResidentKey: false
     """    
     And I click the "Continue" button to continue to create passkey journey
     And the page has finished loading
@@ -246,6 +252,7 @@ Feature: Passkey create
     """
     hasUserVerification: true
     isUserVerified: false
+    hasResidentKey: true
     """    
     And I click the "Continue" button to continue to create passkey journey
     And the page has finished loading
@@ -258,6 +265,7 @@ Feature: Passkey create
     """
     hasUserVerification: true
     isUserVerified: true
+    hasResidentKey: true
     protocol: u2f
     transport: usb
     """    
@@ -272,6 +280,7 @@ Feature: Passkey create
     """
     hasUserVerification: true
     isUserVerified: true
+    hasResidentKey: true
     protocol: u2f
     transport: ble
     """    
@@ -286,6 +295,7 @@ Feature: Passkey create
     """
     hasUserVerification: true
     isUserVerified: true
+    hasResidentKey: true
     protocol: u2f
     transport: nfc
     """    
@@ -300,6 +310,7 @@ Feature: Passkey create
     """
     hasUserVerification: true
     isUserVerified: true
+    hasResidentKey: true
     """    
     And I click the "Continue" button to continue to create passkey journey
     And the page has finished loading    
@@ -325,6 +336,7 @@ Feature: Passkey create
     """
     hasUserVerification: true
     isUserVerified: true
+    hasResidentKey: true
     transport: usb
     """    
     And I click the "Continue" button to continue to create passkey journey
@@ -351,6 +363,7 @@ Feature: Passkey create
     """
     hasUserVerification: true
     isUserVerified: true
+    hasResidentKey: true
     transport: nfc
     """    
     And I click the "Continue" button to continue to create passkey journey
@@ -377,6 +390,7 @@ Feature: Passkey create
     """
     hasUserVerification: true
     isUserVerified: true
+    hasResidentKey: true
     transport: ble
     """    
     And I click the "Continue" button to continue to create passkey journey
@@ -403,9 +417,9 @@ Feature: Passkey create
     """
     hasUserVerification: true
     isUserVerified: true
+    hasResidentKey: true
     defaultBackupEligibility: true
     defaultBackupState: true
-    hasResidentKey: true
     """    
     And I click the "Continue" button to continue to create passkey journey
     And the page has finished loading    
@@ -432,6 +446,7 @@ Feature: Passkey create
     """
     hasUserVerification: true
     isUserVerified: true
+    hasResidentKey: true
     """    
     And I click the "Continue" button to continue to create passkey journey
     And the page has finished loading
