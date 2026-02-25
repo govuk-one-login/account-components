@@ -97,7 +97,6 @@ export const getClaimsSchema = (
     sub: v.pipe(v.string(), v.nonEmpty()),
     public_sub: v.pipe(v.string(), v.nonEmpty()),
     email: v.pipe(v.string(), v.email()),
-    govuk_signin_journey_id: v.pipe(v.string(), v.nonEmpty()),
   });
 
   return claimsSchema;
