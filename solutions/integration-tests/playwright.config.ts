@@ -71,7 +71,7 @@ if (env.TEST_TARGET === "local") {
 export default defineConfig({
   testDir,
   forbidOnly: !env.HUMAN_IN_THE_LOOP,
-  preserveOutput: "failures-only",
+  preserveOutput: env.HUMAN_IN_THE_LOOP ? "always" : "failures-only",
   workers: "50%",
   snapshotPathTemplate: `./${env.UPDATE_SNAPSHOTS ? "snapshots-updated" : "snapshots"}/{projectName}/{testFilePath}/{arg}{ext}`,
   reporter: env.TEST_REPORT_DIR
