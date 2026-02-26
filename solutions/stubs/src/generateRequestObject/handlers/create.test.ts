@@ -129,6 +129,7 @@ describe("createRequestObjectPost", () => {
         secure: true,
         httpOnly: true,
         domain: "example.com",
+        sameSite: "strict",
       }),
     );
 
@@ -160,6 +161,7 @@ describe("createRequestObjectPost", () => {
         secure: false,
         httpOnly: true,
         domain: "example.com",
+        sameSite: "strict",
       }),
     );
   });

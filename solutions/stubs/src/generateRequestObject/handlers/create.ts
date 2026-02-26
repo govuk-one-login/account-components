@@ -115,6 +115,7 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
         secure: getEnvironment() !== "local",
         httpOnly: true,
         domain: process.env["ROOT_DOMAIN"],
+        sameSite: "strict",
       },
     );
 

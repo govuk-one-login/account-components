@@ -12,6 +12,8 @@ const mockCompleteJourney = vi.fn();
 const mockGetPasskeys = vi.fn();
 const mockCreatePasskey = vi.fn();
 const mockDecodeAttestationObject = vi.fn();
+const mockAddMetric = vi.fn();
+const mockAddMetadata = vi.fn();
 
 // @ts-expect-error
 vi.mock(import("@simplewebauthn/server"), () => ({
@@ -39,6 +41,14 @@ vi.mock(import("../../../utils/accountDataApiClient.js"), () => ({
   AccountDataApiClient: class {
     getPasskeys = mockGetPasskeys;
     createPasskey = mockCreatePasskey;
+  },
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
+  metrics: {
+    addMetric: mockAddMetric,
+    addMetadata: mockAddMetadata,
   },
 }));
 
@@ -254,6 +264,11 @@ describe("passkey-create handlers", () => {
           }),
           "Register passkey - invalid request body",
         );
+        expect(mockAddMetric).toHaveBeenCalledWith(
+          "InvalidRequestBody",
+          "Count",
+          1,
+        );
       });
     });
 
@@ -430,6 +445,11 @@ describe("passkey-create handlers", () => {
           { error: new Error("Verification error") },
           "Register passkey - verification error",
         );
+        expect(mockAddMetric).toHaveBeenCalledWith(
+          "VerificationError",
+          "Count",
+          1,
+        );
       });
 
       it("should show error when verification fails", async () => {
@@ -450,6 +470,11 @@ describe("passkey-create handlers", () => {
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
           "Register passkey - verification failed",
+        );
+        expect(mockAddMetric).toHaveBeenCalledWith(
+          "VerificationFailed",
+          "Count",
+          1,
         );
       });
 
@@ -486,6 +511,11 @@ describe("passkey-create handlers", () => {
           { error: "Client error occurred" },
           "Register passkey - client error",
         );
+        expect(mockAddMetadata).toHaveBeenCalledWith(
+          "ClientErrorMessage",
+          "Client error occurred",
+        );
+        expect(mockAddMetric).toHaveBeenCalledWith("ClientError", "Count", 1);
       });
 
       it("should throw when journey state is missing", async () => {

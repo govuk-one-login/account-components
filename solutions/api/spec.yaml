@@ -176,10 +176,10 @@ paths:
                     outcome_id: 8bc3d34e7e22bbdc88beaa37283d0ace4d80e5d1505aa30
                     sub: urn:fdc:gov.uk:2022:JG0RJI1pYbnanbvPs-j4j5-a-PFcmhry9Qu9NCEp5d4
                     email: user@example.com
-                    scope: account-delete
+                    scope: passkey-create
                     success: false
                     journeys:
-                      - journey: account-delete
+                      - journey: passkey-create
                         timestamp: 1760718467000
                         success: false
                         details:

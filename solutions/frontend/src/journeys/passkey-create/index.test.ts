@@ -33,7 +33,7 @@ describe("passkeyCreate", () => {
     passkeyCreate(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      "/passkeys/create",
+      "/set-up-passkey",
       expect.any(Function),
     );
   });
@@ -42,7 +42,7 @@ describe("passkeyCreate", () => {
     passkeyCreate(mockFastify);
 
     expect(mockPost).toHaveBeenCalledWith(
-      "/passkeys/create",
+      "/set-up-passkey",
       expect.any(Function),
     );
   });

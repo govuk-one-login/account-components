@@ -35,11 +35,10 @@ export const paths = {
         },
       },
     },
-    // TODO check these paths with UCD
     [Scope.passkeyCreate]: {
       [PasskeyCreateState.notCreated]: {
         create: {
-          path: "/passkeys/create",
+          path: "/set-up-passkey",
         },
       },
     },

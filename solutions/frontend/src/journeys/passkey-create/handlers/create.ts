@@ -18,6 +18,8 @@ import {
 } from "../../../utils/formErrorsHelpers.js";
 import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
 import { getEnvironment } from "../../../../../commons/utils/getEnvironment/index.js";
+import { metrics } from "../../../../../commons/utils/metrics/index.js";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
 await MetadataService.initialize({
   verificationMode: ["local", "dev", "build"].includes(getEnvironment())
@@ -134,6 +136,8 @@ export async function postHandler(
       { issues: bodyParseResult.issues },
       "Register passkey - invalid request body",
     );
+    metrics.addMetric("InvalidRequestBody", MetricUnit.Count, 1);
+
     await render(request, reply, {
       stringsSuffix,
       showErrorUi: true,
@@ -178,6 +182,9 @@ export async function postHandler(
       { error: body.registrationError },
       "Register passkey - client error",
     );
+    metrics.addMetadata("ClientErrorMessage", body.registrationError);
+    metrics.addMetric("ClientError", MetricUnit.Count, 1);
+
     await render(request, reply, {
       stringsSuffix,
       showErrorUi: true,
@@ -207,6 +214,8 @@ export async function postHandler(
     });
   } catch (error) {
     request.log.warn({ error }, "Register passkey - verification error");
+    metrics.addMetric("VerificationError", MetricUnit.Count, 1);
+
     await render(request, reply, {
       stringsSuffix,
       showErrorUi: true,
@@ -216,6 +225,8 @@ export async function postHandler(
 
   if (!verification.verified) {
     request.log.warn("Register passkey - verification failed");
+    metrics.addMetric("VerificationFailed", MetricUnit.Count, 1);
+
     await render(request, reply, {
       stringsSuffix,
       showErrorUi: true,

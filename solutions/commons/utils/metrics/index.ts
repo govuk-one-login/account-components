@@ -11,7 +11,7 @@ export const metricsAPIGatewayProxyHandlerWrapper = (
 ): APIGatewayProxyHandler => {
   const wrappedHandler: APIGatewayProxyHandler = async (event, context) => {
     try {
-      metrics.addDimensions({
+      metrics.setDefaultDimensions({
         method: event.httpMethod,
         path: event.path,
       });

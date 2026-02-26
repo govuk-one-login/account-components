@@ -194,7 +194,7 @@ Globals:
       SecurityGroupIds:
         - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
     Timeout: 10
-    MemorySize: 1792
+    MemorySize: 1769 # so that we get ~1 VCPU
     Architectures:
       - !Ref LambdaArchitecture
     Runtime: nodejs24.x
@@ -621,6 +621,8 @@ Resources:
   TokenLambda:
     Type: AWS::Serverless::Function
     Properties:
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       LoggingConfig:
         LogGroup: !Ref TokenLambdaLogGroup
       Handler: index.handler
@@ -700,6 +702,8 @@ Resources:
   JourneyOutcomeLambda:
     Type: AWS::Serverless::Function
     Properties:
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
       LoggingConfig:
         LogGroup: !Ref JourneyOutcomeLambdaLogGroup
       Handler: index.handler
