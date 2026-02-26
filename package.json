@@ -63,7 +63,7 @@
     "eslint-plugin-playwright": "^2.5.1",
     "fast-json-stable-stringify": "^2.1.0",
     "json-schema-to-typescript": "^15.0.4",
-    "knip": "^5.83.1",
+    "knip": "^5.84.1",
     "pino": "^10.3.1",
     "prettier": "^3.8.1",
     "rolldown": "1.0.0-rc.4",
