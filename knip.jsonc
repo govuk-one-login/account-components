@@ -36,6 +36,7 @@
         "csso-cli",
         "sass",
         "esbuild",
+        "@simplewebauthn/browser",
         "@govuk-one-login/frontend-device-intelligence",
       ],
     },

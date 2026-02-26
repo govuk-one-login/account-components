@@ -95,7 +95,8 @@ describe("createRequestObjectPost", () => {
         account_management_api_deleteAccount_scenario: "successful",
         account_management_api_sendOtpChallenge_scenario: "successful",
         account_management_api_verifyOtpChallenge_scenario: "successful",
-        account_data_api_createPassKey_scenario: "successful",
+        account_data_api_createPasskey_scenario: "successful",
+        account_data_api_getPasskeys_scenario: "successful",
       },
     };
 
@@ -128,6 +129,7 @@ describe("createRequestObjectPost", () => {
         secure: true,
         httpOnly: true,
         domain: "example.com",
+        sameSite: "strict",
       }),
     );
 
@@ -159,6 +161,7 @@ describe("createRequestObjectPost", () => {
         secure: false,
         httpOnly: true,
         domain: "example.com",
+        sameSite: "strict",
       }),
     );
   });

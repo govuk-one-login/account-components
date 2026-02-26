@@ -14,7 +14,7 @@ describe("metricsAPIGatewayProxyHandlerWrapper", () => {
     });
     const publishSpy = vi.spyOn(metrics, "publishStoredMetrics");
     const coldStartSpy = vi.spyOn(metrics, "captureColdStartMetric");
-    const addDimensionsSpy = vi.spyOn(metrics, "addDimensions");
+    const setDefaultDimensionsSpy = vi.spyOn(metrics, "setDefaultDimensions");
 
     const wrappedHandler = metricsAPIGatewayProxyHandlerWrapper(mockHandler);
 
@@ -27,7 +27,7 @@ describe("metricsAPIGatewayProxyHandlerWrapper", () => {
     const result = await wrappedHandler(mockEvent, mockContext);
 
     expect(mockHandler).toHaveBeenCalledWith(mockEvent, mockContext);
-    expect(addDimensionsSpy).toHaveBeenCalledWith({
+    expect(setDefaultDimensionsSpy).toHaveBeenCalledWith({
       method: "GET",
       path: "/test-path",
     });
@@ -40,7 +40,7 @@ describe("metricsAPIGatewayProxyHandlerWrapper", () => {
     const mockHandler = vi.fn().mockRejectedValue(new Error("handler error"));
     const publishSpy = vi.spyOn(metrics, "publishStoredMetrics");
     const coldStartSpy = vi.spyOn(metrics, "captureColdStartMetric");
-    const addDimensionsSpy = vi.spyOn(metrics, "addDimensions");
+    const setDefaultDimensionsSpy = vi.spyOn(metrics, "setDefaultDimensions");
 
     const wrappedHandler = metricsAPIGatewayProxyHandlerWrapper(mockHandler);
 
@@ -53,7 +53,7 @@ describe("metricsAPIGatewayProxyHandlerWrapper", () => {
     const result = await wrappedHandler(mockEvent, mockContext);
 
     expect(mockHandler).toHaveBeenCalledWith(mockEvent, mockContext);
-    expect(addDimensionsSpy).toHaveBeenCalledWith({
+    expect(setDefaultDimensionsSpy).toHaveBeenCalledWith({
       method: "POST",
       path: "/error-path",
     });

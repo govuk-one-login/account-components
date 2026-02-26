@@ -2,6 +2,7 @@ import type { Mock } from "vitest";
 import { expect, it, describe, vi, beforeEach } from "vitest";
 import { journeyRoutes } from "./index.js";
 import { accountDelete } from "./account-delete/index.js";
+import { passkeyCreate } from "./passkey-create/index.js";
 import type { FastifyInstance } from "fastify";
 import { testingJourney } from "./testing-journey/index.js";
 import { onRequest } from "./utils/onRequest.js";
@@ -23,6 +24,7 @@ describe("journeyRoutes plugin", () => {
   let mockFastify: FastifyInstance;
   let mockAddHook: Mock;
   let mockRegister: Mock;
+  let mockGet: Mock;
   let mockPost: Mock;
   let mockRequest: any;
   let mockReply: any;
@@ -31,6 +33,7 @@ describe("journeyRoutes plugin", () => {
     vi.clearAllMocks();
     mockAddHook = vi.fn();
     mockRegister = vi.fn();
+    mockGet = vi.fn();
     mockPost = vi.fn();
     mockRequest = {};
     mockReply = {};
@@ -38,6 +41,7 @@ describe("journeyRoutes plugin", () => {
     mockFastify = {
       addHook: mockAddHook,
       register: mockRegister,
+      get: mockGet,
       post: mockPost,
     } as unknown as FastifyInstance;
   });
@@ -94,9 +98,19 @@ describe("journeyRoutes plugin", () => {
     expect(mockRegister).toHaveBeenCalledWith(accountDelete);
   });
 
+  it("registers passkeyCreate", () => {
+    journeyRoutes(mockFastify);
+
+    expect(mockRegister).toHaveBeenCalledWith(passkeyCreate);
+  });
+
   it("registers completeFailedJourneyHandler routes", () => {
     journeyRoutes(mockFastify);
 
+    expect(mockGet).toHaveBeenCalledWith(
+      paths.journeys.others.completeFailedJourney.path,
+      completeFailedJourneyHandler,
+    );
     expect(mockPost).toHaveBeenCalledWith(
       paths.journeys.others.completeFailedJourney.path,
       completeFailedJourneyHandler,

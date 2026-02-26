@@ -2,12 +2,17 @@ import { test as base, createBdd } from "playwright-bdd";
 import { env } from "../../env.js";
 import type { UUID } from "node:crypto";
 import { randomUUID } from "node:crypto";
+import type { CDPSession } from "@playwright/test";
 
 export const test = base.extend<
   {
     skips: undefined;
     fails: undefined;
-    scenarioData: Record<string, unknown>;
+    scenarioData: {
+      cdpSession: CDPSession;
+      authenticatorIds: string[];
+      [key: string]: unknown;
+    };
   },
   {
     featureData: {
@@ -50,8 +55,14 @@ export const test = base.extend<
     await use(!$tags.includes("@noJs"));
   },
 
-  scenarioData: async ({}, use) => {
-    await use({});
+  scenarioData: async ({ page }, use) => {
+    const cdpSession = await page.context().newCDPSession(page);
+    await cdpSession.send("WebAuthn.enable");
+
+    await use({
+      cdpSession,
+      authenticatorIds: [],
+    });
   },
 
   featureData: [

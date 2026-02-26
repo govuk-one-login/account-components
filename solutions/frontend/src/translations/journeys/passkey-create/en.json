@@ -1,0 +1,54 @@
+{
+  "create": {
+    "pageTitle_signedOut": "Set up a passkey",
+    "pageTitle_signedIn": "TODO create passkey",
+
+    "heading_signedOut": "Set up a passkey",
+    "heading_signedIn": "TODO create passkey",
+
+    "paragraphs_signedOut": [
+      "You’ll be asked to scan your face or fingerprint, or enter your device passcode, PIN or pattern."
+    ],
+    "paragraphs_signedIn": ["TODO paragraph1", "TODO paragraph2"],
+
+    "insetText_signedIn": "TODO inset text",
+
+    "detailsTitle_signedOut": "Where will my passkey be saved?",
+    "detailsTitle_signedIn": "TODO where will my passkey be saved?",
+
+    "detailsParagraphs_signedOut": [
+      "Your passkey will be saved privately to your device or cloud account  - such as your password manager.",
+      "Your biometric data won’t be shared with GOV.UK One Login or any services that you access with it."
+    ],
+    "detailsParagraphs_signedIn": ["TODO paragraph1", "TODO paragraph2"],
+
+    "buttonLabel_signedOut": "Continue",
+    "buttonLabel_signedIn": "TODO create passkey",
+
+    "skipLinkText_signedOut": "Skip for now",
+    "skipLinkText_signedIn": "TODO skip",
+
+    "error": {
+      "pageTitle_signedOut": "We could not set up your passkey",
+      "pageTitle_signedIn": "TODO create passkey error",
+
+      "heading_signedOut": "We could not set up your passkey",
+      "heading_signedIn": "TODO create passkey error",
+
+      "radioButtonsLegendText_signedOut": "What would you like to do?",
+      "radioButtonsLegendText_signedIn": "TODO legendText",
+
+      "registerRadioButtonLabel_signedOut": "Try setting up a passkey again",
+      "registerRadioButtonLabel_signedIn": "TODO try again",
+
+      "skipRadioButtonLabel_signedOut": "Skip for now",
+      "skipRadioButtonLabel_signedIn": "TODO skip",
+
+      "mustSelectAnActionErrorMessage_signedOut": "Select what you would like to do",
+      "mustSelectAnActionErrorMessage_signedIn": "TODO you must select an action",
+
+      "buttonLabel_signedOut": "Continue",
+      "buttonLabel_signedIn": "TODO submit"
+    }
+  }
+}
