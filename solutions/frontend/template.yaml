@@ -492,6 +492,7 @@ Resources:
               !Ref Environment,
               authorizeEndpointUrl,
             ]
+          AUDIT_EVENTS_QUEUE_URL: !Sub "{{resolve:ssm:/${CoreStackName}/TxMASQSProducerAuditEventQueueUrl}}"
           AUTH_FRONTEND_URL:
             !FindInMap [
               EnvironmentConfiguration,

@@ -59,6 +59,12 @@ Conditions:
     - !FindInMap [EnvConfig, !Ref Environment, UseCanary]
     - true
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
+  IsBuildEnvironment: !Equals [!Ref Environment, "build"]
+  IsDevOrBuild: !Or [Condition: IsDevEnvironment, Condition: IsBuildEnvironment]
+  HasTxmaAccountArn: !Not
+    - !Equals
+      - !FindInMap [EnvConfig, !Ref Environment, txmaAccountArn]
+      - ""
 
 Mappings:
   EnvConfig:
@@ -72,6 +78,7 @@ Mappings:
         }
       notificationsMaxReceiveCount: 5
       notificationsVisibilityTimeout: 30
+      txmaAccountArn: ""
     build:
       UseCanary: false
       LambdaLogLevel: INFO
@@ -82,6 +89,7 @@ Mappings:
         }
       notificationsMaxReceiveCount: 5
       notificationsVisibilityTimeout: 30
+      txmaAccountArn: ""
     staging:
       UseCanary: true
       LambdaLogLevel: INFO
@@ -92,6 +100,7 @@ Mappings:
         }
       notificationsMaxReceiveCount: 5
       notificationsVisibilityTimeout: 30
+      txmaAccountArn: "arn:aws:iam::178023842775:root"
     integration:
       UseCanary: true
       LambdaLogLevel: INFO
@@ -102,6 +111,7 @@ Mappings:
         }
       notificationsVisibilityTimeout: 300
       notificationsMaxReceiveCount: 576
+      txmaAccountArn: "arn:aws:iam::729485541398:root"
     production:
       UseCanary: true
       LambdaLogLevel: INFO
@@ -112,6 +122,7 @@ Mappings:
         }
       notificationsVisibilityTimeout: 300
       notificationsMaxReceiveCount: 576
+      txmaAccountArn: "arn:aws:iam::451773080033:root"
 
 Globals:
   Function:
@@ -916,6 +927,140 @@ Resources:
       Namespace: AWS/SQS
       Period: 60
       Statistic: Maximum
+
+  TxMASQSProducerAuditEventQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: !If [IsDevOrBuild, 3600, 1209600]
+      KmsMasterKeyId: !Ref TxMASQSProducerAuditEventQueueEncryptionKeyAlias
+      RedriveAllowPolicy:
+        redrivePermission: denyAll
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt TxMAAuditEventDeadLetterQueue.Arn
+        maxReceiveCount: 10
+      Tags:
+        - Key: "AuthoredBy"
+          Value: "TxMA"
+        - Key: "ProducerType"
+          Value: "SQS"
+        - Key: "QueueType"
+          Value: "Main"
+
+  TxMASQSProducerAuditEventQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref TxMASQSProducerAuditEventQueue
+      PolicyDocument:
+        Statement:
+          - Sid: "AllowReadByTxMAAccount"
+            Effect: Allow
+            Principal:
+              AWS: !If
+                - HasTxmaAccountArn
+                - !FindInMap [EnvConfig, !Ref Environment, txmaAccountArn]
+                - !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - "sqs:ChangeMessageVisibility"
+              - "sqs:ReceiveMessage"
+              - "sqs:DeleteMessage"
+              - "sqs:GetQueueAttributes"
+            Resource: !GetAtt TxMASQSProducerAuditEventQueue.Arn
+
+  TxMAAuditEventDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+      KmsMasterKeyId: !Ref TxMASQSProducerAuditEventQueueEncryptionKeyAlias
+      Tags:
+        - Key: "AuthoredBy"
+          Value: "TxMA"
+        - Key: "ProducerType"
+          Value: "SQS"
+        - Key: "QueueType"
+          Value: "DLQ"
+
+  TxMASQSProducerAuditEventQueueEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: Symmetric key used to encrypt TxMA audit messages at rest in SQS
+      EnableKeyRotation: true
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "Enable root account access"
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - "kms:*"
+            Resource: "*"
+          - Sid: "Allow decryption of events by TxMA"
+            Effect: Allow
+            Principal:
+              AWS: !If
+                - HasTxmaAccountArn
+                - !FindInMap [EnvConfig, !Ref Environment, txmaAccountArn]
+                - !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - "kms:decrypt"
+            Resource: "*"
+      Tags:
+        - Key: "AuthoredBy"
+          Value: "TxMA"
+        - Key: "ProducerType"
+          Value: "SQS"
+
+  TxMASQSProducerAuditEventQueueEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}/AuditEventEncryptionKey
+      TargetKeyId: !Ref TxMASQSProducerAuditEventQueueEncryptionKey
+
+  TxMASQSProducerAuditEventQueueProcessingTooSlow:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "{{resolve:ssm:/${AlertingStackName}/LowSeveritySNSTopicArn}}"
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 86400
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt TxMASQSProducerAuditEventQueue.QueueName
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      Period: 300
+      Statistic: Maximum
+
+  TxMAAuditEventDeadLetterQueueHasMessages:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - !Sub "{{resolve:ssm:/${AlertingStackName}/LowSeveritySNSTopicArn}}"
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      Threshold: 1
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt TxMAAuditEventDeadLetterQueue.QueueName
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Period: 300
+      Statistic: Maximum
+
+  TxMASQSProducerAuditEventQueueUrlParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/TxMASQSProducerAuditEventQueueUrl"
+      Type: String
+      Value: !GetAtt TxMASQSProducerAuditEventQueue.QueueUrl
+      Description: URL of the audit events queue
 
   SqsKmsKeyArnParameter:
     Type: AWS::SSM::Parameter

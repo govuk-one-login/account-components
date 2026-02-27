@@ -187,6 +187,9 @@ create_sqs_queues() {
   aws --endpoint-url=http://localhost:4566 sqs create-queue \
     --queue-name "components-core-NotificationsQueue"
 
+  aws --endpoint-url=http://localhost:4566 sqs create-queue \
+    --queue-name "components-core-TxMASQSProducerAuditEventQueue"
+
   echo "Finished creating SQS queues"
   return 0
 }
