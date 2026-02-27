@@ -1,11 +1,7 @@
 import type { APIGatewayProxyEvent } from "aws-lambda";
 import { parse } from "cookie";
 
-export const getPropsForLoggingFromAPIGatewayEvent = (
-  event?: APIGatewayProxyEvent,
-) => {
-  if (!event) return {};
-
+export const getPropsFromAPIGatewayEvent = (event: APIGatewayProxyEvent) => {
   const cookies = parse(event.headers["cookie"] ?? "");
   const gsCookie = cookies["gs"];
   const gsCookieParts = gsCookie ? gsCookie.split(".") : [];
@@ -20,5 +16,6 @@ export const getPropsForLoggingFromAPIGatewayEvent = (
     sourceIp:
       event.headers["x-forwarded-for"] ??
       event.requestContext.identity.sourceIp,
+    txmaAuditEncoded: event.headers["txma-audit-encoded"],
   };
 };

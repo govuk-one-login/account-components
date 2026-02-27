@@ -14,8 +14,8 @@ vi.mock(import("@aws-lambda-powertools/logger"), () => ({
   },
 }));
 
-vi.mock(import("../getPropsForLoggingFromAPIGatewayEvent/index.js"), () => ({
-  getPropsForLoggingFromAPIGatewayEvent: vi.fn().mockReturnValue({
+vi.mock(import("../getPropsFromAPIGatewayEvent/index.js"), () => ({
+  getPropsFromAPIGatewayEvent: vi.fn().mockReturnValue({
     persistentSessionId: "persistent-123",
     sessionId: "session-456",
     clientSessionId: "client-789",

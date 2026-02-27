@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda";
-import { getPropsForLoggingFromAPIGatewayEvent } from "./index.js";
+import { getPropsFromAPIGatewayEvent } from "./index.js";
 
-describe("getPropsForLoggingFromAPIGatewayEvent", () => {
+describe("getPropsFromAPIGatewayEvent", () => {
   const createMockEvent = (
     headers: Record<string, string> = {},
     sourceIp = "127.0.0.1",
@@ -16,12 +16,6 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
       },
     }) as APIGatewayProxyEvent;
 
-  it("returns empty object when event is undefined", () => {
-    const result = getPropsForLoggingFromAPIGatewayEvent();
-
-    expect(result).toStrictEqual({});
-  });
-
   it("extracts values from headers when available", () => {
     const event = createMockEvent({
       "di-persistent-session-id": "header-persistent-123",
@@ -29,9 +23,10 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
       "client-session-id": "header-client-789",
       "user-language": "en",
       "x-forwarded-for": "192.168.1.1",
+      "txma-audit-encoded": "encoded-txma-data",
     });
 
-    const result = getPropsForLoggingFromAPIGatewayEvent(event);
+    const result = getPropsFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: "header-persistent-123",
@@ -39,6 +34,7 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
       clientSessionId: "header-client-789",
       userLanguage: "en",
       sourceIp: "192.168.1.1",
+      txmaAuditEncoded: "encoded-txma-data",
     });
   });
 
@@ -48,7 +44,7 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
         "gs=cookie-session.cookie-client; di-persistent-session-id=cookie-persistent; lng=fr",
     });
 
-    const result = getPropsForLoggingFromAPIGatewayEvent(event);
+    const result = getPropsFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: "cookie-persistent",
@@ -56,6 +52,7 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
       clientSessionId: "cookie-client",
       userLanguage: "fr",
       sourceIp: "127.0.0.1",
+      txmaAuditEncoded: undefined,
     });
   });
 
@@ -70,7 +67,7 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
         "gs=cookie-session.cookie-client; di-persistent-session-id=cookie-persistent; lng=fr",
     });
 
-    const result = getPropsForLoggingFromAPIGatewayEvent(event);
+    const result = getPropsFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: "header-persistent",
@@ -78,13 +75,14 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
       clientSessionId: "header-client",
       userLanguage: "en",
       sourceIp: "192.168.1.1",
+      txmaAuditEncoded: undefined,
     });
   });
 
   it("falls back to requestContext sourceIp when x-forwarded-for not available", () => {
     const event = createMockEvent({}, "10.0.0.1");
 
-    const result = getPropsForLoggingFromAPIGatewayEvent(event);
+    const result = getPropsFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -92,13 +90,14 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
       clientSessionId: undefined,
       userLanguage: undefined,
       sourceIp: "10.0.0.1",
+      txmaAuditEncoded: undefined,
     });
   });
 
   it("handles missing cookie header gracefully", () => {
     const event = createMockEvent({});
 
-    const result = getPropsForLoggingFromAPIGatewayEvent(event);
+    const result = getPropsFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -106,6 +105,7 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
       clientSessionId: undefined,
       userLanguage: undefined,
       sourceIp: "127.0.0.1",
+      txmaAuditEncoded: undefined,
     });
   });
 
@@ -114,7 +114,7 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
       cookie: "gs=incomplete; other=value",
     });
 
-    const result = getPropsForLoggingFromAPIGatewayEvent(event);
+    const result = getPropsFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -122,6 +122,7 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
       clientSessionId: undefined,
       userLanguage: undefined,
       sourceIp: "127.0.0.1",
+      txmaAuditEncoded: undefined,
     });
   });
 
@@ -130,7 +131,7 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
       cookie: "gs=; other=value",
     });
 
-    const result = getPropsForLoggingFromAPIGatewayEvent(event);
+    const result = getPropsFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -138,6 +139,7 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
       clientSessionId: undefined,
       userLanguage: undefined,
       sourceIp: "127.0.0.1",
+      txmaAuditEncoded: undefined,
     });
   });
 
@@ -146,7 +148,7 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
       cookie: "other=value; lng=es",
     });
 
-    const result = getPropsForLoggingFromAPIGatewayEvent(event);
+    const result = getPropsFromAPIGatewayEvent(event);
 
     expect(result).toStrictEqual({
       persistentSessionId: undefined,
@@ -154,6 +156,7 @@ describe("getPropsForLoggingFromAPIGatewayEvent", () => {
       clientSessionId: undefined,
       userLanguage: "es",
       sourceIp: "127.0.0.1",
+      txmaAuditEncoded: undefined,
     });
   });
 });
