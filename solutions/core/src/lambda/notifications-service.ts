@@ -33,7 +33,7 @@ interface NotifyClientType {
 }
 
 const addSendNotificationFailedMetric = (failureReason: string) => {
-  metrics.addDimension("SendNotificationFailedReason", failureReason);
+  metrics.addMetadata("SendNotificationFailedReason", failureReason);
   metrics.addMetric("SendNotificationFailed", MetricUnit.Count, 1);
 };
 

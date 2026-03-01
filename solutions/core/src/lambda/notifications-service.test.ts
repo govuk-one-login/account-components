@@ -9,7 +9,7 @@ const mockLogger = {
   resetKeys: vi.fn(),
 };
 const mockMetrics = {
-  addDimension: vi.fn(),
+  addMetadata: vi.fn(),
   addMetric: vi.fn(),
   captureColdStartMetric: vi.fn(),
   publishStoredMetrics: vi.fn(),
