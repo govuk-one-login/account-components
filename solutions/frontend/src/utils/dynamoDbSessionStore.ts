@@ -57,7 +57,7 @@ export class DynamoDbSessionStore implements SessionStore {
           callback(null, null);
           return;
         }
-        if (session.Item["expires"] < Date.now() / 1000) {
+        if (session.Item["expires"] < Math.floor(Date.now() / 1000)) {
           this.destroy(sessionId, (error) => {
             callback(error, null);
           });
