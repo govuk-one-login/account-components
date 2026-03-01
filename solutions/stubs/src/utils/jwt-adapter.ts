@@ -54,6 +54,7 @@ export class JwtAdapter {
         );
         throw new Error(
           `Failed to retrieve key from SSM for param ${privateKeyName}`,
+          { cause: error },
         );
       }
 
@@ -87,7 +88,7 @@ export class JwtAdapter {
       jwt = await unSignedJwt.sign(privateKey);
     } catch (error) {
       logger.error("Failed to sign Jwt", { error });
-      throw new Error("Failed to sign Jwt");
+      throw new Error("Failed to sign Jwt", { cause: error });
     }
     return jwt;
   }
