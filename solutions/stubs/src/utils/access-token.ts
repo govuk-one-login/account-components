@@ -20,7 +20,7 @@ const jwtHeader: JWTHeaderParameters = {
   kid: JWK_KEY_SECRET.kid,
   alg: algorithm,
 };
-const epochDateNow = (): number => Math.round(Date.now() / 1000);
+const epochDateNow = (): number => Math.floor(Date.now() / 1000);
 
 const tokenBody = (extraClaims?: Record<string, unknown>) => {
   assert(process.env["ACCESS_TOKEN_ISSUER"], "ACCESS_TOKEN_ISSUER is not set");
