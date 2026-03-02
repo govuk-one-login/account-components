@@ -60,6 +60,7 @@ try {
       msg: errorName,
       error,
     }),
+    { cause: error },
   );
 }
 
