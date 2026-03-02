@@ -105,7 +105,7 @@ Mappings:
       tokenEndpointUrl: https://api.manage.integration.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.integration.account.gov.uk/journeyoutcome
       apiAllowedVpcIds:
-        - "vpc-048c9133a5998efe7" # di-account-staging
+        - "vpc-048c9133a5998efe7" # di-account-integration
         - "vpc-04796e8a5bf41b046" # di-authentication-integration
       apiAllowedVpceIds:
         - "vpce-0e594accb3d775457" # di-account-integration
@@ -122,7 +122,7 @@ Mappings:
       tokenEndpointUrl: https://api.manage.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.account.gov.uk/journeyoutcome
       apiAllowedVpcIds:
-        - "vpc-0c94e753d20410154" # di-account-staging
+        - "vpc-0c94e753d20410154" # di-account-production
         - "vpc-06a7d758af9eefddb" # di-authentication-production
       apiAllowedVpceIds:
         - "vpce-0d7972874707185a0" # di-account-production
