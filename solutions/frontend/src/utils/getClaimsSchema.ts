@@ -63,7 +63,7 @@ export const getClaimsSchema = (
     exp: v.number(),
     iat: v.pipe(
       v.number(),
-      v.maxValue(Date.now() / 1000, (issue) => {
+      v.maxValue(Math.floor(Date.now() / 1000), (issue) => {
         logger.warn("iat is in the future", {
           client_id: client.client_id,
           iat: new Date(Number(issue.received) * 1000).toISOString(),
