@@ -113,6 +113,8 @@ export const initFrontend = async function () {
       "/node_modules/@govuk-one-login/frontend-device-intelligence/build/esm",
     ),
     prefix: "/fingerprint",
+    decorateReply: false,
+    cacheControl: false,
     setHeaders: (res) => {
       addStaticAssetsCachingHeaders(res, true);
     },
