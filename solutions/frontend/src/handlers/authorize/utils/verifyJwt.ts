@@ -180,7 +180,7 @@ const handleJwtError = (
           jose_error_cause: error.cause,
           jose_error_stack: error.stack,
         });
-        metrics.addDimensions({ jose_error_code: error.code });
+        metrics.addMetadata("jose_error_code", error.code);
         metrics.addMetric("JOSEError", MetricUnit.Count, 1);
         return new ErrorResponse(
           getRedirectToClientRedirectUriResponse(

@@ -1,8 +1,7 @@
 import * as v from "valibot";
 import { logger } from "../../../commons/utils/logger/index.js";
-import { getPropsForLoggingFromAPIGatewayEvent } from "../../../commons/utils/getPropsForLoggingFromAPIGatewayEvent/index.js";
+import { getPropsFromAPIGatewayEvent } from "../../../commons/utils/getPropsFromAPIGatewayEvent/index.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
-import { getTxmaAuditEncodedFromAPIGatewayEvent } from "../../../commons/utils/getTxmaAuditEncodedFromAPIGatewayEvent/index.js";
 
 export abstract class JsonApiClient {
   private readonly errorScope: string;
@@ -16,34 +15,33 @@ export abstract class JsonApiClient {
   constructor(errorScope: string, event?: APIGatewayProxyEvent) {
     this.errorScope = errorScope;
 
-    const propsForLoggingFromEvent =
-      getPropsForLoggingFromAPIGatewayEvent(event);
-    const txmaAuditEncoded = getTxmaAuditEncodedFromAPIGatewayEvent(event);
+    const propsFromEvent = event
+      ? getPropsFromAPIGatewayEvent(event)
+      : undefined;
 
     this.commonHeaders = {
-      ...(propsForLoggingFromEvent.persistentSessionId
+      ...(propsFromEvent?.persistentSessionId
         ? {
-            "di-persistent-session-id":
-              propsForLoggingFromEvent.persistentSessionId,
+            "di-persistent-session-id": propsFromEvent.persistentSessionId,
           }
         : {}),
-      ...(propsForLoggingFromEvent.sessionId
-        ? { "session-id": propsForLoggingFromEvent.sessionId }
+      ...(propsFromEvent?.sessionId
+        ? { "session-id": propsFromEvent.sessionId }
         : {}),
-      ...(propsForLoggingFromEvent.clientSessionId
+      ...(propsFromEvent?.clientSessionId
         ? {
-            "client-session-id": propsForLoggingFromEvent.clientSessionId,
+            "client-session-id": propsFromEvent.clientSessionId,
           }
         : {}),
-      ...(propsForLoggingFromEvent.userLanguage
-        ? { "user-language": propsForLoggingFromEvent.userLanguage }
+      ...(propsFromEvent?.userLanguage
+        ? { "user-language": propsFromEvent.userLanguage }
         : {}),
-      ...(propsForLoggingFromEvent.sourceIp
-        ? { "x-forwarded-for": propsForLoggingFromEvent.sourceIp }
+      ...(propsFromEvent?.sourceIp
+        ? { "x-forwarded-for": propsFromEvent.sourceIp }
         : {}),
-      ...(txmaAuditEncoded
+      ...(propsFromEvent?.txmaAuditEncoded
         ? {
-            "txma-audit-encoded": txmaAuditEncoded,
+            "txma-audit-encoded": propsFromEvent.txmaAuditEncoded,
           }
         : {}),
     };

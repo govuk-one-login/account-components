@@ -28,7 +28,7 @@ export const getAuthRequest = async (
     ),
     expires: v.pipe(
       v.number(),
-      v.minValue(Date.now() / 1000, "Auth request has expired"),
+      v.minValue(Math.floor(Date.now() / 1000), "Auth request has expired"),
     ),
   });
 

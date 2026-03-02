@@ -55,6 +55,6 @@ export const getJourneyOutcome = async (
       "FailedToFindOutcome",
       `A problem occurred while retrieving the journey outcome: ${error instanceof Error ? error.message : "Unknown error"}`,
     );
-    throw new Error("Unreachable code reached");
+    throw new Error("Unreachable code reached", { cause: error });
   }
 };
