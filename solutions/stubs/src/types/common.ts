@@ -11,8 +11,6 @@ export enum Algorithms {
 
 export enum MockRequestObjectScenarios {
   VALID = "valid",
-  INVALID_ALGORITHM = "invalidAlg",
-  NONE_ALGORITHM = "noneAlg",
   MISSING_KID = "missingKid",
   WRONG_KID = "wrongKid",
   EXPIRED = "expired",
@@ -65,6 +63,7 @@ export interface AuthorizeRequestObject {
   public_sub?: string;
   email?: string;
   scenario?: string;
+  algorithm?: string;
   [key: string]: unknown;
 }
 

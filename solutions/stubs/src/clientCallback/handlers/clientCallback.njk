@@ -22,6 +22,9 @@
             <li><strong>State:</strong> {{ errorDetails.state }}</li>
         </ul>
     {% endif %}
+    {% if algorithm %}
+        <p>Algorithm Used For Signing Client Assertion: <b>{{ algorithm | dump(2) | safe }}</b></p>
+    {% endif %}
     {% if journeyOutcomeDetails %}
         <p>Journey outcome details:</p>
         <pre>{{ journeyOutcomeDetails | dump(2) | safe }}</pre>

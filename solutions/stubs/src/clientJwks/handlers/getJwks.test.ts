@@ -25,15 +25,25 @@ import { getJwks } from "./getJwks.js";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
 import { createPublicKey } from "node:crypto";
 
-const mockPublicKey = `-----BEGIN PUBLIC KEY-----
+const mockEcPublicKey = `-----BEGIN PUBLIC KEY-----
 MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEExample
 -----END PUBLIC KEY-----`;
 
-const mockJwk = {
+const mockRsaPublicKey = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAExample
+-----END PUBLIC KEY-----`;
+
+const mockEcJwk = {
   kty: "EC",
   crv: "P-256",
   x: "example-x",
   y: "example-y",
+};
+
+const mockRsaJwk = {
+  kty: "RSA",
+  n: "example-n",
+  e: "AQAB",
 };
 
 describe("getJwks", () => {
@@ -53,7 +63,8 @@ describe("getJwks", () => {
       send: vi.fn().mockReturnThis(),
     };
 
-    process.env["MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME"] = "test-ssm-param";
+    process.env["MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME"] = "test-ec-ssm-param";
+    process.env["MOCK_CLIENT_RSA_PUBLIC_KEY_SSM_NAME"] = "test-rsa-ssm-param";
 
     vi.mocked(getClientRegistry).mockImplementation(mockGetClientRegistry);
     vi.mocked(createPublicKey).mockImplementation(mockCreatePublicKey);
@@ -71,20 +82,32 @@ describe("getJwks", () => {
     ];
 
     mockGetClientRegistry.mockResolvedValue(mockClientRegistryWithMatchingName);
-    mockGet.mockResolvedValue(mockPublicKey);
-    mockCreatePublicKey.mockReturnValue({
-      export: vi.fn().mockReturnValue(mockJwk),
-    });
+    mockGet
+      .mockResolvedValueOnce(mockEcPublicKey)
+      .mockResolvedValueOnce(mockRsaPublicKey);
+    mockCreatePublicKey
+      .mockReturnValueOnce({
+        export: vi.fn().mockReturnValue(mockEcJwk),
+      })
+      .mockReturnValueOnce({
+        export: vi.fn().mockReturnValue(mockRsaJwk),
+      });
 
     await getJwks(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
     expect(mockReply.send).toHaveBeenCalledWith({
       keys: [
         {
-          ...mockJwk,
+          ...mockEcJwk,
           use: "sig",
           kid: "ecKid123",
           alg: "ES256",
+        },
+        {
+          ...mockRsaJwk,
+          use: "sig",
+          kid: "rsaKid123",
+          alg: "RS256",
         },
       ],
     });
@@ -111,7 +134,7 @@ describe("getJwks", () => {
     expect(mockReply.send).toHaveBeenCalledWith();
   });
 
-  it("should throw error when SSM parameter name not set", async () => {
+  it("should throw error when SSM parameter names not set", async () => {
     const mockClientRegistryWithMatchingName = [
       {
         client_id: "test-client-id",
@@ -123,6 +146,7 @@ describe("getJwks", () => {
     ];
 
     delete process.env["MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME"];
+    delete process.env["MOCK_CLIENT_RSA_PUBLIC_KEY_SSM_NAME"];
     mockGetClientRegistry.mockResolvedValue(mockClientRegistryWithMatchingName);
 
     await expect(
@@ -132,7 +156,7 @@ describe("getJwks", () => {
     );
   });
 
-  it("should throw error when public key parameter is not set", async () => {
+  it("should throw error when public key parameters are not set", async () => {
     const mockClientRegistryWithMatchingName = [
       {
         client_id: "test-client-id",
@@ -148,6 +172,6 @@ describe("getJwks", () => {
 
     await expect(
       getJwks(mockRequest as FastifyRequest, mockReply as FastifyReply),
-    ).rejects.toThrowError("Public key parameter is not set");
+    ).rejects.toThrowError("EC public key parameter is not set");
   });
 });

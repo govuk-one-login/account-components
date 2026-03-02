@@ -16,6 +16,18 @@
                 {% endfor %}
             </fieldset>
             <fieldset>
+                <legend>Signing Algorithm</legend>
+                {% for alg in availableAlgorithms %}
+                    <div>
+                        <label for="{{ alg }}_alg">
+                            {% if loop.first %}
+                                <input id="{{ alg }}_alg" type="radio" name="algorithm" value="{{ alg }}" checked="true"/> {{ alg }}
+                            {% else %}
+                                <input id="{{ alg }}_alg" type="radio" name="algorithm" value="{{ alg }}"/> {{ alg }}
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </fieldset>
                 <legend>Scenario</legend>
                 {% for scenario in availableScenarios %}
                     <div>
