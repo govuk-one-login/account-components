@@ -428,7 +428,7 @@ describe("clientCallback handler", () => {
       expect(
         // eslint-disable-next-line @typescript-eslint/unbound-method
         vi.mocked(SignJWT).mock.instances[0]?.setProtectedHeader,
-      ).toHaveBeenCalledWith({ alg: "RS256" });
+      ).toHaveBeenCalledWith({ alg: "RS256", kid: "rsaKid123" });
     });
 
     it("should use EC algorithm when Math.random returns >= 0.5", async () => {
@@ -458,7 +458,7 @@ describe("clientCallback handler", () => {
       expect(
         // eslint-disable-next-line @typescript-eslint/unbound-method
         vi.mocked(SignJWT).mock.instances[0]?.setProtectedHeader,
-      ).toHaveBeenCalledWith({ alg: "ES256" });
+      ).toHaveBeenCalledWith({ alg: "ES256", kid: "ecKid123" });
     });
   });
 });

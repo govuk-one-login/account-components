@@ -45,7 +45,10 @@ describe("verifyClientAssertion", () => {
     process.env["TOKEN_ENDPOINT_URL"] = "https://example.com/token";
     mockGetClientRegistry.mockResolvedValue(mockClientRegistry);
     mockDecodeJwt.mockReturnValue(mockDecodedJwt);
-    mockDecodeProtectedHeader.mockReturnValue({ kid: "test-kid", alg: "ES256" });
+    mockDecodeProtectedHeader.mockReturnValue({
+      kid: "test-kid",
+      alg: "ES256",
+    });
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockJwtVerify.mockResolvedValue({
       payload: mockPayload,
@@ -71,7 +74,7 @@ describe("verifyClientAssertion", () => {
     expect(mockJwtVerify).toHaveBeenCalledWith(
       mockClientAssertion,
       expect.any(Function),
-      { algorithms: ["ES256", "RS256"] }
+      { algorithms: ["ES256", "RS256"] },
     );
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
@@ -90,7 +93,7 @@ describe("verifyClientAssertion", () => {
     expect(mockJwtVerify).toHaveBeenCalledWith(
       mockClientAssertion,
       expect.any(Function),
-      { algorithms: ["ES256", "RS256"] }
+      { algorithms: ["ES256", "RS256"] },
     );
   });
 
@@ -101,7 +104,7 @@ describe("verifyClientAssertion", () => {
     expect(mockJwtVerify).toHaveBeenCalledWith(
       mockClientAssertion,
       expect.any(Function),
-      { algorithms: ["ES256", "RS256"] }
+      { algorithms: ["ES256", "RS256"] },
     );
   });
 

@@ -12,8 +12,6 @@ const mockMetrics = {
   addDimensions: vi.fn(),
 };
 
-
-
 const mockOutcomeData = [
   { step: 1, action: "start" },
   { step: 2, action: "complete" },

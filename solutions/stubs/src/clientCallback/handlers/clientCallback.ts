@@ -7,6 +7,7 @@ import { SignJWT, importPKCS8 } from "jose";
 import type { ClientEntry } from "../../../../config/schema/types.js";
 import { getParametersProvider } from "../../../../commons/utils/awsClient/ssmClient/index.js";
 import deterministicJsonStringify from "fast-json-stable-stringify";
+import { Kids } from "../../types/common.js";
 
 export async function handler(request: FastifyRequest, reply: FastifyReply) {
   assert.ok(reply.render);
@@ -147,6 +148,7 @@ const getTokenRequestBody = async ({
     ? process.env["MOCK_CLIENT_RSA_PRIVATE_KEY_SSM_NAME"]
     : process.env["MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"];
   const algorithm = useRSA ? "RS256" : "ES256";
+  const kid = useRSA ? Kids.RSA : Kids.EC;
 
   const privateKeyPem = await getParametersProvider().get(ssmName, {
     maxAge: 900,
@@ -163,7 +165,7 @@ const getTokenRequestBody = async ({
     aud: process.env["API_TOKEN_ENDPOINT_URL"],
     jti: crypto.randomUUID(),
   })
-    .setProtectedHeader({ alg: algorithm })
+    .setProtectedHeader({ alg: algorithm, kid })
     .setIssuedAt()
     .setExpirationTime("5m")
     .sign(await importPKCS8(privateKeyPem, algorithm));

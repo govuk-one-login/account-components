@@ -9,17 +9,17 @@ Feature: Invalid request object
 
   Scenario: Invalid algorithm  
     Given I go to the journey initiator
-    And I select the option beginning with "invalidAlg" in the "Scenario" radio button group
+    And I select the option beginning with "AB123" in the "Signing Algorithm" radio button group
     And I begin a "testing-journey" journey    
     Then the page contains the text "Error: invalid_request"
-    And the page contains the text "Error description: E1007"
+    And the page contains the text "Error description: E1004"
 
   Scenario: "None" algorithm  
     Given I go to the journey initiator
-    And I select the option beginning with "noneAlg" in the "Scenario" radio button group
+    And I select the option beginning with "none" in the "Signing Algorithm" radio button group
     And I begin a "testing-journey" journey    
     Then the page contains the text "Error: invalid_request"
-    And the page contains the text "Error description: E1007"    
+    And the page contains the text "Error description: E1004"    
 
   Scenario: Expired  
     Given I go to the journey initiator

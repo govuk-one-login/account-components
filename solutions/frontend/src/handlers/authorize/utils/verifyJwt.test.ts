@@ -86,7 +86,10 @@ describe("verifyJwt", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCreateRemoteJWKSet.mockReturnValue("mock-jwks");
-    mockDecodeProtectedHeader.mockReturnValue({ kid: "test-kid", alg: "ES256" });
+    mockDecodeProtectedHeader.mockReturnValue({
+      kid: "test-kid",
+      alg: "ES256",
+    });
   });
 
   afterAll(() => {
@@ -109,11 +112,9 @@ describe("verifyJwt", () => {
     );
 
     expect(result).toStrictEqual(payload);
-    expect(mockJwtVerify).toHaveBeenCalledWith(
-      signedJwt,
-      "mock-jwks",
-      { algorithms: ["ES256", "RS256"] }
-    );
+    expect(mockJwtVerify).toHaveBeenCalledWith(signedJwt, "mock-jwks", {
+      algorithms: ["ES256", "RS256"],
+    });
   });
 
   it("returns ErrorResponse when JWT header is missing kid", async () => {

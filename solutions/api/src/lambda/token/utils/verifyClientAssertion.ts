@@ -1,5 +1,10 @@
 import type { JWTPayload } from "jose";
-import { jwtVerify, decodeJwt, createRemoteJWKSet, decodeProtectedHeader } from "jose";
+import {
+  jwtVerify,
+  decodeJwt,
+  createRemoteJWKSet,
+  decodeProtectedHeader,
+} from "jose";
 import { getClientRegistry } from "../../../../../commons/utils/getClientRegistry/index.js";
 import { errorManager } from "./errors.js";
 import assert from "node:assert";
