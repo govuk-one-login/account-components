@@ -20,7 +20,7 @@ export async function getJwks(request: FastifyRequest, reply: FastifyReply) {
   }
 
   const clientRegistry = await getClientRegistry();
-  const client = clientRegistry.find((client) => {
+  const client = clientRegistry.find((client: { client_name: string }) => {
     return (
       client.client_name.toLowerCase() === parsedRequestParams.output.client
     );
@@ -36,26 +36,51 @@ export async function getJwks(request: FastifyRequest, reply: FastifyReply) {
     process.env["MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME"],
     "Environment variable MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME is not set",
   );
-  const publicKey = await getParametersProvider().get(
-    process.env["MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME"],
+  assert.ok(
+    process.env["MOCK_CLIENT_RSA_PUBLIC_KEY_SSM_NAME"],
+    "Environment variable MOCK_CLIENT_RSA_PUBLIC_KEY_SSM_NAME is not set",
   );
-  assert.ok(publicKey, "Public key parameter is not set");
 
-  const publicKeyObj = createPublicKey({
-    key: publicKey,
+  const [ecPublicKey, rsaPublicKey] = await Promise.all([
+    getParametersProvider().get(
+      process.env["MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME"],
+    ),
+    getParametersProvider().get(
+      process.env["MOCK_CLIENT_RSA_PUBLIC_KEY_SSM_NAME"],
+    ),
+  ]);
+
+  assert.ok(ecPublicKey, "EC public key parameter is not set");
+  assert.ok(rsaPublicKey, "RSA public key parameter is not set");
+
+  const ecPublicKeyObj = createPublicKey({
+    key: ecPublicKey,
     format: "pem",
     type: "spki",
   });
 
-  const jwk = publicKeyObj.export({ format: "jwk" });
+  const rsaPublicKeyObj = createPublicKey({
+    key: rsaPublicKey,
+    format: "pem",
+    type: "spki",
+  });
+
+  const ecJwk = ecPublicKeyObj.export({ format: "jwk" });
+  const rsaJwk = rsaPublicKeyObj.export({ format: "jwk" });
 
   const jwks = {
     keys: [
       {
-        ...jwk,
+        ...ecJwk,
         use: "sig",
         kid: Kids.EC,
         alg: Algorithms.EC,
+      },
+      {
+        ...rsaJwk,
+        use: "sig",
+        kid: Kids.RSA,
+        alg: Algorithms.RSA,
       },
     ],
   };

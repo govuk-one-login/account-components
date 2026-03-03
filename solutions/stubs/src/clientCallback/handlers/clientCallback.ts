@@ -6,8 +6,8 @@ import crypto from "node:crypto";
 import { SignJWT, importPKCS8 } from "jose";
 import type { ClientEntry } from "../../../../config/schema/types.js";
 import { getParametersProvider } from "../../../../commons/utils/awsClient/ssmClient/index.js";
-import { jwtSigningAlgorithm } from "../../../../commons/utils/constants.js";
 import deterministicJsonStringify from "fast-json-stable-stringify";
+import { Kids } from "../../types/common.js";
 
 export async function handler(request: FastifyRequest, reply: FastifyReply) {
   assert.ok(reply.render);
@@ -53,7 +53,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       const currentUrl = new URL(reply.globals.currentUrl);
       currentUrl.search = "";
 
-      const tokenRequestBody = await getTokenRequestBody({
+      const { tokenRequestBody, algorithm } = await getTokenRequestBody({
         client,
         authCode: parsedRequestQueryParams.code,
         currentUrl: currentUrl.toString(),
@@ -104,6 +104,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         journeyOutcomeDetails: JSON.parse(
           deterministicJsonStringify(journeyOutcomeDetails),
         ),
+        algorithm,
       });
       return await reply;
     }
@@ -133,13 +134,25 @@ const getTokenRequestBody = async ({
   currentUrl: string;
 }) => {
   assert.ok(
+    process.env["MOCK_CLIENT_RSA_PRIVATE_KEY_SSM_NAME"],
+    "MOCK_CLIENT_RSA_PRIVATE_KEY_SSM_NAME is not set",
+  );
+  assert.ok(
     process.env["MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"],
     "MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME is not set",
   );
 
-  const privateKeyPem = await getParametersProvider().get(
-    process.env["MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"],
-  );
+  // randomly uses RSA or EC private key for client assertion signing
+  const useRSA = Math.random() < 0.5;
+  const ssmName = useRSA
+    ? process.env["MOCK_CLIENT_RSA_PRIVATE_KEY_SSM_NAME"]
+    : process.env["MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"];
+  const algorithm = useRSA ? "RS256" : "ES256";
+  const kid = useRSA ? Kids.RSA : Kids.EC;
+
+  const privateKeyPem = await getParametersProvider().get(ssmName, {
+    maxAge: 900,
+  });
 
   assert.ok(privateKeyPem, "privateKeyPem is not set");
   assert.ok(
@@ -152,10 +165,10 @@ const getTokenRequestBody = async ({
     aud: process.env["API_TOKEN_ENDPOINT_URL"],
     jti: crypto.randomUUID(),
   })
-    .setProtectedHeader({ alg: jwtSigningAlgorithm })
+    .setProtectedHeader({ alg: algorithm, kid })
     .setIssuedAt()
     .setExpirationTime("5m")
-    .sign(await importPKCS8(privateKeyPem, jwtSigningAlgorithm));
+    .sign(await importPKCS8(privateKeyPem, algorithm));
 
   const params = new URLSearchParams({
     grant_type: "authorization_code",
@@ -166,5 +179,5 @@ const getTokenRequestBody = async ({
     redirect_uri: currentUrl,
   });
 
-  return params;
+  return { tokenRequestBody: params, algorithm };
 };

@@ -162,6 +162,26 @@ Resources:
       Tags:
         Environment: !Ref Environment
 
+  MockClientRSAPrivateKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: A mock client RSA private key
+      Name: !Sub /${AWS::StackName}/MockClientRsaPrivateKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment
+
+  MockClientRSAPublicKeySSM:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: A mock client RSA public key
+      Name: !Sub /${AWS::StackName}/MockClientRsaPublicKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment
+
   StubsApiDomain:
     Type: AWS::ApiGateway::DomainName
     Properties:
@@ -273,6 +293,8 @@ Resources:
         Variables:
           MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPrivateKey"
           MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPublicKey"
+          MOCK_CLIENT_RSA_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientRsaPrivateKey"
+          MOCK_CLIENT_RSA_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientRsaPublicKey"
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
           DEFAULT_AUDIENCE: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
@@ -301,7 +323,9 @@ Resources:
                 - ssm:GetParametersByPath
               Resource:
                 - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPublicKey
-                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPrivateKey
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPrivateKey                -
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientRsaPublicKey
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientRsaPrivateKey
             - Effect: Allow
               Action:
                 - appconfig:GetLatestConfiguration

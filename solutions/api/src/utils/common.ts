@@ -37,6 +37,7 @@ export class ErrorManager<T extends Record<string, ErrorType>> {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const error: AppError<keyof T> = new Error(message) as AppError<keyof T>;
     error.code = type;
+    logger.error("Error", { cause: error });
     throw error;
   }
 

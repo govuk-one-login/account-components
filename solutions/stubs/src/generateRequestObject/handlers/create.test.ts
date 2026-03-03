@@ -83,6 +83,7 @@ describe("createRequestObjectPost", () => {
     mockRequest = {
       body: {
         client_id: "23456789012345678901234567890123",
+        algorithm: "ES256",
         scenario: "valid",
         scope: "account-delete",
         jti: "nonce-123",

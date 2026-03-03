@@ -5,6 +5,7 @@ import {
 } from "fastify";
 import type { JwtHeader } from "../../types/common.js";
 import {
+  Algorithms,
   MockRequestObjectScenarios,
   Scope,
   Users,
@@ -20,6 +21,7 @@ import { checkUserAgentCookieName } from "../../../../commons/utils/constants.js
 
 export const requestBodySchema = v.object({
   client_id: v.string(),
+  algorithm: v.string(),
   scenario: v.string(),
   scope: v.string(),
   jti: v.string(),
@@ -45,6 +47,7 @@ export async function createRequestObjectGet(
   originalRequestBody?: v.InferOutput<typeof requestBodySchema>,
 ) {
   const availableScopes = Object.values(Scope);
+  const availableAlgorithms = Object.values(Algorithms);
   const availableScenarios = Object.values(MockRequestObjectScenarios);
   const availableClients = await getClientRegistryWithInvalidClient();
   const availableUsers = Object.values(Users);
@@ -52,6 +55,7 @@ export async function createRequestObjectGet(
   assert.ok(reply.render);
   await reply.render("generateRequestObject/handlers/create.njk", {
     availableScopes,
+    availableAlgorithms,
     availableScenarios,
     availableClients,
     availableUsers,

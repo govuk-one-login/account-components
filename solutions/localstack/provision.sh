@@ -13,6 +13,12 @@ generate_keys() {
   # 2. Extract ECDSA Public Key from private key string
   MOCK_CLIENT_EC_PUBLIC_KEY=$(echo "$MOCK_CLIENT_EC_PRIVATE_KEY" | openssl ec -pubout)
 
+  # 3. Generate RSA Private Key (RSA 2048) to string
+  MOCK_CLIENT_RSA_PRIVATE_KEY=$(openssl genrsa 2048 | openssl pkcs8 -topk8 -nocrypt -outform PEM)
+
+  # 4. Extract RSA Public Key from private key string
+  MOCK_CLIENT_RSA_PUBLIC_KEY=$(echo "$MOCK_CLIENT_RSA_PRIVATE_KEY" | openssl rsa -pubout)
+
   # Optional: escape newlines for SSM if needed (AWS CLI handles newlines well for string params, so usually no need)
   # But if you're sending to JSON or a place where newlines break things, you could use:
   # MOCK_CLIENT_EC_PRIVATE_KEY_ESCAPED=$(echo "$MOCK_CLIENT_EC_PRIVATE_KEY" | awk '{printf "%s\\n", $0}')
@@ -86,6 +92,16 @@ create_ssm_parameters() {
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
     --name "/components-mocks/MockClientEcPublicKey" \
     --value "${MOCK_CLIENT_EC_PUBLIC_KEY}" \
+    --type "${STRING}"
+
+  aws --endpoint-url=http://localhost:4566 ssm put-parameter \
+    --name "/components-mocks/MockClientRsaPrivateKey" \
+    --value "${MOCK_CLIENT_RSA_PRIVATE_KEY}" \
+    --type "${STRING}"
+
+  aws --endpoint-url=http://localhost:4566 ssm put-parameter \
+    --name "/components-mocks/MockClientRsaPublicKey" \
+    --value "${MOCK_CLIENT_RSA_PUBLIC_KEY}" \
     --type "${STRING}"
   
   echo "Finished creating SSM parameters"

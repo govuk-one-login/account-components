@@ -46,10 +46,12 @@ vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
 
 const mockJwtVerify = vi.fn();
 const mockCreateRemoteJWKSet = vi.fn();
+const mockDecodeProtectedHeader = vi.fn();
 
 vi.mock(import("jose"), () => ({
   jwtVerify: mockJwtVerify,
   createRemoteJWKSet: mockCreateRemoteJWKSet,
+  decodeProtectedHeader: mockDecodeProtectedHeader,
 }));
 
 const mockGetClaimsSchema = vi.fn();
@@ -84,13 +86,17 @@ describe("verifyJwt", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockCreateRemoteJWKSet.mockReturnValue("mock-jwks");
+    mockDecodeProtectedHeader.mockReturnValue({
+      kid: "test-kid",
+      alg: "ES256",
+    });
   });
 
   afterAll(() => {
     process.env = { ...ORIGINAL_ENV };
   });
 
-  it("successfully verifies JWT and validates claims", async () => {
+  it("verifies JWT with ES256 algorithm", async () => {
     const payload = { sub: "user123", aud: "test-client" };
     const claimsSchema = v.object({ sub: v.string(), aud: v.string() });
 
@@ -106,10 +112,33 @@ describe("verifyJwt", () => {
     );
 
     expect(result).toStrictEqual(payload);
-    expect(mockGetClaimsSchema).toHaveBeenCalledWith(
+    expect(mockJwtVerify).toHaveBeenCalledWith(signedJwt, "mock-jwks", {
+      algorithms: ["ES256", "RS256"],
+    });
+  });
+
+  it("returns ErrorResponse when JWT header is missing kid", async () => {
+    mockDecodeProtectedHeader.mockReturnValue({ alg: "ES256" }); // Missing kid
+
+    const result = await verifyJwt(
+      reply,
+      signedJwt,
       client,
       redirectUri,
       state,
+    );
+
+    expect(result).toBeInstanceOf(ErrorResponse);
+
+    assert.ok(result instanceof ErrorResponse);
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
+      "error=invalid_request",
+    );
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
+      "error_description=E1004",
     );
   });
 

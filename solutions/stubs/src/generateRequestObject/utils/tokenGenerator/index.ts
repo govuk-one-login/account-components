@@ -1,8 +1,8 @@
 import { JwtAdapter } from "../../../utils/jwt-adapter.js";
 import { CustomError } from "../../../utils/errors.js";
 import type {
-  JwtHeader,
   AuthorizeRequestObject,
+  JwtHeader,
 } from "../../../types/common.js";
 import {
   Algorithms,
@@ -33,12 +33,13 @@ export const generateJwtToken = async (
   authorizeRequestObject: AuthorizeRequestObject,
   scenario: MockRequestObjectScenarios,
 ): Promise<GenerateJwtTokenResponse> => {
-  const jwtHeader = getJwtHeader(scenario);
+  const alg = getAlgorithm(authorizeRequestObject);
+  const jwtHeader = getJwtHeader(scenario, alg);
   const jwtPayload = getJwtPayload(scenario, authorizeRequestObject);
 
   logger.debug("token header & payload", { jwtHeader, jwtPayload });
 
-  const token = await generateToken(jwtHeader, jwtPayload);
+  const token = await generateToken(jwtHeader, jwtPayload, alg);
   if (!token) {
     throw new CustomError(HttpCodesEnum.BAD_REQUEST, "Token not generated");
   }
@@ -57,18 +58,30 @@ export function getScenario(
   return retrievedScenario ?? DEFAULT_SCENARIO;
 }
 
-export function getJwtHeader(scenario: MockRequestObjectScenarios): JwtHeader {
-  let alg: Algorithms = Algorithms.EC;
-  let kid: Kids | undefined = Kids.EC;
+export function getAlgorithm(body: AuthorizeRequestObject): Algorithms {
+  const retrievedAlg = Object.values(Algorithms).find(
+    (alg): alg is Algorithms => alg === body.algorithm,
+  );
+  delete body.algorithm;
+  return retrievedAlg ?? Algorithms.EC;
+}
+
+export function getJwtHeader(
+  scenario: MockRequestObjectScenarios,
+  alg: Algorithms,
+): JwtHeader {
+  let kid: string | undefined;
+  switch (alg) {
+    case Algorithms.EC: {
+      kid = Kids.EC;
+      break;
+    }
+    case Algorithms.RSA: {
+      kid = Kids.RSA;
+      break;
+    }
+  }
   switch (scenario) {
-    case MockRequestObjectScenarios.INVALID_ALGORITHM: {
-      alg = Algorithms.INVALID;
-      break;
-    }
-    case MockRequestObjectScenarios.NONE_ALGORITHM: {
-      alg = Algorithms.NONE;
-      break;
-    }
     case MockRequestObjectScenarios.MISSING_KID: {
       kid = undefined;
       break;
@@ -79,8 +92,7 @@ export function getJwtHeader(scenario: MockRequestObjectScenarios): JwtHeader {
     }
   }
 
-  const header: JwtHeader = { alg };
-  header.typ = "JWT";
+  const header: JwtHeader = { typ: "JWT", alg };
   if (kid) header.kid = kid;
   return header;
 }
@@ -171,10 +183,13 @@ export function getJwtPayload(
 async function generateToken(
   header: JwtHeader,
   payload: JWTPayload,
+  algorithm: Algorithms = Algorithms.EC,
 ): Promise<string> {
   try {
     const jwtAdapter = new JwtAdapter();
-    return await jwtAdapter.sign(header, payload, SignatureTypes.EC);
+    const signatureType =
+      algorithm === Algorithms.RSA ? SignatureTypes.RSA : SignatureTypes.EC;
+    return await jwtAdapter.sign(header, payload, signatureType);
   } catch (error) {
     logger.error("Failed to sign the token", { error });
     throw new CustomError(HttpCodesEnum.BAD_REQUEST, "Failed to sign token");

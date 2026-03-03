@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { handler } from "./clientCallback.js";
+import { SignJWT } from "jose";
 
 vi.mock(import("../../../../commons/utils/getClientRegistry/index.js"), () => ({
   getClientRegistry: vi.fn(),
@@ -16,27 +17,27 @@ vi.mock(
   }),
 );
 
-// @ts-expect-error
 vi.mock(import("jose"), () => ({
-  SignJWT: class {
-    setProtectedHeader() {
-      return this;
-    }
-    setIssuedAt() {
-      return this;
-    }
-    setExpirationTime() {
-      return this;
-    }
-    async sign() {
-      return "mock-jwt-token";
-    }
-  },
+  SignJWT: vi.fn().mockImplementation(function (this: any) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, vitest/prefer-spy-on
+    this.setProtectedHeader = vi.fn().mockReturnThis();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, vitest/prefer-spy-on
+    this.setIssuedAt = vi.fn().mockReturnThis();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, vitest/prefer-spy-on
+    this.setExpirationTime = vi.fn().mockReturnThis();
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, vitest/prefer-spy-on
+    this.sign = vi.fn().mockResolvedValue("mock-jwt-token");
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return this;
+  }),
+
   importPKCS8: vi.fn().mockResolvedValue({}),
 }));
 
 const mockGetClientRegistry = vi.fn();
+
 const mockGetParametersProvider = vi.fn();
+
 const mockFetch = vi.fn();
 
 vi.mocked(
@@ -74,7 +75,9 @@ describe("clientCallback handler", () => {
     process.env["API_TOKEN_ENDPOINT_URL"] = "http://localhost:6004/token";
     process.env["API_JOURNEY_OUTCOME_ENDPOINT_URL"] =
       "http://localhost:6004/journey-outcome";
-    process.env["MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"] = "/mock/private-key";
+    process.env["MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"] = "/mock/ec-private-key";
+    process.env["MOCK_CLIENT_RSA_PRIVATE_KEY_SSM_NAME"] =
+      "/mock/rsa-private-key";
 
     mockGetParametersProvider.mockReturnValue({
       get: vi.fn().mockResolvedValue("mock-private-key"),
@@ -294,6 +297,8 @@ describe("clientCallback handler", () => {
         {
           client: "test-client (test-id)",
           journeyOutcomeDetails: mockJourneyOutcome,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          algorithm: expect.stringMatching(/^(RS256|ES256)$/),
         },
       );
       expect(result).toBe(mockReply);
@@ -389,9 +394,71 @@ describe("clientCallback handler", () => {
         {
           client: "test-client (test-id)",
           journeyOutcomeDetails: mockJourneyOutcome,
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+          algorithm: expect.stringMatching(/^(RS256|ES256)$/),
         },
       );
       expect(result).toBe(mockReply);
+    });
+
+    it("should use RSA algorithm when Math.random returns < 0.5", async () => {
+      vi.spyOn(Math, "random").mockReturnValue(0.3);
+
+      mockRequest.query = { code: "auth-code-123" };
+      mockFetch
+        .mockResolvedValueOnce({
+          json: vi.fn().mockResolvedValue({
+            access_token: "access-token-123",
+            token_type: "Bearer",
+            expires_in: 3600,
+          }),
+        })
+        .mockResolvedValueOnce({
+          json: vi.fn().mockResolvedValue({ status: "success" }),
+        });
+
+      await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(mockGetParametersProvider().get).toHaveBeenCalledWith(
+        "/mock/rsa-private-key",
+        { maxAge: 900 },
+      );
+
+      expect(
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        vi.mocked(SignJWT).mock.instances[0]?.setProtectedHeader,
+      ).toHaveBeenCalledWith({ alg: "RS256", kid: "rsaKid123" });
+    });
+
+    it("should use EC algorithm when Math.random returns >= 0.5", async () => {
+      vi.spyOn(Math, "random").mockReturnValue(0.7);
+
+      mockRequest.query = { code: "auth-code-123" };
+      mockFetch
+        .mockResolvedValueOnce({
+          json: vi.fn().mockResolvedValue({
+            access_token: "access-token-123",
+            token_type: "Bearer",
+            expires_in: 3600,
+          }),
+        })
+        .mockResolvedValueOnce({
+          json: vi.fn().mockResolvedValue({ status: "success" }),
+        });
+
+      await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(mockGetParametersProvider().get).toHaveBeenCalledWith(
+        "/mock/ec-private-key",
+        { maxAge: 900 },
+      );
+
+      expect(
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        vi.mocked(SignJWT).mock.instances[0]?.setProtectedHeader,
+      ).toHaveBeenCalledWith({ alg: "ES256", kid: "ecKid123" });
     });
   });
 });
