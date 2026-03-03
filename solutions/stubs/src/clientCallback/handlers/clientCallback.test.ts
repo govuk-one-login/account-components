@@ -17,9 +17,7 @@ vi.mock(
   }),
 );
 
- 
 vi.mock(import("jose"), () => ({
-   
   SignJWT: vi.fn().mockImplementation(function (this: any) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, vitest/prefer-spy-on
     this.setProtectedHeader = vi.fn().mockReturnThis();
@@ -32,15 +30,14 @@ vi.mock(import("jose"), () => ({
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return this;
   }),
-   
+
   importPKCS8: vi.fn().mockResolvedValue({}),
 }));
 
- 
 const mockGetClientRegistry = vi.fn();
- 
+
 const mockGetParametersProvider = vi.fn();
- 
+
 const mockFetch = vi.fn();
 
 vi.mocked(

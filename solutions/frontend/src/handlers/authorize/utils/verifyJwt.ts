@@ -223,7 +223,7 @@ const verify = async (
     // Check that kid is present in JWT header
     const header = decodeProtectedHeader(signedJwt);
     if (!header.kid) {
-      logger.warn("JWTMissingKid", { client_id: client.client_id });
+      logger.warn("JWTMissingKid");
       metrics.addMetric("JWTMissingKid", MetricUnit.Count, 1);
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(

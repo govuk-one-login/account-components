@@ -23,7 +23,7 @@
         </ul>
     {% endif %}
     {% if algorithm %}
-        <p>Algorithm Used For Signing Client Assertion: <b>{{ algorithm | dump(2) | safe }}</b></p>
+        <p>Algorithm Used For Signing Client Assertion: <strong>{{ algorithm | dump(2) }}</strong></p>
     {% endif %}
     {% if journeyOutcomeDetails %}
         <p>Journey outcome details:</p>
