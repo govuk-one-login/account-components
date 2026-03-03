@@ -323,7 +323,7 @@ Resources:
                 - ssm:GetParametersByPath
               Resource:
                 - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPublicKey
-                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPrivateKey                -
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPrivateKey
                 - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientRsaPublicKey
                 - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientRsaPrivateKey
             - Effect: Allow
