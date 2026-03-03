@@ -7,16 +7,16 @@ import {
   getRedirectToClientRedirectUriResponse,
 } from "./common.js";
 import type { JWTPayload } from "jose";
-import { jwtVerify, createRemoteJWKSet } from "jose";
+import { jwtVerify, createRemoteJWKSet, decodeProtectedHeader } from "jose";
 import type { JWTExpired } from "jose/errors";
 import { JOSEError } from "jose/errors";
-import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
 import { authorizeErrors } from "../../../utils/authorizeErrors.js";
 import { getClaimsSchema } from "../../../utils/getClaimsSchema.js";
 import assert from "node:assert";
 import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 import type { FastifyReply } from "fastify";
+import { jwtVerifyAlgorithms } from "../../../../../commons/utils/constants.js";
 
 const handleJwtError = (
   reply: FastifyReply,
@@ -220,6 +220,21 @@ const verify = async (
   const appConfig = await getAppConfig();
 
   try {
+    // Check that kid is present in JWT header
+    const header = decodeProtectedHeader(signedJwt);
+    if (!header.kid) {
+      logger.warn("JWTMissingKid", { client_id: client.client_id });
+      metrics.addMetric("JWTMissingKid", MetricUnit.Count, 1);
+      return new ErrorResponse(
+        getRedirectToClientRedirectUriResponse(
+          reply,
+          redirectUri,
+          authorizeErrors.jwtInvalid,
+          state,
+        ),
+      );
+    }
+
     const jwks = createRemoteJWKSet(new URL(client.jwks_uri), {
       cacheMaxAge: appConfig.jwks_cache_max_age,
       timeoutDuration: appConfig.jwks_http_timeout,
@@ -227,7 +242,7 @@ const verify = async (
 
     payload = (
       await jwtVerify(signedJwt, jwks, {
-        algorithms: [jwtSigningAlgorithm],
+        algorithms: jwtVerifyAlgorithms,
       })
     ).payload;
   } catch (error) {

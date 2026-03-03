@@ -12,9 +12,7 @@ const mockMetrics = {
   addDimensions: vi.fn(),
 };
 
-const mockLogger = {
-  appendKeys: vi.fn(),
-};
+
 
 const mockOutcomeData = [
   { step: 1, action: "start" },
@@ -47,13 +45,13 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
 
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
-  logger: mockLogger,
-  loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
-  logger: { warn: vi.fn(), debug: vi.fn() },
+  logger: {
+    appendKeys: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+    error: vi.fn(),
+    info: vi.fn(),
+  },
   loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 

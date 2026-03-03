@@ -15,6 +15,7 @@ const mockGetClientRegistry = vi.mocked(getClientRegistry);
 const mockDecodeJwt = vi.mocked(jose.decodeJwt);
 const mockJwtVerify = vi.mocked(jose.jwtVerify);
 const mockCreateRemoteJWKSet = vi.mocked(jose.createRemoteJWKSet);
+const mockDecodeProtectedHeader = vi.mocked(jose.decodeProtectedHeader);
 const mockMetrics = vi.mocked(metrics);
 const mockLogger = vi.mocked(logger);
 
@@ -44,6 +45,7 @@ describe("verifyClientAssertion", () => {
     process.env["TOKEN_ENDPOINT_URL"] = "https://example.com/token";
     mockGetClientRegistry.mockResolvedValue(mockClientRegistry);
     mockDecodeJwt.mockReturnValue(mockDecodedJwt);
+    mockDecodeProtectedHeader.mockReturnValue({ kid: "test-kid", alg: "ES256" });
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     mockJwtVerify.mockResolvedValue({
       payload: mockPayload,
@@ -66,6 +68,11 @@ describe("verifyClientAssertion", () => {
       new URL(mockClientRegistry[0].jwks_uri),
       { cacheMaxAge: 60000, timeoutDuration: 2500 },
     );
+    expect(mockJwtVerify).toHaveBeenCalledWith(
+      mockClientAssertion,
+      expect.any(Function),
+      { algorithms: ["ES256", "RS256"] }
+    );
     // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
       client_id: "test-client-id",
@@ -74,6 +81,28 @@ describe("verifyClientAssertion", () => {
     expect(mockLogger.appendKeys).toHaveBeenCalledWith({
       client_id: "test-client-id",
     });
+  });
+
+  it("should verify client assertion with ES256 algorithm", async () => {
+    const result = await verifyClientAssertion(mockClientAssertion);
+
+    expect(result).toStrictEqual(mockPayload);
+    expect(mockJwtVerify).toHaveBeenCalledWith(
+      mockClientAssertion,
+      expect.any(Function),
+      { algorithms: ["ES256", "RS256"] }
+    );
+  });
+
+  it("should verify client assertion with RS256 algorithm", async () => {
+    const result = await verifyClientAssertion(mockClientAssertion);
+
+    expect(result).toStrictEqual(mockPayload);
+    expect(mockJwtVerify).toHaveBeenCalledWith(
+      mockClientAssertion,
+      expect.any(Function),
+      { algorithms: ["ES256", "RS256"] }
+    );
   });
 
   it("should throw error when iss is missing from JWT", async () => {
@@ -128,6 +157,16 @@ describe("verifyClientAssertion", () => {
       verifyClientAssertion(mockClientAssertion),
     ).rejects.toThrowError(
       "Invalid aud in client assertion: https://invalid-audience.com",
+    );
+  });
+
+  it("should raise an error if the JWT header is missing kid", async () => {
+    mockDecodeProtectedHeader.mockReturnValue({ alg: "ES256" }); // Missing kid
+
+    await expect(
+      verifyClientAssertion(mockClientAssertion),
+    ).rejects.toThrowError(
+      "Missing kid in client assertion header for iss=test-client-id",
     );
   });
 });

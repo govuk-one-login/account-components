@@ -1,13 +1,13 @@
 import type { JWTPayload } from "jose";
-import { jwtVerify, decodeJwt, createRemoteJWKSet } from "jose";
+import { jwtVerify, decodeJwt, createRemoteJWKSet, decodeProtectedHeader } from "jose";
 import { getClientRegistry } from "../../../../../commons/utils/getClientRegistry/index.js";
 import { errorManager } from "./errors.js";
-import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import assert from "node:assert";
 import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 import { getEnvironment } from "../../../../../commons/utils/getEnvironment/index.js";
 import { logger } from "../../../../../commons/utils/logger/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
+import { jwtVerifyAlgorithms } from "../../../../../commons/utils/constants.js";
 
 export const verifyClientAssertion = async (
   clientAssertion: string,
@@ -81,6 +81,15 @@ export const verifyClientAssertion = async (
   });
 
   try {
+    // Check that kid is present in JWT header
+    const header = decodeProtectedHeader(clientAssertion);
+    if (!header.kid) {
+      errorManager.throwError(
+        "invalidClientAssertion",
+        `Missing kid in client assertion header for iss=${String(iss)}`,
+      );
+    }
+
     const jwks = createRemoteJWKSet(
       new URL(
         getEnvironment() === "local"
@@ -93,7 +102,7 @@ export const verifyClientAssertion = async (
       },
     );
     const { payload } = await jwtVerify(clientAssertion, jwks, {
-      algorithms: [jwtSigningAlgorithm],
+      algorithms: jwtVerifyAlgorithms,
     });
 
     return payload;
