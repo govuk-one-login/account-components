@@ -61,8 +61,10 @@ Mappings:
       issuerUrl: https://manage.dev.account.gov.uk
       tokenEndpointUrl: https://api.manage.dev.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.dev.account.gov.uk/journeyoutcome
-      apiAllowedVpcIds: ""
-      apiAllowedVpceIds: ""
+      apiAllowedVpcIds:
+        - "vpc-0de341bf8ceade15b"
+      apiAllowedVpceIds:
+        - "vpce-087ac48f23f28a39b"
       LambdaLogLevel: DEBUG
       UseCanary: false
       frontendUrl: https://manage.dev.account.gov.uk
@@ -74,8 +76,10 @@ Mappings:
       issuerUrl: https://manage.build.account.gov.uk
       tokenEndpointUrl: https://api.manage.build.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.build.account.gov.uk/journeyoutcome
-      apiAllowedVpcIds: ""
-      apiAllowedVpceIds: ""
+      apiAllowedVpcIds:
+        - "vpc-0d1033b8e4c5f3680"
+      apiAllowedVpceIds:
+        - "vpce-0e1bb7e9c33b0e516"
       LambdaLogLevel: INFO
       UseCanary: false
       frontendUrl: https://manage.build.account.gov.uk
@@ -337,7 +341,18 @@ Resources:
               StringEquals:
                 aws:sourceVpce: !If
                   - IsDevOrBuild
-                  - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+                  - !Split
+                    - ","
+                    - !Sub
+                      - "${ImportedVpceId},${AllowedVpceIds}"
+                      - ImportedVpceId:
+                          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+                        AllowedVpceIds: !Join
+                          - ","
+                          - !FindInMap
+                            - EnvironmentConfiguration
+                            - !Ref Environment
+                            - apiAllowedVpceIds
                   - !FindInMap
                     - EnvironmentConfiguration
                     - !Ref Environment
@@ -390,7 +405,18 @@ Resources:
         ResourcePolicy:
           IntrinsicVpcWhitelist: !If
             - IsDevOrBuild
-            - - Fn::ImportValue: !Sub "${VpcStackName}-VpcId"
+            - !Split
+              - ","
+              - !Sub
+                - "${ImportedVpcId},${AllowedVpcIds}"
+                - ImportedVpcId:
+                    Fn::ImportValue: !Sub "${VpcStackName}-VpcId"
+                  AllowedVpcIds: !Join
+                    - ","
+                    - !FindInMap
+                      - EnvironmentConfiguration
+                      - !Ref Environment
+                      - apiAllowedVpcIds
             - !FindInMap
               - EnvironmentConfiguration
               - !Ref Environment
@@ -441,7 +467,18 @@ Resources:
               StringEquals:
                 aws:sourceVpce: !If
                   - IsDevOrBuild
-                  - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+                  - !Split
+                    - ","
+                    - !Sub
+                      - "${ImportedVpceId},${AllowedVpceIds}"
+                      - ImportedVpceId:
+                          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+                        AllowedVpceIds: !Join
+                          - ","
+                          - !FindInMap
+                            - EnvironmentConfiguration
+                            - !Ref Environment
+                            - apiAllowedVpceIds
                   - !FindInMap
                     - EnvironmentConfiguration
                     - !Ref Environment
