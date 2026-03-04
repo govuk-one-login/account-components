@@ -9,6 +9,7 @@ import { Scope } from "../../../commons/utils/interfaces.js";
 export const getClaimsSchema = (
   client: ClientEntry,
   redirectUri: string,
+  scope: string,
   state?: string,
 ) => {
   assert.ok(
@@ -75,6 +76,7 @@ export const getClaimsSchema = (
     ),
     redirect_uri: v.literal(redirectUri),
     scope: v.pipe(
+      v.literal(scope),
       v.picklist(validClientScopes, (issue) => {
         logger.warn("Scope Denied", {
           client_id: client.client_id,

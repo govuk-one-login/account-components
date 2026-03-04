@@ -73,6 +73,7 @@ describe("verifyJwt", () => {
     consider_user_logged_in: false,
   };
   const redirectUri = "https://example.com/callback";
+  const scope = "openid";
   const state = "test-state";
   const reply = {
     redirect: vi.fn(),
@@ -108,6 +109,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -125,6 +127,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -150,6 +153,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -175,6 +179,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -200,6 +205,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -225,6 +231,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -250,6 +257,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -275,6 +283,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -300,6 +309,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -325,6 +335,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -350,6 +361,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -377,6 +389,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -402,6 +415,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -431,6 +445,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -455,12 +470,19 @@ describe("verifyJwt", () => {
     mockJwtVerify.mockResolvedValue({ payload });
     mockGetClaimsSchema.mockReturnValue(claimsSchema);
 
-    const result = await verifyJwt(reply, signedJwt, client, redirectUri);
+    const result = await verifyJwt(
+      reply,
+      signedJwt,
+      client,
+      redirectUri,
+      scope,
+    );
 
     expect(result).toStrictEqual(payload);
     expect(mockGetClaimsSchema).toHaveBeenCalledWith(
       client,
       redirectUri,
+      scope,
       undefined,
     );
   });
@@ -475,6 +497,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -500,6 +523,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 
@@ -525,6 +549,7 @@ describe("verifyJwt", () => {
       signedJwt,
       client,
       redirectUri,
+      scope,
       state,
     );
 

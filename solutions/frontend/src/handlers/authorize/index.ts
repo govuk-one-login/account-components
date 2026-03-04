@@ -62,6 +62,7 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
       signedJwt,
       client,
       queryParams.redirect_uri,
+      queryParams.scope,
       queryParams.state,
     );
     if (claims instanceof ErrorResponse) {

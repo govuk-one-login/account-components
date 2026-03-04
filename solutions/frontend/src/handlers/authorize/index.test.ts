@@ -203,6 +203,14 @@ describe("getHandler", () => {
     expect(decryptJar).toHaveBeenCalledTimes(1);
     expect(checkSameUserAgent).toHaveBeenCalledTimes(1);
     expect(verifyJwt).toHaveBeenCalledTimes(1);
+    expect(verifyJwt).toHaveBeenCalledWith(
+      mockReply,
+      "signed-jwt",
+      mockClient,
+      "https://example.com/callback",
+      "test-scope",
+      undefined,
+    );
     expect(result).toBe(mockReply);
   });
 
