@@ -160,7 +160,25 @@ components:
     RequestObjectJAR:
       in: query
       name: request
-      description: The Request Object that holds authorization request parameters stated [in the table in step 4 of the High Level Process Description](https://govukverify.atlassian.net/wiki/spaces/DID/pages/5654708312/High+Level#Process-Description).
+      description: |
+        The Request Object that holds authorization request parameters stated [in the table in step 4 of the High Level Process Description](https://govukverify.atlassian.net/wiki/spaces/DID/pages/5654708312/High+Level#Process-Description).
+
+        Expected JWT claims:
+        - `client_id` (string): Client identifier, must match the client_id query parameter
+        - `iss` (string): Issuer, must match client_id
+        - `aud` (string): Audience, must be the authorize endpoint URL
+        - `response_type` (string): Must be "code"
+        - `exp` (number): Expiration time
+        - `iat` (number): Issued at time, must not be in the future
+        - `redirect_uri` (string): Redirect URI, must match the redirect_uri query parameter
+        - `scope` (string): Requested scope, must match the scope query parameter
+        - `state` (string, optional): CSRF protection state, must match the state query parameter
+        - `jti` (string): JWT ID, must be unique
+        - `account_management_api_access_token` (string, optional): Access token for account management API
+        - `account_data_api_access_token` (string, optional): Access token for account data API
+        - `sub` (string): Internal pairwise identifier
+        - `public_sub` (string): Public subject identifier
+        - `email` (string): User email address
       required: true
       schema:
         type: string

@@ -257,9 +257,10 @@ const checkClaims = async (
   payload: JWTPayload,
   client: ClientEntry,
   redirectUri: string,
+  scope: string,
   state?: string,
 ) => {
-  const claimsSchema = getClaimsSchema(client, redirectUri, state);
+  const claimsSchema = getClaimsSchema(client, redirectUri, scope, state);
 
   const claimsResult = v.safeParse(claimsSchema, payload, {
     abortEarly: false,
@@ -292,6 +293,7 @@ export const verifyJwt = async (
   signedJwt: string,
   client: ClientEntry,
   redirectUri: string,
+  scope: string,
   state?: string,
 ) => {
   const verifyResult = await verify(
@@ -311,6 +313,7 @@ export const verifyJwt = async (
     verifyResult,
     client,
     redirectUri,
+    scope,
     state,
   );
 
