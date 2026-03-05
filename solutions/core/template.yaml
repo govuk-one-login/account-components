@@ -1062,6 +1062,14 @@ Resources:
       Value: !GetAtt TxMASQSProducerAuditEventQueue.QueueUrl
       Description: URL of the audit events queue
 
+  TxMASQSProducerAuditEventQueueArnParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${AWS::StackName}/TxMASQSProducerAuditEventQueueArn"
+      Type: String
+      Value: !GetAtt TxMASQSProducerAuditEventQueue.Arn
+      Description: ARN of the audit events queue
+
   SqsKmsKeyArnParameter:
     Type: AWS::SSM::Parameter
     Properties:
