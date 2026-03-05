@@ -191,6 +191,7 @@ Globals:
     VpcConfig:
       SubnetIds: !If
         - IsDevOrBuild
+        # Protected subnets are needed in dev and build to allow requests to the stubs
         - - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
           - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
@@ -263,6 +264,98 @@ Globals:
         DT_LOGGING_NODEJS_FLAGS: Exporter=true,LambdaSensor=false
         DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: true
         DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
+        SESSIONS_SIGNER: !Sub "{{resolve:secretsmanager:${SessionSecret}:SecretString}}"
+        SESSIONS_TABLE_NAME: !Sub ${AWS::StackName}-SessionStore
+        ROOT_COOKIE_DOMAIN:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            rootCookieDomain,
+          ]
+        NOTIFICATIONS_QUEUE_URL: !Sub "{{resolve:ssm:/${CoreStackName}/NotificationsQueueUrl}}"
+        AUTH_CODE_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableName}}"
+        JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableName}}"
+        AUTHORIZE_ENDPOINT_URL:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            authorizeEndpointUrl,
+          ]
+        AUDIT_EVENTS_QUEUE_URL: !Sub "{{resolve:ssm:/${CoreStackName}/TxMASQSProducerAuditEventQueueUrl}}"
+        AUTH_FRONTEND_URL:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            authFrontendUrl,
+          ]
+        ANALYTICS_COOKIE_DOMAIN:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            analyticsCookieDomain,
+          ]
+        GA4_CONTAINER_ID:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            ga4ContainerId,
+          ]
+        ACCOUNT_MANAGEMENT_API_URL:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            accountManagementApiUrl,
+          ]
+        CONTACT_URL:
+          !FindInMap [EnvironmentConfiguration, !Ref Environment, contactUrl]
+        PASSKEYS_RP_ID:
+          !FindInMap [EnvironmentConfiguration, !Ref Environment, passkeysRpId]
+        PASSKEYS_RP_NAME:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            passkeysRpName,
+          ]
+        PASSKEYS_EXPECTED_ORIGIN:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            passkeysExpectedOrigin,
+          ]
+        YOUR_SERVICES_URL:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            yourServicesUrl,
+          ]
+        SECURITY_URL:
+          !FindInMap [EnvironmentConfiguration, !Ref Environment, securityUrl]
+        AUTH_CREATE_PASSKEY_URL:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            authCreatePasskeyUrl,
+          ]
+        ANALYTICS_ENABLED:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            analyticsEnabled,
+          ]
+        DYNATRACE_RUM_URL:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            dynatraceRumUrl,
+          ]
+        ACCOUNT_DATA_API_URL:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            accountDataApiUrl,
+          ]
+        JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
+        REPLAY_ATTACK_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/ReplayAttackTableName}}"
 
 Resources:
   CodeDeployServiceRole:
@@ -473,104 +566,6 @@ Resources:
             Method: ANY
             Path: /{proxy+}
             RestApiId: !Ref FrontendApiGateway
-      Environment:
-        Variables:
-          SESSIONS_SIGNER: !Sub "{{resolve:secretsmanager:${SessionSecret}:SecretString}}"
-          SESSIONS_TABLE_NAME: !Sub ${AWS::StackName}-SessionStore
-          ROOT_COOKIE_DOMAIN:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              rootCookieDomain,
-            ]
-          NOTIFICATIONS_QUEUE_URL: !Sub "{{resolve:ssm:/${CoreStackName}/NotificationsQueueUrl}}"
-          AUTH_CODE_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableName}}"
-          JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableName}}"
-          AUTHORIZE_ENDPOINT_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              authorizeEndpointUrl,
-            ]
-          AUDIT_EVENTS_QUEUE_URL: !Sub "{{resolve:ssm:/${CoreStackName}/TxMASQSProducerAuditEventQueueUrl}}"
-          AUTH_FRONTEND_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              authFrontendUrl,
-            ]
-          ANALYTICS_COOKIE_DOMAIN:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              analyticsCookieDomain,
-            ]
-          GA4_CONTAINER_ID:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              ga4ContainerId,
-            ]
-          ACCOUNT_MANAGEMENT_API_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              accountManagementApiUrl,
-            ]
-          CONTACT_URL:
-            !FindInMap [EnvironmentConfiguration, !Ref Environment, contactUrl]
-          PASSKEYS_RP_ID:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              passkeysRpId,
-            ]
-          PASSKEYS_RP_NAME:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              passkeysRpName,
-            ]
-          PASSKEYS_EXPECTED_ORIGIN:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              passkeysExpectedOrigin,
-            ]
-          YOUR_SERVICES_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              yourServicesUrl,
-            ]
-          SECURITY_URL:
-            !FindInMap [EnvironmentConfiguration, !Ref Environment, securityUrl]
-          AUTH_CREATE_PASSKEY_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              authCreatePasskeyUrl,
-            ]
-          ANALYTICS_ENABLED:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              analyticsEnabled,
-            ]
-          DYNATRACE_RUM_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              dynatraceRumUrl,
-            ]
-          ACCOUNT_DATA_API_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              accountDataApiUrl,
-            ]
-          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
-          REPLAY_ATTACK_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/ReplayAttackTableName}}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -618,5 +613,75 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/FrontendLambda"
+      RetentionInDays: 30
+      KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
+
+  PasskeyCreateLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      LoggingConfig:
+        LogGroup: !Ref PasskeyCreateLambdaLogGroup
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /set-up-passkey
+            RestApiId: !Ref FrontendApiGateway
+      VpcConfig:
+        SubnetIds:
+          # TODO
+          - Fn::ImportValue: !Sub ${VpcStackName}-PublicSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-PublicSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-PublicSubnetIdC
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:DescribeTable
+                - dynamodb:PutItem
+                - dynamodb:DeleteItem
+                - dynamodb:GetItem
+                - dynamodb:Scan
+                - dynamodb:UpdateItem
+              Resource: !GetAtt SessionsTable.Arn
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+              Resource:
+                - !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableArn}}"
+                - !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableArn}}"
+                - !Sub "{{resolve:ssm:/${CoreStackName}/ReplayAttackTableArn}}"
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/DynamoDbSSEKeyArn}}"
+            - Effect: Allow
+              Action:
+                - kms:DescribeKey
+                - kms:Decrypt
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyArn}}"
+            - Effect: Allow
+              Action:
+                - appconfig:GetLatestConfiguration
+                - appconfig:StartConfigurationSession
+              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/NotificationsQueueArn}}"
+            - Effect: Allow
+              Action:
+                - kms:GenerateDataKey
+              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/SqsKmsKeyArn}}"
+
+  PasskeyCreateLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/PasskeyCreateLambda"
       RetentionInDays: 30
       KmsKeyId: !Sub "{{resolve:ssm:/${CoreStackName}/CloudWatchEncryptionKeyArn}}"
