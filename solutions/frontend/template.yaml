@@ -608,7 +608,9 @@ Resources:
             - Effect: Allow
               Action:
                 - sqs:SendMessage
-              Resource: !Sub "{{resolve:ssm:/${CoreStackName}/NotificationsQueueArn}}"
+              Resource:
+                - !Sub "{{resolve:ssm:/${CoreStackName}/NotificationsQueueArn}}"
+                - !Sub "{{resolve:ssm:/${CoreStackName}/TxMASQSProducerAuditEventQueueArn}}"
             - Effect: Allow
               Action:
                 - kms:GenerateDataKey
