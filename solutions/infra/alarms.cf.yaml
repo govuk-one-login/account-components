@@ -97,24 +97,10 @@ Resources:
         - Key: Severity
           Value: low
 
-  HighSeverityTopicArnSSMParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: "/alarms/high-severity/topic-arn"
-      Type: String
-      Value: !Ref HighSeveritySNSTopic
-
-  LowSeverityTopicArnSSMParameter:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: "/alarms/low-severity/topic-arn"
-      Type: String
-      Value: !Ref LowSeveritySNSTopic
-
-  HighSeveritySlackChatbotIAMRole:
+  SlackChatbotIAMRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "chatbot-${Environment}-high"
+      RoleName: !Sub "chatbot-${Environment}"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -129,11 +115,21 @@ Resources:
     Type: AWS::Chatbot::SlackChannelConfiguration
     Properties:
       ConfigurationName: !Sub "alarms-${Environment}-high"
-      IamRoleArn: !GetAtt HighSeveritySlackChatbotIAMRole.Arn
+      IamRoleArn: !GetAtt SlackChatbotIAMRole.Arn
       SlackChannelId: !Ref AlarmSlackChannelId
       SlackWorkspaceId: !Ref AlarmSlackWorkspaceId
       SnsTopicArns:
         - !Ref HighSeveritySNSTopic
+
+  LowSeverityChatbotSlackChannelConfiguration:
+    Type: AWS::Chatbot::SlackChannelConfiguration
+    Properties:
+      ConfigurationName: !Sub "alarms-${Environment}-low"
+      IamRoleArn: !GetAtt SlackChatbotIAMRole.Arn
+      SlackChannelId: !Ref AlarmSlackChannelId
+      SlackWorkspaceId: !Ref AlarmSlackWorkspaceId
+      SnsTopicArns:
+        - !Ref LowSeveritySNSTopic
 
   PagerdutySNSSubscription:
     Type: AWS::SNS::Subscription
