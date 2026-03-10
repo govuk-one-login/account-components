@@ -69,6 +69,8 @@ Mappings:
       UseCanary: false
       frontendUrl: https://manage.dev.account.gov.uk
       cacheHeaderMaxAge: 5
+      sharedAccounts:
+        - "985326104449" # di-account-dev
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.build.account.gov.uk
@@ -84,6 +86,8 @@ Mappings:
       UseCanary: false
       frontendUrl: https://manage.build.account.gov.uk
       cacheHeaderMaxAge: 5
+      sharedAccounts:
+        - "301577035144" # di-account-build
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.staging.account.gov.uk
@@ -101,6 +105,8 @@ Mappings:
       UseCanary: true
       frontendUrl: https://manage.staging.account.gov.uk
       cacheHeaderMaxAge: 60
+      sharedAccounts:
+        - "539729775994" # di-account-staging
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.integration.account.gov.uk
@@ -118,6 +124,8 @@ Mappings:
       UseCanary: true
       frontendUrl: https://manage.integration.account.gov.uk
       cacheHeaderMaxAge: 60
+      sharedAccounts:
+        - "666500506359" # di-account-integration
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       apiDomain: api.manage.account.gov.uk
@@ -135,6 +143,8 @@ Mappings:
       UseCanary: true
       frontendUrl: https://manage.account.gov.uk
       cacheHeaderMaxAge: 60
+      sharedAccounts:
+        - "026991849909" # di-account-production
 
 Conditions:
   UseCodeSigning:
@@ -818,3 +828,18 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiGateway}/*/*"
+
+  ApiResourceShare:
+    Type: AWS::RAM::ResourceShare
+    Properties:
+      Name: !Sub "${AWS::StackName}-api-share"
+      ResourceArns:
+        - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGateway}"
+      Principals:
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, sharedAccounts]
+      AllowExternalPrincipals: false
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Purpose
+          Value: "API Gateway sharing for cross-account access"
