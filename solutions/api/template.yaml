@@ -834,7 +834,7 @@ Resources:
     Properties:
       Name: !Sub "${AWS::StackName}-api-share"
       ResourceArns:
-        - !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${ApiGateway}"
+        - !GetAtt ApiDomain.DomainNameArn
       Principals:
         !FindInMap [EnvironmentConfiguration, !Ref Environment, sharedAccounts]
       AllowExternalPrincipals: false
@@ -842,4 +842,4 @@ Resources:
         - Key: Environment
           Value: !Ref Environment
         - Key: Purpose
-          Value: "API Gateway sharing for cross-account access"
+          Value: "API Gateway domain sharing for cross-account access"
