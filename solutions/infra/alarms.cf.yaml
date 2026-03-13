@@ -65,6 +65,16 @@ Resources:
                 kms:ViaService: !Sub "sns.${AWS::Region}.amazonaws.com"
               ArnLike:
                 aws:SourceArn: !Sub "arn:aws:sns:${AWS::Region}:${AWS::AccountId}:*"
+          - Effect: Allow
+            Principal:
+              Service: cloudwatch.amazonaws.com
+            Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey*
+            Resource: "*"
+            Condition:
+              ArnLike:
+                aws:SourceArn: !Sub "arn:aws:cloudwatch:${AWS::Region}:${AWS::AccountId}:alarm:*"
       Tags:
         - Key: Name
           Value: !Sub "${AWS::StackName}-SnsSSEKey"
@@ -111,24 +121,15 @@ Resources:
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/CloudWatchReadOnlyAccess" # This policy grants read-only access to CloudWatch, which is often sufficient for Chatbot to display alarm details.
 
-  HighSeverityChatbotSlackChannelConfiguration:
+  ChatbotSlackChannelConfiguration:
     Type: AWS::Chatbot::SlackChannelConfiguration
     Properties:
-      ConfigurationName: !Sub "alarms-${Environment}-high"
+      ConfigurationName: !Sub "alarms-${Environment}"
       IamRoleArn: !GetAtt SlackChatbotIAMRole.Arn
       SlackChannelId: !Ref AlarmSlackChannelId
       SlackWorkspaceId: !Ref AlarmSlackWorkspaceId
       SnsTopicArns:
         - !Ref HighSeveritySNSTopic
-
-  LowSeverityChatbotSlackChannelConfiguration:
-    Type: AWS::Chatbot::SlackChannelConfiguration
-    Properties:
-      ConfigurationName: !Sub "alarms-${Environment}-low"
-      IamRoleArn: !GetAtt SlackChatbotIAMRole.Arn
-      SlackChannelId: !Ref AlarmSlackChannelId
-      SlackWorkspaceId: !Ref AlarmSlackWorkspaceId
-      SnsTopicArns:
         - !Ref LowSeveritySNSTopic
 
   PagerdutySNSSubscription:
