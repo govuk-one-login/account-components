@@ -5,7 +5,7 @@ resource "aws_cloudformation_stack" "build_notifications_stack" {
 
   parameters = {
     InitialNotificationStack = "Yes"
-    SlackChannelId           = var.environment == "production" ? "C04D3SQNJ4B" : "C083UQKHPC2"
+    SlackChannelId           = var.environment == "production" ? "C0A2N78NXDX" : "C0A1TS3EJ4X"
     EnrichedNotifications    = "True"
   }
 
