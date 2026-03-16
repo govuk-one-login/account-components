@@ -26,6 +26,9 @@ Parameters:
   CoreStackName:
     Type: String
     Default: "components-core"
+  ApiStackName:
+    Type: String
+    Default: "components-api"
 
 Mappings:
   EnvironmentConfiguration:
@@ -33,15 +36,11 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       stubsDomain: stubs.manage.dev.account.gov.uk
       LambdaLogLevel: DEBUG
-      apiTokenEndpointUrl: https://api.manage.dev.account.gov.uk/token
-      apiJourneyOutcomeEndpointUrl: https://api.manage.dev.account.gov.uk/journeyoutcome
       rootDomain: dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       stubsDomain: stubs.manage.build.account.gov.uk
       LambdaLogLevel: INFO
-      apiTokenEndpointUrl: https://api.manage.build.account.gov.uk/token
-      apiJourneyOutcomeEndpointUrl: https://api.manage.build.account.gov.uk/journeyoutcome
       rootDomain: build.account.gov.uk
 
 Conditions:
@@ -297,20 +296,11 @@ Resources:
           MOCK_CLIENT_RSA_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientRsaPublicKey"
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
           DEFAULT_AUDIENCE: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
+          JWT_AUDIENCE_URL_PREFIX: !Sub "https://api.manage.${Environment}.account.gov.uk"
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
           AUTHORIZE_URL: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
-          API_TOKEN_ENDPOINT_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              apiTokenEndpointUrl,
-            ]
-          API_JOURNEY_OUTCOME_ENDPOINT_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              apiJourneyOutcomeEndpointUrl,
-            ]
+          API_TOKEN_ENDPOINT_URL: !Sub "{{resolve:ssm:/tests/${ApiStackName}/PrivateApiGatewayUrl}}/token"
+          API_JOURNEY_OUTCOME_ENDPOINT_URL: !Sub "{{resolve:ssm:/tests/${ApiStackName}/PrivateApiGatewayUrl}}/journeyoutcome"
           ROOT_DOMAIN:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
       Policies:

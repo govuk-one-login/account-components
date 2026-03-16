@@ -156,13 +156,13 @@ const getTokenRequestBody = async ({
 
   assert.ok(privateKeyPem, "privateKeyPem is not set");
   assert.ok(
-    process.env["API_TOKEN_ENDPOINT_URL"],
-    "API_TOKEN_ENDPOINT_URL is not set",
+    process.env["JWT_AUDIENCE_URL_PREFIX"],
+    "JWT_AUDIENCE_URL_PREFIX is not set",
   );
 
   const clientAssertion = await new SignJWT({
     iss: client.client_id,
-    aud: process.env["API_TOKEN_ENDPOINT_URL"],
+    aud: `${process.env["JWT_AUDIENCE_URL_PREFIX"]}/token`,
     jti: crypto.randomUUID(),
   })
     .setProtectedHeader({ alg: algorithm, kid })
