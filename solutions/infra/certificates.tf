@@ -18,7 +18,6 @@ resource "aws_cloudformation_stack" "certificate_stack_london" {
   parameters = {
     DomainName           = var.hosted_zone_domain
     HostedZoneID         = aws_cloudformation_stack.hosted_zone.outputs["HostedZoneID"]
-    AlternativeNameOne   = var.api_domain
     AlternativeNameThree = var.stubs_domain
   }
 }

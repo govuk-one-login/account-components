@@ -56,33 +56,34 @@ Mappings:
   EnvironmentConfiguration:
     dev:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      apiDomain: api.manage.dev.account.gov.uk
       authorizeEndpointUrl: https://manage.dev.account.gov.uk/authorize
       issuerUrl: https://manage.dev.account.gov.uk
       tokenEndpointUrl: https://api.manage.dev.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.dev.account.gov.uk/journeyoutcome
-      apiAllowedVpcIds: ""
-      apiAllowedVpceIds: ""
+      apiAllowedVpcIds:
+        - "vpc-0de341bf8ceade15b" # di-account-dev
+      apiAllowedVpceIds:
+        - "vpce-087ac48f23f28a39b" # di-account-dev
       LambdaLogLevel: DEBUG
       UseCanary: false
       frontendUrl: https://manage.dev.account.gov.uk
       cacheHeaderMaxAge: 5
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      apiDomain: api.manage.build.account.gov.uk
       authorizeEndpointUrl: https://manage.build.account.gov.uk/authorize
       issuerUrl: https://manage.build.account.gov.uk
       tokenEndpointUrl: https://api.manage.build.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.build.account.gov.uk/journeyoutcome
-      apiAllowedVpcIds: ""
-      apiAllowedVpceIds: ""
+      apiAllowedVpcIds:
+        - "vpc-0d1033b8e4c5f3680" # di-account-build
+      apiAllowedVpceIds:
+        - "vpce-0e1bb7e9c33b0e516" # di-account-build
       LambdaLogLevel: INFO
       UseCanary: false
       frontendUrl: https://manage.build.account.gov.uk
       cacheHeaderMaxAge: 5
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      apiDomain: api.manage.staging.account.gov.uk
       authorizeEndpointUrl: https://manage.staging.account.gov.uk/authorize
       issuerUrl: https://manage.staging.account.gov.uk
       tokenEndpointUrl: https://api.manage.staging.account.gov.uk/token
@@ -99,7 +100,6 @@ Mappings:
       cacheHeaderMaxAge: 60
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
-      apiDomain: api.manage.integration.account.gov.uk
       authorizeEndpointUrl: https://manage.integration.account.gov.uk/authorize
       issuerUrl: https://manage.integration.account.gov.uk
       tokenEndpointUrl: https://api.manage.integration.account.gov.uk/token
@@ -116,7 +116,6 @@ Mappings:
       cacheHeaderMaxAge: 60
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
-      apiDomain: api.manage.account.gov.uk
       authorizeEndpointUrl: https://manage.account.gov.uk/authorize
       issuerUrl: https://manage.account.gov.uk
       tokenEndpointUrl: https://api.manage.account.gov.uk/token
@@ -314,87 +313,33 @@ Resources:
                 Action: kms:Decrypt
                 Resource: !Sub "{{resolve:ssm:/${CoreStackName}/S3SSEKeyArn}}"
 
-  ApiDomain:
-    Type: AWS::ApiGateway::DomainNameV2
-    Properties:
-      CertificateArn:
-        Fn::ImportValue: certificate-CertificateARN
-      DomainName:
-        !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
-      EndpointConfiguration:
-        Types:
-          - PRIVATE
-      SecurityPolicy: SecurityPolicy_TLS13_1_2_FIPS_PQ_2025_09
-      EndpointAccessMode: STRICT
-      Policy:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal: "*"
-            Action: execute-api:Invoke
-            Resource: "*"
-            Condition:
-              StringEquals:
-                aws:sourceVpce: !If
-                  - IsDevOrBuild
-                  - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
-                  - !FindInMap
-                    - EnvironmentConfiguration
-                    - !Ref Environment
-                    - apiAllowedVpceIds
-
-  BasePathMapping:
-    Type: AWS::ApiGateway::BasePathMappingV2
-    DependsOn:
-      - ApiGatewayStage
-    Properties:
-      DomainNameArn: !GetAtt ApiDomain.DomainNameArn
-      RestApiId: !Ref ApiGateway
-      Stage: !Ref ApiStageName
-
-  # Required for stubs to call the API
-  ApiDomainRecord:
-    Type: AWS::Route53::RecordSet
-    Condition: IsDevOrBuild
-    Properties:
-      HostedZoneId:
-        Fn::ImportValue: hosted-zone-HostedZoneID
-      Name: !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
-      Type: A
-      AliasTarget:
-        DNSName:
-          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayVpcEndpointPrimaryDnsEntry"
-        HostedZoneId:
-          Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayVpcEndpointHostedZoneId"
-        EvaluateTargetHealth: false
-
-  # Required for stubs to call the API
-  ApiDomainNameAccessAssociation:
-    Type: AWS::ApiGateway::DomainNameAccessAssociation
-    Condition: IsDevOrBuild
-    Properties:
-      DomainNameArn: !GetAtt ApiDomain.DomainNameArn
-      AccessAssociationSource:
-        Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
-      AccessAssociationSourceType: VPCE
-
   ApiGateway:
     Type: AWS::Serverless::Api
     Properties:
       Description: Account Components API
       StageName: !Ref ApiStageName
       AlwaysDeploy: true
-      DisableExecuteApiEndpoint: true
+      DisableExecuteApiEndpoint: false
       TracingEnabled: true
       Auth:
         ResourcePolicy:
-          IntrinsicVpcWhitelist: !If
-            - IsDevOrBuild
-            - - Fn::ImportValue: !Sub "${VpcStackName}-VpcId"
-            - !FindInMap
-              - EnvironmentConfiguration
-              - !Ref Environment
-              - apiAllowedVpcIds
+          IntrinsicVpcWhitelist: !Split
+            - ","
+            - !Sub
+              - "${AllowedVpcIds}${OptionalImportedVpc}"
+              - AllowedVpcIds: !Join
+                  - ","
+                  - !FindInMap
+                    - EnvironmentConfiguration
+                    - !Ref Environment
+                    - apiAllowedVpcIds
+                OptionalImportedVpc: !If
+                  - IsDevOrBuild
+                  - !Sub
+                    - ",${ImportedVpc}"
+                    - ImportedVpc:
+                        Fn::ImportValue: !Sub "${VpcStackName}-VpcId"
+                  - ""
 
       EndpointConfiguration:
         Type: PRIVATE
@@ -439,16 +384,25 @@ Resources:
             Resource: "*"
             Condition:
               StringEquals:
-                aws:sourceVpce: !If
-                  - IsDevOrBuild
-                  - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
-                  - !FindInMap
-                    - EnvironmentConfiguration
-                    - !Ref Environment
-                    - apiAllowedVpceIds
+                aws:sourceVpce: !Split
+                  - ","
+                  - !Sub
+                    - "${AllowedVpceIds}${OptionalImportedVpce}"
+                    - AllowedVpceIds: !Join
+                        - ","
+                        - !FindInMap
+                          - EnvironmentConfiguration
+                          - !Ref Environment
+                          - apiAllowedVpceIds
+                      OptionalImportedVpce: !If
+                        - IsDevOrBuild
+                        - !Sub
+                          - ",${ImportedVpce}"
+                          - ImportedVpce:
+                              Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+                        - ""
       Variables:
-        ApiDomain:
-          !FindInMap [EnvironmentConfiguration, !Ref Environment, apiDomain]
+        ApiDomain: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
         AuthorizeEndpointUrl:
           !FindInMap [
             EnvironmentConfiguration,
@@ -548,8 +502,8 @@ Resources:
                         {
                             "issuer": "$stageVariables.IssuerUrl",
                             "authorization_endpoint": "$stageVariables.AuthorizeEndpointUrl",
-                            "token_endpoint": "https://$stageVariables.ApiDomain/token",
-                            "jwks_uri": "https://$stageVariables.ApiDomain/.well-known/jwks.json",
+                            "token_endpoint": "$stageVariables.ApiDomain/token",
+                            "jwks_uri": "$stageVariables.ApiDomain/.well-known/jwks.json",
                             "response_types_supported": ["code"],
                             "token_endpoint_auth_methods_supported": ["private_key_jwt"],
                             "token_endpoint_auth_signing_alg_values_supported": ["ES256"],
@@ -560,6 +514,15 @@ Resources:
                 requestTemplates:
                   application/json: '{"statusCode": 200}'
                 type: mock
+
+  ApiGatewayUrlParameter: # for use by Stubs template.yaml and Integration Tests only
+    Type: AWS::SSM::Parameter
+    Condition: IsDevOrBuild
+    Properties:
+      Name: !Sub "/tests/${AWS::StackName}/PrivateApiGatewayUrl"
+      Type: String
+      Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+      Description: URL of the AMC Private API
 
   ApiGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup

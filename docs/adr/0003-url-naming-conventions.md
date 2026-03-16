@@ -50,6 +50,14 @@ Use subdirectories to separate AMC journeys e.g. manage.account.gov.uk/journeyna
 
 ### API (Not user-facing)
 
-Clear precedents on API URL naming have been set across government: [Get an API domain on Gov.UK](https://www.gov.uk/guidance/get-an-api-domain-on-govuk), clearly seen on the [Gov.UK API Catalogue](https://www.api.gov.uk/)
+~~Clear precedents on API URL naming have been set across government: [Get an API domain on Gov.UK](https://www.gov.uk/guidance/get-an-api-domain-on-govuk), clearly seen on the [Gov.UK API Catalogue](https://www.api.gov.uk/)
 
-APIs must be created using a subdomain, so in the case of account management API this will be api.manage.account.gov.uk.
+APIs must be created using a subdomain, so in the case of account management API this will be api.manage.account.gov.uk.~~
+
+13th March 2026: Private API Domain Name removed
+Decided not using subdomains for private API as it causes a tighter coupling between AWS accounts.
+The **Provider** still needs to know the consumers AWS account ID, VPC ID and VPCE ID for the execute API endpoint as well as create DNS records, Domain Name association, RAM share and so on.
+The **Consumer** needs to the know the API ID along with have to still create a DNS record for the API along with a Domain Name Association also using the RAM share.
+Impact:
+Without Custom Domain names, the URL for the API will be in the form https://{rest-api-id}-{vpce-id}.execute-api.eu-west-2.amazonaws.com/v1.
+Therefore, the **Provider** only needs to know the VPC ID & VPC ID and the **Consumer** only needs to know the API ID.
