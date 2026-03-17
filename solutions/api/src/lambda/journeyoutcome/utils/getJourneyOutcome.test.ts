@@ -5,8 +5,9 @@ const mockDynamoDbGet = vi.fn();
 const mockMetricsAddDimensions = vi.fn();
 const mockLoggerAppendKeys = vi.fn();
 
+// @ts-expect-error
 vi.doMock(
-  "../../../../../commons/utils/awsClient/dynamodbClient/index.js",
+  import("../../../../../commons/utils/awsClient/dynamodbClient/index.js"),
   () => ({
     getDynamoDbClient: vi.fn(() => ({
       get: mockDynamoDbGet,
@@ -14,15 +15,18 @@ vi.doMock(
   }),
 );
 
-vi.doMock("./errors.js", () => ({
+// @ts-expect-error
+vi.doMock(import("./errors.js"), () => ({
   errorManager: { throwError: vi.fn(() => undefined) },
 }));
 
-vi.doMock("../../../../../commons/utils/metrics/index.js", () => ({
+// @ts-expect-error
+vi.doMock(import("../../../../../commons/utils/metrics/index.js"), () => ({
   metrics: { addDimensions: mockMetricsAddDimensions },
 }));
 
-vi.doMock("../../../../../commons/utils/logger/index.js", () => ({
+// @ts-expect-error
+vi.doMock(import("../../../../../commons/utils/logger/index.js"), () => ({
   logger: { appendKeys: mockLoggerAppendKeys },
 }));
 

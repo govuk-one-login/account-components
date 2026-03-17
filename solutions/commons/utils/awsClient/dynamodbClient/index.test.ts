@@ -30,14 +30,16 @@ const mockCommands = {
 describe("getDynamoDbClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.doMock("@aws-sdk/client-dynamodb", () => ({
+    // @ts-expect-error
+    vi.doMock(import("@aws-sdk/client-dynamodb"), () => ({
       DynamoDBClient: vi.fn(function () {
         return mockDynamoDbClient;
       }),
       QueryCommand: mockCommands.QueryCommand,
       ScanCommand: mockCommands.ScanCommand,
     }));
-    vi.doMock("@aws-sdk/lib-dynamodb", () => ({
+    // @ts-expect-error
+    vi.doMock(import("@aws-sdk/lib-dynamodb"), () => ({
       DynamoDBDocumentClient: {
         from: vi.fn(() => mockDocClient),
       },
@@ -49,13 +51,16 @@ describe("getDynamoDbClient", () => {
       BatchGetCommand: mockCommands.BatchGetCommand,
       TransactWriteCommand: mockCommands.TransactWriteCommand,
     }));
-    vi.doMock("../getAwsClientConfig/index.js", () => ({
+    // @ts-expect-error
+    vi.doMock(import("../getAwsClientConfig/index.js"), () => ({
       getAwsClientConfig: vi.fn(() => ({ region: "eu-west-2" })),
     }));
-    vi.doMock("../../getEnvironment/index.js", () => ({
+    // @ts-expect-error
+    vi.doMock(import("../../getEnvironment/index.js"), () => ({
       getEnvironment: vi.fn(() => "local"),
     }));
-    vi.doMock("aws-xray-sdk", () => ({
+    // @ts-expect-error
+    vi.doMock(import("aws-xray-sdk"), () => ({
       captureAWSv3Client: vi.fn(<T>(client: T): T => client),
     }));
   });
@@ -220,11 +225,13 @@ describe("getDynamoDbClient", () => {
 
     const mockCaptureAWSv3Client = vi.fn(<T>(client: T): T => client);
 
-    vi.doMock("../../getEnvironment/index.js", () => ({
+    // @ts-expect-error
+    vi.doMock(import("../../getEnvironment/index.js"), () => ({
       getEnvironment: vi.fn(() => "production"),
     }));
 
-    vi.doMock("aws-xray-sdk", () => ({
+    // @ts-expect-error
+    vi.doMock(import("aws-xray-sdk"), () => ({
       captureAWSv3Client: mockCaptureAWSv3Client,
     }));
 

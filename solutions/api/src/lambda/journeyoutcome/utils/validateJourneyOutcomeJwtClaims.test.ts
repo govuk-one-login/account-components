@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach, beforeAll } from "vitest";
 import type { JourneyOutcomePayload } from "./interfaces.js";
 
-vi.doMock("./errors.js", () => ({
+// @ts-expect-error
+vi.doMock(import("./errors.js"), () => ({
   errorManager: { throwError: vi.fn(() => undefined) },
 }));
 

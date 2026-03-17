@@ -12,18 +12,22 @@ const mockSSMProvider = {
 describe("getParametersProvider", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.doMock("@aws-lambda-powertools/parameters/ssm", () => ({
+    // @ts-expect-error
+    vi.doMock(import("@aws-lambda-powertools/parameters/ssm"), () => ({
       SSMProvider: vi.fn(function () {
         return mockSSMProvider;
       }),
     }));
-    vi.doMock("../getAwsClientConfig/index.js", () => ({
+    // @ts-expect-error
+    vi.doMock(import("../getAwsClientConfig/index.js"), () => ({
       getAwsClientConfig: vi.fn(() => ({ region: "eu-west-2" })),
     }));
-    vi.doMock("../../getEnvironment/index.js", () => ({
+    // @ts-expect-error
+    vi.doMock(import("../../getEnvironment/index.js"), () => ({
       getEnvironment: vi.fn(() => "local"),
     }));
-    vi.doMock("aws-xray-sdk", () => ({
+    // @ts-expect-error
+    vi.doMock(import("aws-xray-sdk"), () => ({
       captureAWSv3Client: vi.fn(<T>(client: T): T => client),
     }));
   });

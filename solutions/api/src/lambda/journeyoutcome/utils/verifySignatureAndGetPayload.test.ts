@@ -7,12 +7,13 @@ import {
   JWTExpired,
 } from "jose/errors";
 
-vi.doMock("jose", () => ({
+vi.doMock(import("jose"), () => ({
   jwtVerify: vi.fn(),
   decodeJwt: vi.fn(),
 }));
 
-vi.doMock("./errors.js", () => ({
+// @ts-expect-error
+vi.doMock(import("./errors.js"), () => ({
   errorManager: { throwError: vi.fn(() => undefined) },
 }));
 
