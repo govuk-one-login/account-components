@@ -5,7 +5,10 @@ import {
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
 import * as v from "valibot";
-import { isoUint8Array } from "@simplewebauthn/server/helpers";
+import {
+  decodeAttestationObject,
+  isoUint8Array,
+} from "@simplewebauthn/server/helpers";
 import { completeJourney } from "../../utils/completeJourney.js";
 import { AccountDataApiClient } from "../../../utils/accountDataApiClient.js";
 import {
@@ -222,6 +225,12 @@ export async function postHandler(
     return reply;
   }
 
+  const decodedAttestation = decodeAttestationObject(
+    verification.registrationInfo.attestationObject,
+  );
+  const attestationStatement = decodedAttestation.get("attStmt");
+  const attestationSignature = attestationStatement.get("sig");
+
   assert.ok(request.session.claims);
   assert.ok(request.session.claims.account_data_api_access_token);
   const accountDataApiClient = new AccountDataApiClient(
@@ -237,7 +246,7 @@ export async function postHandler(
       ).toString("base64url"),
       id: verification.registrationInfo.credential.id,
       aaguid: verification.registrationInfo.aaguid,
-      isAttested: false,
+      isAttested: attestationSignature !== undefined,
       signCount: verification.registrationInfo.credential.counter,
       transports: verification.registrationInfo.credential.transports ?? [],
       isBackedUp: verification.registrationInfo.credentialBackedUp,

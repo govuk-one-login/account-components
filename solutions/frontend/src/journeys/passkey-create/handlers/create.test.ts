@@ -10,7 +10,7 @@ const mockVerifyRegistrationResponse = vi.fn();
 const mockCompleteJourney = vi.fn();
 const mockGetPasskeys = vi.fn();
 const mockCreatePasskey = vi.fn();
-
+const mockDecodeAttestationObject = vi.fn();
 const mockAddMetric = vi.fn();
 const mockAddMetadata = vi.fn();
 
@@ -24,6 +24,7 @@ vi.mock(import("@simplewebauthn/server/helpers"), () => ({
   isoUint8Array: {
     fromUTF8String: vi.fn((str: string) => str),
   },
+  decodeAttestationObject: mockDecodeAttestationObject,
 }));
 
 vi.mock(import("../../utils/completeJourney.js"), () => ({
@@ -324,6 +325,10 @@ describe("passkey-create handlers", () => {
           },
         });
 
+        mockDecodeAttestationObject.mockReturnValue(
+          new Map([["attStmt", new Map([["sig", new Uint8Array([7, 8, 9])]])]]),
+        );
+
         mockCreatePasskey.mockResolvedValue({
           success: true,
         });
@@ -350,12 +355,11 @@ describe("passkey-create handlers", () => {
           expect.objectContaining({
             id: "credential-id",
             aaguid: "aaguid-123",
-            isAttested: false,
+            isAttested: true,
             signCount: 0,
             transports: ["usb", "nfc"],
             isBackedUp: true,
             isBackUpEligible: true,
-            isResidentKey: true,
           }),
         );
 
@@ -364,6 +368,24 @@ describe("passkey-create handlers", () => {
           mockReply,
           {},
           true,
+        );
+      });
+
+      it("should handle passkey without attestation signature", async () => {
+        mockDecodeAttestationObject.mockReturnValue(
+          new Map([["attStmt", new Map()]]),
+        );
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockCreatePasskey).toHaveBeenCalledWith(
+          "user-123",
+          expect.objectContaining({
+            isAttested: false,
+          }),
         );
       });
 
