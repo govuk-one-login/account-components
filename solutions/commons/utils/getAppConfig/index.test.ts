@@ -25,11 +25,13 @@ describe("getAppConfig", () => {
   });
 
   it("returns local config when environment is local", async () => {
-    vi.doMock("../getEnvironment/index.js", () => ({
+    // @ts-expect-error
+    vi.doMock(import("../getEnvironment/index.js"), () => ({
       getEnvironment: vi.fn(() => "local"),
     }));
 
-    vi.doMock("../../../config/local-config.json", () => mockConfig);
+    // @ts-expect-error
+    vi.doMock(import("../../../config/local-config.json"), () => mockConfig);
 
     const { getAppConfig } = await import("./index.js");
     const result = await getAppConfig();
@@ -44,15 +46,16 @@ describe("getAppConfig", () => {
       config: {},
     });
 
-    vi.doMock("../getEnvironment/index.js", () => ({
+    // @ts-expect-error
+    vi.doMock(import("../getEnvironment/index.js"), () => ({
       getEnvironment: vi.fn(() => "dev"),
     }));
 
-    vi.doMock("@aws-lambda-powertools/parameters/appconfig", () => ({
+    vi.doMock(import("@aws-lambda-powertools/parameters/appconfig"), () => ({
       getAppConfig: mockRetrieveAppConfig,
     }));
 
-    vi.doMock("../awsClient/appconfigClient/index.js", () => ({
+    vi.doMock(import("../awsClient/appconfigClient/index.js"), () => ({
       getAppConfigClient: mockGetAppConfigClient,
     }));
 
@@ -75,15 +78,16 @@ describe("getAppConfig", () => {
       config: {},
     });
 
-    vi.doMock("../getEnvironment/index.js", () => ({
+    // @ts-expect-error
+    vi.doMock(import("../getEnvironment/index.js"), () => ({
       getEnvironment: vi.fn(() => "production"),
     }));
 
-    vi.doMock("@aws-lambda-powertools/parameters/appconfig", () => ({
+    vi.doMock(import("@aws-lambda-powertools/parameters/appconfig"), () => ({
       getAppConfig: mockRetrieveAppConfig,
     }));
 
-    vi.doMock("../awsClient/appconfigClient/index.js", () => ({
+    vi.doMock(import("../awsClient/appconfigClient/index.js"), () => ({
       getAppConfigClient: mockGetAppConfigClient,
     }));
 

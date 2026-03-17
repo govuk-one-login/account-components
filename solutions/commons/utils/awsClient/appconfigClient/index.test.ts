@@ -12,18 +12,22 @@ const mockAppConfigClient = {
 describe("getAppConfigClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.doMock("@aws-sdk/client-appconfigdata", () => ({
+    // @ts-expect-error
+    vi.doMock(import("@aws-sdk/client-appconfigdata"), () => ({
       AppConfigDataClient: vi.fn(function () {
         return mockAppConfigClient;
       }),
     }));
-    vi.doMock("../getAwsClientConfig/index.js", () => ({
+    // @ts-expect-error
+    vi.doMock(import("../getAwsClientConfig/index.js"), () => ({
       getAwsClientConfig: vi.fn(() => ({ region: "eu-west-2" })),
     }));
-    vi.doMock("../../getEnvironment/index.js", () => ({
+    // @ts-expect-error
+    vi.doMock(import("../../getEnvironment/index.js"), () => ({
       getEnvironment: vi.fn(() => "local"),
     }));
-    vi.doMock("aws-xray-sdk", () => ({
+    // @ts-expect-error
+    vi.doMock(import("aws-xray-sdk"), () => ({
       captureAWSv3Client: vi.fn(<T>(client: T): T => client),
     }));
   });

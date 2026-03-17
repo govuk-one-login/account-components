@@ -15,19 +15,23 @@ const mockPutObjectCommand = vi.fn();
 describe("getS3Client", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.doMock("@aws-sdk/client-s3", () => ({
+    // @ts-expect-error
+    vi.doMock(import("@aws-sdk/client-s3"), () => ({
       S3Client: vi.fn(function () {
         return mockS3Client;
       }),
       PutObjectCommand: mockPutObjectCommand,
     }));
-    vi.doMock("../getAwsClientConfig/index.js", () => ({
+    // @ts-expect-error
+    vi.doMock(import("../getAwsClientConfig/index.js"), () => ({
       getAwsClientConfig: vi.fn(() => ({ region: "eu-west-2" })),
     }));
-    vi.doMock("../../getEnvironment/index.js", () => ({
+    // @ts-expect-error
+    vi.doMock(import("../../getEnvironment/index.js"), () => ({
       getEnvironment: vi.fn(() => "local"),
     }));
-    vi.doMock("aws-xray-sdk", () => ({
+    // @ts-expect-error
+    vi.doMock(import("aws-xray-sdk"), () => ({
       captureAWSv3Client: vi.fn(<T>(client: T): T => client),
     }));
   });
