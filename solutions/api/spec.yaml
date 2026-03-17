@@ -10,11 +10,6 @@ info:
     - GET /journeyoutcome
     - GET /.well-known/jwks.json (publishes signing and encryption keys)
     - GET /.well-known/oauth-authorization-server (OAuth Discovery)
-
-    **Note:** This is a private API, all the URLs in this document will need to be amended to include the API consumer's Execute API VPC Endpoint ID.
-    The URL has to be updated
-      - from `https://<amc-api-id>.execute-api.eu-west.2.amazonaws.com/v1`
-      - to: `https://<amc-api-id>-<your-vpce-id>.execute-api.eu-west.2.amazonaws.com/v1`
   contact:
     name: GDS - DI Accounts Pod - Home Team
     email: one-login-home-team@digital.cabinet-office.gov.uk
@@ -33,7 +28,7 @@ tags:
 
       **Note:** This functionality is intended to be used by systems solely belonging internally to GDS DI.
 servers:
-  - url: https://jhx4ww6mze.execute-api.eu-west-2.amazonaws.com/v1
+  - url: https://mskou5m13j.execute-api.eu-west-2.amazonaws.com/v1
     description: development server
   - url: https://352fmtx9f8.execute-api.eu-west-2.amazonaws.com/v1
     description: build server
@@ -294,12 +289,7 @@ paths:
     get:
       summary: OAuth Provider Configuration (Discovery)
       description: |
-        Discover OAuth method URLs. 
-
-        **Note:** The `token_endpoint` & `jwks_uri` URLs presented in the discovery document need to be updated to include the VPC endpoint ID of the API Gateway before actually making the API call. This can be done by replacing
-          - from `https://<amc-api-id>.execute-api.eu-west.2.amazonaws.com/v1/<path>`
-          - to: `https://<amc-api-id>-<your-vpce-id>.execute-api.eu-west.2.amazonaws.com/v1/<path>`
-
+        Discover OAuth method URLs.
       operationId: discovery
       tags:
         - OAuth

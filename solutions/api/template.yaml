@@ -60,8 +60,6 @@ Mappings:
       issuerUrl: https://manage.dev.account.gov.uk
       tokenEndpointUrl: https://api.manage.dev.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.dev.account.gov.uk/journeyoutcome
-      apiAllowedVpcIds:
-        - "vpc-0de341bf8ceade15b" # di-account-dev
       apiAllowedVpceIds:
         - "vpce-087ac48f23f28a39b" # di-account-dev
       LambdaLogLevel: DEBUG
@@ -74,8 +72,6 @@ Mappings:
       issuerUrl: https://manage.build.account.gov.uk
       tokenEndpointUrl: https://api.manage.build.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.build.account.gov.uk/journeyoutcome
-      apiAllowedVpcIds:
-        - "vpc-0d1033b8e4c5f3680" # di-account-build
       apiAllowedVpceIds:
         - "vpce-0e1bb7e9c33b0e516" # di-account-build
       LambdaLogLevel: INFO
@@ -88,9 +84,6 @@ Mappings:
       issuerUrl: https://manage.staging.account.gov.uk
       tokenEndpointUrl: https://api.manage.staging.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.staging.account.gov.uk/journeyoutcome
-      apiAllowedVpcIds:
-        - "vpc-04163263e42ae55ee" # di-account-staging
-        - "vpc-07cf1e76e27f28e86" # di-authentication-staging
       apiAllowedVpceIds:
         - "vpce-0c9ce65be09f99db7" # di-account-staging
         - "vpce-07078f5f005fe5efc" # di-authentication-staging
@@ -104,9 +97,6 @@ Mappings:
       issuerUrl: https://manage.integration.account.gov.uk
       tokenEndpointUrl: https://api.manage.integration.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.integration.account.gov.uk/journeyoutcome
-      apiAllowedVpcIds:
-        - "vpc-048c9133a5998efe7" # di-account-integration
-        - "vpc-04796e8a5bf41b046" # di-authentication-integration
       apiAllowedVpceIds:
         - "vpce-0e594accb3d775457" # di-account-integration
         - "vpce-0df10df14d851e1c9" # di-authentication-integration
@@ -120,9 +110,6 @@ Mappings:
       issuerUrl: https://manage.account.gov.uk
       tokenEndpointUrl: https://api.manage.account.gov.uk/token
       journeyOutcomeEndpointUrl: https://api.manage.account.gov.uk/journeyoutcome
-      apiAllowedVpcIds:
-        - "vpc-0c94e753d20410154" # di-account-production
-        - "vpc-06a7d758af9eefddb" # di-authentication-production
       apiAllowedVpceIds:
         - "vpce-0d7972874707185a0" # di-account-production
         - "vpce-0db136878c87bf2d0" # di-authentication-production
@@ -321,26 +308,6 @@ Resources:
       AlwaysDeploy: true
       DisableExecuteApiEndpoint: false
       TracingEnabled: true
-      Auth:
-        ResourcePolicy:
-          IntrinsicVpcWhitelist: !Split
-            - ","
-            - !Sub
-              - "${AllowedVpcIds}${OptionalImportedVpc}"
-              - AllowedVpcIds: !Join
-                  - ","
-                  - !FindInMap
-                    - EnvironmentConfiguration
-                    - !Ref Environment
-                    - apiAllowedVpcIds
-                OptionalImportedVpc: !If
-                  - IsDevOrBuild
-                  - !Sub
-                    - ",${ImportedVpc}"
-                    - ImportedVpc:
-                        Fn::ImportValue: !Sub "${VpcStackName}-VpcId"
-                  - ""
-
       EndpointConfiguration:
         Type: PRIVATE
         VpcEndpointIds:
