@@ -7,7 +7,6 @@ const ORIGINAL_ENV = { ...process.env };
 
 const mockGenerateRegistrationOptions = vi.fn();
 const mockVerifyRegistrationResponse = vi.fn();
-const mockMetadataServiceInitialize = vi.fn();
 const mockCompleteJourney = vi.fn();
 const mockGetPasskeys = vi.fn();
 const mockCreatePasskey = vi.fn();
@@ -15,13 +14,9 @@ const mockDecodeAttestationObject = vi.fn();
 const mockAddMetric = vi.fn();
 const mockAddMetadata = vi.fn();
 
-// @ts-expect-error
 vi.mock(import("@simplewebauthn/server"), () => ({
   generateRegistrationOptions: mockGenerateRegistrationOptions,
   verifyRegistrationResponse: mockVerifyRegistrationResponse,
-  MetadataService: {
-    initialize: mockMetadataServiceInitialize,
-  },
 }));
 
 // @ts-expect-error

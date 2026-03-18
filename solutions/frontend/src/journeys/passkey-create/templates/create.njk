@@ -90,7 +90,7 @@
 {% block scripts %}
 <script src="/@simplewebauthn/browser/index.es5.umd.min.js?{{ globals.simpleWebAuthNBrowserStaticHash }}" nonce='{{ cspNonce }}'></script>
 
-<script id="verifyPasskeyScript" nonce="{{ cspNonce }}">
+<script nonce="{{ cspNonce }}">
   const verifyPasskeyForm = document.getElementById('verifyPasskeyForm');
 
   async function handleSubmit(event) {
