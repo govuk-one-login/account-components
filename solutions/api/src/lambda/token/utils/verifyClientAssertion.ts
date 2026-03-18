@@ -16,17 +16,12 @@ import { jwtVerifyAlgorithms } from "../../../../../commons/utils/constants.js";
 
 export const verifyClientAssertion = async (
   clientAssertion: string,
+  apiBaseUrl: string,
 ): Promise<JWTPayload> => {
   const clientRegistry = await getClientRegistry();
   const appConfig = await getAppConfig();
   const decodedJwt = decodeJwt(clientAssertion);
   const { iss, iat, aud } = decodedJwt;
-
-  assert(
-    process.env["TOKEN_ENDPOINT_URL"],
-    "TOKEN_ENDPOINT_URL is not defined",
-  );
-  const tokenEndpointUrl = process.env["TOKEN_ENDPOINT_URL"];
 
   if (!iss) {
     errorManager.throwError(
@@ -57,6 +52,7 @@ export const verifyClientAssertion = async (
   }
 
   const audList = Array.isArray(aud) ? aud : [aud];
+  const tokenEndpointUrl = `${apiBaseUrl}/token`;
   if (!audList.includes(tokenEndpointUrl)) {
     return errorManager.throwError(
       "invalidClientAssertion",

@@ -21,6 +21,7 @@ const mockGetDynamoDbClient = vi.mocked(getDynamoDbClient);
 
 describe("createAccessToken", () => {
   const ORIGINAL_ENV = process.env;
+  const mockApiBaseUrl = "https://example.com";
 
   beforeEach(async () => {
     vi.clearAllMocks();
@@ -29,8 +30,6 @@ describe("createAccessToken", () => {
 
     process.env = {
       ...ORIGINAL_ENV,
-      JOURNEY_OUTCOME_ENDPOINT_URL: "https://example.com/journey-outcome",
-      TOKEN_ENDPOINT_URL: "https://example.com/token",
       JWT_SIGNING_KEY_ALIAS: "test-key-alias",
       AUTH_TABLE_NAME: "auth-table",
     };
@@ -64,43 +63,47 @@ describe("createAccessToken", () => {
     vi.useRealTimers();
   });
 
-  describe.each([
-    "TOKEN_ENDPOINT_URL",
-    "JOURNEY_OUTCOME_ENDPOINT_URL",
-    "JWT_SIGNING_KEY_ALIAS",
-    "AUTH_TABLE_NAME",
-  ])("when %s is not configured", (envVar) => {
-    beforeEach(() => {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      delete process.env[envVar];
-    });
+  describe.each(["JWT_SIGNING_KEY_ALIAS", "AUTH_TABLE_NAME"])(
+    "when %s is not configured",
+    (envVar) => {
+      beforeEach(() => {
+        // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+        delete process.env[envVar];
+      });
 
-    it(`throws when ${envVar} is not configured`, async () => {
-      await expect(
-        createAccessToken({
-          outcome_id: "outcome-123",
-          client_id: "client-abc",
-          redirect_uri: "https://example.com/callback",
-          code: "code-1",
-          sub: "user-xyz",
-          expires: Date.now() / 1000 + 600,
-        }),
-      ).rejects.toThrowError(`${envVar} is not configured`);
-    });
-  });
+      it(`throws when ${envVar} is not configured`, async () => {
+        await expect(
+          createAccessToken(
+            {
+              outcome_id: "outcome-123",
+              client_id: "client-abc",
+              redirect_uri: "https://example.com/callback",
+              code: "code-1",
+              sub: "user-xyz",
+              expires: Date.now() / 1000 + 600,
+            },
+            mockApiBaseUrl,
+          ),
+        ).rejects.toThrowError(`${envVar} is not configured`);
+      });
+    },
+  );
 
   it("returns the parsed auth request when data is valid", async () => {
-    const accessToken = await createAccessToken({
-      outcome_id: "outcome-123",
-      client_id: "client-abc",
-      redirect_uri: "https://example.com/callback",
-      code: "code-1",
-      sub: "user-xyz",
-      expires: Date.now() / 1000 + 600,
-    });
+    const accessToken = await createAccessToken(
+      {
+        outcome_id: "outcome-123",
+        client_id: "client-abc",
+        redirect_uri: "https://example.com/callback",
+        code: "code-1",
+        sub: "user-xyz",
+        expires: Date.now() / 1000 + 600,
+      },
+      mockApiBaseUrl,
+    );
 
     expect(accessToken).toBe(
-      "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2V5LWlkIn0.eyJvdXRjb21lX2lkIjoib3V0Y29tZS0xMjMiLCJpc3MiOiJodHRwczovL2V4YW1wbGUuY29tL3Rva2VuIiwic3ViIjoidXNlci14eXoiLCJhdWQiOiJodHRwczovL2V4YW1wbGUuY29tL2pvdXJuZXktb3V0Y29tZSIsImlhdCI6MTcwNDA2NzIwMCwiZXhwIjoxNzA0MDY3MjYwLCJqdGkiOiJ1bmlxdWUtanRpLXZhbHVlLW1vY2stcmVzcG9uc2UifQ.jose-format-signature-of-mock-signature", // pragma: allowlist secret
+      "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2V5LWlkIn0.eyJvdXRjb21lX2lkIjoib3V0Y29tZS0xMjMiLCJpc3MiOiJodHRwczovL2V4YW1wbGUuY29tL3Rva2VuIiwic3ViIjoidXNlci14eXoiLCJhdWQiOiJodHRwczovL2V4YW1wbGUuY29tL2pvdXJuZXlvdXRjb21lIiwiaWF0IjoxNzA0MDY3MjAwLCJleHAiOjE3MDQwNjcyNjAsImp0aSI6InVuaXF1ZS1qdGktdmFsdWUtbW9jay1yZXNwb25zZSJ9.jose-format-signature-of-mock-signature", // pragma: allowlist secret
     );
   });
 });

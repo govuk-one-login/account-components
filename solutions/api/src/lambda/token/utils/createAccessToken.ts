@@ -9,15 +9,10 @@ import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamo
 
 const keyIdCache = new Map<string, string>();
 
-export const createAccessToken = async (authRequest: AuthRequestT) => {
-  assert(
-    process.env["TOKEN_ENDPOINT_URL"],
-    "TOKEN_ENDPOINT_URL is not configured",
-  );
-  assert(
-    process.env["JOURNEY_OUTCOME_ENDPOINT_URL"],
-    "JOURNEY_OUTCOME_ENDPOINT_URL is not configured",
-  );
+export const createAccessToken = async (
+  authRequest: AuthRequestT,
+  apiBaseUrl: string,
+) => {
   assert(
     process.env["JWT_SIGNING_KEY_ALIAS"],
     "JWT_SIGNING_KEY_ALIAS is not configured",
@@ -25,8 +20,8 @@ export const createAccessToken = async (authRequest: AuthRequestT) => {
   assert(process.env["AUTH_TABLE_NAME"], "AUTH_TABLE_NAME is not configured");
 
   const keyAlias = process.env["JWT_SIGNING_KEY_ALIAS"];
-  const audience = process.env["JOURNEY_OUTCOME_ENDPOINT_URL"];
-  const issuer = process.env["TOKEN_ENDPOINT_URL"];
+  const audience = `${apiBaseUrl}/journeyoutcome`;
+  const issuer = `${apiBaseUrl}/token`;
   const authTableName = process.env["AUTH_TABLE_NAME"];
 
   const kmsClient = getKmsClient();

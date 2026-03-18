@@ -10,6 +10,7 @@ import { getAuthRequest } from "./utils/getAuthRequest.js";
 import { verifyJti } from "./utils/verifyJti.js";
 import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
 import { createAccessToken } from "./utils/createAccessToken.js";
+import { getApiBaseUrlWithStage } from "../../utils/common.js";
 
 export const handler = loggerAPIGatewayProxyHandlerWrapper(
   metricsAPIGatewayProxyHandlerWrapper(
@@ -22,7 +23,12 @@ export const handler = loggerAPIGatewayProxyHandlerWrapper(
 
         assertTokenRequest(request);
 
-        const assertion = await verifyClientAssertion(request.client_assertion);
+        const apiBaseUrl = getApiBaseUrlWithStage(e);
+
+        const assertion = await verifyClientAssertion(
+          request.client_assertion,
+          apiBaseUrl,
+        );
 
         const authRequest = await getAuthRequest(
           request.code,
@@ -32,7 +38,7 @@ export const handler = loggerAPIGatewayProxyHandlerWrapper(
 
         await verifyJti(assertion.jti);
 
-        const accessToken = await createAccessToken(authRequest);
+        const accessToken = await createAccessToken(authRequest, apiBaseUrl);
 
         return {
           statusCode: 200,

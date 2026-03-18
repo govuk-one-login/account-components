@@ -23,6 +23,7 @@ const ORIGINAL_ENV = { ...process.env };
 
 describe("verifyClientAssertion", () => {
   const mockClientAssertion = "mock.jwt.token";
+  const mockApiBaseUrl = "https://example.com";
   const mockClientRegistry: [ClientEntry, ...ClientEntry[]] = [
     {
       client_id: "test-client-id",
@@ -42,7 +43,6 @@ describe("verifyClientAssertion", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env["TOKEN_ENDPOINT_URL"] = "https://example.com/token";
     mockGetClientRegistry.mockResolvedValue(mockClientRegistry);
     mockDecodeJwt.mockReturnValue(mockDecodedJwt);
     mockDecodeProtectedHeader.mockReturnValue({
@@ -62,7 +62,10 @@ describe("verifyClientAssertion", () => {
   });
 
   it("should successfully verify client assertion", async () => {
-    const result = await verifyClientAssertion(mockClientAssertion);
+    const result = await verifyClientAssertion(
+      mockClientAssertion,
+      mockApiBaseUrl,
+    );
 
     expect(result).toStrictEqual(mockPayload);
     expect(mockGetClientRegistry).toHaveBeenCalledTimes(1);
@@ -87,7 +90,10 @@ describe("verifyClientAssertion", () => {
   });
 
   it("should verify client assertion with ES256 algorithm", async () => {
-    const result = await verifyClientAssertion(mockClientAssertion);
+    const result = await verifyClientAssertion(
+      mockClientAssertion,
+      mockApiBaseUrl,
+    );
 
     expect(result).toStrictEqual(mockPayload);
     expect(mockJwtVerify).toHaveBeenCalledWith(
@@ -98,7 +104,10 @@ describe("verifyClientAssertion", () => {
   });
 
   it("should verify client assertion with RS256 algorithm", async () => {
-    const result = await verifyClientAssertion(mockClientAssertion);
+    const result = await verifyClientAssertion(
+      mockClientAssertion,
+      mockApiBaseUrl,
+    );
 
     expect(result).toStrictEqual(mockPayload);
     expect(mockJwtVerify).toHaveBeenCalledWith(
@@ -112,8 +121,34 @@ describe("verifyClientAssertion", () => {
     mockDecodeJwt.mockReturnValue({});
 
     await expect(
-      verifyClientAssertion(mockClientAssertion),
+      verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
     ).rejects.toThrowError("Missing iss in client assertion");
+  });
+
+  it("should throw error when iat is missing from JWT", async () => {
+    mockDecodeJwt.mockReturnValue({
+      iss: "test-client-id",
+      aud: "https://example.com/token",
+    });
+
+    await expect(
+      verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
+    ).rejects.toThrowError(
+      "Missing iat in client assertion, iss=test-client-id",
+    );
+  });
+
+  it("should throw error when aud is missing from JWT", async () => {
+    mockDecodeJwt.mockReturnValue({
+      iss: "test-client-id",
+      iat: Math.floor(Date.now() / 1000),
+    });
+
+    await expect(
+      verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
+    ).rejects.toThrowError(
+      "Missing aud in client assertion, iss=test-client-id",
+    );
   });
 
   it("should throw error when client is not found in registry", async () => {
@@ -123,7 +158,7 @@ describe("verifyClientAssertion", () => {
     });
 
     await expect(
-      verifyClientAssertion(mockClientAssertion),
+      verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
     ).rejects.toThrowError(
       "Client unknown-client-id not found for client assertion",
     );
@@ -134,8 +169,10 @@ describe("verifyClientAssertion", () => {
     mockJwtVerify.mockRejectedValue(jwtError);
 
     await expect(
-      verifyClientAssertion(mockClientAssertion),
-    ).rejects.toThrowError("JWT verification failed");
+      verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
+    ).rejects.toThrowError(
+      "Failed to verify client assertion for iss=test-client-id: JWT verification failed",
+    );
   });
 
   it("should raise an error if the iat is in the future", async () => {
@@ -146,8 +183,10 @@ describe("verifyClientAssertion", () => {
     });
 
     await expect(
-      verifyClientAssertion(mockClientAssertion),
-    ).rejects.toThrowError("Client assertion iat is in the future");
+      verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
+    ).rejects.toThrowError(
+      "Client assertion iat is in the future, iss=test-client-id",
+    );
   });
 
   it("should raise an error if the aud does not include the token endpoint URL", async () => {
@@ -157,9 +196,9 @@ describe("verifyClientAssertion", () => {
     });
 
     await expect(
-      verifyClientAssertion(mockClientAssertion),
+      verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
     ).rejects.toThrowError(
-      "Invalid aud in client assertion: https://invalid-audience.com",
+      "Invalid aud in client assertion: https://invalid-audience.com for iss=test-client-id, does not contain https://example.com/token",
     );
   });
 
@@ -167,7 +206,7 @@ describe("verifyClientAssertion", () => {
     mockDecodeProtectedHeader.mockReturnValue({ alg: "ES256" }); // Missing kid
 
     await expect(
-      verifyClientAssertion(mockClientAssertion),
+      verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
     ).rejects.toThrowError(
       "Missing kid in client assertion header for iss=test-client-id",
     );

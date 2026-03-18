@@ -1,7 +1,6 @@
 environment                    = "dev"
 hosted_zone_domain             = "manage.dev.account.gov.uk"
 stubs_domain                   = "stubs.manage.dev.account.gov.uk"
-api_domain                     = "api.manage.dev.account.gov.uk"
 create_build_stacks            = true
 signer_allowed_accounts        = []
 signing_profile_arn            = "arn:aws:signer:eu-west-2:621833521570:/signing-profiles/SigningProfile_XQk3kGQ3RvMJ"
