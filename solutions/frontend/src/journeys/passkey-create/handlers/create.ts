@@ -2,7 +2,6 @@ import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import {
   generateRegistrationOptions,
-  MetadataService,
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
 import * as v from "valibot";
@@ -17,16 +16,8 @@ import {
   getFormErrorsList,
 } from "../../../utils/formErrorsHelpers.js";
 import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
-import { getEnvironment } from "../../../../../commons/utils/getEnvironment/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
-
-await MetadataService.initialize({
-  verificationMode: ["local", "dev", "build"].includes(getEnvironment())
-    ? "permissive" // Required during integration tests because the emulated authenticator will send aaguids not recognised by the metadata service
-    : "strict",
-  // TODO if we are using our own metadata service then change the config here appropriately
-});
 
 const setRegistrationOptions = async (
   request: FastifyRequest,
@@ -261,6 +252,7 @@ export async function postHandler(
       isBackedUp: verification.registrationInfo.credentialBackedUp,
       isBackUpEligible:
         verification.registrationInfo.credentialDeviceType === "multiDevice",
+      isResidentKey: true,
     },
   );
 

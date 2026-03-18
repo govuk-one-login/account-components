@@ -40,6 +40,7 @@ vi.mock(import("../../../commons/utils/constants.js"), async () => {
       transports: v.array(v.string()),
       isBackUpEligible: v.boolean(),
       isBackedUp: v.boolean(),
+      isResidentKey: v.boolean(),
     }),
   };
 });
@@ -128,6 +129,7 @@ describe("accountDataApiClient", () => {
         transports: ["usb", "nfc"],
         isBackUpEligible: true,
         isBackedUp: false,
+        isResidentKey: true,
       };
 
       mockFetch.mockResolvedValueOnce(new Response());
@@ -167,6 +169,7 @@ describe("accountDataApiClient", () => {
         transports: ["usb", "nfc"],
         isBackUpEligible: true,
         isBackedUp: false,
+        isResidentKey: true,
       });
 
       expect(result).toStrictEqual({ success: false, error: "UnknownError" });
