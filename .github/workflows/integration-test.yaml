@@ -87,6 +87,7 @@ jobs:
           MOCK_CLIENT_RSA_PUBLIC_KEY_SSM_NAME=/components-mocks/MockClientRsaPublicKey 
           JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/components-core-JARRSAEncryptionKey 
           DEFAULT_AUDIENCE=http://localhost:6002/authorize
+          AMC_API_BASE_URL=http://localhost:6004
           ACCESS_TOKEN_ISSUER=http://localhost:6003
           AUTHORIZE_URL=http://localhost:6002/authorize
           AWS_REGION=eu-west-2
@@ -94,8 +95,6 @@ jobs:
           LOCAL_KMS_ENDPOINT=http://localhost:4567
           LOCALSTACK_ACCESS_KEY_ID=test
           LOCALSTACK_ACCESS_KEY=test      
-          API_TOKEN_ENDPOINT_URL=http://localhost:6004/token    
-          API_JOURNEY_OUTCOME_ENDPOINT_URL=http://localhost:6004/journeyoutcome    
           ROOT_DOMAIN=localhost          
           EOF
 
@@ -117,14 +116,10 @@ jobs:
             "TokenLambda": {
               "AUTH_TABLE_NAME": "components-core-AuthCode",
               "REPLAY_ATTACK_TABLE_NAME": "components-core-ReplayAttack",
-              "TOKEN_ENDPOINT_URL": "http://localhost:6004/token",
-              "JOURNEY_OUTCOME_ENDPOINT_URL": "http://localhost:6004/journeyoutcome",
               "JWT_SIGNING_KEY_ALIAS": "alias/components-core-JWTSigningKey"
             },
             "JourneyOutcomeLambda": {
               "JWT_SIGNING_KEY_ALIAS": "alias/components-core-JWTSigningKey",
-              "TOKEN_ENDPOINT_URL": "http://localhost:6004/token",
-              "JOURNEY_OUTCOME_ENDPOINT_URL": "http://localhost:6004/journeyoutcome",
               "JOURNEY_OUTCOME_TABLE_NAME": "components-core-JourneyOutcome"
             }
           }

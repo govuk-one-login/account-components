@@ -196,13 +196,15 @@ Given(
     const config = v.safeParse(configSchema, unsafeConfig);
 
     expect(config.success, JSON.stringify(config.issues, null, 2)).toBe(true);
-
     if (config.success) {
-      const response = await fetch(`${getApiBaseUrl()}${config.output.path}`, {
-        body: JSON.stringify(config.output.body),
-        method: config.output.method,
-        ...(config.output.headers ? { headers: config.output.headers } : {}),
-      });
+      const response = await fetch(
+        `${await getApiBaseUrl()}${config.output.path}`,
+        {
+          body: JSON.stringify(config.output.body),
+          method: config.output.method,
+          ...(config.output.headers ? { headers: config.output.headers } : {}),
+        },
+      );
 
       scenarioData["httpResponse"] = response;
     }

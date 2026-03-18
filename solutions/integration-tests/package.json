@@ -19,6 +19,8 @@
     "audit": "npm audit --audit-level=moderate && npm audit signatures"
   },
   "devDependencies": {
+    "@aws-lambda-powertools/parameters": "^2.31.0",
+    "@aws-sdk/client-ssm": "^3.1011.0",
     "@axe-core/playwright": "^4.11.1",
     "@playwright/test": "^1.58.2",
     "devtools-protocol": "^0.0.1596832",
