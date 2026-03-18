@@ -59,18 +59,18 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         currentUrl: currentUrl.toString(),
       });
 
-      assert.ok(
-        process.env["API_TOKEN_ENDPOINT_URL"],
-        "API_TOKEN_ENDPOINT_URL is not set",
-      );
+      assert.ok(process.env["AMC_API_BASE_URL"], "AMC_API_BASE_URL is not set");
 
-      const tokenResponse = await fetch(process.env["API_TOKEN_ENDPOINT_URL"], {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
+      const tokenResponse = await fetch(
+        `${process.env["AMC_API_BASE_URL"]}/token`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: tokenRequestBody.toString(),
         },
-        body: tokenRequestBody.toString(),
-      });
+      );
 
       const parsedTokenResponseBody = v.parse(
         v.object({
@@ -81,13 +81,8 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         await tokenResponse.json(),
       );
 
-      assert.ok(
-        process.env["API_JOURNEY_OUTCOME_ENDPOINT_URL"],
-        "API_JOURNEY_OUTCOME_ENDPOINT_URL is not set",
-      );
-
       const journeyOutcomeResponse = await fetch(
-        process.env["API_JOURNEY_OUTCOME_ENDPOINT_URL"],
+        `${process.env["AMC_API_BASE_URL"]}/journeyoutcome`,
         {
           method: "GET",
           headers: {
@@ -155,14 +150,11 @@ const getTokenRequestBody = async ({
   });
 
   assert.ok(privateKeyPem, "privateKeyPem is not set");
-  assert.ok(
-    process.env["JWT_AUDIENCE_URL_PREFIX"],
-    "JWT_AUDIENCE_URL_PREFIX is not set",
-  );
+  assert.ok(process.env["AMC_API_BASE_URL"], "AMC_API_BASE_URL is not set");
 
   const clientAssertion = await new SignJWT({
     iss: client.client_id,
-    aud: `${process.env["JWT_AUDIENCE_URL_PREFIX"]}/token`,
+    aud: `${process.env["AMC_API_BASE_URL"]}/token`,
     jti: crypto.randomUUID(),
   })
     .setProtectedHeader({ alg: algorithm, kid })

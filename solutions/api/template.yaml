@@ -58,10 +58,7 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       authorizeEndpointUrl: https://manage.dev.account.gov.uk/authorize
       issuerUrl: https://manage.dev.account.gov.uk
-      tokenEndpointUrl: https://api.manage.dev.account.gov.uk/token
-      journeyOutcomeEndpointUrl: https://api.manage.dev.account.gov.uk/journeyoutcome
-      apiAllowedVpceIds:
-        - "vpce-087ac48f23f28a39b" # di-account-dev
+      apiAllowedVpceIds: []
       LambdaLogLevel: DEBUG
       UseCanary: false
       frontendUrl: https://manage.dev.account.gov.uk
@@ -70,10 +67,7 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       authorizeEndpointUrl: https://manage.build.account.gov.uk/authorize
       issuerUrl: https://manage.build.account.gov.uk
-      tokenEndpointUrl: https://api.manage.build.account.gov.uk/token
-      journeyOutcomeEndpointUrl: https://api.manage.build.account.gov.uk/journeyoutcome
-      apiAllowedVpceIds:
-        - "vpce-0e1bb7e9c33b0e516" # di-account-build
+      apiAllowedVpceIds: []
       LambdaLogLevel: INFO
       UseCanary: false
       frontendUrl: https://manage.build.account.gov.uk
@@ -82,8 +76,6 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       authorizeEndpointUrl: https://manage.staging.account.gov.uk/authorize
       issuerUrl: https://manage.staging.account.gov.uk
-      tokenEndpointUrl: https://api.manage.staging.account.gov.uk/token
-      journeyOutcomeEndpointUrl: https://api.manage.staging.account.gov.uk/journeyoutcome
       apiAllowedVpceIds:
         - "vpce-0c9ce65be09f99db7" # di-account-staging
         - "vpce-07078f5f005fe5efc" # di-authentication-staging
@@ -95,8 +87,6 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       authorizeEndpointUrl: https://manage.integration.account.gov.uk/authorize
       issuerUrl: https://manage.integration.account.gov.uk
-      tokenEndpointUrl: https://api.manage.integration.account.gov.uk/token
-      journeyOutcomeEndpointUrl: https://api.manage.integration.account.gov.uk/journeyoutcome
       apiAllowedVpceIds:
         - "vpce-0e594accb3d775457" # di-account-integration
         - "vpce-0df10df14d851e1c9" # di-authentication-integration
@@ -108,8 +98,6 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       authorizeEndpointUrl: https://manage.account.gov.uk/authorize
       issuerUrl: https://manage.account.gov.uk
-      tokenEndpointUrl: https://api.manage.account.gov.uk/token
-      journeyOutcomeEndpointUrl: https://api.manage.account.gov.uk/journeyoutcome
       apiAllowedVpceIds:
         - "vpce-0d7972874707185a0" # di-account-production
         - "vpce-0db136878c87bf2d0" # di-authentication-production
@@ -351,23 +339,13 @@ Resources:
             Resource: "*"
             Condition:
               StringEquals:
-                aws:sourceVpce: !Split
-                  - ","
-                  - !Sub
-                    - "${AllowedVpceIds}${OptionalImportedVpce}"
-                    - AllowedVpceIds: !Join
-                        - ","
-                        - !FindInMap
-                          - EnvironmentConfiguration
-                          - !Ref Environment
-                          - apiAllowedVpceIds
-                      OptionalImportedVpce: !If
-                        - IsDevOrBuild
-                        - !Sub
-                          - ",${ImportedVpce}"
-                          - ImportedVpce:
-                              Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
-                        - ""
+                aws:sourceVpce: !If
+                  - IsDevOrBuild
+                  - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+                  - !FindInMap
+                    - EnvironmentConfiguration
+                    - !Ref Environment
+                    - apiAllowedVpceIds
       Variables:
         ApiDomain: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
         AuthorizeEndpointUrl:
@@ -554,18 +532,6 @@ Resources:
         Variables:
           AUTH_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableName}}"
           REPLAY_ATTACK_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/ReplayAttackTableName}}"
-          TOKEN_ENDPOINT_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              tokenEndpointUrl,
-            ]
-          JOURNEY_OUTCOME_ENDPOINT_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              journeyOutcomeEndpointUrl,
-            ]
           JWT_SIGNING_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyAlias}}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
@@ -634,18 +600,6 @@ Resources:
       Environment:
         Variables:
           JWT_SIGNING_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JWTSigningKeyAlias}}"
-          TOKEN_ENDPOINT_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              tokenEndpointUrl,
-            ]
-          JOURNEY_OUTCOME_ENDPOINT_URL:
-            !FindInMap [
-              EnvironmentConfiguration,
-              !Ref Environment,
-              journeyOutcomeEndpointUrl,
-            ]
           JOURNEY_OUTCOME_TABLE_NAME: !Sub "{{resolve:ssm:/${CoreStackName}/JourneyOutcomeTableName}}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess

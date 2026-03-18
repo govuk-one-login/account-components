@@ -1,5 +1,5 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { getHeader } from "../../utils/common.js";
+import { getApiBaseUrlWithStage, getHeader } from "../../utils/common.js";
 import { errorManager } from "./utils/errors.js";
 import type { JourneyOutcomeAppError } from "./utils/errors.js";
 import { metricsAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/metrics/index.js";
@@ -40,8 +40,9 @@ export const handler = loggerAPIGatewayProxyHandlerWrapper(
           const key = await getKMSKey(process.env["JWT_SIGNING_KEY_ALIAS"]);
           const payload: JourneyOutcomePayload =
             await verifySignatureAndGetPayload(token, key);
+          const apiBaseUrl = getApiBaseUrlWithStage(event);
 
-          validateJourneyOutcomeJwtClaims(payload);
+          validateJourneyOutcomeJwtClaims(payload, apiBaseUrl);
           const outcome = await getJourneyOutcome(payload);
           return {
             statusCode: 200,

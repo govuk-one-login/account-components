@@ -72,13 +72,10 @@ describe("clientCallback handler", () => {
       },
     };
 
-    process.env["API_TOKEN_ENDPOINT_URL"] = "http://localhost:6004/token";
-    process.env["API_JOURNEY_OUTCOME_ENDPOINT_URL"] =
-      "http://localhost:6004/journey-outcome";
     process.env["MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"] = "/mock/ec-private-key";
     process.env["MOCK_CLIENT_RSA_PRIVATE_KEY_SSM_NAME"] =
       "/mock/rsa-private-key";
-    process.env["JWT_AUDIENCE_URL_PREFIX"] = "http://localhost:6004";
+    process.env["AMC_API_BASE_URL"] = "http://localhost:6004";
 
     mockGetParametersProvider.mockReturnValue({
       get: vi.fn().mockResolvedValue("mock-private-key"),
@@ -284,7 +281,7 @@ describe("clientCallback handler", () => {
       });
 
       expect(mockFetch).toHaveBeenCalledWith(
-        "http://localhost:6004/journey-outcome",
+        "http://localhost:6004/journeyoutcome",
         {
           method: "GET",
           headers: {

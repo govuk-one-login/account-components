@@ -296,11 +296,9 @@ Resources:
           MOCK_CLIENT_RSA_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientRsaPublicKey"
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Sub "{{resolve:ssm:/${CoreStackName}/JARRSAEncryptionKeyAlias}}"
           DEFAULT_AUDIENCE: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
-          JWT_AUDIENCE_URL_PREFIX: !Sub "https://api.manage.${Environment}.account.gov.uk"
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
           AUTHORIZE_URL: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
-          API_TOKEN_ENDPOINT_URL: !Sub "{{resolve:ssm:/tests/${ApiStackName}/PrivateApiGatewayUrl}}/token"
-          API_JOURNEY_OUTCOME_ENDPOINT_URL: !Sub "{{resolve:ssm:/tests/${ApiStackName}/PrivateApiGatewayUrl}}/journeyoutcome"
+          AMC_API_BASE_URL: !Sub "{{resolve:ssm:/tests/${ApiStackName}/PrivateApiGatewayUrl}}"
           ROOT_DOMAIN:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
       Policies:
