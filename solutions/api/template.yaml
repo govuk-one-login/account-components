@@ -586,7 +586,6 @@ Resources:
         Alarms:
           - !Ref HealthcheckLambdaErrorsAlarm
           - !Ref HealthcheckLambdaThrottlesAlarm
-        Role: !GetAtt CodeDeployServiceRole.Arn
       LoggingConfig:
         LogGroup: !Ref HealthcheckLambdaLogGroup
       Handler: healthcheck.handler
@@ -628,7 +627,6 @@ Resources:
         Alarms:
           - !Ref TokenLambdaErrorsAlarm
           - !Ref TokenLambdaThrottlesAlarm
-        Role: !GetAtt CodeDeployServiceRole.Arn
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: 1
       LoggingConfig:
@@ -714,7 +712,6 @@ Resources:
         Alarms:
           - !Ref JourneyOutcomeLambdaErrorsAlarm
           - !Ref JourneyOutcomeLambdaThrottlesAlarm
-        Role: !GetAtt CodeDeployServiceRole.Arn
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: 1
       LoggingConfig:
