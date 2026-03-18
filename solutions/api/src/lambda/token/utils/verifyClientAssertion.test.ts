@@ -43,7 +43,6 @@ describe("verifyClientAssertion", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    process.env["TOKEN_ENDPOINT_URL"] = "https://example.com/token";
     mockGetClientRegistry.mockResolvedValue(mockClientRegistry);
     mockDecodeJwt.mockReturnValue(mockDecodedJwt);
     mockDecodeProtectedHeader.mockReturnValue({

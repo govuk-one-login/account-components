@@ -12,6 +12,14 @@ vi.mock(import("../../../commons/utils/metrics/index.js"), () => ({
   metrics: { addMetric: vi.fn() },
 }));
 
+vi.mock(import("../../../commons/utils/getEnvironment/index.js"), () => ({
+  getEnvironment: vi.fn().mockReturnValue("local"),
+}));
+
+const mockGetEnvironment = vi.mocked(
+  await import("../../../commons/utils/getEnvironment/index.js"),
+).getEnvironment;
+
 const mockLogger = vi.mocked(
   await import("../../../commons/utils/logger/index.js"),
 ).logger;
@@ -55,25 +63,28 @@ describe("getHeader", () => {
 });
 
 describe("getApiBaseUrlWithStage", () => {
-  it("constructs URL from Host header", () => {
-    const event = createEvent({ Host: "api.example.com" }, "v1");
+  it("returns localhost URL when environment is local", () => {
+    const event = createEvent({}, "v1");
 
-    expect(getApiBaseUrlWithStage(event)).toBe("https://api.example.com/v1");
+    expect(getApiBaseUrlWithStage(event)).toBe("http://localhost:6004");
   });
 
-  it("constructs URL from lowercase host header", () => {
+  it("constructs URL from host header", () => {
+    mockGetEnvironment.mockReturnValue("dev");
     const event = createEvent({ host: "api.example.com" }, "v1");
 
     expect(getApiBaseUrlWithStage(event)).toBe("https://api.example.com/v1");
   });
 
   it("falls back to domainName when no host header", () => {
+    mockGetEnvironment.mockReturnValue("dev");
     const event = createEvent({}, "v1", "api.example.com");
 
     expect(getApiBaseUrlWithStage(event)).toBe("https://api.example.com/v1");
   });
 
   it("throws when host cannot be determined", () => {
+    mockGetEnvironment.mockReturnValue("dev");
     const event = createEvent({}, "v1");
 
     expect(() => getApiBaseUrlWithStage(event)).toThrowError(

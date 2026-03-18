@@ -1,3 +1,4 @@
+import { getEnvironment } from "../../../commons/utils/getEnvironment/index.js";
 import { logger } from "../../../commons/utils/logger/index.js";
 import { metrics } from "../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
@@ -82,10 +83,11 @@ export class ErrorManager<T extends Record<string, ErrorType>> {
 }
 
 export function getApiBaseUrlWithStage(event: APIGatewayProxyEvent): string {
-  const host =
-    event.headers["Host"] ??
-    event.headers["host"] ??
-    event.requestContext.domainName;
+  if (getEnvironment() === "local") {
+    return "http://localhost:6004";
+  }
+
+  const host = event.headers["host"] ?? event.requestContext.domainName;
 
   if (!host) {
     throw new Error("Unable to determine host from API Gateway event");
