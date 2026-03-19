@@ -1054,6 +1054,21 @@ Resources:
       Period: 300
       Statistic: Maximum
 
+  LambdaClaimedAccountConcurrencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/Lambda
+      MetricName: ClaimedAccountConcurrency
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 10
+      DatapointsToAlarm: 10
+      Threshold: 900
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${NotificationsStackName}-CriticalAlertsTopicArn
+
   TxMASQSProducerAuditEventQueueUrlParameter:
     Type: AWS::SSM::Parameter
     Properties:
