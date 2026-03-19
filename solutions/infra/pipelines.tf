@@ -20,7 +20,7 @@ resource "aws_cloudformation_stack" "main_pipeline_stack" {
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
-    SlackNotificationType                   = var.environment == "production" ? "All" : (var.environment == "dev" ? "None" : "Failures")
+    SlackNotificationType                   = var.environment == "dev" ? "None" : "All"
     ProgrammaticPermissionsBoundary         = "True"
     AllowedServiceOne                       = "EC2" # Required to attach lambdas to VPC
     AllowedServiceTwo                       = "DynamoDB"
@@ -56,7 +56,7 @@ resource "aws_cloudformation_stack" "api_pipeline_stack" {
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
-    SlackNotificationType                   = var.environment == "production" ? "All" : (var.environment == "dev" ? "None" : "Failures")
+    SlackNotificationType                   = var.environment == "dev" ? "None" : "All"
     ProgrammaticPermissionsBoundary         = "True"
     AllowedServiceOne                       = "AppConfig"
     AllowedServiceTwo                       = "EC2" # Required to attach lambdas to VPC
@@ -89,7 +89,7 @@ resource "aws_cloudformation_stack" "core_pipeline_stack" {
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
-    SlackNotificationType                   = var.environment == "production" ? "All" : (var.environment == "dev" ? "None" : "Failures")
+    SlackNotificationType                   = var.environment == "dev" ? "None" : "All"
     ProgrammaticPermissionsBoundary         = "True"
     AllowedServiceOne                       = "EC2" # Required to attach lambdas to VPC
     AllowedServiceTwo                       = "Xray"
@@ -118,7 +118,7 @@ resource "aws_cloudformation_stack" "mocks_pipeline_stack" {
     GitHubRepositoryName             = var.create_build_stacks ? var.repository_name : "none"
     IncludePromotion                 = "No"
     BuildNotificationStackName       = "build-notifications"
-    SlackNotificationType            = var.environment == "production" ? "All" : (var.environment == "dev" ? "None" : "Failures")
+    SlackNotificationType            = var.environment == "dev" ? "None" : "All"
     ProgrammaticPermissionsBoundary  = "True"
     AllowedServiceOne                = "AppConfig"
     AllowedServiceTwo                = "SSM"

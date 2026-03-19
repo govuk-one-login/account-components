@@ -18,11 +18,6 @@ variable "stubs_domain" {
   default     = null
 }
 
-variable "api_domain" {
-  type        = string
-  description = "The domain to use for the API"
-}
-
 variable "create_build_stacks" {
   type        = bool
   description = "Whether or not to deploy the stacks for building and signing application code. Only needed in dev and build. Defaults to false"

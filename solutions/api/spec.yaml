@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components API
-  version: 0.0.12
+  version: 0.0.13
   description: |
     OAuth 2.0 provider endpoints, including:
     - POST /token (supports client assertions via private_key_jwt)
@@ -28,15 +28,15 @@ tags:
 
       **Note:** This functionality is intended to be used by systems solely belonging internally to GDS DI.
 servers:
-  - url: https://api.manage.dev.account.gov.uk
+  - url: https://mskou5m13j.execute-api.eu-west-2.amazonaws.com/v1
     description: development server
-  - url: https://api.manage.build.account.gov.uk
+  - url: https://352fmtx9f8.execute-api.eu-west-2.amazonaws.com/v1
     description: build server
-  - url: https://api.manage.staging.account.gov.uk
+  - url: https://kvys7gq7h4.execute-api.eu-west-2.amazonaws.com/v1
     description: staging server
-  - url: https://api.manage.integration.account.gov.uk
+  - url: request when required
     description: integration server
-  - url: https://api.manage.account.gov.uk
+  - url: request when required
     description: production server
 
 paths:
@@ -288,7 +288,8 @@ paths:
   /.well-known/oauth-authorization-server:
     get:
       summary: OAuth Provider Configuration (Discovery)
-      description: Discover OAuth method URLs
+      description: |
+        Discover OAuth method URLs.
       operationId: discovery
       tags:
         - OAuth
@@ -307,8 +308,8 @@ paths:
                   value:
                     issuer: https://manage.account.gov.uk
                     authorization_endpoint: https://manage.account.gov.uk/authorize
-                    token_endpoint: https://api.manage.account.gov.uk/token
-                    jwks_uri: https://api.manage.account.gov.uk/.well-known/jwks.json
+                    token_endpoint: https://amcApiID.execute-api.eu-west-2.amazonaws.com/v1/token
+                    jwks_uri: https://amcApiID.execute-api.eu-west-2.amazonaws.com/v1/.well-known/jwks.json
                     response_types_supported: [code]
                     token_endpoint_auth_methods_supported: [private_key_jwt]
                     token_endpoint_auth_signing_alg_values_supported: [ES256]

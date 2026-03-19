@@ -4,10 +4,11 @@ import type { JourneyOutcomePayload } from "./interfaces.js";
 
 export function validateJourneyOutcomeJwtClaims(
   payload: JourneyOutcomePayload,
+  apiBaseUrl: string,
 ): void {
   const nowInSeconds = Math.floor(Date.now() / 1000);
-  const expectedIssuer = process.env["TOKEN_ENDPOINT_URL"];
-  const expectedAudience = process.env["JOURNEY_OUTCOME_ENDPOINT_URL"];
+  const expectedIssuer = `${apiBaseUrl}/token`;
+  const expectedAudience = `${apiBaseUrl}/journeyoutcome`;
 
   assert(expectedIssuer, "expectedIssuer not set");
 
