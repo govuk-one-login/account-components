@@ -29,9 +29,9 @@ Parameters:
     Type: String
     Description: >
       The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
-  NotificationsStackName:
+  AlertsStackName:
     Type: String
-    Description: The name of the notifications stack that contains SNS topics for alarms
+    Description: The name of the alerting stack that contains SNS topics for alarms
     Default: "build-notifications"
   LambdaDeploymentPreference:
     Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
@@ -890,14 +890,14 @@ Resources:
       EvaluationPeriods: 1
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   NotificationsQueueProcessingTooSlow:
     Type: AWS::CloudWatch::Alarm
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
       ComparisonOperator: GreaterThanThreshold
       Threshold: 600
       EvaluationPeriods: 1
@@ -915,7 +915,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
       ComparisonOperator: GreaterThanThreshold
       Threshold: 0
       EvaluationPeriods: 1
@@ -1023,7 +1023,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
       ComparisonOperator: GreaterThanThreshold
       Threshold: 86400
       EvaluationPeriods: 1
@@ -1041,7 +1041,7 @@ Resources:
     Properties:
       ActionsEnabled: true
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
       ComparisonOperator: GreaterThanThreshold
       Threshold: 0
       EvaluationPeriods: 1
@@ -1067,7 +1067,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-CriticalAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-CriticalAlertsTopicArn
 
   TxMASQSProducerAuditEventQueueUrlParameter:
     Type: AWS::SSM::Parameter
