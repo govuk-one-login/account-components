@@ -696,7 +696,7 @@ Resources:
       EvaluationPeriods: 5
       DatapointsToAlarm: 5
       Threshold: 0
-      ComparisonOperator: GreaterThanOrEqualToThreshold
+      ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
         - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn

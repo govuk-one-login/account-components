@@ -916,8 +916,8 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      Threshold: 1
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
       EvaluationPeriods: 1
       TreatMissingData: notBreaching
       Dimensions:
@@ -1042,8 +1042,8 @@ Resources:
       ActionsEnabled: true
       AlarmActions:
         - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
-      ComparisonOperator: GreaterThanOrEqualToThreshold
-      Threshold: 1
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
       EvaluationPeriods: 1
       TreatMissingData: notBreaching
       Dimensions:
