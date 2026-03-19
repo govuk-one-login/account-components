@@ -5,7 +5,7 @@ import * as yaml from "yaml";
 const { Given } = bdd;
 
 Given(
-  "I click the {string} button to continue to create passkey journey",
+  "I click the {string} button to continue the create passkey journey",
   async ({ page }, name: string) => {
     const response = page.waitForResponse(page.url());
     await page.getByRole("button", { name, exact: true }).click();
