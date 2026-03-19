@@ -39,9 +39,9 @@ Parameters:
       - Canary10Percent10Minutes
       - Canary10Percent15Minutes
       - Canary10Percent30Minutes
-  NotificationsStackName:
+  AlertsStackName:
     Type: String
-    Description: The name of the notifications stack that contains SNS topics for alarms
+    Description: The name of the alerting stack that contains SNS topics for alarms
     Default: "build-notifications"
 
 Mappings:
@@ -646,7 +646,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiGatewayHighLatencyAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -663,7 +663,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   FrontendLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -681,7 +681,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   FrontendLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -699,7 +699,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   FrontendLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -717,4 +717,4 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn

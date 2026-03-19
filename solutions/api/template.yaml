@@ -51,9 +51,9 @@ Parameters:
       - Canary10Percent10Minutes
       - Canary10Percent15Minutes
       - Canary10Percent30Minutes
-  NotificationsStackName:
+  AlertsStackName:
     Type: String
-    Description: The name of the notifications stack that contains SNS topics for alarms
+    Description: The name of the alerting stack that contains SNS topics for alarms
     Default: "build-notifications"
 
 Mappings:
@@ -697,7 +697,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiGatewayHighLatencyAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -714,7 +714,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   HealthcheckLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -732,7 +732,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   HealthcheckLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -750,7 +750,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   HealthcheckLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -768,7 +768,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   TokenLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -786,7 +786,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   TokenLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -804,7 +804,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   TokenLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -822,7 +822,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   JourneyOutcomeLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -840,7 +840,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   JourneyOutcomeLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -858,7 +858,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   JourneyOutcomeLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -876,4 +876,4 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${NotificationsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
