@@ -49,7 +49,7 @@
   "devDependencies": {
     "@eslint/compat": "^2.0.3",
     "@eslint/js": "^10.0.1",
-    "@stoplight/spectral-cli": "^6.15.0",
+    "@redocly/cli": "^2.24.0",
     "@tsconfig/node24": "^24.0.4",
     "@tsconfig/strictest": "^2.0.8",
     "@types/aws-lambda": "^8.10.161",
@@ -114,7 +114,7 @@
     "watch:config-schema-if-not-running-all": "[ -n \"$RUN_ALL\" ] && sleep infinity || npm run watch:config-schema",
     "run:all": "bash solutions/localstack/provision.sh && RUN_ALL=1 concurrently 'npm run run:frontend' 'npm run run:stubs' 'npm run run:api' 'npm run watch:config-schema' --kill-others",
     "config:validate": "for f in solutions/config/*.json; do (jsonschema validate solutions/config/schema/config.json $f) || exit 1; done",
-    "api-specs:validate": "for f in solutions/api/src/specs/*.yaml; do (spectral lint $f) || exit 1; done",
+    "api-specs:validate": "redocly lint solutions/**/open-api-spec.yaml",
     "audit": "npm audit --audit-level=moderate && npm audit signatures && cd solutions/integration-tests && npm run audit"
   }
 }

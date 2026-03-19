@@ -37,6 +37,7 @@ paths:
     get:
       summary: Authorization endpoint
       operationId: authorize
+      security: []
       tags:
         - OAuth
       description: |
