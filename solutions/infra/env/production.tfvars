@@ -1,6 +1,5 @@
 environment                                          = "production"
 hosted_zone_domain                                   = "manage.account.gov.uk"
-api_domain                                           = "api.manage.account.gov.uk"
 signer_allowed_accounts                              = []
 signing_profile_arn                                  = "arn:aws:signer:eu-west-2:629382882013:/signing-profiles/SigningProfile_VLTxKzC7V3x8"
 signing_profile_version_arn                          = "arn:aws:signer:eu-west-2:629382882013:/signing-profiles/SigningProfile_VLTxKzC7V3x8/RvyUVgeXLz"

@@ -1,6 +1,8 @@
+import { getEnvironment } from "../../../commons/utils/getEnvironment/index.js";
 import { logger } from "../../../commons/utils/logger/index.js";
 import { metrics } from "../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
+import type { APIGatewayProxyEvent } from "aws-lambda";
 
 export const getHeader = (
   headers: Record<string, string | undefined>,
@@ -44,11 +46,9 @@ export class ErrorManager<T extends Record<string, ErrorType>> {
   public isAppError(e: Error | AppError<keyof T>): boolean {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const appError = e as AppError<keyof T>;
-    // Check if the code exists and is one of the keys in the provided errors
     return (
-      appError.code &&
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      Object.keys(this.errors).includes(appError.code as string)
+      !!appError.code &&
+      Object.keys(this.errors).includes(String(appError.code))
     );
   }
 
@@ -80,4 +80,20 @@ export class ErrorManager<T extends Record<string, ErrorType>> {
       }),
     };
   }
+}
+
+export function getApiBaseUrlWithStage(event: APIGatewayProxyEvent): string {
+  if (getEnvironment() === "local") {
+    return "http://localhost:6004";
+  }
+
+  const host = event.headers["host"] ?? event.requestContext.domainName;
+
+  if (!host) {
+    throw new Error("Unable to determine host from API Gateway event");
+  }
+
+  const stage = event.requestContext.stage;
+
+  return `https://${host}/${stage}`;
 }
