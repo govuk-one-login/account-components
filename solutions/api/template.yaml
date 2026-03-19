@@ -764,7 +764,7 @@ Resources:
       Period: 60
       EvaluationPeriods: 15
       DatapointsToAlarm: 15
-      Threshold: 5000
+      Threshold: 1000
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
@@ -818,7 +818,7 @@ Resources:
       Period: 60
       EvaluationPeriods: 15
       DatapointsToAlarm: 15
-      Threshold: 5000
+      Threshold: 1000
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
@@ -872,7 +872,7 @@ Resources:
       Period: 60
       EvaluationPeriods: 15
       DatapointsToAlarm: 15
-      Threshold: 5000
+      Threshold: 1000
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
