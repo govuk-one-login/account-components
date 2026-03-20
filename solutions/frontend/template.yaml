@@ -447,6 +447,8 @@ Resources:
         - MetricsEnabled: true
           ResourcePath: /*
           HttpMethod: "*"
+      Tags:
+        FMSRegionalPolicy: false
 
   FrontendApiGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup
