@@ -1,10 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock(import("@aws-sdk/client-appconfigdata"));
-vi.mock(import("../getAwsClientConfig/index.js"));
-vi.mock(import("../../getEnvironment/index.js"));
-vi.mock(import("aws-xray-sdk"));
-
 const mockAppConfigClient = {
   config: { region: "eu-west-2" },
 };
@@ -12,6 +7,7 @@ const mockAppConfigClient = {
 describe("getAppConfigClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
     // @ts-expect-error
     vi.doMock(import("@aws-sdk/client-appconfigdata"), () => ({
       AppConfigDataClient: vi.fn(function () {

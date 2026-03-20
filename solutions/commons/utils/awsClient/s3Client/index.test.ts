@@ -1,10 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock(import("@aws-sdk/client-s3"));
-vi.mock(import("../getAwsClientConfig/index.js"));
-vi.mock(import("../../getEnvironment/index.js"));
-vi.mock(import("aws-xray-sdk"));
-
 const mockS3Client = {
   config: { region: "eu-west-2" },
   send: vi.fn(),
@@ -15,6 +10,7 @@ const mockPutObjectCommand = vi.fn();
 describe("getS3Client", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
     // @ts-expect-error
     vi.doMock(import("@aws-sdk/client-s3"), () => ({
       S3Client: vi.fn(function () {
