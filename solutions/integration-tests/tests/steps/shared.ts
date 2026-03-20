@@ -11,13 +11,14 @@ const { Then, Given } = bdd;
 
 const stubsUrl = getStubsUrl();
 
-const pageNameToPath: Record<string, string> = {
+export const pageNameToPath: Record<string, string> = {
   "Non-existent page": "/non-existent-page",
   Healthcheck: "/healthcheck",
   "Authorize error": "/authorize-error",
   "Testing journey - step 1": "/testing-journey/step-1",
   "Testing journey - enter password": "/testing-journey/enter-password",
   "Testing journey - confirmation": "/testing-journey/confirm",
+  "Passkey create - cannot set up passkey": "/cannot-set-up-passkey",
 };
 
 Then("the page meets our accessibility standards", async ({ page }) => {

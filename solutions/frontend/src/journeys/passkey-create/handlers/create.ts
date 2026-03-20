@@ -18,6 +18,7 @@ import {
 import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
+import { paths } from "../../../utils/paths.js";
 
 const setRegistrationOptions = async (
   request: FastifyRequest,
@@ -100,6 +101,7 @@ const render = async (
     registrationOptions: JSON.stringify(registrationOptions),
     stringsSuffix,
     backLink,
+    formAction: paths.journeys["passkey-create"].NOT_CREATED.createPost.path,
   });
 };
 
