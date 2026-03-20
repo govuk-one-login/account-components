@@ -1,13 +1,19 @@
 import { bdd } from "./fixtures.js";
 import type { Protocol } from "devtools-protocol";
 import * as yaml from "yaml";
+import { pageNameToPath } from "./shared.js";
+import assert from "node:assert";
 
 const { Given } = bdd;
 
 Given(
   "I click the {string} button to continue the create passkey journey",
   async ({ page }, name: string) => {
-    const response = page.waitForResponse(page.url());
+    assert.ok(pageNameToPath["Passkey create - cannot set up passkey"]);
+
+    const response = page.waitForResponse(
+      pageNameToPath["Passkey create - cannot set up passkey"],
+    );
     await page.getByRole("button", { name, exact: true }).click();
     await response;
   },
