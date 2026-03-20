@@ -141,6 +141,8 @@ describe("passkey-create handlers", () => {
         expect.objectContaining({
           stringsSuffix: "_signedOut",
           backLink: "https://auth.example.com/create-passkey",
+
+          formAction: "/cannot-set-up-passkey",
         }),
       );
     });
@@ -180,6 +182,7 @@ describe("passkey-create handlers", () => {
         expect.objectContaining({
           stringsSuffix: "_signedIn",
           backLink: undefined,
+          formAction: "/cannot-set-up-passkey",
         }),
       );
     });
@@ -234,6 +237,7 @@ describe("passkey-create handlers", () => {
             errors: expect.any(Object),
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             errorList: expect.any(Array),
+            formAction: "/cannot-set-up-passkey",
           }),
         );
       });

@@ -42,7 +42,7 @@ describe("passkeyCreate", () => {
     passkeyCreate(mockFastify);
 
     expect(mockPost).toHaveBeenCalledWith(
-      "/set-up-passkey",
+      "/cannot-set-up-passkey",
       expect.any(Function),
     );
   });
