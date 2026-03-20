@@ -82,7 +82,7 @@ Then("the page path is {string}", async ({ page }, pageName: string) => {
 });
 
 Then("the page contains the text {string}", async ({ page }, text: string) => {
-  await expect(page.getByText(text)).toBeVisible();
+  await expect(page.getByText(new RegExp(text))).toBeVisible();
 });
 
 Then("the page contains the text:", async ({ page }, text: string) => {
