@@ -25,16 +25,16 @@ repos:
         args: ["--baseline", ".secrets.baseline"]
         stages: [pre-commit]
 
-  # - repo: local
-  #   hooks:
-  #     - id: package-audit-check
-  #       name: Check dependencies
-  #       entry: npm run audit
-  #       language: system
-  #       exclude: .*
-  #       always_run: true
-  #       pass_filenames: false
-  #       stages: [pre-commit]
+  - repo: local
+    hooks:
+      - id: package-audit-check
+        name: Check dependencies
+        entry: npm run audit
+        language: system
+        exclude: .*
+        always_run: true
+        pass_filenames: false
+        stages: [pre-commit]
 
   - repo: local
     hooks:
