@@ -1,10 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock(import("@aws-lambda-powertools/parameters/ssm"));
-vi.mock(import("../getAwsClientConfig/index.js"));
-vi.mock(import("../../getEnvironment/index.js"));
-vi.mock(import("aws-xray-sdk"));
-
 const mockSSMProvider = {
   client: { config: { region: "eu-west-2" } },
 };
@@ -12,6 +7,7 @@ const mockSSMProvider = {
 describe("getParametersProvider", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
     // @ts-expect-error
     vi.doMock(import("@aws-lambda-powertools/parameters/ssm"), () => ({
       SSMProvider: vi.fn(function () {

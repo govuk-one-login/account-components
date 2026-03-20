@@ -151,7 +151,7 @@ describe("getJwks", () => {
 
     await expect(
       getJwks(mockRequest as FastifyRequest, mockReply as FastifyReply),
-    ).rejects.toThrowError(
+    ).rejects.toThrow(
       "Environment variable MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME is not set",
     );
   });
@@ -172,6 +172,6 @@ describe("getJwks", () => {
 
     await expect(
       getJwks(mockRequest as FastifyRequest, mockReply as FastifyReply),
-    ).rejects.toThrowError("EC public key parameter is not set");
+    ).rejects.toThrow("EC public key parameter is not set");
   });
 });

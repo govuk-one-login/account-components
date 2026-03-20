@@ -72,7 +72,7 @@ describe("verifyEmailAddress handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("should throw if session claims email is not available", async () => {
@@ -85,7 +85,7 @@ describe("verifyEmailAddress handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
   });
 
@@ -364,7 +364,7 @@ describe("verifyEmailAddress handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("should throw if account-delete journey state is not available", async () => {
@@ -376,7 +376,7 @@ describe("verifyEmailAddress handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("should throw if session claims are not available", async () => {
@@ -391,7 +391,7 @@ describe("verifyEmailAddress handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("should throw if access token is not available", async () => {
@@ -407,7 +407,7 @@ describe("verifyEmailAddress handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("should render error when verifyOtpChallenge fails with InvalidOTPCode", async () => {
@@ -470,7 +470,7 @@ describe("verifyEmailAddress handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-      ).rejects.toThrowError("TooManyEmailCodesEntered");
+      ).rejects.toThrow("TooManyEmailCodesEntered");
     });
   });
 });

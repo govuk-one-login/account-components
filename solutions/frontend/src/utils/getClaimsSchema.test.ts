@@ -423,6 +423,6 @@ describe("getClaimsSchema", () => {
 
     expect(() => {
       getClaimsSchema(mockClient, redirectUri, scope, state);
-    }).toThrowError("AUTHORIZE_ENDPOINT_URL is not set");
+    }).toThrow("AUTHORIZE_ENDPOINT_URL is not set");
   });
 });

@@ -31,7 +31,7 @@ describe("getAuthRequest", () => {
 
     await expect(
       getAuthRequest("code-1", "https://example.com/callback", "client-abc"),
-    ).rejects.toThrowError("AUTH_TABLE_NAME is not configured");
+    ).rejects.toThrow("AUTH_TABLE_NAME is not configured");
   });
 
   it("returns the parsed auth request when data is valid", async () => {
@@ -77,7 +77,7 @@ describe("getAuthRequest", () => {
         "https://example.com/callback",
         "client-abc",
       ),
-    ).rejects.toThrowError(
+    ).rejects.toThrow(
       "Auth request data is invalid for code: valid-code, auth redirect=https://example.com/other-callback, request redirect=https://example.com/callback",
     );
   });
@@ -99,7 +99,7 @@ describe("getAuthRequest", () => {
         "https://example.com/callback",
         "client-abc",
       ),
-    ).rejects.toThrowError(
+    ).rejects.toThrow(
       "Auth request data is invalid for code: valid-code, Auth request has expired",
     );
   });

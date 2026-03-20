@@ -46,6 +46,7 @@ paths:
       description: |
         Issues tokens for supported grants. This endpoint supports `private_key_jwt` client authentication via `client_assertion_type` and `client_assertion` per RFC 7523.
       operationId: token
+      security: []
       tags:
         - OAuth
       parameters:
@@ -262,6 +263,7 @@ paths:
       summary: JSON Web Key Set (JWKS)
       description: Publishes public keys for signature and encryption.
       operationId: jwks
+      security: []
       tags:
         - OAuth
       responses:
@@ -291,6 +293,7 @@ paths:
       description: |
         Discover OAuth method URLs.
       operationId: discovery
+      security: []
       tags:
         - OAuth
       responses:

@@ -67,7 +67,7 @@ describe("enterPassword handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
   });
 
@@ -235,7 +235,7 @@ describe("enterPassword handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("should throw if account-delete journey state is not available", async () => {
@@ -247,7 +247,7 @@ describe("enterPassword handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("should throw if session claims are not available", async () => {
@@ -262,7 +262,7 @@ describe("enterPassword handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("should throw if access token is not available", async () => {
@@ -278,7 +278,7 @@ describe("enterPassword handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("should throw error when ExceededIncorrectPasswordSubmissionLimit", async () => {
@@ -295,7 +295,7 @@ describe("enterPassword handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-      ).rejects.toThrowError("ExceededIncorrectPasswordSubmissionLimit");
+      ).rejects.toThrow("ExceededIncorrectPasswordSubmissionLimit");
     });
 
     it("should throw error when AccountInterventionsUnexpectedError", async () => {
@@ -312,7 +312,7 @@ describe("enterPassword handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-      ).rejects.toThrowError("AccountInterventionsUnexpectedError");
+      ).rejects.toThrow("AccountInterventionsUnexpectedError");
     });
 
     it("should throw error when UserAccountSuspended", async () => {
@@ -329,7 +329,7 @@ describe("enterPassword handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-      ).rejects.toThrowError("UserAccountSuspended");
+      ).rejects.toThrow("UserAccountSuspended");
     });
 
     it("should throw error when UserAccountBlocked", async () => {
@@ -346,7 +346,7 @@ describe("enterPassword handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-      ).rejects.toThrowError("UserAccountBlocked");
+      ).rejects.toThrow("UserAccountBlocked");
     });
   });
 });

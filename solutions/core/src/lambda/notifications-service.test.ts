@@ -306,7 +306,7 @@ describe("notifications-service", () => {
 
     await expect(async () => {
       await import("./notifications-service.js");
-    }).rejects.toThrowError(
+    }).rejects.toThrow(
       JSON.stringify({
         msg: "env_var_NOTIFY_API_KEY_SECRET_ARN_is_undefined",
       }),
@@ -318,7 +318,7 @@ describe("notifications-service", () => {
 
     await expect(async () => {
       await import("./notifications-service.js");
-    }).rejects.toThrowError("error_getting_notify_api_key_secret");
+    }).rejects.toThrow("error_getting_notify_api_key_secret");
   });
 
   it("throws error when notify API key is undefined", async () => {
@@ -326,7 +326,7 @@ describe("notifications-service", () => {
 
     await expect(async () => {
       await import("./notifications-service.js");
-    }).rejects.toThrowError(
+    }).rejects.toThrow(
       JSON.stringify({
         msg: "notify_api_key_is_undefined",
         notifyApiKeySecretArn:
@@ -340,7 +340,7 @@ describe("notifications-service", () => {
 
     await expect(async () => {
       await import("./notifications-service.js");
-    }).rejects.toThrowError(
+    }).rejects.toThrow(
       JSON.stringify({
         msg: "notify_api_key_is_not_a_string",
         notifyApiKeySecretArn:
@@ -354,6 +354,6 @@ describe("notifications-service", () => {
 
     await expect(async () => {
       await import("./notifications-service.js");
-    }).rejects.toThrowError("invalid_template_ids_format");
+    }).rejects.toThrow("invalid_template_ids_format");
   });
 });

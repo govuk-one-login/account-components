@@ -69,7 +69,7 @@ describe("accountDataApiClient", () => {
 
       expect(
         () => new AccountDataApiClient(mockAccessToken, mockEvent),
-      ).toThrowError("ACCOUNT_DATA_API_URL is not set");
+      ).toThrow("ACCOUNT_DATA_API_URL is not set");
     });
 
     it("should create instance with valid environment variable", () => {

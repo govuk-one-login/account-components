@@ -67,7 +67,7 @@ describe("confirm handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
   });
 
@@ -102,7 +102,7 @@ describe("confirm handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-      ).rejects.toThrowError("Failed to delete account");
+      ).rejects.toThrow("Failed to delete account");
 
       expect(mockDeleteAccount).toHaveBeenCalledWith("test@example.com");
       expect(mockCompleteJourney).not.toHaveBeenCalled();
@@ -117,7 +117,7 @@ describe("confirm handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
 
       expect(mockDeleteAccount).not.toHaveBeenCalled();
       expect(mockCompleteJourney).not.toHaveBeenCalled();
@@ -133,7 +133,7 @@ describe("confirm handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
 
       expect(mockDeleteAccount).not.toHaveBeenCalled();
       expect(mockCompleteJourney).not.toHaveBeenCalled();

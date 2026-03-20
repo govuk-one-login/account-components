@@ -11,7 +11,7 @@ describe("errors", () => {
     it("should throw an AppError with invalidRequest code", () => {
       expect(() =>
         errorManager.throwError("invalidRequest", "Test message"),
-      ).toThrowError("Test message");
+      ).toThrow("Test message");
     });
   });
 

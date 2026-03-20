@@ -1,9 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock(import("@aws-lambda-powertools/parameters/appconfig"));
-vi.mock(import("../getEnvironment/index.js"));
-vi.mock(import("../awsClient/appconfigClient/index.js"));
-
 const mockConfig = {
   client_registry: [
     {

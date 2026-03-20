@@ -192,7 +192,7 @@ describe("passkey-create handlers", () => {
 
       await expect(
         getHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
-      ).rejects.toThrowError("API error");
+      ).rejects.toThrow("API error");
     });
 
     it("should throw when session claims are missing", async () => {
@@ -201,7 +201,7 @@ describe("passkey-create handlers", () => {
       await expect(
         getHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("should throw when PASSKEYS_RP_ID is not set", async () => {
@@ -210,7 +210,7 @@ describe("passkey-create handlers", () => {
       await expect(
         getHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
   });
 
@@ -481,7 +481,7 @@ describe("passkey-create handlers", () => {
 
         await expect(
           postHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
-        ).rejects.toThrowError("Database error");
+        ).rejects.toThrow("Database error");
       });
 
       it("should show error when registrationError is present", async () => {
@@ -519,7 +519,7 @@ describe("passkey-create handlers", () => {
         await expect(
           postHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
           // eslint-disable-next-line vitest/require-to-throw-message
-        ).rejects.toThrowError();
+        ).rejects.toThrow();
       });
 
       it("should throw when registration options are missing", async () => {
@@ -536,7 +536,7 @@ describe("passkey-create handlers", () => {
         await expect(
           postHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
           // eslint-disable-next-line vitest/require-to-throw-message
-        ).rejects.toThrowError();
+        ).rejects.toThrow();
       });
 
       it("should throw when PASSKEYS_EXPECTED_ORIGIN is not set", async () => {
@@ -545,7 +545,7 @@ describe("passkey-create handlers", () => {
         await expect(
           postHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
           // eslint-disable-next-line vitest/require-to-throw-message
-        ).rejects.toThrowError();
+        ).rejects.toThrow();
       });
     });
   });

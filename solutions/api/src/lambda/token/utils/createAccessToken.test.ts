@@ -84,7 +84,7 @@ describe("createAccessToken", () => {
             },
             mockApiBaseUrl,
           ),
-        ).rejects.toThrowError(`${envVar} is not configured`);
+        ).rejects.toThrow(`${envVar} is not configured`);
       });
     },
   );

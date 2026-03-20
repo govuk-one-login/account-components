@@ -70,7 +70,7 @@ describe("buildJar", () => {
   it("should throw error when JAR_RSA_ENCRYPTION_KEY_ALIAS is not set", async () => {
     delete process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"];
 
-    await expect(buildJar("test.jwt")).rejects.toThrowError(
+    await expect(buildJar("test.jwt")).rejects.toThrow(
       "JAR_RSA_ENCRYPTION_KEY_ALIAS is not set",
     );
   });
@@ -82,7 +82,7 @@ describe("buildJar", () => {
       {} as unknown as GetPublicKeyCommandOutput,
     );
 
-    await expect(buildJar("test.jwt")).rejects.toThrowError(
+    await expect(buildJar("test.jwt")).rejects.toThrow(
       "Public key data is missing from KMS response",
     );
   });

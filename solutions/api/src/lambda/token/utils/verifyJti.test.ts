@@ -25,13 +25,13 @@ describe("verifyJti", () => {
   it("throws error when REPLAY_ATTACK_TABLE_NAME is missing", async () => {
     delete process.env["REPLAY_ATTACK_TABLE_NAME"];
 
-    await expect(verifyJti("nonce-1")).rejects.toThrowError(
+    await expect(verifyJti("nonce-1")).rejects.toThrow(
       "REPLAY_ATTACK_TABLE_NAME not set",
     );
   });
 
   it("throws error when jti is missing", async () => {
-    await expect(verifyJti(undefined)).rejects.toThrowError("jti is missing");
+    await expect(verifyJti(undefined)).rejects.toThrow("jti is missing");
   });
 
   it("resolves when jti does not exist in table", async () => {
@@ -46,15 +46,13 @@ describe("verifyJti", () => {
     error.name = "ConditionalCheckFailedException";
     mockPut.mockRejectedValueOnce(error);
 
-    await expect(verifyJti("nonce-4")).rejects.toThrowError(
-      "jti found: nonce-4",
-    );
+    await expect(verifyJti("nonce-4")).rejects.toThrow("jti found: nonce-4");
   });
 
   it("throws error when dynamo lookup fails", async () => {
     mockPut.mockRejectedValueOnce(new Error("boom"));
 
-    await expect(verifyJti("nonce-4")).rejects.toThrowError(
+    await expect(verifyJti("nonce-4")).rejects.toThrow(
       "Error checking replay attack table",
     );
   });

@@ -1,10 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock(import("@aws-sdk/client-sqs"));
-vi.mock(import("../getAwsClientConfig/index.js"));
-vi.mock(import("../../getEnvironment/index.js"));
-vi.mock(import("aws-xray-sdk"));
-
 const mockSqsClient = {
   config: { region: "eu-west-2" },
   send: vi.fn(),
@@ -19,6 +14,7 @@ const mockCommands = {
 describe("getSqsClient", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
     // @ts-expect-error
     vi.doMock(import("@aws-sdk/client-sqs"), () => ({
       SQSClient: vi.fn(function () {

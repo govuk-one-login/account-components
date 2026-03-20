@@ -48,6 +48,6 @@ describe("sendNotification", () => {
     };
 
     // eslint-disable-next-line vitest/require-to-throw-message
-    await expect(sendNotification(message)).rejects.toThrowError();
+    await expect(sendNotification(message)).rejects.toThrow();
   });
 });
