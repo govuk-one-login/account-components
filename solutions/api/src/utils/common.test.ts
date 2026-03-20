@@ -87,7 +87,7 @@ describe("getApiBaseUrlWithStage", () => {
     mockGetEnvironment.mockReturnValue("dev");
     const event = createEvent({}, "v1");
 
-    expect(() => getApiBaseUrlWithStage(event)).toThrowError(
+    expect(() => getApiBaseUrlWithStage(event)).toThrow(
       "Unable to determine host from API Gateway event",
     );
   });
@@ -118,15 +118,15 @@ describe("errorManager", () => {
 
   describe("throwError", () => {
     it("throws an error with the correct code", () => {
-      expect(() =>
-        errorManager.throwError("notFound", "not found"),
-      ).toThrowError("not found");
+      expect(() => errorManager.throwError("notFound", "not found")).toThrow(
+        "not found",
+      );
     });
 
     it("logs the error", () => {
-      expect(() =>
-        errorManager.throwError("notFound", "not found"),
-      ).toThrowError("not found");
+      expect(() => errorManager.throwError("notFound", "not found")).toThrow(
+        "not found",
+      );
       // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLogger.error).toHaveBeenCalledWith("Error", {
         cause: expect.objectContaining({ message: "not found" }) as Error,

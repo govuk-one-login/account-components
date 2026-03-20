@@ -59,7 +59,7 @@ describe("jwtAdapter", () => {
 
         await expect(
           jwtAdapter.sign(header, payload, signatureType),
-        ).rejects.toThrowError(
+        ).rejects.toThrow(
           "Failed to retrieve key from SSM for param /components-mocks/MockClientEcPrivateKey",
         );
       });

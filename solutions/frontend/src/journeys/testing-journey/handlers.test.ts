@@ -77,7 +77,7 @@ describe("testing-journey handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
   });
 
@@ -120,7 +120,7 @@ describe("testing-journey handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
   });
 
@@ -152,7 +152,7 @@ describe("testing-journey handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("should throw if testing-journey state is not available", async () => {
@@ -164,7 +164,7 @@ describe("testing-journey handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
   });
 
@@ -190,7 +190,7 @@ describe("testing-journey handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
   });
 

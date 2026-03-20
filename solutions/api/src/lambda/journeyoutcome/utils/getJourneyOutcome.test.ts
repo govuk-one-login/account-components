@@ -102,7 +102,7 @@ describe("getJourneyOutcome", () => {
       Item: undefined,
     });
 
-    await expect(getJourneyOutcome(mockPayload)).rejects.toThrowError(
+    await expect(getJourneyOutcome(mockPayload)).rejects.toThrow(
       "Mock error thrown",
     );
 
@@ -117,7 +117,7 @@ describe("getJourneyOutcome", () => {
     const mockError = new Error("DB Connection Failed");
     mockDynamoDbGet.mockRejectedValueOnce(mockError);
 
-    await expect(getJourneyOutcome(mockPayload)).rejects.toThrowError(
+    await expect(getJourneyOutcome(mockPayload)).rejects.toThrow(
       "Mock error thrown",
     );
 
@@ -138,7 +138,7 @@ describe("getJourneyOutcome", () => {
       Item: mismatchedJourneyOutcome,
     });
 
-    await expect(getJourneyOutcome(mockPayload)).rejects.toThrowError(
+    await expect(getJourneyOutcome(mockPayload)).rejects.toThrow(
       "Mock error thrown",
     );
 

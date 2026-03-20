@@ -110,7 +110,7 @@ describe("generateJwtToken", () => {
 
     const scenario = MockRequestObjectScenarios.VALID;
 
-    await expect(generateJwtToken(requestBody, scenario)).rejects.toThrowError(
+    await expect(generateJwtToken(requestBody, scenario)).rejects.toThrow(
       "Token not generated",
     );
   });
@@ -126,7 +126,7 @@ describe("generateJwtToken", () => {
 
     const scenario = MockRequestObjectScenarios.VALID;
 
-    await expect(generateJwtToken(requestBody, scenario)).rejects.toThrowError(
+    await expect(generateJwtToken(requestBody, scenario)).rejects.toThrow(
       "Failed to sign token",
     );
   });
@@ -269,7 +269,7 @@ describe("getJwtPayload", () => {
 
     expect(() =>
       getJwtPayload(MockRequestObjectScenarios.VALID, invalidBody),
-    ).toThrowError(CustomError);
+    ).toThrow(CustomError);
   });
 
   it("should use default values if fields missing", () => {
@@ -382,8 +382,8 @@ describe("getJwtPayload", () => {
       jti: "nonce-abc-123",
     };
 
-    expect(() =>
-      getJwtPayload(MockRequestObjectScenarios.VALID, body),
-    ).toThrowError("DEFAULT_AUDIENCE is not set");
+    expect(() => getJwtPayload(MockRequestObjectScenarios.VALID, body)).toThrow(
+      "DEFAULT_AUDIENCE is not set",
+    );
   });
 });

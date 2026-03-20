@@ -395,7 +395,7 @@ describe("handler", () => {
 
     const event = createEvent("Delete");
 
-    await expect(handler(event, context)).rejects.toThrowError(
+    await expect(handler(event, context)).rejects.toThrow(
       "Failed to send response: Bad Request",
     );
   });

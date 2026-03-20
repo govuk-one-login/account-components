@@ -165,6 +165,6 @@ describe("sendAuditEvent", () => {
     await expect(
       sendAuditEvent(event, mockApiGatewayEvent),
       // eslint-disable-next-line vitest/require-to-throw-message
-    ).rejects.toThrowError();
+    ).rejects.toThrow();
   });
 });

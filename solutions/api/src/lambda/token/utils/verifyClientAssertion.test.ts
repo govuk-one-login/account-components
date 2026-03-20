@@ -122,7 +122,7 @@ describe("verifyClientAssertion", () => {
 
     await expect(
       verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
-    ).rejects.toThrowError("Missing iss in client assertion");
+    ).rejects.toThrow("Missing iss in client assertion");
   });
 
   it("should throw error when iat is missing from JWT", async () => {
@@ -133,9 +133,7 @@ describe("verifyClientAssertion", () => {
 
     await expect(
       verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
-    ).rejects.toThrowError(
-      "Missing iat in client assertion, iss=test-client-id",
-    );
+    ).rejects.toThrow("Missing iat in client assertion, iss=test-client-id");
   });
 
   it("should throw error when aud is missing from JWT", async () => {
@@ -146,9 +144,7 @@ describe("verifyClientAssertion", () => {
 
     await expect(
       verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
-    ).rejects.toThrowError(
-      "Missing aud in client assertion, iss=test-client-id",
-    );
+    ).rejects.toThrow("Missing aud in client assertion, iss=test-client-id");
   });
 
   it("should throw error when client is not found in registry", async () => {
@@ -159,7 +155,7 @@ describe("verifyClientAssertion", () => {
 
     await expect(
       verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
-    ).rejects.toThrowError(
+    ).rejects.toThrow(
       "Client unknown-client-id not found for client assertion",
     );
   });
@@ -170,7 +166,7 @@ describe("verifyClientAssertion", () => {
 
     await expect(
       verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
-    ).rejects.toThrowError(
+    ).rejects.toThrow(
       "Failed to verify client assertion for iss=test-client-id: JWT verification failed",
     );
   });
@@ -184,7 +180,7 @@ describe("verifyClientAssertion", () => {
 
     await expect(
       verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
-    ).rejects.toThrowError(
+    ).rejects.toThrow(
       "Client assertion iat is in the future, iss=test-client-id",
     );
   });
@@ -197,7 +193,7 @@ describe("verifyClientAssertion", () => {
 
     await expect(
       verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
-    ).rejects.toThrowError(
+    ).rejects.toThrow(
       "Invalid aud in client assertion: https://invalid-audience.com for iss=test-client-id, does not contain https://example.com/token",
     );
   });
@@ -207,7 +203,7 @@ describe("verifyClientAssertion", () => {
 
     await expect(
       verifyClientAssertion(mockClientAssertion, mockApiBaseUrl),
-    ).rejects.toThrowError(
+    ).rejects.toThrow(
       "Missing kid in client assertion header for iss=test-client-id",
     );
   });

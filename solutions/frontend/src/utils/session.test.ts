@@ -51,7 +51,7 @@ describe("session utils", () => {
       process.env["SESSIONS_TABLE_NAME"] = "test-table";
 
       // eslint-disable-next-line vitest/require-to-throw-message
-      await expect(getSessionOptions()).rejects.toThrowError();
+      await expect(getSessionOptions()).rejects.toThrow();
     });
 
     it("throws when SESSIONS_TABLE_NAME is missing", async () => {
@@ -59,7 +59,7 @@ describe("session utils", () => {
       delete process.env["SESSIONS_TABLE_NAME"];
 
       // eslint-disable-next-line vitest/require-to-throw-message
-      await expect(getSessionOptions()).rejects.toThrowError();
+      await expect(getSessionOptions()).rejects.toThrow();
     });
 
     it("returns session options with secure cookie for non-local environment", async () => {

@@ -64,7 +64,7 @@ describe("resendEmailVerificationCode handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
   });
 
@@ -93,7 +93,7 @@ describe("resendEmailVerificationCode handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("should throw if access token is not available", async () => {
@@ -106,7 +106,7 @@ describe("resendEmailVerificationCode handlers", () => {
           mockReply as FastifyReply,
         ),
         // eslint-disable-next-line vitest/require-to-throw-message
-      ).rejects.toThrowError();
+      ).rejects.toThrow();
     });
 
     it("should throw error when TooManyEmailCodesEntered", async () => {
@@ -120,7 +120,7 @@ describe("resendEmailVerificationCode handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-      ).rejects.toThrowError("TooManyEmailCodesEntered");
+      ).rejects.toThrow("TooManyEmailCodesEntered");
     });
 
     it("should throw error when BlockedForEmailVerificationCodes", async () => {
@@ -134,7 +134,7 @@ describe("resendEmailVerificationCode handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-      ).rejects.toThrowError("BlockedForEmailVerificationCodes");
+      ).rejects.toThrow("BlockedForEmailVerificationCodes");
     });
   });
 });

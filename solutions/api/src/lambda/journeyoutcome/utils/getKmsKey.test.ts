@@ -87,7 +87,7 @@ describe("getKMSKey", () => {
       $metadata: {},
     });
 
-    await expect(getKMSKey(mockKeyAliasDoesNotExist)).rejects.toThrowError(
+    await expect(getKMSKey(mockKeyAliasDoesNotExist)).rejects.toThrow(
       `Public key data missing for KMS Key Alias: ${mockKeyAliasDoesNotExist}`,
     );
   });
