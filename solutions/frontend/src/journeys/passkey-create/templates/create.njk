@@ -43,7 +43,7 @@
     }) }}
   {% endif %} 
 
-  <form method="post" id="verifyPasskeyForm" data-registration-options="{{ registrationOptions }}">
+  <form action="{{ formAction }}" method="post" id="verifyPasskeyForm" data-registration-options="{{ registrationOptions }}">
     {% if showErrorUi %}        
       {{ govukRadios({
         name: "action",
