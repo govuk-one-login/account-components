@@ -53,6 +53,7 @@ describe("createAccessToken", () => {
           sub: "user-xyz",
         },
       }),
+      delete: vi.fn().mockResolvedValue({}),
     } as any as ReturnType<typeof getDynamoDbClient>);
 
     vi.setSystemTime(new Date("2024-01-01T00:00:00Z"));
@@ -105,5 +106,24 @@ describe("createAccessToken", () => {
     expect(accessToken).toBe(
       "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2V5LWlkIn0.eyJvdXRjb21lX2lkIjoib3V0Y29tZS0xMjMiLCJpc3MiOiJodHRwczovL2V4YW1wbGUuY29tL3Rva2VuIiwic3ViIjoidXNlci14eXoiLCJhdWQiOiJodHRwczovL2V4YW1wbGUuY29tL2pvdXJuZXlvdXRjb21lIiwiaWF0IjoxNzA0MDY3MjAwLCJleHAiOjE3MDQwNjcyNjAsImp0aSI6InVuaXF1ZS1qdGktdmFsdWUtbW9jay1yZXNwb25zZSJ9.jose-format-signature-of-mock-signature", // pragma: allowlist secret
     );
+  });
+
+  it("deletes the auth code from DynamoDB after creating the token", async () => {
+    await createAccessToken(
+      {
+        outcome_id: "outcome-123",
+        client_id: "client-abc",
+        redirect_uri: "https://example.com/callback",
+        code: "code-1",
+        sub: "user-xyz",
+        expires: Date.now() / 1000 + 600,
+      },
+      mockApiBaseUrl,
+    );
+
+    expect(mockGetDynamoDbClient().delete).toHaveBeenCalledWith({
+      TableName: "auth-table",
+      Key: { code: "code-1" },
+    });
   });
 });
