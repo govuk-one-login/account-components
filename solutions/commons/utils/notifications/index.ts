@@ -3,13 +3,35 @@ import { getSqsClient } from "../awsClient/sqsClient/index.js";
 import assert from "node:assert";
 
 export enum NotificationType {
-  CREATE_PASSKEY = "CREATE_PASSKEY",
+  CREATE_PASSKEY_WITH_PASSKEY_NAME = "CREATE_PASSKEY_WITH_PASSKEY_NAME",
+  CREATE_PASSKEY_WITHOUT_PASSKEY_NAME = "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME",
 }
 
 export const messageSchema = v.variant("notificationType", [
   v.pipe(
     v.object({
-      notificationType: v.literal(NotificationType.CREATE_PASSKEY),
+      notificationType: v.literal(
+        NotificationType.CREATE_PASSKEY_WITH_PASSKEY_NAME,
+      ),
+      emailAddress: v.pipe(v.string(), v.email()),
+      passkey_name: v.string(),
+    }),
+    v.transform((input) => {
+      return {
+        emailAddress: input.emailAddress,
+        notificationType: input.notificationType,
+        personalisation: {
+          passkey_name: input.passkey_name,
+        },
+        optionalContentSwitches: {},
+      };
+    }),
+  ),
+  v.pipe(
+    v.object({
+      notificationType: v.literal(
+        NotificationType.CREATE_PASSKEY_WITHOUT_PASSKEY_NAME,
+      ),
       emailAddress: v.pipe(v.string(), v.email()),
     }),
     v.transform((input) => {
@@ -17,6 +39,7 @@ export const messageSchema = v.variant("notificationType", [
         emailAddress: input.emailAddress,
         notificationType: input.notificationType,
         personalisation: {},
+        optionalContentSwitches: {},
       };
     }),
   ),
