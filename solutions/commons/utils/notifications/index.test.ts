@@ -26,9 +26,8 @@ describe("sendNotification", () => {
   it("should send message to SQS queue", async () => {
     const message = {
       emailAddress: "test@example.com",
-      notificationType: NotificationType.CREATE_PASSKEY,
-      personalisation: {},
-    };
+      notificationType: NotificationType.CREATE_PASSKEY_WITHOUT_PASSKEY_NAME,
+    } as const;
 
     await sendNotification(message);
 
@@ -43,9 +42,8 @@ describe("sendNotification", () => {
 
     const message = {
       emailAddress: "test@example.com",
-      notificationType: NotificationType.CREATE_PASSKEY,
-      personalisation: {},
-    };
+      notificationType: NotificationType.CREATE_PASSKEY_WITHOUT_PASSKEY_NAME,
+    } as const;
 
     // eslint-disable-next-line vitest/require-to-throw-message
     await expect(sendNotification(message)).rejects.toThrow();

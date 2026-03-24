@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { SQSEvent, SQSRecord } from "aws-lambda";
+import * as v from "valibot";
 
 const mockGetSecret = vi.fn();
 const mockSendEmail = vi.fn();
@@ -14,6 +15,72 @@ const mockMetrics = {
   captureColdStartMetric: vi.fn(),
   publishStoredMetrics: vi.fn(),
 };
+
+enum MockNotificationType {
+  WITH_NEITHER = "WITH_NEITHER",
+  WITH_PERSONALISATION = "WITH_PERSONALISATION",
+  WITH_SWITCHES = "WITH_SWITCHES",
+  WITH_BOTH = "WITH_BOTH",
+}
+
+const mockMessageSchema = v.variant("notificationType", [
+  v.pipe(
+    v.object({
+      notificationType: v.literal(MockNotificationType.WITH_NEITHER),
+      emailAddress: v.pipe(v.string(), v.email()),
+    }),
+    v.transform((input) => ({
+      emailAddress: input.emailAddress,
+      notificationType: input.notificationType,
+      personalisation: {},
+      optionalContentSwitches: {},
+    })),
+  ),
+  v.pipe(
+    v.object({
+      notificationType: v.literal(MockNotificationType.WITH_PERSONALISATION),
+      emailAddress: v.pipe(v.string(), v.email()),
+      name: v.string(),
+    }),
+    v.transform((input) => ({
+      emailAddress: input.emailAddress,
+      notificationType: input.notificationType,
+      personalisation: { name: input.name },
+      optionalContentSwitches: {},
+    })),
+  ),
+  v.pipe(
+    v.object({
+      notificationType: v.literal(MockNotificationType.WITH_SWITCHES),
+      emailAddress: v.pipe(v.string(), v.email()),
+      showHeader: v.boolean(),
+      showFooter: v.boolean(),
+    }),
+    v.transform((input) => ({
+      emailAddress: input.emailAddress,
+      notificationType: input.notificationType,
+      personalisation: {},
+      optionalContentSwitches: {
+        showHeader: input.showHeader,
+        showFooter: input.showFooter,
+      },
+    })),
+  ),
+  v.pipe(
+    v.object({
+      notificationType: v.literal(MockNotificationType.WITH_BOTH),
+      emailAddress: v.pipe(v.string(), v.email()),
+      name: v.string(),
+      showHeader: v.boolean(),
+    }),
+    v.transform((input) => ({
+      emailAddress: input.emailAddress,
+      notificationType: input.notificationType,
+      personalisation: { name: input.name },
+      optionalContentSwitches: { showHeader: input.showHeader },
+    })),
+  ),
+]);
 
 vi.mock(import("@aws-lambda-powertools/parameters/secrets"), () => ({
   getSecret: mockGetSecret,
@@ -36,13 +103,12 @@ vi.mock(import("../../../commons/utils/metrics/index.js"), () => ({
   metrics: mockMetrics,
 }));
 
-vi.mock(
-  import("../../../commons/utils/notifications/index.js"),
-  async (importOriginal) => {
-    const actual = await importOriginal();
-    return actual;
-  },
-);
+// @ts-expect-error
+vi.mock(import("../../../commons/utils/notifications/index.js"), () => ({
+  messageSchema: mockMessageSchema,
+  NotificationType: MockNotificationType,
+  sendNotification: vi.fn(),
+}));
 
 const createSQSRecord = (
   body: string,
@@ -77,11 +143,41 @@ describe("notifications-service", () => {
     process.env["NOTIFY_API_KEY_SECRET_ARN"] =
       "arn:aws:secretsmanager:us-east-1:123456789012:secret:test";
     process.env["NOTIFY_TEMPLATE_IDS"] = JSON.stringify({
-      CREATE_PASSKEY: "template-1",
+      WITH_NEITHER: "template-neither",
+      WITH_PERSONALISATION: "template-personalisation",
+      WITH_SWITCHES: "template-switches",
+      WITH_BOTH: "template-both",
     });
   });
 
-  it("successfully processes valid notification message", async () => {
+  it("successfully processes notification with no personalisation or optionalContentSwitches", async () => {
+    const { handler } = await import("./notifications-service.js");
+
+    mockSendEmail.mockResolvedValue({
+      data: { id: "notify-id-000", reference: "ref-000" },
+    });
+
+    const message = {
+      emailAddress: "test@example.com",
+      notificationType: "WITH_NEITHER",
+    };
+
+    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
+    const result = await handler(event);
+
+    expect(result.batchItemFailures).toHaveLength(0);
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      "template-neither",
+      "test@example.com",
+      expect.objectContaining({
+        personalisation: {},
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        reference: expect.any(String),
+      }),
+    );
+  });
+
+  it("successfully processes valid notification message with personalisation", async () => {
     const { handler } = await import("./notifications-service.js");
 
     mockSendEmail.mockResolvedValue({
@@ -93,8 +189,8 @@ describe("notifications-service", () => {
 
     const message = {
       emailAddress: "test@example.com",
-      notificationType: "CREATE_PASSKEY",
-      personalisation: {},
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
     };
 
     const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
@@ -102,10 +198,10 @@ describe("notifications-service", () => {
 
     expect(result.batchItemFailures).toHaveLength(0);
     expect(mockSendEmail).toHaveBeenCalledWith(
-      "template-1",
+      "template-personalisation",
       "test@example.com",
       expect.objectContaining({
-        personalisation: {},
+        personalisation: { name: "Test User" },
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         reference: expect.any(String),
       }),
@@ -115,7 +211,7 @@ describe("notifications-service", () => {
       expect.objectContaining({
         messageId: "test-message-id",
         id: "notify-id-123",
-        notificationType: "CREATE_PASSKEY",
+        notificationType: "WITH_PERSONALISATION",
       }),
     );
   });
@@ -135,6 +231,73 @@ describe("notifications-service", () => {
     expect(mockSendEmail).not.toHaveBeenCalledWith();
   });
 
+  it("merges optionalContentSwitches into personalisation as yes/no strings", async () => {
+    const { handler } = await import("./notifications-service.js");
+
+    mockSendEmail.mockResolvedValue({
+      data: {
+        id: "notify-id-456",
+        reference: "ref-456",
+      },
+    });
+
+    const message = {
+      emailAddress: "test@example.com",
+      notificationType: "WITH_SWITCHES",
+      showHeader: true,
+      showFooter: false,
+    };
+
+    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
+    const result = await handler(event);
+
+    expect(result.batchItemFailures).toHaveLength(0);
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      "template-switches",
+      "test@example.com",
+      expect.objectContaining({
+        personalisation: {
+          showHeader: "yes",
+          showFooter: "no",
+        },
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        reference: expect.any(String),
+      }),
+    );
+  });
+
+  it("merges personalisation and optionalContentSwitches together", async () => {
+    const { handler } = await import("./notifications-service.js");
+
+    mockSendEmail.mockResolvedValue({
+      data: { id: "notify-id-789", reference: "ref-789" },
+    });
+
+    const message = {
+      emailAddress: "test@example.com",
+      notificationType: "WITH_BOTH",
+      name: "Test User",
+      showHeader: true,
+    };
+
+    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
+    const result = await handler(event);
+
+    expect(result.batchItemFailures).toHaveLength(0);
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      "template-both",
+      "test@example.com",
+      expect.objectContaining({
+        personalisation: {
+          name: "Test User",
+          showHeader: "yes",
+        },
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        reference: expect.any(String),
+      }),
+    );
+  });
+
   it("adds to batch failures when template ID not found", async () => {
     vi.resetModules();
     process.env["NOTIFY_TEMPLATE_IDS"] = JSON.stringify({});
@@ -143,8 +306,8 @@ describe("notifications-service", () => {
 
     const message = {
       emailAddress: "test@example.com",
-      notificationType: "CREATE_PASSKEY",
-      personalisation: {},
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
     };
 
     const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
@@ -154,7 +317,7 @@ describe("notifications-service", () => {
     expect(mockLogger.error).toHaveBeenCalledWith(
       "template_id_not_found",
       expect.objectContaining({
-        notificationType: "CREATE_PASSKEY",
+        notificationType: "WITH_PERSONALISATION",
       }),
     );
     expect(mockSendEmail).not.toHaveBeenCalledWith();
@@ -175,8 +338,8 @@ describe("notifications-service", () => {
 
     const message = {
       emailAddress: "test@example.com",
-      notificationType: "CREATE_PASSKEY",
-      personalisation: {},
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
     };
 
     const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
@@ -200,8 +363,8 @@ describe("notifications-service", () => {
 
     const message = {
       emailAddress: "test@example.com",
-      notificationType: "CREATE_PASSKEY",
-      personalisation: {},
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
     };
 
     const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
@@ -224,8 +387,8 @@ describe("notifications-service", () => {
 
     const message = {
       emailAddress: "test@example.com",
-      notificationType: "CREATE_PASSKEY",
-      personalisation: {},
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
     };
 
     const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
@@ -250,13 +413,14 @@ describe("notifications-service", () => {
 
     const message1 = {
       emailAddress: "test1@example.com",
-      notificationType: "CREATE_PASSKEY",
-      personalisation: {},
+      notificationType: "WITH_PERSONALISATION",
+      name: "User One",
     };
     const message2 = {
       emailAddress: "test2@example.com",
-      notificationType: "CREATE_PASSKEY",
-      personalisation: {},
+      notificationType: "WITH_SWITCHES",
+      showHeader: true,
+      showFooter: false,
     };
 
     const event = createSQSEvent([
@@ -274,7 +438,7 @@ describe("notifications-service", () => {
       expect.objectContaining({
         messageId: "msg-1",
         id: "notify-1",
-        notificationType: "CREATE_PASSKEY",
+        notificationType: "WITH_PERSONALISATION",
         reference: "ref-1",
       }),
     );
@@ -289,8 +453,8 @@ describe("notifications-service", () => {
 
     const message = {
       emailAddress: "test@example.com",
-      notificationType: "CREATE_PASSKEY",
-      personalisation: {},
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
     };
 
     const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);

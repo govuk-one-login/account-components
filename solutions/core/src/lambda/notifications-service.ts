@@ -139,6 +139,7 @@ const processNotification = async (
       emailAddress: string;
       notificationType: NotificationType;
       personalisation: Personalisation;
+      optionalContentSwitches: Record<string, boolean>;
     } = messageParsed.output;
 
     const templateId = notifyTemplateIds[message.notificationType];
@@ -160,7 +161,14 @@ const processNotification = async (
         templateId,
         message.emailAddress,
         {
-          personalisation: message.personalisation,
+          personalisation: {
+            ...message.personalisation,
+            ...Object.fromEntries(
+              Object.entries(message.optionalContentSwitches).map(
+                ([key, value]) => [key, value ? "yes" : "no"],
+              ),
+            ),
+          },
           reference: randomUUID(),
         },
       );
