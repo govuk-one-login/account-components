@@ -6,6 +6,7 @@ import { jwtSigningAlgorithm } from "../../../../../commons/utils/constants.js";
 import type { AuthRequestT } from "./getAuthRequest.js";
 import { derToJose } from "ecdsa-sig-formatter";
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
+import { logger } from "../../../../../commons/utils/logger/index.js";
 
 const keyIdCache = new Map<string, string>();
 
@@ -84,10 +85,14 @@ export const createAccessToken = async (
   assert(Signature, "KMS sign response did not include a signature");
   const signature = derToJose(Buffer.from(Signature), jwtSigningAlgorithm);
 
-  await ddbClient.delete({
-    TableName: authTableName,
-    Key: { code: authRequest.code },
-  });
+  try {
+    await ddbClient.delete({
+      TableName: authTableName,
+      Key: { code: authRequest.code },
+    });
+  } catch (error) {
+    logger.error("Error deleting from auth codes table ", { error });
+  }
 
   return `${unsignedToken}.${signature}`;
 };
