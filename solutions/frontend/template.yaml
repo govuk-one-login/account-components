@@ -129,7 +129,7 @@ Mappings:
       securityUrl: https://home.integration.account.gov.uk/security
       authCreatePasskeyUrl: https://signin.integration.account.gov.uk/create-passkey
       dynatraceRumUrl: TODO
-      accountDataApiUrl: TODO
+      accountDataApiUrl: https://hoidt6wujb-vpce-00865f4c00dcdbb83.execute-api.eu-west-2.amazonaws.com/integration
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
@@ -150,7 +150,7 @@ Mappings:
       securityUrl: https://home.account.gov.uk/security
       authCreatePasskeyUrl: https://signin.account.gov.uk/create-passkey
       dynatraceRumUrl: TODO
-      accountDataApiUrl: TODO
+      accountDataApiUrl: https://0218o1p9tj-vpce-08bfce415b33dc8f6.execute-api.eu-west-2.amazonaws.com/production
 
 Conditions:
   UseCodeSigning:
