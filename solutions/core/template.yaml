@@ -74,7 +74,8 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
         }
       notificationsMaxReceiveCount: 5
       notificationsVisibilityTimeout: 30
@@ -85,7 +86,8 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
         }
       notificationsMaxReceiveCount: 5
       notificationsVisibilityTimeout: 30
@@ -96,7 +98,8 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
         }
       notificationsMaxReceiveCount: 5
       notificationsVisibilityTimeout: 30
@@ -107,7 +110,8 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
         }
       notificationsVisibilityTimeout: 300
       notificationsMaxReceiveCount: 576
@@ -118,7 +122,8 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
         }
       notificationsVisibilityTimeout: 300
       notificationsMaxReceiveCount: 576
