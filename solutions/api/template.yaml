@@ -555,6 +555,7 @@ Resources:
             - Effect: Allow
               Action:
                 - dynamodb:GetItem
+                - dynamodb:DeleteItem
               Resource: !Sub "{{resolve:ssm:/${CoreStackName}/AuthCodeTableArn}}"
             - Effect: Allow
               Action:

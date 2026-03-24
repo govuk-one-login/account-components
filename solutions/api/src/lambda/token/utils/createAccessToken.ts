@@ -84,5 +84,10 @@ export const createAccessToken = async (
   assert(Signature, "KMS sign response did not include a signature");
   const signature = derToJose(Buffer.from(Signature), jwtSigningAlgorithm);
 
+  await ddbClient.delete({
+    TableName: authTableName,
+    Key: { code: authRequest.code },
+  });
+
   return `${unsignedToken}.${signature}`;
 };
