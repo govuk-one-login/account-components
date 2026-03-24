@@ -14,14 +14,14 @@ export const messageSchema = v.variant("notificationType", [
         NotificationType.CREATE_PASSKEY_WITH_PASSKEY_NAME,
       ),
       emailAddress: v.pipe(v.string(), v.email()),
-      passkey_name: v.string(),
+      passkeyName: v.string(),
     }),
     v.transform((input) => {
       return {
         emailAddress: input.emailAddress,
         notificationType: input.notificationType,
         personalisation: {
-          passkey_name: input.passkey_name,
+          passkey_name: input.passkeyName,
         },
         optionalContentSwitches: {},
       };
