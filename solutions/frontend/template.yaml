@@ -99,7 +99,7 @@ Mappings:
       analyticsCookieDomain: staging.account.gov.uk
       ga4ContainerId: "GTM-KD86CMZ"
       analyticsEnabled: "1"
-      accountManagementApiUrl: "https://cgh8nx4500-vpce-0fed7b2d44a0bde33.execute-api.eu-west-2.amazonaws.com/staging"
+      accountManagementApiUrl: "https://cgh8nx4500.execute-api.eu-west-2.amazonaws.com/staging"
       contactUrl: https://home.staging.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: staging.account.gov.uk
       passkeysRpName: "GOV.UK One Login (staging)"
@@ -108,7 +108,7 @@ Mappings:
       securityUrl: https://home.staging.account.gov.uk/security
       authCreatePasskeyUrl: https://signin.staging.account.gov.uk/create-passkey
       dynatraceRumUrl: TODO
-      accountDataApiUrl: https://7xgl7lexy4-vpce-0fed7b2d44a0bde33.execute-api.eu-west-2.amazonaws.com/staging
+      accountDataApiUrl: https://7xgl7lexy4.execute-api.eu-west-2.amazonaws.com/staging
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       rootCookieDomain: integration.account.gov.uk
@@ -120,7 +120,7 @@ Mappings:
       analyticsCookieDomain: integration.account.gov.uk
       ga4ContainerId: "TODO"
       analyticsEnabled: "0"
-      accountManagementApiUrl: "https://z7lornzyy5-vpce-00865f4c00dcdbb83.execute-api.eu-west-2.amazonaws.com/integration"
+      accountManagementApiUrl: "https://z7lornzyy5.execute-api.eu-west-2.amazonaws.com/integration"
       contactUrl: https://home.integration.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: integration.account.gov.uk
       passkeysRpName: "GOV.UK One Login (integration)"
@@ -129,7 +129,7 @@ Mappings:
       securityUrl: https://home.integration.account.gov.uk/security
       authCreatePasskeyUrl: https://signin.integration.account.gov.uk/create-passkey
       dynatraceRumUrl: TODO
-      accountDataApiUrl: TODO
+      accountDataApiUrl: https://hoidt6wujb.execute-api.eu-west-2.amazonaws.com/integration
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       rootCookieDomain: account.gov.uk
@@ -141,7 +141,7 @@ Mappings:
       analyticsCookieDomain: account.gov.uk
       ga4ContainerId: "GTM-K4PBJH3"
       analyticsEnabled: "1"
-      accountManagementApiUrl: "https://63qq2dsjo5-vpce-08bfce415b33dc8f6.execute-api.eu-west-2.amazonaws.com/production"
+      accountManagementApiUrl: "https://63qq2dsjo5.execute-api.eu-west-2.amazonaws.com/production"
       contactUrl: https://home.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: account.gov.uk
       passkeysRpName: "GOV.UK One Login"
@@ -150,7 +150,7 @@ Mappings:
       securityUrl: https://home.account.gov.uk/security
       authCreatePasskeyUrl: https://signin.account.gov.uk/create-passkey
       dynatraceRumUrl: TODO
-      accountDataApiUrl: TODO
+      accountDataApiUrl: https://0218o1p9tj.execute-api.eu-west-2.amazonaws.com/production
 
 Conditions:
   UseCodeSigning:
