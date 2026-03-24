@@ -50,6 +50,19 @@
     "journey_outcome_ttl"
   ],
   "$defs": {
+    "analytics": {
+      "type": "object",
+      "properties": {
+        "contentId": { "type": "string" },
+        "isPageDataSensitive": { "type": "boolean" },
+        "taxonomyLevel1": { "type": "string" },
+        "taxonomyLevel2": { "type": "string" },
+        "taxonomyLevel3": { "type": "string" },
+        "dynamic": { "type": "boolean" },
+        "isSelectContentTrackingEnabled": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
     "clientEntry": {
       "type": "object",
       "additionalProperties": false,
@@ -112,6 +125,14 @@
           "pattern": "^(https|http)://(www\\.)?((localhost(:[0-9]+)?)|[-a-zA-Z0-9@:%._+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b)([-a-zA-Z0-9()@:%_+.~#?&/=]*)$",
           "minLength": 1,
           "maxLength": 255
+        },
+        "analytics": {
+          "type": "object",
+          "properties": {
+            "passkeyCreate": { "$ref": "#/$defs/analytics" },
+            "passkeyCreateError": { "$ref": "#/$defs/analytics" }
+          },
+          "additionalProperties": false
         }
       },
       "required": [
