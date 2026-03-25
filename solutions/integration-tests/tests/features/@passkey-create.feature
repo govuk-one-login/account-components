@@ -18,7 +18,7 @@ Feature: Passkey create
     """
     "details": {
       "error": {
-        "code": 1002,
+        "code": 1003,
         "description": "UserBackedOutOfJourney"
       }      
     },
