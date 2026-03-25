@@ -39,7 +39,7 @@ jobs:
         uses: sourcemeta/jsonschema@f0b6672d82955e58a73efd320068284a4e7a4483
 
       - name: Set up cfn-lint
-        uses: scottbrenner/cfn-lint-action@25ee47d1ab3146bda904df745511735cc0b9a970
+        uses: scottbrenner/cfn-lint-action@9636da81fb2e0cef75725d8dda11b0148940b7ae
 
       - name: Install dependencies
         run: npm ci && cd solutions/integration-tests && npm ci
