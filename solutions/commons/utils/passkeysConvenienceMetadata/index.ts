@@ -1,5 +1,8 @@
 import type { RegExpMatcher } from "obscenity";
 import * as v from "valibot";
+import { metrics } from "../metrics/index.js";
+import { logger } from "../logger/index.js";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
 const iconDataUriPattern = /^data:image\/.+/;
 
@@ -56,5 +59,18 @@ export const getAllPasskeyConvenienceMetadata = async () => {
 
 export const getPasskeyConvenienceMetadataByAaguid = async (aaguid: string) => {
   const allMetadata = await getAllPasskeyConvenienceMetadata();
+
+  if (!allMetadata[aaguid]) {
+    metrics.addMetadata("PasskeyAaguid", aaguid);
+    metrics.addMetric(
+      "AaguidNotFoundInPasskeysConvenienceMetadata",
+      MetricUnit.Count,
+      1,
+    );
+    logger.warn("AaguidNotFoundInPasskeysConvenienceMetadata", {
+      aaguid,
+    });
+  }
+
   return allMetadata[aaguid];
 };

@@ -1,4 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
+
+const mockAddMetadata = vi.fn();
+const mockAddMetric = vi.fn();
+const mockLoggerWarn = vi.fn();
+
+// @ts-expect-error
+vi.mock(import("../metrics/index.js"), () => ({
+  metrics: { addMetadata: mockAddMetadata, addMetric: mockAddMetric },
+}));
+
+// @ts-expect-error
+vi.mock(import("../logger/index.js"), () => ({
+  logger: { warn: mockLoggerWarn },
+}));
 
 const validEntry = {
   name: "Test Authenticator",
@@ -26,6 +41,7 @@ vi.mock(
 describe("passkeysConvenienceMetadata", () => {
   beforeEach(() => {
     vi.resetModules();
+    vi.clearAllMocks();
   });
 
   describe("getAllPasskeyConvenienceMetadata", () => {
@@ -128,6 +144,48 @@ describe("passkeysConvenienceMetadata", () => {
       const result = await getPasskeyConvenienceMetadataByAaguid("nonexistent");
 
       expect(result).toBeUndefined();
+    });
+
+    it("logs a warning and emits a metric for an unknown aaguid", async () => {
+      vi.doMock(
+        import("../../../../submodules/passkey-authenticator-aaguids/combined_aaguid.json"),
+        (() => ({ default: mockMetadata })) as unknown as undefined,
+      );
+
+      const { getPasskeyConvenienceMetadataByAaguid } =
+        await import("./index.js");
+
+      await getPasskeyConvenienceMetadataByAaguid("nonexistent");
+
+      expect(mockAddMetadata).toHaveBeenCalledWith(
+        "PasskeyAaguid",
+        "nonexistent",
+      );
+      expect(mockAddMetric).toHaveBeenCalledWith(
+        "AaguidNotFoundInPasskeysConvenienceMetadata",
+        MetricUnit.Count,
+        1,
+      );
+      expect(mockLoggerWarn).toHaveBeenCalledWith(
+        "AaguidNotFoundInPasskeysConvenienceMetadata",
+        { aaguid: "nonexistent" },
+      );
+    });
+
+    it("does not log or emit a metric for a known aaguid", async () => {
+      vi.doMock(
+        import("../../../../submodules/passkey-authenticator-aaguids/combined_aaguid.json"),
+        (() => ({ default: mockMetadata })) as unknown as undefined,
+      );
+
+      const { getPasskeyConvenienceMetadataByAaguid } =
+        await import("./index.js");
+
+      await getPasskeyConvenienceMetadataByAaguid("aaguid-1");
+
+      expect(mockAddMetadata).not.toHaveBeenCalled();
+      expect(mockAddMetric).not.toHaveBeenCalled();
+      expect(mockLoggerWarn).not.toHaveBeenCalled();
     });
   });
 });
