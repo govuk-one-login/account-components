@@ -42,7 +42,7 @@ jobs:
         uses: scottbrenner/cfn-lint-action@9636da81fb2e0cef75725d8dda11b0148940b7ae
 
       - name: Install dependencies
-        run: npm ci && cd solutions/integration-tests && npm ci
+        run: npm run install-all && cd solutions/integration-tests && npm ci
 
       - name: Check types
         run: npm run check-types
@@ -91,3 +91,18 @@ jobs:
 
       - name: Build API
         run: npm run build:api
+
+      - name: Validate passkeys convenience metadata
+        run: |
+          npx tsx -e '
+            import { getAllPasskeyConvenienceMetadata } from "./solutions/commons/utils/passkeysConvenienceMetadata/index.ts";
+
+            getAllPasskeyConvenienceMetadata().then((metadata) => {
+              if (!Object.entries(metadata).length) {
+                throw new Error("Metadata contains no entries");
+              }
+              console.log("Metadata is valid");
+            }).catch((err: unknown) => {
+              throw err
+            });
+          '

@@ -85,8 +85,12 @@ export default defineConfig(
     fileURLToPath(new URL(".gitignore", import.meta.url)),
     "Imported .gitignore patterns",
   ),
-  // Do not lint the ESLint config itself
-  { ignores: ["eslint.config.*"] },
+  {
+    ignores: [
+      "eslint.config.*", // Do not lint the ESLint config itself
+      "submodules/",
+    ],
+  },
   // Ensure JS files (including .mjs) use the default JS parser, not @typescript-eslint
   {
     files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
