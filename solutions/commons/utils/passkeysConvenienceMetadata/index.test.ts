@@ -20,7 +20,7 @@ const mockMetadata: Record<
 
 vi.mock(
   import("../../../../submodules/passkey-authenticator-aaguids/combined_aaguid.json"),
-  () => ({ default: mockMetadata }),
+  (() => ({ default: mockMetadata })) as unknown as undefined,
 );
 
 describe("passkeysConvenienceMetadata", () => {
@@ -49,11 +49,11 @@ describe("passkeysConvenienceMetadata", () => {
     it("throws when metadata contains an obscene name", async () => {
       vi.doMock(
         import("../../../../submodules/passkey-authenticator-aaguids/combined_aaguid.json"),
-        () => ({
+        (() => ({
           default: {
             "bad-aaguid": { name: "tit" },
           },
-        }),
+        })) as unknown as undefined,
       );
 
       const { getAllPasskeyConvenienceMetadata } = await import("./index.js");
@@ -66,14 +66,14 @@ describe("passkeysConvenienceMetadata", () => {
     it("throws when an icon value is not a data URI", async () => {
       vi.doMock(
         import("../../../../submodules/passkey-authenticator-aaguids/combined_aaguid.json"),
-        () => ({
+        (() => ({
           default: {
             "bad-icon": {
               name: "Bad Icon Authenticator",
               icon_dark: "https://example.com/icon.png",
             },
           },
-        }),
+        })) as unknown as undefined,
       );
 
       const { getAllPasskeyConvenienceMetadata } = await import("./index.js");
@@ -86,11 +86,11 @@ describe("passkeysConvenienceMetadata", () => {
     it("throws when name is missing", async () => {
       vi.doMock(
         import("../../../../submodules/passkey-authenticator-aaguids/combined_aaguid.json"),
-        () => ({
+        (() => ({
           default: {
             "no-name": { icon_dark: "data:image/png;base64,abc" },
           },
-        }),
+        })) as unknown as undefined,
       );
 
       const { getAllPasskeyConvenienceMetadata } = await import("./index.js");
@@ -105,7 +105,7 @@ describe("passkeysConvenienceMetadata", () => {
     it("returns metadata for a known aaguid", async () => {
       vi.doMock(
         import("../../../../submodules/passkey-authenticator-aaguids/combined_aaguid.json"),
-        () => ({ default: mockMetadata }),
+        (() => ({ default: mockMetadata })) as unknown as undefined,
       );
 
       const { getPasskeyConvenienceMetadataByAaguid } =
@@ -119,7 +119,7 @@ describe("passkeysConvenienceMetadata", () => {
     it("returns undefined for an unknown aaguid", async () => {
       vi.doMock(
         import("../../../../submodules/passkey-authenticator-aaguids/combined_aaguid.json"),
-        () => ({ default: mockMetadata }),
+        (() => ({ default: mockMetadata })) as unknown as undefined,
       );
 
       const { getPasskeyConvenienceMetadataByAaguid } =
