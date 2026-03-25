@@ -18,6 +18,7 @@
         "solutions/api/src/lambda/journeyoutcome/index.ts",
       ],
       "ignore": [
+        "submodules/**/*",
         "solutions/frontend/src/static/application.scss",
         "solutions/stubs/src/static/application.scss",
       ],
