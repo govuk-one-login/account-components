@@ -202,6 +202,21 @@ paths:
                           error:
                             code: 1002
                             description: UserAbortedJourney
+                  failed_journey__user_backed_out_of_journey:
+                    value:
+                      outcome_id: 8bc3d34e7e22bbdc88beaa37283d0ace4d80e5d1505aa30
+                      sub: urn:fdc:gov.uk:2022:JG0RJI1pYbnanbvPs-j4j5-a-PFcmhry9Qu9NCEp5d4
+                      email: user@example.com
+                      scope: passkey-create
+                      success: false
+                      journeys:
+                        - journey: passkey-create
+                          timestamp: 1760718467000
+                          success: false
+                          details:
+                            error:
+                              code: 1003
+                              description: UserBackedOutOfJourney
         "400":
           description: Bad request - invalid authorization header, access token, or outcome mismatch
           content:

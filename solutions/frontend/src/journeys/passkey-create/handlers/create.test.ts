@@ -62,7 +62,6 @@ describe("passkey-create handlers", () => {
       PASSKEYS_RP_ID: "example.com",
       PASSKEYS_RP_NAME: "Example Service",
       PASSKEYS_EXPECTED_ORIGIN: "https://example.com",
-      AUTH_CREATE_PASSKEY_URL: "https://auth.example.com/create-passkey",
     };
 
     mockClaims = {
@@ -140,8 +139,6 @@ describe("passkey-create handlers", () => {
         "journeys/passkey-create/templates/create.njk",
         expect.objectContaining({
           stringsSuffix: "_signedOut",
-          backLink: "https://auth.example.com/create-passkey",
-
           formAction: "/cannot-set-up-passkey",
         }),
       );
@@ -181,7 +178,6 @@ describe("passkey-create handlers", () => {
         "journeys/passkey-create/templates/create.njk",
         expect.objectContaining({
           stringsSuffix: "_signedIn",
-          backLink: undefined,
           formAction: "/cannot-set-up-passkey",
         }),
       );

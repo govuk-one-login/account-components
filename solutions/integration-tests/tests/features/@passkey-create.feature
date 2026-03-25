@@ -1,5 +1,31 @@
 Feature: Passkey create
 
+  Scenario: Back out of journey (signed out journey)
+    Given I go to the journey initiator
+    And I begin a "passkey-create" journey
+    Then the page title is prefixed with "Set up a passkey"
+
+    Given I click the "Back" link
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'
+    And the page contains the text:
+    """
+    "scope": "passkey-create",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": false
+    """
+    And the page contains the text:
+    """
+    "details": {
+      "error": {
+        "code": 1002,
+        "description": "UserBackedOutOfJourney"
+      }      
+    },
+    "journey": "passkey-create",
+    "success": false,
+    """
+
   # Should fail because of known accessibility issues
   @failMobile
   Scenario: Abort journey from create screen (signed out journey)

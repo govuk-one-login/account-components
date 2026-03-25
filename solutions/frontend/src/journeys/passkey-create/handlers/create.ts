@@ -68,11 +68,6 @@ const render = async (
 ) => {
   const stringsSuffix = getStringsSuffix(reply);
 
-  const backLink =
-    !reply.client?.consider_user_logged_in && !options?.showErrorUi
-      ? process.env["AUTH_CREATE_PASSKEY_URL"]
-      : undefined;
-
   assert.ok(request.session.claims);
   assert.ok(request.session.claims.account_data_api_access_token);
   const accountDataApiClient = new AccountDataApiClient(
@@ -100,7 +95,6 @@ const render = async (
     ...options,
     registrationOptions: JSON.stringify(registrationOptions),
     stringsSuffix,
-    backLink,
     formAction: paths.journeys["passkey-create"].NOT_CREATED.createPost.path,
   });
 };
