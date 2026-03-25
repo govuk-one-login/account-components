@@ -76,6 +76,8 @@
     "vitest": "^4.0.13"
   },
   "scripts": {
+    "install-all": "npm ci && npm run install-submodules",
+    "install-submodules": "git submodule update --init --recursive",
     "install-brewfile": "cat Brewfile; echo; echo; read -p \"Install/update Brewfile dependencies as shown above (y/N)?\" -n 1 -r; echo; if [ \"$REPLY\" == \"y\" ]; then brew bundle check || brew bundle install; fi",
     "install-git-hooks": "pre-commit install --install-hooks --overwrite",
     "generate-config-types": "json2ts -i solutions/config/schema/config.json -o solutions/config/schema/types.ts",
