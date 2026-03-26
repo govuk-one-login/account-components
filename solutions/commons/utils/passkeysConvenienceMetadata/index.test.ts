@@ -115,6 +115,21 @@ describe("passkeysConvenienceMetadata", () => {
         "Failed to parse passkey convenience metadata",
       );
     });
+
+    it("throws when metadata is empty", async () => {
+      vi.doMock(
+        import("../../../../submodules/passkey-authenticator-aaguids/combined_aaguid.json"),
+        (() => ({
+          default: {},
+        })) as unknown as undefined,
+      );
+
+      const { getAllPasskeyConvenienceMetadata } = await import("./index.js");
+
+      await expect(getAllPasskeyConvenienceMetadata()).rejects.toThrow(
+        "Failed to parse passkey convenience metadata",
+      );
+    });
   });
 
   describe("getPasskeyConvenienceMetadataByAaguid", () => {
