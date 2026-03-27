@@ -32,7 +32,16 @@ Given(
         options: {
           protocol: "ctap2",
           transport: "internal",
-          ...options,
+          ...Object.fromEntries(
+            Object.entries(options).filter(
+              ([key, value]) =>
+                !(
+                  key === "ctap2Version" &&
+                  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+                  !["ctap2_0", "ctap2_1"].includes(value as string)
+                ),
+            ),
+          ),
         },
       },
     );
