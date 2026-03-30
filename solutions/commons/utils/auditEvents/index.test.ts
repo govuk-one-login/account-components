@@ -162,8 +162,6 @@ describe("sendAuditEvent", () => {
       email: "test@example.com",
     };
 
-    await expect(
-      sendAuditEvent(event, mockApiGatewayEvent),
-    ).rejects.toThrow();
+    await expect(sendAuditEvent(event, mockApiGatewayEvent)).rejects.toThrow();
   });
 });
