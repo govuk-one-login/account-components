@@ -366,7 +366,7 @@ describe("passkey-create handlers", () => {
         expect(mockCompleteJourney).toHaveBeenCalledWith(
           mockRequest,
           mockReply,
-          {},
+          { aaguid: "aaguid-123" },
           true,
         );
       });
