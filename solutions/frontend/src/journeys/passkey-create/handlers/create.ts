@@ -256,5 +256,12 @@ export async function postHandler(
     throw new Error(savePasskeyResult.error);
   }
 
-  return await completeJourney(request, reply, {}, true);
+  return await completeJourney(
+    request,
+    reply,
+    {
+      aaguid: verification.registrationInfo.aaguid,
+    },
+    true,
+  );
 }

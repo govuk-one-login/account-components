@@ -213,9 +213,9 @@ Feature: Passkey create
     "sub": "urn:fdc:gov.uk:default",
     "success": true
     """
+    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
     And the page contains the text:
     """
-    "details": {},
     "journey": "passkey-create",
     "success": true,
     """
@@ -251,9 +251,9 @@ Feature: Passkey create
     "sub": "urn:fdc:gov.uk:default",
     "success": true
     """
+    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
     And the page contains the text:
     """
-    "details": {},
     "journey": "passkey-create",
     "success": true,
     """
@@ -348,9 +348,9 @@ Feature: Passkey create
     "sub": "urn:fdc:gov.uk:default",
     "success": true
     """
+    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
     And the page contains the text:
     """
-    "details": {},
     "journey": "passkey-create",
     "success": true,
     """
@@ -375,9 +375,9 @@ Feature: Passkey create
     "sub": "urn:fdc:gov.uk:default",
     "success": true
     """
+    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
     And the page contains the text:
     """
-    "details": {},
     "journey": "passkey-create",
     "success": true,
     """  
@@ -402,9 +402,9 @@ Feature: Passkey create
     "sub": "urn:fdc:gov.uk:default",
     "success": true
     """
+    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
     And the page contains the text:
     """
-    "details": {},
     "journey": "passkey-create",
     "success": true,
     """    
@@ -429,9 +429,9 @@ Feature: Passkey create
     "sub": "urn:fdc:gov.uk:default",
     "success": true
     """
+    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
     And the page contains the text:
     """
-    "details": {},
     "journey": "passkey-create",
     "success": true,
     """
@@ -457,9 +457,9 @@ Feature: Passkey create
     "sub": "urn:fdc:gov.uk:default",
     "success": true
     """
+    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
     And the page contains the text:
     """
-    "details": {},
     "journey": "passkey-create",
     "success": true,
     """       
