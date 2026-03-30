@@ -75,7 +75,6 @@ describe("verifySignatureAndGetPayload", () => {
     });
     expect(result).toStrictEqual(mockPayload);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).not.toHaveBeenCalled();
   });
 
@@ -108,7 +107,6 @@ describe("verifySignatureAndGetPayload", () => {
     });
     expect(mockDecodeJwt).toHaveBeenCalledWith(specificToken);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "AccessTokenSignatureInvalid",
       `Invalid access token signature with jti: ${expectedJti} and kid: ${expectedKid}`,
@@ -134,7 +132,6 @@ describe("verifySignatureAndGetPayload", () => {
 
     await verifySignatureAndGetPayload(specificToken, mockKey);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "AccessTokenSignatureInvalid",
       "Invalid access token signature with jti: Not found and kid: Not found",
@@ -149,7 +146,6 @@ describe("verifySignatureAndGetPayload", () => {
 
     await verifySignatureAndGetPayload(invalidToken, mockKey);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "InvalidAccessToken",
       `Access token is malformed or invalid`,
@@ -167,7 +163,6 @@ describe("verifySignatureAndGetPayload", () => {
 
     await verifySignatureAndGetPayload(invalidToken, mockKey);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "InvalidAccessToken",
       "Token has expired",

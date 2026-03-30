@@ -53,7 +53,6 @@ describe("onError handler", () => {
 
     await onError(testError, mockRequest, mockReply);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(metrics.addMetric).toHaveBeenCalledExactlyOnceWith(
       "ERROR_CAUGHT_BY_GLOBAL_ERROR_HANDLER",
       MetricUnit.Count,

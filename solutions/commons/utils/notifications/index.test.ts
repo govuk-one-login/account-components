@@ -45,7 +45,6 @@ describe("sendNotification", () => {
       notificationType: NotificationType.CREATE_PASSKEY_WITHOUT_PASSKEY_NAME,
     } as const;
 
-    // eslint-disable-next-line vitest/require-to-throw-message
     await expect(sendNotification(message)).rejects.toThrow();
   });
 });

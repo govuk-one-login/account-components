@@ -388,19 +388,15 @@ describe("getHandler", () => {
     expect(verifyJwt).toHaveBeenCalledTimes(1);
     expect(checkJtiUnused).toHaveBeenCalledTimes(1);
     expect(startSessionAndGoToJourney).toHaveBeenCalledTimes(1);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(metrics.addDimensions).toHaveBeenCalledWith({
       client_id: "test-client",
     });
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(metrics.addDimensions).toHaveBeenCalledWith({
       scope: "test-scope",
     });
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.appendKeys).toHaveBeenCalledWith({
       client_id: "test-client",
     });
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.appendKeys).toHaveBeenCalledWith({
       scope: "test-scope",
     });
@@ -421,12 +417,9 @@ describe("getHandler", () => {
     await getHandler(mockRequest, mockReply);
 
     expect(getQueryParams).toHaveBeenCalledTimes(1);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.error).toHaveBeenCalledWith("Authorize error", {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       error: expect.any(Error),
     });
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(metrics.addMetric).toHaveBeenCalledWith(
       "InvalidAuthorizeRequest",
       expect.anything(),

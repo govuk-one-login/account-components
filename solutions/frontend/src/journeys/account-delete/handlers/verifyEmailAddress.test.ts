@@ -71,7 +71,6 @@ describe("verifyEmailAddress handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
 
@@ -84,7 +83,6 @@ describe("verifyEmailAddress handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
   });
@@ -92,7 +90,6 @@ describe("verifyEmailAddress handlers", () => {
   describe("verifyEmailAddressPostHandler", () => {
     it("should verify OTP challenge, send emailVerified event and redirect when valid code provided", async () => {
       mockRequest.body = { code: "123456" };
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockVerifyOtpChallenge.mockResolvedValue({ success: true });
 
@@ -106,7 +103,6 @@ describe("verifyEmailAddress handlers", () => {
         "123456",
       );
       expect(
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         mockReply.journeyStates?.["account-delete"]?.send,
       ).toHaveBeenCalledWith({
         type: "notAuthenticated",
@@ -119,7 +115,6 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should render error when no code provided", async () => {
       mockRequest.body = {};
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = {
         t: vi
           .fn()
@@ -136,15 +131,12 @@ describe("verifyEmailAddress handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/verifyEmailAddress.njk",
         expect.objectContaining({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errors: expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             code: expect.objectContaining({
               text: 'Invalid key: Expected "code" but received undefined',
               href: "#code",
             }),
           }),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
               text: 'Invalid key: Expected "code" but received undefined',
@@ -161,7 +153,6 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should render error when code is not 6 characters", async () => {
       mockRequest.body = { code: "123" };
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = {
         t: vi.fn().mockReturnValue("Code must be 6 characters"),
       } as any;
@@ -174,15 +165,12 @@ describe("verifyEmailAddress handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/verifyEmailAddress.njk",
         expect.objectContaining({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errors: expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             code: expect.objectContaining({
               text: "Code must be 6 characters",
               href: "#code",
             }),
           }),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
               text: "Code must be 6 characters",
@@ -199,7 +187,6 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should render error when code contains non-digits", async () => {
       mockRequest.body = { code: "12345a" };
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = {
         t: vi.fn().mockReturnValue("Code must contain only digits"),
       } as any;
@@ -212,15 +199,12 @@ describe("verifyEmailAddress handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/verifyEmailAddress.njk",
         expect.objectContaining({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errors: expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             code: expect.objectContaining({
               text: "Code must contain only digits",
               href: "#code",
             }),
           }),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
               text: "Code must contain only digits",
@@ -237,7 +221,6 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should render error when code is not a string", async () => {
       mockRequest.body = { code: 123456 };
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = {
         t: vi
           .fn()
@@ -252,15 +235,12 @@ describe("verifyEmailAddress handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/verifyEmailAddress.njk",
         expect.objectContaining({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errors: expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             code: expect.objectContaining({
               text: "Invalid type: Expected string but received 123456",
               href: "#code",
             }),
           }),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
               text: "Invalid type: Expected string but received 123456",
@@ -277,7 +257,6 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should render error when code is empty string", async () => {
       mockRequest.body = { code: "" };
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = {
         t: vi.fn().mockReturnValue("Code cannot be empty"),
       } as any;
@@ -290,15 +269,12 @@ describe("verifyEmailAddress handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/verifyEmailAddress.njk",
         expect.objectContaining({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errors: expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             code: expect.objectContaining({
               text: "Code cannot be empty",
               href: "#code",
             }),
           }),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
               text: "Code cannot be empty",
@@ -315,7 +291,6 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should render error when request body is not an object", async () => {
       mockRequest.body = "invalid";
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = {
         t: vi
           .fn()
@@ -332,15 +307,12 @@ describe("verifyEmailAddress handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/verifyEmailAddress.njk",
         expect.objectContaining({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errors: expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             "": expect.objectContaining({
               text: 'Invalid type: Expected Object but received "invalid"',
               href: "#",
             }),
           }),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
               text: 'Invalid type: Expected Object but received "invalid"',
@@ -363,7 +335,6 @@ describe("verifyEmailAddress handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
 
@@ -375,13 +346,11 @@ describe("verifyEmailAddress handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
 
     it("should throw if session claims are not available", async () => {
       mockRequest.body = { code: "123456" };
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       delete mockRequest.session;
 
@@ -390,13 +359,11 @@ describe("verifyEmailAddress handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
 
     it("should throw if access token is not available", async () => {
       mockRequest.body = { code: "123456" };
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       // @ts-expect-error
       delete mockRequest.session.claims.account_management_api_access_token;
@@ -406,13 +373,11 @@ describe("verifyEmailAddress handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
 
     it("should render error when verifyOtpChallenge fails with InvalidOTPCode", async () => {
       mockRequest.body = { code: "123456" };
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = {
         t: vi.fn().mockReturnValue("Incorrect verification code"),
       } as any;
@@ -433,15 +398,12 @@ describe("verifyEmailAddress handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/verifyEmailAddress.njk",
         expect.objectContaining({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errors: expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             code: expect.objectContaining({
               text: "Incorrect verification code",
               href: "#code",
             }),
           }),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
               text: "Incorrect verification code",
@@ -458,7 +420,6 @@ describe("verifyEmailAddress handlers", () => {
 
     it("should throw error when TooManyEmailCodesEntered", async () => {
       mockRequest.body = { code: "123456" };
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockVerifyOtpChallenge.mockResolvedValue({
         success: false,

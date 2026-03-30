@@ -58,9 +58,7 @@ describe("loggerAPIGatewayProxyHandlerWrapper", () => {
 
     const result = await wrappedHandler(mockEvent, mockContext);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.addContext).toHaveBeenCalledWith(mockContext);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.appendKeys).toHaveBeenCalledWith({
       persistentSessionId: "persistent-123",
       sessionId: "session-456",
@@ -73,9 +71,7 @@ describe("loggerAPIGatewayProxyHandlerWrapper", () => {
       trace: "session-456",
     });
     expect(mockHandler).toHaveBeenCalledWith(mockEvent, mockContext);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.info).toHaveBeenCalledWith("Response", { statusCode: 200 });
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.resetKeys).toHaveBeenCalledWith();
     expect(result).toStrictEqual({ statusCode: 200, body: "success" });
   });
@@ -87,13 +83,10 @@ describe("loggerAPIGatewayProxyHandlerWrapper", () => {
 
     const result = await wrappedHandler(mockEvent, mockContext);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.addContext).toHaveBeenCalledWith(mockContext);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.error).toHaveBeenCalledWith("An error occurred", {
       error,
     });
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(logger.resetKeys).toHaveBeenCalledWith();
     expect(result).toStrictEqual({ statusCode: 500, body: "" });
   });

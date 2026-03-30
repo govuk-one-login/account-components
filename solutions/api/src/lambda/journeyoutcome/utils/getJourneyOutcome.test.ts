@@ -93,7 +93,6 @@ describe("getJourneyOutcome", () => {
       scope: "test-scope",
     });
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).not.toHaveBeenCalled();
   });
 
@@ -106,7 +105,6 @@ describe("getJourneyOutcome", () => {
       "Mock error thrown",
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "MissingOutcome",
       "Missing outcome with outcome_id: test-outcome-123 and jti: test-jti-456",
@@ -121,7 +119,6 @@ describe("getJourneyOutcome", () => {
       "Mock error thrown",
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "FailedToFindOutcome",
       "A problem occurred while retrieving the journey outcome: DB Connection Failed",
@@ -142,7 +139,6 @@ describe("getJourneyOutcome", () => {
       "Mock error thrown",
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "OutcomeSubDoesNotMatchPayload",
       "Outcome sub does not match payload sub with outcome_id: test-outcome-123 and jti: test-jti-456",
