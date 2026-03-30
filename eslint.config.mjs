@@ -187,8 +187,11 @@ export default defineConfig(
       "vitest/max-expects": "off",
       "@typescript-eslint/no-non-null-assertion": "off",
       "@typescript-eslint/no-explicit-any": "off",
-      "@typescript-eslint/no-unsafe-assignment": "warn",
+      "@typescript-eslint/no-unsafe-assignment": "off",
+      "@typescript-eslint/unbound-method": "off",
       "@typescript-eslint/consistent-type-assertions": "off",
+      "vitest/require-to-throw-message": "off",
+      "vitest/unbound-method": "off",
     },
   },
   {

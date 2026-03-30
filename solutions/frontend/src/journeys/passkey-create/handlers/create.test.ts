@@ -199,7 +199,6 @@ describe("passkey-create handlers", () => {
 
       await expect(
         getHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
 
@@ -208,7 +207,6 @@ describe("passkey-create handlers", () => {
 
       await expect(
         getHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
   });
@@ -229,9 +227,7 @@ describe("passkey-create handlers", () => {
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
             showErrorUi: true,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             errors: expect.any(Object),
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             errorList: expect.any(Array),
             formAction: "/cannot-set-up-passkey",
           }),
@@ -254,7 +250,6 @@ describe("passkey-create handlers", () => {
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
           expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             issues: expect.any(Object),
           }),
           "Register passkey - invalid request body",
@@ -343,7 +338,6 @@ describe("passkey-create handlers", () => {
         );
 
         expect(mockVerifyRegistrationResponse).toHaveBeenCalledWith({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           response: expect.any(Object),
           expectedChallenge: "test-challenge",
           expectedOrigin: "https://example.com",
@@ -518,7 +512,6 @@ describe("passkey-create handlers", () => {
 
         await expect(
           postHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
-          // eslint-disable-next-line vitest/require-to-throw-message
         ).rejects.toThrow();
       });
 
@@ -535,7 +528,6 @@ describe("passkey-create handlers", () => {
 
         await expect(
           postHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
-          // eslint-disable-next-line vitest/require-to-throw-message
         ).rejects.toThrow();
       });
 
@@ -544,7 +536,6 @@ describe("passkey-create handlers", () => {
 
         await expect(
           postHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
-          // eslint-disable-next-line vitest/require-to-throw-message
         ).rejects.toThrow();
       });
     });

@@ -76,7 +76,6 @@ describe("completeFailedJourneyHandler", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
 
@@ -91,7 +90,6 @@ describe("completeFailedJourneyHandler", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
 
@@ -106,7 +104,6 @@ describe("completeFailedJourneyHandler", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
   });
@@ -147,7 +144,6 @@ describe("completeFailedJourneyHandler", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
   });

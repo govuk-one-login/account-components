@@ -125,11 +125,9 @@ describe("decryptJar", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=server_error",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E3003",
     );
@@ -153,11 +151,9 @@ describe("decryptJar", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=server_error",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E3003",
     );
@@ -183,11 +179,9 @@ describe("decryptJar", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=invalid_request",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E1009",
     );
@@ -213,11 +207,9 @@ describe("decryptJar", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=invalid_request",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E1009",
     );
@@ -235,11 +227,9 @@ describe("decryptJar", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=server_error",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E3003",
     );
@@ -259,7 +249,6 @@ describe("decryptJar", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       `state=${state}`,
     );
@@ -273,7 +262,6 @@ describe("decryptJar", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).not.toContain(
       "state=",
     );
@@ -297,11 +285,9 @@ describe("decryptJar", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=server_error",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E3003",
     );
@@ -319,11 +305,9 @@ describe("decryptJar", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=server_error",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E3003",
     );
@@ -341,11 +325,9 @@ describe("decryptJar", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=server_error",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E3003",
     );

@@ -86,7 +86,6 @@ describe("passkeysGetHandler", () => {
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       ),
-      // eslint-disable-next-line vitest/require-to-throw-message
     ).rejects.toThrow();
   });
 });
@@ -142,7 +141,6 @@ describe("passkeysPostHandler", () => {
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       ),
-      // eslint-disable-next-line vitest/require-to-throw-message
     ).rejects.toThrow();
   });
 });
