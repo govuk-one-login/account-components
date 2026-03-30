@@ -69,7 +69,6 @@ describe("getKMSKey", () => {
       type: "spki",
     });
     expect(
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       (mockCreatePublicKey.mock.results[0]?.value as KeyObject).export,
     ).toHaveBeenCalledWith({
       format: "pem",

@@ -94,7 +94,6 @@ describe("clientCallback handler", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "clientCallback/handlers/clientCallback.njk",
         {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           exception: expect.any(Error),
         },
       );
@@ -112,7 +111,6 @@ describe("clientCallback handler", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "clientCallback/handlers/clientCallback.njk",
         {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           exception: expect.any(Error),
         },
       );
@@ -141,7 +139,6 @@ describe("clientCallback handler", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "clientCallback/handlers/clientCallback.njk",
         {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           exception: expect.any(Error),
         },
       );
@@ -159,7 +156,6 @@ describe("clientCallback handler", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "clientCallback/handlers/clientCallback.njk",
         {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           exception: expect.any(Error),
         },
       );
@@ -241,7 +237,6 @@ describe("clientCallback handler", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "clientCallback/handlers/clientCallback.njk",
         {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           exception: expect.any(Error),
         },
       );
@@ -295,7 +290,6 @@ describe("clientCallback handler", () => {
         {
           client: "test-client (test-id)",
           journeyOutcomeDetails: mockJourneyOutcome,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           algorithm: expect.stringMatching(/^(RS256|ES256)$/),
         },
       );
@@ -326,7 +320,6 @@ describe("clientCallback handler", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "clientCallback/handlers/clientCallback.njk",
         {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           exception: expect.any(Error),
         },
       );
@@ -355,7 +348,6 @@ describe("clientCallback handler", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "clientCallback/handlers/clientCallback.njk",
         {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           exception: expect.any(Error),
         },
       );
@@ -392,7 +384,6 @@ describe("clientCallback handler", () => {
         {
           client: "test-client (test-id)",
           journeyOutcomeDetails: mockJourneyOutcome,
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           algorithm: expect.stringMatching(/^(RS256|ES256)$/),
         },
       );
@@ -424,7 +415,6 @@ describe("clientCallback handler", () => {
       );
 
       expect(
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         vi.mocked(SignJWT).mock.instances[0]?.setProtectedHeader,
       ).toHaveBeenCalledWith({ alg: "RS256", kid: "rsaKid123" });
     });
@@ -454,7 +444,6 @@ describe("clientCallback handler", () => {
       );
 
       expect(
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         vi.mocked(SignJWT).mock.instances[0]?.setProtectedHeader,
       ).toHaveBeenCalledWith({ alg: "ES256", kid: "ecKid123" });
     });

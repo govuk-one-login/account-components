@@ -112,13 +112,11 @@ describe("completeJourney", () => {
               journeys: [
                 {
                   journey: mockClaims.scope,
-                  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                   timestamp: expect.any(Number),
                   success: true,
                   details: mockJourneyOutcomeDetails,
                 },
               ],
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               expires: expect.any(Number),
             },
           },
@@ -132,7 +130,6 @@ describe("completeJourney", () => {
               client_id: mockClaims.client_id,
               sub: mockClaims.sub,
               redirect_uri: mockClaims.redirect_uri,
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               expires: expect.any(Number),
             },
           },
@@ -192,13 +189,11 @@ describe("completeJourney", () => {
               journeys: [
                 {
                   journey: mockClaims.scope,
-                  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                   timestamp: expect.any(Number),
                   success: false,
                   details: mockErrorDetails,
                 },
               ],
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               expires: expect.any(Number),
             },
           },
@@ -212,7 +207,6 @@ describe("completeJourney", () => {
               client_id: mockClaims.client_id,
               sub: mockClaims.sub,
               redirect_uri: mockClaims.redirect_uri,
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               expires: expect.any(Number),
             },
           },
@@ -257,12 +251,9 @@ describe("completeJourney", () => {
 
     expect(mockTransactWrite).toHaveBeenCalledWith(
       expect.objectContaining({
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         TransactItems: expect.arrayContaining([
           expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             Put: expect.objectContaining({
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
               Item: expect.objectContaining({
                 expires: 1640995800,
               }),

@@ -61,7 +61,6 @@ describe("journeyRoutes plugin", () => {
   it("calls onRequest function when onRequest hook is triggered", async () => {
     journeyRoutes(mockFastify);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const onRequestHook = mockAddHook.mock.calls.find(
       (call) => call[0] === "onRequest",
     )?.[1];
@@ -75,7 +74,6 @@ describe("journeyRoutes plugin", () => {
   it("calls onSend function when onSend hook is triggered", async () => {
     journeyRoutes(mockFastify);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const onSendHook = mockAddHook.mock.calls.find(
       (call) => call[0] === "onSend",
     )?.[1];

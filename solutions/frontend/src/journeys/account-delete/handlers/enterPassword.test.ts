@@ -66,7 +66,6 @@ describe("enterPassword handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
   });
@@ -74,7 +73,6 @@ describe("enterPassword handlers", () => {
   describe("enterPasswordPostHandler", () => {
     it("should authenticate user, send authenticated event and redirect when valid password provided", async () => {
       mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockAuthenticate.mockResolvedValue({ success: true });
 
@@ -88,7 +86,6 @@ describe("enterPassword handlers", () => {
         "validPassword123",
       );
       expect(
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         mockReply.journeyStates?.["account-delete"]?.send,
       ).toHaveBeenCalledWith({
         type: "authenticated",
@@ -101,7 +98,6 @@ describe("enterPassword handlers", () => {
 
     it("should render error when no password provided", async () => {
       mockRequest.body = {};
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = {
         t: vi
           .fn()
@@ -118,15 +114,12 @@ describe("enterPassword handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/enterPassword.njk",
         expect.objectContaining({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errors: expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             password: expect.objectContaining({
               text: 'Invalid key: Expected "password" but received undefined',
               href: "#password",
             }),
           }),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
               text: 'Invalid key: Expected "password" but received undefined',
@@ -140,7 +133,6 @@ describe("enterPassword handlers", () => {
 
     it("should render error when password is empty string", async () => {
       mockRequest.body = { password: "" };
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = {
         t: vi.fn().mockImplementation((key: string) => {
           if (key === "journey:enterPassword.formErrors.empty") {
@@ -158,15 +150,12 @@ describe("enterPassword handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/enterPassword.njk",
         expect.objectContaining({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errors: expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             password: expect.objectContaining({
               text: "Password cannot be empty",
               href: "#password",
             }),
           }),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
               text: "Password cannot be empty",
@@ -180,7 +169,6 @@ describe("enterPassword handlers", () => {
 
     it("should render error when password is incorrect", async () => {
       mockRequest.body = { password: "wrongPassword" }; // pragma: allowlist secret
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = {
         t: vi.fn().mockImplementation((key: string) => {
           if (key === "journey:enterPassword.formErrors.incorrect") {
@@ -206,15 +194,12 @@ describe("enterPassword handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/enterPassword.njk",
         expect.objectContaining({
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errors: expect.objectContaining({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             password: expect.objectContaining({
               text: "Incorrect password",
               href: "#password",
             }),
           }),
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
           errorList: expect.arrayContaining([
             expect.objectContaining({
               text: "Incorrect password",
@@ -234,7 +219,6 @@ describe("enterPassword handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
 
@@ -246,14 +230,12 @@ describe("enterPassword handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
 
     it("should throw if session claims are not available", async () => {
       delete mockRequest.session;
       mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
 
       await expect(
@@ -261,7 +243,6 @@ describe("enterPassword handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
 
@@ -269,7 +250,6 @@ describe("enterPassword handlers", () => {
       // @ts-expect-error
       delete mockRequest.session.claims.account_management_api_access_token;
       mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
 
       await expect(
@@ -277,13 +257,11 @@ describe("enterPassword handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
 
     it("should throw error when ExceededIncorrectPasswordSubmissionLimit", async () => {
       mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockAuthenticate.mockResolvedValue({
         success: false,
@@ -300,7 +278,6 @@ describe("enterPassword handlers", () => {
 
     it("should throw error when AccountInterventionsUnexpectedError", async () => {
       mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockAuthenticate.mockResolvedValue({
         success: false,
@@ -317,7 +294,6 @@ describe("enterPassword handlers", () => {
 
     it("should throw error when UserAccountSuspended", async () => {
       mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockAuthenticate.mockResolvedValue({
         success: false,
@@ -334,7 +310,6 @@ describe("enterPassword handlers", () => {
 
     it("should throw error when UserAccountBlocked", async () => {
       mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockAuthenticate.mockResolvedValue({
         success: false,

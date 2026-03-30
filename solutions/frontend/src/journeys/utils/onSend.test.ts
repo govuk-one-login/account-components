@@ -44,7 +44,6 @@ describe("onSend", () => {
   it("should not process journey state when session has no claims", async () => {
     await onSend(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockSession.save).not.toHaveBeenCalled();
   });
 
@@ -55,7 +54,6 @@ describe("onSend", () => {
 
     await onSend(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockSession.save).not.toHaveBeenCalled();
   });
 
@@ -68,7 +66,6 @@ describe("onSend", () => {
     await onSend(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
     expect(mockJourneyState.getSnapshot).not.toHaveBeenCalled();
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockSession.save).not.toHaveBeenCalled();
   });
 
@@ -86,7 +83,6 @@ describe("onSend", () => {
 
     expect(mockJourneyState.getSnapshot).toHaveBeenCalledWith();
     expect(mockSession.journeyStateSnapshot).toBe(mockSnapshot);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockSession.save).toHaveBeenCalledWith();
   });
 });

@@ -39,7 +39,6 @@ describe("validateJourneyOutcomeJwtClaims", () => {
   it("should not call errorManager.throwError for a valid payload", () => {
     validateJourneyOutcomeJwtClaims(validPayload, mockApiBaseUrl);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).not.toHaveBeenCalled();
   });
 
@@ -67,7 +66,6 @@ describe("validateJourneyOutcomeJwtClaims", () => {
         mockApiBaseUrl,
       );
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockErrorManager.throwError).toHaveBeenCalledWith(
         "InvalidAccessToken",
         `Missing required claim: ${missingClaim}`,
@@ -81,7 +79,6 @@ describe("validateJourneyOutcomeJwtClaims", () => {
       mockApiBaseUrl,
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "InvalidAccessToken",
       "outcome_id must be a non-empty string.",
@@ -94,7 +91,6 @@ describe("validateJourneyOutcomeJwtClaims", () => {
       mockApiBaseUrl,
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "InvalidAccessToken",
       'Invalid issuer. Expected "https://abcdef.execute-api.eu-west-2.amazonaws.com/stage/token", got "invalid-issuer".',
@@ -110,7 +106,6 @@ describe("validateJourneyOutcomeJwtClaims", () => {
       mockApiBaseUrl,
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "InvalidAccessToken",
       'Invalid audience. Expected "https://abcdef.execute-api.eu-west-2.amazonaws.com/stage/journeyoutcome", got "invalid-audience".',
@@ -123,7 +118,6 @@ describe("validateJourneyOutcomeJwtClaims", () => {
       mockApiBaseUrl,
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "InvalidAccessToken",
       "sub must be a non-empty string.",
@@ -136,7 +130,6 @@ describe("validateJourneyOutcomeJwtClaims", () => {
       mockApiBaseUrl,
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "InvalidAccessToken",
       "jti must be a non-empty string.",
@@ -152,7 +145,6 @@ describe("validateJourneyOutcomeJwtClaims", () => {
       mockApiBaseUrl,
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockErrorManager.throwError).toHaveBeenCalledWith(
       "InvalidAccessToken",
       "iat claim is in the future.",

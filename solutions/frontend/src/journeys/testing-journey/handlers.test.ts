@@ -46,7 +46,6 @@ describe("testing-journey handlers", () => {
     mockReply = {
       render: vi.fn().mockResolvedValue(undefined),
       redirect: vi.fn().mockReturnThis(),
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       journeyStates: {
         "testing-journey": {
           send: vi.fn(),
@@ -76,7 +75,6 @@ describe("testing-journey handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
   });
@@ -119,7 +117,6 @@ describe("testing-journey handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
   });
@@ -132,7 +129,6 @@ describe("testing-journey handlers", () => {
       );
 
       expect(
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         mockReply.journeyStates?.["testing-journey"]?.send,
       ).toHaveBeenCalledWith({
         type: "passwordEntered",
@@ -151,7 +147,6 @@ describe("testing-journey handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
 
@@ -163,7 +158,6 @@ describe("testing-journey handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
   });
@@ -189,7 +183,6 @@ describe("testing-journey handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
   });
