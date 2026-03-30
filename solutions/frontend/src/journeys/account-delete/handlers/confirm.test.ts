@@ -66,7 +66,6 @@ describe("confirm handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
     });
   });
@@ -116,7 +115,6 @@ describe("confirm handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
 
       expect(mockDeleteAccount).not.toHaveBeenCalled();
@@ -132,7 +130,6 @@ describe("confirm handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-        // eslint-disable-next-line vitest/require-to-throw-message
       ).rejects.toThrow();
 
       expect(mockDeleteAccount).not.toHaveBeenCalled();

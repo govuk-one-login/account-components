@@ -162,9 +162,6 @@ describe("sendAuditEvent", () => {
       email: "test@example.com",
     };
 
-    await expect(
-      sendAuditEvent(event, mockApiGatewayEvent),
-      // eslint-disable-next-line vitest/require-to-throw-message
-    ).rejects.toThrow();
+    await expect(sendAuditEvent(event, mockApiGatewayEvent)).rejects.toThrow();
   });
 });

@@ -27,7 +27,6 @@ describe("redirectToAuthorizeErrorPage", () => {
     const result = await redirectToAuthorizeErrorPage(mockRequest, mockReply);
 
     expect(mockDestroySession).toHaveBeenCalledWith(mockRequest);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
     expect(result).toBe(mockReply);
   });

@@ -150,9 +150,7 @@ describe("onRequest", () => {
       { client_id: "test-client-id" } as ClientEntry,
     ]);
     vi.mocked(journeys["test-scope" as Scope]).mockResolvedValue({
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       translations: { en: { key: "value" } } as any,
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       stateMachine: { resolveState: vi.fn().mockReturnValue({}) } as any,
       requiredClaims: [],
     });
@@ -163,7 +161,6 @@ describe("onRequest", () => {
       await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
       expect(mockRequest.log?.warn).toHaveBeenCalledWith("NoClaimsInSession");
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(metrics.addMetric).toHaveBeenCalledWith(
         "NoClaimsInSession",
         "Count",
@@ -191,7 +188,6 @@ describe("onRequest", () => {
         { client_id: "non-existent-client" },
         "ClientNotFound",
       );
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(metrics.addMetric).toHaveBeenCalledWith(
         "ClientNotFound",
         "Count",
@@ -211,11 +207,8 @@ describe("onRequest", () => {
         scope: "test-scope",
       } as unknown as Claims;
       vi.mocked(journeys["test-scope" as Scope]).mockResolvedValue({
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         translations: { en: { key: "value" } } as any,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         stateMachine: { resolveState: vi.fn().mockReturnValue({}) } as any,
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         requiredClaims: ["account_management_api_access_token"] as any,
       });
     });
@@ -227,7 +220,6 @@ describe("onRequest", () => {
         { missingRequiredClaims: ["account_management_api_access_token"] },
         "RequiredClaimsMissing",
       );
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(metrics.addMetric).toHaveBeenCalledWith(
         "RequiredClaimsMissing",
         "Count",
@@ -251,12 +243,10 @@ describe("onRequest", () => {
     it("should set up journey state and add translations", async () => {
       await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(metrics.addDimensions).toHaveBeenCalledWith({
         client_id: "test-client-id",
         scope: "test-scope",
       });
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(logger.appendKeys).toHaveBeenCalledWith({
         client_id: "test-client-id",
         scope: "test-scope",
@@ -266,14 +256,12 @@ describe("onRequest", () => {
         "function",
       );
       expect(journeys["test-scope" as Scope]).toHaveBeenCalledWith();
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockRequest.i18n?.addResourceBundle).toHaveBeenCalledWith(
         "en",
         "journey",
         { key: "value" },
       );
       expect(createActor).toHaveBeenCalledWith(expect.any(Object), {});
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockActor.start).toHaveBeenCalledWith();
       expect(mockReply.journeyStates).toStrictEqual({
         "test-scope": mockActor,

@@ -132,7 +132,6 @@ describe("handler", () => {
     expect(mockPutObject).toHaveBeenCalledWith({
       Bucket: "test-bucket",
       Key: "jwks.json",
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       Body: expect.stringMatching(
         /"kid":"test-key-id".*"alg":"RSA-OAEP-256".*"use":"enc"/,
       ),
@@ -143,7 +142,6 @@ describe("handler", () => {
       expect.objectContaining({
         method: "PUT",
         headers: { "Content-Type": "" },
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         body: expect.stringContaining('"Status":"SUCCESS"'),
       }),
     );
@@ -171,7 +169,6 @@ describe("handler", () => {
     expect(mockPutObject).toHaveBeenCalledWith({
       Bucket: "test-bucket",
       Key: "jwks.json",
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       Body: expect.stringMatching(
         /"kid":"test-key-id".*"alg":"RSA-OAEP-256".*"use":"enc"/,
       ),
@@ -181,7 +178,6 @@ describe("handler", () => {
       event.ResponseURL,
       expect.objectContaining({
         method: "PUT",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         body: expect.stringContaining('"Status":"SUCCESS"'),
       }),
     );
@@ -197,7 +193,6 @@ describe("handler", () => {
       event.ResponseURL,
       expect.objectContaining({
         method: "PUT",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         body: expect.stringContaining('"Status":"SUCCESS"'),
       }),
     );
@@ -224,7 +219,6 @@ describe("handler", () => {
       event.ResponseURL,
       expect.objectContaining({
         method: "PUT",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         body: expect.stringContaining('"Status":"FAILED"'),
       }),
     );
@@ -240,7 +234,6 @@ describe("handler", () => {
       event.ResponseURL,
       expect.objectContaining({
         method: "PUT",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         body: expect.stringContaining('"Status":"FAILED"'),
       }),
     );
@@ -256,7 +249,6 @@ describe("handler", () => {
       event.ResponseURL,
       expect.objectContaining({
         method: "PUT",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         body: expect.stringContaining('"Status":"FAILED"'),
       }),
     );
@@ -275,7 +267,6 @@ describe("handler", () => {
       event.ResponseURL,
       expect.objectContaining({
         method: "PUT",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         body: expect.stringContaining('"Status":"FAILED"'),
       }),
     );
@@ -298,7 +289,6 @@ describe("handler", () => {
       event.ResponseURL,
       expect.objectContaining({
         method: "PUT",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         body: expect.stringContaining('"Status":"FAILED"'),
       }),
     );
@@ -314,7 +304,6 @@ describe("handler", () => {
       event.ResponseURL,
       expect.objectContaining({
         method: "PUT",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         body: expect.stringContaining('"Status":"FAILED"'),
       }),
     );
@@ -333,7 +322,6 @@ describe("handler", () => {
       event.ResponseURL,
       expect.objectContaining({
         method: "PUT",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         body: expect.stringContaining('"Status":"FAILED"'),
       }),
     );
@@ -357,7 +345,6 @@ describe("handler", () => {
       event.ResponseURL,
       expect.objectContaining({
         method: "PUT",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         body: expect.stringContaining('"Status":"FAILED"'),
       }),
     );
@@ -383,7 +370,6 @@ describe("handler", () => {
       event.ResponseURL,
       expect.objectContaining({
         method: "PUT",
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         body: expect.stringContaining('"Status":"FAILED"'),
       }),
     );

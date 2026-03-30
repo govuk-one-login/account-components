@@ -135,11 +135,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=invalid_request",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E1004",
     );
@@ -161,11 +159,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=unauthorized_client",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E2001",
     );
@@ -187,11 +183,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=unauthorized_client",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E2002",
     );
@@ -213,11 +207,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=unauthorized_client",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E2003",
     );
@@ -239,11 +231,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=unauthorized_client",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E2004",
     );
@@ -265,11 +255,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=unauthorized_client",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E2005",
     );
@@ -291,11 +279,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=invalid_request",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E1001",
     );
@@ -317,11 +303,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=invalid_request",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E1002",
     );
@@ -343,11 +327,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=invalid_request",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E1003",
     );
@@ -369,11 +351,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=invalid_request",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E1004",
     );
@@ -397,11 +377,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=invalid_request",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E1005",
     );
@@ -423,11 +401,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=invalid_request",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E1006",
     );
@@ -453,11 +429,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=invalid_request",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E1008",
     );
@@ -505,11 +479,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=invalid_request",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E1007",
     );
@@ -531,11 +503,9 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=server_error",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E3002",
     );
@@ -557,7 +527,6 @@ describe("verifyJwt", () => {
 
     assert.ok(result instanceof ErrorResponse);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       `state=${state}`,
     );

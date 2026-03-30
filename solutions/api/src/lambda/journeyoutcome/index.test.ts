@@ -150,7 +150,6 @@ describe("journeyoutcome handler", () => {
     } as unknown as APIGatewayProxyEvent;
     const result = await handler(mockInvalidEvent, mockContext);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockMetrics.addMetric).toHaveBeenCalledWith(
       "InvalidAuthorizationHeader",
       "Count",
@@ -180,7 +179,6 @@ describe("journeyoutcome handler", () => {
     } as unknown as APIGatewayProxyEvent;
     const result = await handler(mockInvalidEvent, mockContext);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockMetrics.addMetric).toHaveBeenCalledWith(
       "InvalidAuthorizationHeader",
       "Count",
@@ -210,7 +208,6 @@ describe("journeyoutcome handler", () => {
     } as unknown as APIGatewayProxyEvent;
     const result = await handler(mockInvalidEvent, mockContext);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockMetrics.addMetric).toHaveBeenCalledWith(
       "InvalidAuthorizationHeader",
       "Count",
@@ -239,7 +236,6 @@ describe("journeyoutcome handler", () => {
     } as unknown as APIGatewayProxyEvent;
     const result = await handler(mockInvalidEvent, mockContext);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockMetrics.addMetric).toHaveBeenCalledWith(
       "InvalidAuthorizationHeader",
       "Count",

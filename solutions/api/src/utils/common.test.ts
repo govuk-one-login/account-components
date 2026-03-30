@@ -127,7 +127,6 @@ describe("errorManager", () => {
       expect(() => errorManager.throwError("notFound", "not found")).toThrow(
         "not found",
       );
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLogger.error).toHaveBeenCalledWith("Error", {
         cause: expect.objectContaining({ message: "not found" }) as Error,
       });
@@ -180,7 +179,6 @@ describe("errorManager", () => {
       error.code = "badRequest";
       errorManager.handleError(error);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockMetrics.addMetric).toHaveBeenCalledWith(
         "BadRequest",
         "Count",
@@ -193,7 +191,6 @@ describe("errorManager", () => {
       error.code = "notFound";
       errorManager.handleError(error);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockMetrics.addMetric).not.toHaveBeenCalled();
     });
 
@@ -202,7 +199,6 @@ describe("errorManager", () => {
       error.code = "notFound";
       errorManager.handleError(error);
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockLogger.warn).toHaveBeenCalledWith("Invalid Request", {
         error: errors.notFound,
       });
