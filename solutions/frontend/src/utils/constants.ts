@@ -1,1 +1,1 @@
-export const rootCookieDomain = process.env["ROOT_COOKIE_DOMAIN"];
+export const rootCookieDomain = process.env["ROOT_DOMAIN"];

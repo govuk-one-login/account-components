@@ -59,10 +59,10 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         currentUrl: currentUrl.toString(),
       });
 
-      assert.ok(process.env["AMC_API_BASE_URL"], "AMC_API_BASE_URL is not set");
+      assert.ok(process.env["API_BASE_URL"], "API_BASE_URL is not set");
 
       const tokenResponse = await fetch(
-        `${process.env["AMC_API_BASE_URL"]}/token`,
+        `${process.env["API_BASE_URL"]}/token`,
         {
           method: "POST",
           headers: {
@@ -82,7 +82,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
       );
 
       const journeyOutcomeResponse = await fetch(
-        `${process.env["AMC_API_BASE_URL"]}/journeyoutcome`,
+        `${process.env["API_BASE_URL"]}/journeyoutcome`,
         {
           method: "GET",
           headers: {
@@ -150,11 +150,11 @@ const getTokenRequestBody = async ({
   });
 
   assert.ok(privateKeyPem, "privateKeyPem is not set");
-  assert.ok(process.env["AMC_API_BASE_URL"], "AMC_API_BASE_URL is not set");
+  assert.ok(process.env["API_BASE_URL"], "API_BASE_URL is not set");
 
   const clientAssertion = await new SignJWT({
     iss: client.client_id,
-    aud: `${process.env["AMC_API_BASE_URL"]}/token`,
+    aud: `${process.env["API_BASE_URL"]}/token`,
     jti: crypto.randomUUID(),
   })
     .setProtectedHeader({ alg: algorithm, kid })

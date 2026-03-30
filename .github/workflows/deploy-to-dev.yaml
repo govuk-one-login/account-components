@@ -1,4 +1,4 @@
-name: Deploy API to dev
+name: Deploy to dev
 
 on:
   workflow_dispatch:
@@ -52,7 +52,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
 
-  deploy-api-to-dev:
+  deploy-to-dev:
     needs: publish-integration-tests-image
     runs-on: ubuntu-latest
     permissions:
@@ -109,13 +109,13 @@ jobs:
       - name: Install dependencies
         run: npm run install-all
 
-      - name: Build API
-        run: npm run build:api
+      - name: Build
+        run: npm run build:all
 
-      - name: Deploy API
+      - name: Deploy
         uses: govuk-one-login/devplatform-upload-action@b7bc01ed6e0b61d54f42e7f3d12dd3fdbb0f172a
         with:
           artifact-bucket-name: ${{ secrets.DEV_ARTIFACT_BUCKET_NAME_API }}
           signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
-          working-directory: ./solutions/api
+          working-directory: ./solutions/app-infra
           template-file: .aws-sam/build/template.yaml

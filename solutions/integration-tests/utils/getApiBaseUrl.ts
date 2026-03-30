@@ -7,10 +7,9 @@ export const getApiBaseUrl = async () => {
   }
 
   try {
-    const apiBaseUrl = await getParameter(
-      "/tests/components-api/PrivateApiGatewayUrl",
-      { maxAge: 300 },
-    );
+    const apiBaseUrl = await getParameter("/amc/PrivateApiGatewayUrl", {
+      maxAge: 300,
+    });
     if (!apiBaseUrl || apiBaseUrl.trim().length <= 0) {
       throw new Error("API base URL from SSM is empty");
     }

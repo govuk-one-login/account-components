@@ -75,7 +75,7 @@ describe("clientCallback handler", () => {
     process.env["MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"] = "/mock/ec-private-key";
     process.env["MOCK_CLIENT_RSA_PRIVATE_KEY_SSM_NAME"] =
       "/mock/rsa-private-key";
-    process.env["AMC_API_BASE_URL"] = "http://localhost:6004";
+    process.env["API_BASE_URL"] = "http://localhost:6004";
 
     mockGetParametersProvider.mockReturnValue({
       get: vi.fn().mockResolvedValue("mock-private-key"),

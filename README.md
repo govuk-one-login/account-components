@@ -6,7 +6,7 @@ This repo contains the code for Account Components
 
 - Copy `solutions/frontend/.env.sample` to `solutions/frontend/.env` and replace any placeholder values as appropriate
 - Copy `solutions/stubs/.env.sample` to `solutions/stubs/.env` and replace any placeholder values as appropriate
-- Copy `solutions/api/env.json.sample` to `solutions/api/env.json` and replace any placeholder values as appropriate
+- Copy `solutions/app-infra/env.json.sample` to `solutions/app-infra/env.json` and replace any placeholder values as appropriate
 - Install [NVM](https://github.com/nvm-sh/nvm) or [FNM](https://github.com/Schniz/fnm) and select the correct Node version by running `nvm use` or `fnm use`
 - Install Docker
 - Install [Homebrew](https://brew.sh/)
@@ -37,10 +37,9 @@ There are various commands which can be run manually and which may also be run b
 - `npm run build:frontend` to build the frontend
 - `npm run run:stubs` to run the stubs locally and watch for changes
 - `npm run build:stubs` to build the stubs
-- `npm run run:api` to run the API locally and watch for changes
+- `npm run run:api` to run the API locally
 - `npm run generate-config-types` to generate TypeScript types from the App Config JSON schema
-- `npm run build:api` to build the API
-- `npm run build:core` to build core
+- `npm run build:all` to build everything
 - `npm run test` to run [Vitest](https://vitest.dev/) tests
 - `npm run test:watch` to run [Vitest](https://vitest.dev/) tests in watch mode
 - `npm run test:coverage` to run [Vitest](https://vitest.dev/) tests and report coverage
@@ -50,10 +49,7 @@ There are various commands which can be run manually and which may also be run b
 - `npm run knip` to run [Knip](https://knip.dev/)
 - `npm run tflint` to [lint Terraform](https://github.com/terraform-linters/tflint) files
 - `npm run cfnlint` to [lint CloudFormation](https://github.com/aws-cloudformation/cfn-lint) templates with the file extension `.cf.yaml`
-- `npm run sam-validate:frontend` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the frontend CloudFormation template
-- `npm run sam-validate:stubs` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the stubs CloudFormation template
-- `npm run sam-validate:core` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the core CloudFormation template
-- `npm run sam-validate:api` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the API CloudFormation template
+- `npm run sam-validate` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the CloudFormation template
 - `npm run check-gh-actions` to check GitHub Actions with [Zizmor](https://docs.zizmor.sh/)
 - `npm run detect-secrets` to detect secrets which should not be in the repo. False positives can be [ignored with comments](https://github.com/Yelp/detect-secrets?tab=readme-ov-file#inline-allowlisting)
 - `npm run config:validate` to validate the application's config

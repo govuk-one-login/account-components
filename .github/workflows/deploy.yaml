@@ -1,4 +1,4 @@
-name: Deploy frontend
+name: Deploy
 
 permissions: {}
 
@@ -7,9 +7,13 @@ on:
     branches:
       - main
     paths:
+      - solutions/app-infra/**
       - solutions/frontend/**
+      - solutions/api/**
+      - solutions/core/**
+      - solutions/stubs/**
       - solutions/commons/**
-      - .github/workflows/deploy-frontend.yaml
+      - .github/workflows/deploy.yaml
       - package.json
       - package-lock.json
       - .npmrc
@@ -52,7 +56,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
 
-  deploy-frontend:
+  deploy:
     needs: publish-integration-tests-image
     runs-on: ubuntu-latest
     permissions:
@@ -78,19 +82,19 @@ jobs:
       - name: Assume AWS role
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7
         with:
-          role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN_API }}
           aws-region: "eu-west-2"
 
       - name: Install dependencies
         run: npm run install-all
 
-      - name: Build frontend
-        run: npm run build:frontend
+      - name: Build
+        run: npm run build:all
 
-      - name: Deploy frontend
+      - name: Deploy
         uses: govuk-one-login/devplatform-upload-action@b7bc01ed6e0b61d54f42e7f3d12dd3fdbb0f172a
         with:
-          artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET_NAME }}
+          artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET_NAME_API }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
-          working-directory: ./solutions/frontend
+          working-directory: ./solutions/app-infra
           template-file: .aws-sam/build/template.yaml
