@@ -24,7 +24,6 @@ const mockGetDynamoDbClient = vi.mocked(getDynamoDbClient);
 vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
   logger: { error: vi.fn() },
 }));
-// eslint-disable-next-line @typescript-eslint/unbound-method
 const mockLoggerError = vi.mocked(logger.error);
 
 describe("createAccessToken", () => {

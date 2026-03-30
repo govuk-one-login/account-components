@@ -17,7 +17,6 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       "auth-code-123",
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(reply.redirect).toHaveBeenCalledWith(
       "https://example.com/callback?code=auth-code-123",
     );
@@ -34,7 +33,6 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       authorizeErrors.jwtExpired,
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(reply.redirect).toHaveBeenCalledWith(
       "https://example.com/callback?error=invalid_request&error_description=E1005",
     );
@@ -52,7 +50,6 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       "state-123",
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(reply.redirect).toHaveBeenCalledWith(
       "https://example.com/callback?state=state-123",
     );
@@ -70,7 +67,6 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       "state-456",
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(reply.redirect).toHaveBeenCalledWith(
       "https://example.com/callback?error=server_error&error_description=E3002&state=state-456",
     );
@@ -89,7 +85,6 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       "auth-code-456",
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(reply.redirect).toHaveBeenCalledWith(
       "https://example.com/callback?code=auth-code-456&state=state-789",
     );
@@ -105,7 +100,6 @@ describe("getRedirectToClientRedirectUriResponse", () => {
       "https://example.com/callback",
     );
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(reply.redirect).toHaveBeenCalledWith("https://example.com/callback");
   });
 });

@@ -125,11 +125,9 @@ describe("checkJtiUnused", () => {
     );
 
     expect(result).toBeInstanceOf(ErrorResponse);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=invalid_request",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E1010",
     );
@@ -147,11 +145,9 @@ describe("checkJtiUnused", () => {
     );
 
     expect(result).toBeInstanceOf(ErrorResponse);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(reply.redirect).mock.calls[0]?.[0]).toContain(
       "error=server_error",
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E3001",
     );
@@ -177,7 +173,6 @@ describe("checkJtiUnused", () => {
     );
 
     expect(result).toBeInstanceOf(ErrorResponse);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(vi.mocked(reply.redirect).mock.calls[0]?.[0]).toContain(
       `state=${state}`,
     );

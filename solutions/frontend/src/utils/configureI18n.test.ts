@@ -34,7 +34,6 @@ describe("configureI18n", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     vi.mocked(i18next.use).mockReturnValue(i18next);
   });
 
@@ -47,9 +46,7 @@ describe("configureI18n", () => {
 
     await configureI18n(mockTranslations);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(i18next.use).toHaveBeenCalledExactlyOnceWith(LanguageDetector);
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(i18next.init).toHaveBeenCalledExactlyOnceWith({
       showSupportNotice: false,
       fallbackLng: [Lang.English],
@@ -84,10 +81,8 @@ describe("configureI18n", () => {
 
     await configureI18n(mockTranslations);
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(i18next.init).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         detection: expect.objectContaining({
           cookieSecure: true,
           cookieDomain: "account.gov.uk",

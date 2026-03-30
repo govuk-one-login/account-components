@@ -79,11 +79,9 @@ describe("verifyClientAssertion", () => {
       expect.any(Function),
       { algorithms: ["ES256", "RS256"] },
     );
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
       client_id: "test-client-id",
     });
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     expect(mockLogger.appendKeys).toHaveBeenCalledWith({
       client_id: "test-client-id",
     });

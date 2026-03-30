@@ -171,7 +171,6 @@ describe("notifications-service", () => {
       "test@example.com",
       expect.objectContaining({
         personalisation: {},
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         reference: expect.any(String),
       }),
     );
@@ -202,7 +201,6 @@ describe("notifications-service", () => {
       "test@example.com",
       expect.objectContaining({
         personalisation: { name: "Test User" },
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         reference: expect.any(String),
       }),
     );
@@ -260,7 +258,6 @@ describe("notifications-service", () => {
           showHeader: "yes",
           showFooter: "no",
         },
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         reference: expect.any(String),
       }),
     );
@@ -292,7 +289,6 @@ describe("notifications-service", () => {
           name: "Test User",
           showHeader: "yes",
         },
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         reference: expect.any(String),
       }),
     );
