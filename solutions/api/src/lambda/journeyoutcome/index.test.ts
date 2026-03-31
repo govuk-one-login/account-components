@@ -70,6 +70,13 @@ vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
   loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
+vi.mock(
+  import("../../../../commons/utils/normalizeAPIGatewayProxyEventHeadersHandlerWrapper/index.js"),
+  () => ({
+    normalizeAPIGatewayProxyEventHeadersHandlerWrapper: (fn) => fn,
+  }),
+);
+
 const { handler } = await import("./index.js");
 
 describe("journeyoutcome handler", () => {
