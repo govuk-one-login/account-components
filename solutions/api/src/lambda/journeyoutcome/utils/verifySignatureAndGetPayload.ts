@@ -14,13 +14,9 @@ export async function verifySignatureAndGetPayload(
   key: CryptoKey,
 ): Promise<JourneyOutcomePayload> {
   try {
-    const { payload }: JWTVerifyResult<JourneyOutcomePayload> = await jwtVerify(
-      token,
-      key,
-      {
-        algorithms: [jwtSigningAlgorithm],
-      },
-    );
+    const { payload }: JWTVerifyResult = await jwtVerify(token, key, {
+      algorithms: [jwtSigningAlgorithm],
+    });
     return payload;
   } catch (error) {
     if (error instanceof JWTInvalid) {
