@@ -50,7 +50,7 @@
   "devDependencies": {
     "@eslint/compat": "^2.0.3",
     "@eslint/js": "^10.0.1",
-    "@redocly/cli": "^2.24.1",
+    "@redocly/cli": "^2.25.1",
     "@tsconfig/node24": "^24.0.4",
     "@tsconfig/strictest": "^2.0.8",
     "@types/aws-lambda": "^8.10.161",
@@ -67,7 +67,7 @@
     "eslint-plugin-playwright": "^2.10.1",
     "fast-json-stable-stringify": "^2.1.0",
     "json-schema-to-typescript": "^15.0.4",
-    "knip": "^6.0.4",
+    "knip": "^6.0.5",
     "pino": "^10.3.1",
     "prettier": "^3.8.1",
     "rolldown": "1.0.0-rc.11",
