@@ -5,7 +5,6 @@ import type {
   SQSRecord,
 } from "aws-lambda";
 import * as v from "valibot";
-// @ts-expect-error - types aren't available
 import { NotifyClient } from "notifications-node-client";
 import { randomUUID } from "node:crypto";
 import { getSecret } from "@aws-lambda-powertools/parameters/secrets";
@@ -88,7 +87,6 @@ if (
   );
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-assignment
 const notifyClient: NotifyClientType = new NotifyClient(notifyApiKey);
 
 const notifyTemplateIDsSchema = v.pipe(

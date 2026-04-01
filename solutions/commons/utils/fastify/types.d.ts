@@ -69,7 +69,6 @@ declare module "fastify" {
   interface Session {
     expires?: number;
     _csrf?: string;
-    user_id?: string;
     claims?: v.InferOutput<ReturnType<typeof getClaimsSchema>>;
     journeyStateSnapshot?: AnyMachineSnapshot;
   }
