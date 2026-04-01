@@ -56,6 +56,8 @@ export const onRequest = async (
     url.searchParams.set("error_description", error.description);
     return url.pathname + url.search;
   };
+  reply.globals.isAppChannel =
+    claims.channel === "strategic_app" || claims.channel === "generic_app";
 
   const journey = await journeys[claims.scope]();
 

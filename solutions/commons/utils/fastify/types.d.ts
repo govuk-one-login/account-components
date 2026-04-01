@@ -31,6 +31,7 @@ declare module "fastify" {
       currentUrl?: URL;
       htmlLang?: string | undefined;
       authFrontEndUrl?: string | undefined;
+      isAppChannel?: boolean | undefined;
       analyticsCookieDomain?: string | undefined;
       ga4ContainerId?: string | undefined;
       analyticsEnabled?: boolean | undefined;

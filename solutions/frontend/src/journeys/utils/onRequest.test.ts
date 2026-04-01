@@ -320,5 +320,28 @@ describe("onRequest", () => {
         snapshot: {},
       });
     });
+
+    it.each([
+      { channel: "strategic_app", expected: true },
+      { channel: "generic_app", expected: true },
+      { channel: "web", expected: false },
+      { channel: undefined, expected: false },
+    ])(
+      "should set isAppChannel to $expected when channel is $channel",
+      async ({ channel, expected }) => {
+        mockSession.claims = {
+          client_id: "test-client-id",
+          scope: "test-scope",
+          channel,
+        } as unknown as Claims;
+
+        await onRequest(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockReply.globals?.isAppChannel).toBe(expected);
+      },
+    );
   });
 });
