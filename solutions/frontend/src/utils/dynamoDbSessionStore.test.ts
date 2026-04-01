@@ -29,7 +29,7 @@ describe("dynamoDbSessionStore", () => {
   describe("set", () => {
     it("updates session with default expiry when session.expires is undefined", async () => {
       const sessionId = "test-session-id";
-      const session = { user_id: "123" } as Session;
+      const session = {} as Session;
       const callback = vi.fn();
       const mockNow = 1000000;
 
@@ -59,7 +59,7 @@ describe("dynamoDbSessionStore", () => {
     it("updates session with provided expiry when session.expires is set", async () => {
       const sessionId = "test-session-id";
       const customExpiry = 2000000;
-      const session = { user_id: "123", expires: customExpiry } as Session;
+      const session = { expires: customExpiry } as Session;
       const callback = vi.fn();
 
       mockDynamoDbClient.update.mockResolvedValue({});
@@ -86,7 +86,7 @@ describe("dynamoDbSessionStore", () => {
 
     it("calls callback with error when update fails", async () => {
       const sessionId = "test-session-id";
-      const session = { user_id: "123" } as Session;
+      const session = {} as Session;
       const callback = vi.fn();
       const error = new Error("DynamoDB error");
 
