@@ -9,6 +9,12 @@ export enum Algorithms {
   INVALID = "AB123",
 }
 
+export enum Channels {
+  Web = "web",
+  StrategicApp = "strategic_app",
+  GenericApp = "generic_app",
+}
+
 export enum MockRequestObjectScenarios {
   VALID = "valid",
   MISSING_KID = "missingKid",
@@ -64,6 +70,7 @@ export interface AuthorizeRequestObject {
   email?: string;
   scenario?: string;
   algorithm?: string;
+  channel?: string;
   [key: string]: unknown;
 }
 

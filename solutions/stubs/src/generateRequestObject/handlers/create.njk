@@ -16,6 +16,17 @@
                 {% endfor %}
             </fieldset>
             <fieldset>
+                <legend>Channel</legend>
+                <label>
+                    <input type="radio" name="channel" value="" checked="true"/> none
+                </label>
+                {% for channel in availableChannels %}
+                    <label>
+                        <input type="radio" name="channel" value="{{ channel }}"/> {{ channel }}
+                    </label>
+                {% endfor %}
+            </fieldset>
+            <fieldset>
                 <legend>Signing Algorithm</legend>
                 {% for alg in availableAlgorithms %}
                     <label>
