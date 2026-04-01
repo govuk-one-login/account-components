@@ -6,6 +6,7 @@ import type {
 } from "../../../types/common.js";
 import {
   Algorithms,
+  Channels,
   CONVERT_TO_SECONDS,
   DEFAULT_SCENARIO,
   DEFAULT_TOKEN_EXPIRY,
@@ -129,6 +130,7 @@ export function getJwtPayload(
     exp: bodyExp,
     iss: bodyIss,
     user_email_address: bodyUserEmailAddress,
+    channel: bodyChannel,
     ...payload
   } = requestObjectOptions;
 
@@ -156,6 +158,7 @@ export function getJwtPayload(
     aud: bodyAud ?? process.env["DEFAULT_AUDIENCE"],
     response_type: "code",
     scope: bodyScope ?? Scope.ACCOUNT_DELETION,
+    channel: (bodyChannel === "" ? Channels.Web : bodyChannel) ?? Channels.Web,
     state:
       typeof requestObjectOptions["state"] === "string" &&
       requestObjectOptions["state"].length > 0

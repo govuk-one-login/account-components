@@ -244,6 +244,7 @@ describe("getJwtPayload", () => {
       aud: "customAudience",
       iat: 10,
       scope: "customScope",
+      channel: "web",
       exp: 30,
       extra: "value",
     });
@@ -258,6 +259,7 @@ describe("getJwtPayload", () => {
     expect(payload.sub).toBe("urn:fdc:gov.uk:default");
     expect(payload["public_sub"]).toBe("4c950955-03c3-45a4-a97e-763152c172ff");
     expect(payload["scope"]).toBe("customScope");
+    expect(payload["channel"]).toBe("web");
     expect(payload["extra"]).toBe("value");
     expect(payload["client_id"]).toBe("my-client-id");
     expect(payload["email"]).toBe("testuser@test.null.local");
@@ -287,6 +289,7 @@ describe("getJwtPayload", () => {
     );
 
     expect(payload["scope"]).toBeDefined();
+    expect(payload["channel"]).toBe("web");
     expect(payload.aud).toBeDefined();
   });
 

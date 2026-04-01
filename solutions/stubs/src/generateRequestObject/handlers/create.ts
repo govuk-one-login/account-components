@@ -6,6 +6,7 @@ import {
 import type { JwtHeader } from "../../types/common.js";
 import {
   Algorithms,
+  Channels,
   MockRequestObjectScenarios,
   Scope,
   Users,
@@ -24,6 +25,7 @@ export const requestBodySchema = v.object({
   algorithm: v.string(),
   scenario: v.string(),
   scope: v.string(),
+  channel: v.string(),
   jti: v.string(),
   exp: v.string(),
   iss: v.string(),
@@ -51,11 +53,13 @@ export async function createRequestObjectGet(
   const availableScenarios = Object.values(MockRequestObjectScenarios);
   const availableClients = await getClientRegistryWithInvalidClient();
   const availableUsers = Object.values(Users);
+  const availableChannels = Object.values(Channels);
 
   assert.ok(reply.render);
   await reply.render("generateRequestObject/handlers/create.njk", {
     availableScopes,
     availableAlgorithms,
+    availableChannels,
     availableScenarios,
     availableClients,
     availableUsers,
