@@ -116,12 +116,12 @@ Feature: Passkey create
     And I select the option beginning with "Home" in the "Client" select    
     And I begin a "passkey-create" journey
     And the page has finished loading
-    And I click the "TODO where will my passkey be saved?" element
-    Then the page title is prefixed with "TODO create passkey"
+    And I click the "Where will my passkey be saved?" element
+    Then the page title is prefixed with "Set up a passkey"
     And the page looks as expected
     And the page meets our accessibility standards
 
-    Given I click the "TODO skip" link
+    Given I click the "Cancel and go back" link
     Then the page contains the text "Client callback"
     And the page contains the text '"email": "testuser@test.null.local",'
     And the page contains the text:
@@ -154,25 +154,25 @@ Feature: Passkey create
     isUserVerified: false
     hasResidentKey: false
     """    
-    And I click the "TODO create passkey" button to continue the create passkey journey
+    And I click the "Set up a passkey" button to continue the create passkey journey
     And the page has finished loading
-    Then the page title is prefixed with "TODO create passkey error"
+    Then the page title is prefixed with "We could not set up your passkey"
     And the page looks as expected
     And the page meets our accessibility standards
 
-    Given I click the "TODO submit" button to continue the create passkey journey
+    Given I click the "Set up a passkey" button to continue the create passkey journey
     And the page has finished loading
-    Then the page title is prefixed with "Error - TODO create passkey error"
+    Then the page title is prefixed with "Error - We could not set up your passkey"
     And the page looks as expected
     And the page meets our accessibility standards
   
-    Given I select the option beginning with "TODO try again" in the "TODO legendText" radio button group   
-    And I click the "TODO submit" button to continue the create passkey journey
+    Given I select the option beginning with "Try setting up a passkey again" in the "What would you like to do?" radio button group   
+    And I click the "Continue" button to continue the create passkey journey
     And the page has finished loading
-    Then the page title is prefixed with "TODO create passkey error"
+    Then the page title is prefixed with "We could not set up your passkey"
 
-    Given I select the option beginning with "TODO skip" in the "TODO legendText" radio button group
-    And I click the "TODO submit" button to continue the create passkey journey
+    Given I select the option beginning with "Cancel and go back" in the "What would you like to do?" radio button group
+    And I click the "Continue submit" button to continue the create passkey journey
     And the page has finished loading
     Then the page contains the text "Client callback"
     And the page contains the text '"email": "testuser@test.null.local",'
