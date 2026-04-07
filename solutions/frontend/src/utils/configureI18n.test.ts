@@ -48,7 +48,6 @@ describe("configureI18n", () => {
 
     expect(i18next.use).toHaveBeenCalledExactlyOnceWith(LanguageDetector);
     expect(i18next.init).toHaveBeenCalledExactlyOnceWith({
-      showSupportNotice: false,
       fallbackLng: [Lang.English],
       supportedLngs: [Lang.English, Lang.Welsh],
       resources: {
