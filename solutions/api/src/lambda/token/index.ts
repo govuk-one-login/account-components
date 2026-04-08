@@ -11,9 +11,9 @@ import { verifyJti } from "./utils/verifyJti.js";
 import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
 import { createAccessToken } from "./utils/createAccessToken.js";
 import { getApiBaseUrlWithStage } from "../../utils/common.js";
-import { normalizeAPIGatewayProxyEventHeadersHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHeadersHandlerWrapper/index.js";
+import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
 
-export const handler = normalizeAPIGatewayProxyEventHeadersHandlerWrapper(
+export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
