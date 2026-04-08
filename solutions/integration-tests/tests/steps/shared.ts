@@ -66,7 +66,8 @@ Then(
   "the page title is prefixed with {string}",
   async ({ page }, pageTitlePrefix: string) => {
     await expect(page).toHaveTitle(
-      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-call
+      // @ts-expect-error
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-template-expressions
       new RegExp(`^${RegExp.escape(`${pageTitlePrefix} - GOV.UK One Login`)}`),
     );
   },
