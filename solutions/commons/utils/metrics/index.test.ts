@@ -36,7 +36,7 @@ describe("metricsAPIGatewayProxyHandlerWrapper", () => {
     expect(result).toStrictEqual({ statusCode: 200, body: "success" });
   });
 
-  it("returns 500 response and flushes metrics when handler throws", async () => {
+  it("flushes metrics and re-throws when handler throws", async () => {
     const mockHandler = vi.fn().mockRejectedValue(new Error("handler error"));
     const publishSpy = vi.spyOn(metrics, "publishStoredMetrics");
     const coldStartSpy = vi.spyOn(metrics, "captureColdStartMetric");
@@ -50,7 +50,9 @@ describe("metricsAPIGatewayProxyHandlerWrapper", () => {
     } as APIGatewayProxyEvent;
     const mockContext = {} as Context;
 
-    const result = await wrappedHandler(mockEvent, mockContext);
+    await expect(wrappedHandler(mockEvent, mockContext)).rejects.toThrow(
+      "handler error",
+    );
 
     expect(mockHandler).toHaveBeenCalledWith(mockEvent, mockContext);
     expect(addDimensionsSpy).toHaveBeenCalledWith({
@@ -59,6 +61,5 @@ describe("metricsAPIGatewayProxyHandlerWrapper", () => {
     });
     expect(coldStartSpy).toHaveBeenCalledTimes(1);
     expect(publishSpy).toHaveBeenCalledTimes(1);
-    expect(result).toStrictEqual({ statusCode: 500, body: "" });
   });
 });
