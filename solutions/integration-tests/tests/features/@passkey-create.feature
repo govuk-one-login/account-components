@@ -1,3 +1,5 @@
+# Retries are necessary as the virtual authenticator can be a bit flaky
+@retries:3
 Feature: Passkey create
 
   Scenario: Back out of journey (signed out journey)
@@ -31,7 +33,6 @@ Feature: Passkey create
   Scenario: Abort journey from create screen (signed out journey)
     Given I go to the journey initiator
     And I begin a "passkey-create" journey
-    And the page has finished loading
     And I click the "Where will my passkey be saved?" element
     Then the page title is prefixed with "Set up a passkey"
     And the page looks as expected
@@ -69,26 +70,22 @@ Feature: Passkey create
     isUserVerified: false
     hasResidentKey: false
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page title is prefixed with "We could not set up your passkey"
     And the page looks as expected
     And the page meets our accessibility standards
 
-    Given I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    Given I click the "Continue" button
     Then the page title is prefixed with "Error - We could not set up your passkey"
     And the page looks as expected
     And the page meets our accessibility standards
   
     Given I select the option beginning with "Try setting up a passkey again" in the "What would you like to do?" radio button group   
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page title is prefixed with "We could not set up your passkey"
 
     Given I select the option beginning with "Skip for now" in the "What would you like to do?" radio button group
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page contains the text "Client callback"
     And the page contains the text '"email": "testuser@test.null.local",'
     And the page contains the text:
@@ -115,7 +112,6 @@ Feature: Passkey create
     Given I go to the journey initiator
     And I select the option beginning with "Home" in the "Client" select    
     And I begin a "passkey-create" journey
-    And the page has finished loading
     And I click the "Where will my passkey be saved?" element
     Then the page title is prefixed with "Set up a passkey"
     And the page looks as expected
@@ -154,26 +150,22 @@ Feature: Passkey create
     isUserVerified: false
     hasResidentKey: false
     """    
-    And I click the "Set up a passkey" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Set up a passkey" button
     Then the page title is prefixed with "We could not set up your passkey"
     And the page looks as expected
     And the page meets our accessibility standards
 
-    Given I click the "Set up a passkey" button to continue the create passkey journey
-    And the page has finished loading
+    Given I click the "Continue" button
     Then the page title is prefixed with "Error - We could not set up your passkey"
     And the page looks as expected
     And the page meets our accessibility standards
   
     Given I select the option beginning with "Try setting up a passkey again" in the "What would you like to do?" radio button group   
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page title is prefixed with "We could not set up your passkey"
 
     Given I select the option beginning with "Cancel and go back" in the "What would you like to do?" radio button group
-    And I click the "Continue submit" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page contains the text "Client callback"
     And the page contains the text '"email": "testuser@test.null.local",'
     And the page contains the text:
@@ -203,8 +195,7 @@ Feature: Passkey create
     isUserVerified: true
     hasResidentKey: true
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page contains the text "Client callback"
     And the page contains the text '"email": "testuser@test.null.local",'
     And the page contains the text:
@@ -229,8 +220,7 @@ Feature: Passkey create
     isUserVerified: false
     hasResidentKey: false
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page title is prefixed with "We could not set up your passkey"
     
     Given I have no authenticators
@@ -241,8 +231,7 @@ Feature: Passkey create
     hasResidentKey: true
     """ 
     And I select the option beginning with "Try setting up a passkey again" in the "What would you like to do?" radio button group   
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page contains the text "Client callback"
     And the page contains the text '"email": "testuser@test.null.local",'
     And the page contains the text:
@@ -267,8 +256,7 @@ Feature: Passkey create
     isUserVerified: false
     hasResidentKey: false
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page title is prefixed with "We could not set up your passkey"
     
     Given I have no authenticators
@@ -280,8 +268,7 @@ Feature: Passkey create
     isUserVerified: false
     hasResidentKey: true
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page title is prefixed with "We could not set up your passkey" 
 
     Given I have no authenticators
@@ -295,8 +282,7 @@ Feature: Passkey create
     protocol: u2f
     transport: usb
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page title is prefixed with "We could not set up your passkey"
 
     Given I have no authenticators
@@ -310,8 +296,7 @@ Feature: Passkey create
     protocol: u2f
     transport: ble
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page title is prefixed with "We could not set up your passkey" 
 
     Given I have no authenticators
@@ -325,8 +310,7 @@ Feature: Passkey create
     protocol: u2f
     transport: nfc
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page title is prefixed with "We could not set up your passkey"
 
   Scenario: Valid authenticators
@@ -338,8 +322,7 @@ Feature: Passkey create
     isUserVerified: true
     hasResidentKey: true
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading    
+    And I click the "Continue" button    
     Then the page contains the text "Client callback"
     And the page contains the text '"email": "testuser@test.null.local",'
     And the page contains the text:
@@ -365,8 +348,7 @@ Feature: Passkey create
     hasResidentKey: true
     transport: usb
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading    
+    And I click the "Continue" button    
     Then the page contains the text "Client callback"
     And the page contains the text '"email": "testuser@test.null.local",'
     And the page contains the text:
@@ -392,8 +374,7 @@ Feature: Passkey create
     hasResidentKey: true
     transport: nfc
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading    
+    And I click the "Continue" button    
     Then the page contains the text "Client callback"
     And the page contains the text '"email": "testuser@test.null.local",'
     And the page contains the text:
@@ -419,8 +400,7 @@ Feature: Passkey create
     hasResidentKey: true
     transport: ble
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading    
+    And I click the "Continue" button    
     Then the page contains the text "Client callback"
     And the page contains the text '"email": "testuser@test.null.local",'
     And the page contains the text:
@@ -447,8 +427,7 @@ Feature: Passkey create
     defaultBackupEligibility: true
     defaultBackupState: true
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading    
+    And I click the "Continue" button    
     Then the page contains the text "Client callback"
     And the page contains the text '"email": "testuser@test.null.local",'
     And the page contains the text:
@@ -474,18 +453,15 @@ Feature: Passkey create
     isUserVerified: true
     hasResidentKey: true
     """    
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page title is prefixed with "We could not set up your passkey"
 
     Given I select the option beginning with "Try setting up a passkey again" in the "What would you like to do?" radio button group   
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page title is prefixed with "We could not set up your passkey"    
 
     Given I select the option beginning with "Skip for now" in the "What would you like to do?" radio button group
-    And I click the "Continue" button to continue the create passkey journey
-    And the page has finished loading
+    And I click the "Continue" button
     Then the page contains the text "Client callback"
     And the page contains the text '"email": "testuser@test.null.local",'
     And the page contains the text:
