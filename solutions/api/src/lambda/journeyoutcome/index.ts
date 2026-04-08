@@ -10,9 +10,9 @@ import { validateJourneyOutcomeJwtClaims } from "./utils/validateJourneyOutcomeJ
 import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
 import { getJourneyOutcome } from "./utils/getJourneyOutcome.js";
 import type { JourneyOutcomePayload } from "./utils/interfaces.js";
-import { normalizeAPIGatewayProxyEventHeadersHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHeadersHandlerWrapper/index.js";
+import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
 
-export const handler = normalizeAPIGatewayProxyEventHeadersHandlerWrapper(
+export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {

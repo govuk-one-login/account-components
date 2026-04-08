@@ -71,9 +71,9 @@ vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
 }));
 
 vi.mock(
-  import("../../../../commons/utils/normalizeAPIGatewayProxyEventHeadersHandlerWrapper/index.js"),
+  import("../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js"),
   () => ({
-    normalizeAPIGatewayProxyEventHeadersHandlerWrapper: (fn) => fn,
+    normalizeAPIGatewayProxyEventHandlerWrapper: (fn) => fn,
   }),
 );
 
