@@ -2,11 +2,11 @@ import { initFrontend } from "./index.js";
 import awsLambdaFastify from "@fastify/aws-lambda";
 import { loggerAPIGatewayProxyHandlerWrapper } from "../../commons/utils/logger/index.js";
 import { metricsAPIGatewayProxyHandlerWrapper } from "../../commons/utils/metrics/index.js";
-import { normalizeAPIGatewayProxyEventHeadersHandlerWrapper } from "../../commons/utils/normalizeAPIGatewayProxyEventHeadersHandlerWrapper/index.js";
+import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
 
 const fastify = await initFrontend();
 
-export const handler = normalizeAPIGatewayProxyEventHeadersHandlerWrapper(
+export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       awsLambdaFastify(fastify, {

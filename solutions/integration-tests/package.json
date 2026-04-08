@@ -20,9 +20,9 @@
   },
   "devDependencies": {
     "@aws-lambda-powertools/parameters": "^2.32.0",
-    "@aws-sdk/client-ssm": "^3.1020.0",
+    "@aws-sdk/client-ssm": "^3.1021.0",
     "@axe-core/playwright": "^4.11.1",
-    "@playwright/test": "^1.58.2",
+    "@playwright/test": "^1.59.0",
     "devtools-protocol": "^0.0.1604597",
     "dotenv": "^17.3.1",
     "nodemon": "^3.1.14",
