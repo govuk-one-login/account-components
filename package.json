@@ -70,7 +70,7 @@
     "knip": "^6.2.0",
     "pino": "^10.3.1",
     "prettier": "^3.8.1",
-    "rolldown": "1.0.0-rc.12",
+    "rolldown": "1.0.0-rc.13",
     "sass": "^1.98.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.2",
