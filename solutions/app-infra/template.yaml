@@ -248,7 +248,6 @@ Conditions:
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
   IsBuildEnvironment: !Equals [!Ref Environment, "build"]
   IsDevOrBuild: !Or [Condition: IsDevEnvironment, Condition: IsBuildEnvironment]
-  IsNotDevOrBuild: !Not [Condition: IsDevOrBuild]
   IsLocalOrDev: !Or [Condition: IsDevEnvironment, Condition: IsLocal]
   HasTxmaAccountArn: !Not
     - !Equals
