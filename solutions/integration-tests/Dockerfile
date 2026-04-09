@@ -1,4 +1,5 @@
-FROM node:24-bookworm@sha256:80fc934952c8f1b2b4d39907af7211f8a9fff1a4c2cf673fb49099292c251cec
+# Using both tag and digest intentionally: tag constrains Dependabot updates to node:24, digest pins the exact image
+FROM node:24-bookworm@sha256:80fc934952c8f1b2b4d39907af7211f8a9fff1a4c2cf673fb49099292c251cec # NOSONAR
 
 ADD https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip awscliv2.zip
 RUN unzip awscliv2.zip && ./aws/install
