@@ -51,7 +51,13 @@ start_localstack() {
   echo "Starting Localstack"
 
   docker stop account-components-localstack || true && docker rm account-components-localstack || true
-  IMAGE_NAME="localstack/localstack:4.12.0" LOCALSTACK_DYNAMODB_REMOVE_EXPIRED_ITEMS=1 DOCKER_FLAGS="--network account-components-network --name account-components-localstack" localstack start -d
+  docker run -d \
+    --network account-components-network \
+    --name account-components-localstack \
+    -p 4566:4566 \
+    -e DYNAMODB_REMOVE_EXPIRED_ITEMS=1 \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    localstack/localstack:4.12.0
 
   until aws --endpoint-url=http://localhost:4566 s3 ls > /dev/null 2>&1; do
     echo "⌛ Localstack not ready yet, retrying in 2s"

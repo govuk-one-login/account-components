@@ -39,6 +39,10 @@
       "description": "Time-to-live in seconds for journey outcome",
       "type": "integer",
       "minimum": 1
+    },
+    "max_number_of_passkeys": {
+      "description": "The maximum number of passkeys a user can have",
+      "type": "integer"
     }
   },
   "required": [
