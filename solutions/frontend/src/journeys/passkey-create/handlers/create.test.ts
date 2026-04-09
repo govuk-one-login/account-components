@@ -13,6 +13,8 @@ const mockCreatePasskey = vi.fn();
 const mockDecodeAttestationObject = vi.fn();
 const mockAddMetric = vi.fn();
 const mockAddMetadata = vi.fn();
+const mockSendNotification = vi.fn();
+const mockGetPasskeyConvenienceMetadataByAaguid = vi.fn();
 
 vi.mock(import("@simplewebauthn/server"), () => ({
   generateRegistrationOptions: mockGenerateRegistrationOptions,
@@ -46,6 +48,22 @@ vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
     addMetadata: mockAddMetadata,
   },
 }));
+
+vi.mock(
+  import("../../../../../commons/utils/notifications/index.js"),
+  async (importOriginal) => ({
+    ...(await importOriginal()),
+    sendNotification: mockSendNotification,
+  }),
+);
+
+vi.mock(
+  import("../../../../../commons/utils/passkeysConvenienceMetadata/index.js"),
+  () => ({
+    getPasskeyConvenienceMetadataByAaguid:
+      mockGetPasskeyConvenienceMetadataByAaguid,
+  }),
+);
 
 const { getHandler, postHandler } = await import("./create.js");
 
@@ -328,6 +346,8 @@ describe("passkey-create handlers", () => {
           success: true,
         });
 
+        mockGetPasskeyConvenienceMetadataByAaguid.mockResolvedValue(undefined);
+        mockSendNotification.mockResolvedValue(undefined);
         mockCompleteJourney.mockResolvedValue(mockReply);
       });
 
@@ -465,6 +485,43 @@ describe("passkey-create handlers", () => {
           "Count",
           1,
         );
+      });
+
+      it("should send notification with passkey name when aaguid is found", async () => {
+        mockGetPasskeyConvenienceMetadataByAaguid.mockResolvedValue({
+          name: "iCloud Keychain",
+        });
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockGetPasskeyConvenienceMetadataByAaguid).toHaveBeenCalledWith(
+          "aaguid-123",
+        );
+        expect(mockSendNotification).toHaveBeenCalledWith({
+          notificationType: "CREATE_PASSKEY_WITH_PASSKEY_NAME",
+          emailAddress: "test@example.com",
+          passkeyName: "iCloud Keychain",
+        });
+      });
+
+      it("should send notification without passkey name when aaguid is not found", async () => {
+        mockGetPasskeyConvenienceMetadataByAaguid.mockResolvedValue(undefined);
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockGetPasskeyConvenienceMetadataByAaguid).toHaveBeenCalledWith(
+          "aaguid-123",
+        );
+        expect(mockSendNotification).toHaveBeenCalledWith({
+          notificationType: "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME",
+          emailAddress: "test@example.com",
+        });
       });
 
       it("should throw error when createPasskey fails", async () => {

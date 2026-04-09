@@ -19,6 +19,11 @@ import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { paths } from "../../../utils/paths.js";
+import {
+  NotificationType,
+  sendNotification,
+} from "../../../../../commons/utils/notifications/index.js";
+import { getPasskeyConvenienceMetadataByAaguid } from "../../../../../commons/utils/passkeysConvenienceMetadata/index.js";
 
 const setRegistrationOptions = async (
   request: FastifyRequest,
@@ -255,6 +260,24 @@ export async function postHandler(
   if (!savePasskeyResult.success) {
     throw new Error(savePasskeyResult.error);
   }
+
+  const passkeyDisplayName = await getPasskeyConvenienceMetadataByAaguid(
+    verification.registrationInfo.aaguid,
+  );
+
+  await sendNotification(
+    passkeyDisplayName
+      ? {
+          notificationType: NotificationType.CREATE_PASSKEY_WITH_PASSKEY_NAME,
+          emailAddress: request.session.claims.email,
+          passkeyName: passkeyDisplayName.name,
+        }
+      : {
+          notificationType:
+            NotificationType.CREATE_PASSKEY_WITHOUT_PASSKEY_NAME,
+          emailAddress: request.session.claims.email,
+        },
+  );
 
   return await completeJourney(
     request,
