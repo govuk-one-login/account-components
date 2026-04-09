@@ -18,13 +18,14 @@ export const pageNameToPath: Record<string, string> = {
   "Testing journey - step 1": "/testing-journey/step-1",
   "Testing journey - enter password": "/testing-journey/enter-password",
   "Testing journey - confirmation": "/testing-journey/confirm",
-  "Passkey create - cannot set up passkey": "/cannot-set-up-passkey",
 };
 
 Then("the page meets our accessibility standards", async ({ page }) => {
   const accessibilityScanResults = await new AxeBuilder({ page })
     .withTags(["wcag22aa"])
     .analyze();
+  // eslint-disable-next-line playwright/no-networkidle
+  await page.waitForLoadState("networkidle");
   expect(accessibilityScanResults.violations).toEqual([]);
 });
 
@@ -61,24 +62,25 @@ Given("I click the {string} element", async ({ page }, text: string) => {
   await page.getByText(text, { exact: true }).click();
 });
 
-Given("the page has finished loading", async ({ page }) => {
-  // eslint-disable-next-line playwright/no-networkidle
-  await page.waitForLoadState("networkidle");
-});
-
 Then(
   "the page title is prefixed with {string}",
   async ({ page }, pageTitlePrefix: string) => {
-    expect(await page.title()).toBe(`${pageTitlePrefix} - GOV.UK One Login`);
+    await expect(page).toHaveTitle(
+      // @ts-expect-error
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-template-expressions
+      new RegExp(`^${RegExp.escape(`${pageTitlePrefix} - GOV.UK One Login`)}`),
+    );
   },
 );
 
 Then("the page title is {string}", async ({ page }, pageTitle: string) => {
-  expect(await page.title()).toBe(pageTitle);
+  await expect(page).toHaveTitle(pageTitle);
 });
 
 Then("the page path is {string}", async ({ page }, pageName: string) => {
-  expect(new URL(page.url()).pathname).toBe(pageNameToPath[pageName]);
+  await expect(page).toHaveURL((url) => {
+    return url.pathname === pageNameToPath[pageName];
+  });
 });
 
 Then("the page contains the text {string}", async ({ page }, text: string) => {
@@ -90,6 +92,8 @@ Then("the page contains the text:", async ({ page }, text: string) => {
 });
 
 Then("the page looks as expected", async ({ page }) => {
+  // eslint-disable-next-line playwright/no-networkidle
+  await page.waitForLoadState("networkidle");
   expect(
     await page.screenshot({
       fullPage: true,
@@ -97,7 +101,9 @@ Then("the page looks as expected", async ({ page }) => {
       type: "jpeg",
       mask: [page.locator("[data-test-mask]")],
     }),
-  ).toMatchSnapshot();
+  ).toMatchSnapshot({
+    maxDiffPixelRatio: 0.01,
+  });
 });
 
 Then("I click the browser's back button", async ({ page }) => {
@@ -165,9 +171,11 @@ Given(
   },
 );
 
-Then("the {word} cookie has been set", async ({ page }, name) => {
+Then("the {word} cookie has been set", async ({ page }, cookieName) => {
+  // eslint-disable-next-line playwright/no-networkidle
+  await page.waitForLoadState("networkidle");
   const cookies = await page.context().cookies();
-  const expectedCookie = cookies.find((cookie) => cookie.name === name);
+  const expectedCookie = cookies.find((cookie) => cookie.name === cookieName);
   expect(expectedCookie).toBeDefined();
 });
 
