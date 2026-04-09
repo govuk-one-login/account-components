@@ -42,7 +42,12 @@ jobs:
         uses: scottbrenner/cfn-lint-action@9636da81fb2e0cef75725d8dda11b0148940b7ae
 
       - name: Install dependencies
-        run: npm run install-all && cd solutions/integration-tests && npm ci
+        env:
+          GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run install-all
+
+      - name: Install integration tests dependencies
+        run: cd solutions/integration-tests && npm ci
 
       - name: Check types
         run: npm run check-types

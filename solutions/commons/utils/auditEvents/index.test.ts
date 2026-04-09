@@ -52,19 +52,18 @@ describe("sendAuditEvent", () => {
 
   it("should send audit event to SQS queue", async () => {
     const event = {
-      event_name: "TODO1" as const,
+      event_name: "AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE" as const,
       client_id: "client-123",
-      user_id: "user-123",
-      email: "test@example.com",
       user: {
-        extraUserField: "123456",
-      },
-      extraMiscField: {
-        value: 98765,
+        user_id: "user-123",
+        email: "test@example.com",
       },
     };
 
-    await sendAuditEvent(event, mockApiGatewayEvent);
+    await sendAuditEvent<"AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE">(
+      event,
+      mockApiGatewayEvent,
+    );
 
     expect(mockSendMessage).toHaveBeenCalledWith({
       QueueUrl: "https://sqs.eu-west-2.amazonaws.com/123456789012/audit-queue",
@@ -78,15 +77,11 @@ describe("sendAuditEvent", () => {
           persistent_session_id: "persistent-123",
           ip_address: "192.168.1.1",
           govuk_signin_journey_id: "client-session-123",
-          extraUserField: "123456",
+          user_id: "user-123",
+          email: "test@example.com",
         },
-        event_name: "TODO1",
+        event_name: "AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE",
         client_id: "client-123",
-        user_id: "user-123",
-        email: "test@example.com",
-        extraMiscField: {
-          value: 98765,
-        },
       }),
     });
   });
@@ -101,16 +96,14 @@ describe("sendAuditEvent", () => {
     });
 
     const event = {
-      event_name: "TODO2" as const,
+      event_name: "AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE_FAILURE" as const,
       client_id: "client-123",
-      user_id: "user-123",
-      email: "test@example.com",
-      restricted: {
-        anotherRestrictedField: 123456,
-      },
     };
 
-    await sendAuditEvent(event, mockApiGatewayEvent);
+    await sendAuditEvent<"AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE_FAILURE">(
+      event,
+      mockApiGatewayEvent,
+    );
 
     const sentMessage = JSON.parse(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -121,7 +114,6 @@ describe("sendAuditEvent", () => {
       device_information: {
         encoded: "encoded-device-info",
       },
-      anotherRestrictedField: 123456,
     });
   });
 
@@ -131,13 +123,14 @@ describe("sendAuditEvent", () => {
     });
 
     const event = {
-      event_name: "TODO1" as const,
+      event_name: "AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE" as const,
       client_id: "client-123",
-      user_id: "user-123",
-      email: "test@example.com",
     };
 
-    await sendAuditEvent(event, mockApiGatewayEvent);
+    await sendAuditEvent<"AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE">(
+      event,
+      mockApiGatewayEvent,
+    );
 
     const sentMessage = JSON.parse(
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -156,12 +149,15 @@ describe("sendAuditEvent", () => {
     delete process.env["AUDIT_EVENTS_QUEUE_URL"];
 
     const event = {
-      event_name: "TODO1" as const,
+      event_name: "AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE" as const,
       client_id: "client-123",
-      user_id: "user-123",
-      email: "test@example.com",
     };
 
-    await expect(sendAuditEvent(event, mockApiGatewayEvent)).rejects.toThrow();
+    await expect(
+      sendAuditEvent<"AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE">(
+        event,
+        mockApiGatewayEvent,
+      ),
+    ).rejects.toThrow();
   });
 });

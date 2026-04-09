@@ -26,6 +26,8 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Install dependencies
+        env:
+          GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run install-all
 
       - name: Install LocalStack CLI

@@ -1,5 +1,5 @@
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
-import type { JourneyOutcome } from "../../../../../commons/utils/interfaces.js";
+import type { JourneyOutcome } from "../../../../../commons/utils/commonTypes.js";
 import { logger } from "../../../../../commons/utils/logger/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { errorManager } from "./errors.js";

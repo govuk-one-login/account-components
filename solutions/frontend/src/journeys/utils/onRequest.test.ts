@@ -11,7 +11,7 @@ import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/i
 import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
 import type { ClientEntry } from "../../../../config/schema/types.js";
 import { logger } from "../../../../commons/utils/logger/index.js";
-import type { Scope } from "../../../../commons/utils/interfaces.js";
+import type { Scope } from "../../../../commons/utils/commonTypes.js";
 
 // @ts-expect-error
 vi.mock(import("../../utils/paths.js"), () => ({

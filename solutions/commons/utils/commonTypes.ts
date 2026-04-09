@@ -28,3 +28,19 @@ export interface JourneyOutcome {
     details: Record<string, unknown>;
   }[];
 }
+
+/**
+ * Omits keys O from the nested object at the given dot-separated Path in T,
+ * preserving all other properties at every level.
+ */
+export type OmitFromNested<
+  T,
+  Path extends string,
+  O extends string,
+> = Path extends `${infer K}.${infer Rest}`
+  ? T extends Partial<Record<K, infer U>>
+    ? Partial<Record<K, OmitFromNested<NonNullable<U>, Rest, O>>>
+    : unknown
+  : T extends Partial<Record<Path, infer U>>
+    ? Partial<Record<Path, Omit<NonNullable<U>, O>>>
+    : unknown;

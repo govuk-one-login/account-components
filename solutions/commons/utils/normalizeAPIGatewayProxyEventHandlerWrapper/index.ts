@@ -1,4 +1,4 @@
-import type { APIGatewayProxyHandler } from "../interfaces.js";
+import type { APIGatewayProxyHandler } from "../commonTypes.js";
 
 export const normalizeAPIGatewayProxyEventHandlerWrapper = (
   handler: APIGatewayProxyHandler,

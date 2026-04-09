@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createJourneyStateMachine } from "./index.js";
-import { Scope } from "../../../../../commons/utils/interfaces.js";
+import { Scope } from "../../../../../commons/utils/commonTypes.js";
 
 describe("createJourneyStateMachine", () => {
   it("should create state machine with provided id", () => {

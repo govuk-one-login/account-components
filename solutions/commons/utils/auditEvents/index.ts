@@ -3,48 +3,41 @@ import { getSqsClient } from "../awsClient/sqsClient/index.js";
 import assert from "node:assert";
 import { getPropsFromAPIGatewayEvent } from "../getPropsFromAPIGatewayEvent/index.js";
 import { merge } from "ts-deepmerge";
+import type { Events } from "@govuk-one-login/event-catalogue";
+import type { OmitFromNested } from "../commonTypes.js";
 
-const NO_VALUE = "NO_VALUE";
+type OmitAutomaticallyAddedEventProps<T> = Omit<
+  T,
+  | "timestamp"
+  | "event_timestamp_ms"
+  | "event_timestamp_ms_formatted"
+  | "component_id"
+  | "user"
+  | "restricted"
+> &
+  OmitFromNested<
+    T,
+    "user",
+    | "session_id"
+    | "persistent_session_id"
+    | "ip_address"
+    | "govuk_signin_journey_id"
+  > &
+  OmitFromNested<T, "restricted.device_information", "encoded">;
 
-interface EventInstanceBase {
-  event_name: string;
-  client_id: string;
-  user_id: string;
-  email: string;
-}
+type EventName = keyof Events;
 
-// TODO add real event types here
-type EventInstance =
-  | (EventInstanceBase & {
-      event_name: "TODO1";
-    })
-  | (EventInstanceBase & {
-      event_name: "TODO2";
-    });
+type Event<T extends EventName> = OmitAutomaticallyAddedEventProps<
+  Events[T] & {
+    event_name: T;
+  }
+>;
 
-const buildEvent = (
-  event: EventInstance,
+const buildEvent = <T extends EventName>(
+  event: Event<T>,
   apiGatewayProxyEvent: APIGatewayProxyEvent,
-): {
-  timestamp: number;
-  event_timestamp_ms: number;
-  event_timestamp_ms_formatted: string;
-  component_id: "AMC";
-  user: {
-    session_id: string;
-    persistent_session_id: string;
-    ip_address: string;
-    govuk_signin_journey_id: string;
-  };
-  restricted?:
-    | {
-        device_information?: {
-          encoded: string;
-        };
-        [key: string]: unknown;
-      }
-    | undefined;
-} => {
+) => {
+  const noValue = "NO_VALUE";
   const now = new Date();
   const propsFromEvent = getPropsFromAPIGatewayEvent(apiGatewayProxyEvent);
 
@@ -55,10 +48,10 @@ const buildEvent = (
       event_timestamp_ms_formatted: now.toISOString(),
       component_id: "AMC" as const,
       user: {
-        session_id: propsFromEvent.sessionId ?? NO_VALUE,
-        persistent_session_id: propsFromEvent.persistentSessionId ?? NO_VALUE,
+        session_id: propsFromEvent.sessionId ?? noValue,
+        persistent_session_id: propsFromEvent.persistentSessionId ?? noValue,
         ip_address: propsFromEvent.sourceIp,
-        govuk_signin_journey_id: propsFromEvent.clientSessionId ?? NO_VALUE,
+        govuk_signin_journey_id: propsFromEvent.clientSessionId ?? noValue,
       },
       ...(propsFromEvent.txmaAuditEncoded === undefined
         ? {}
@@ -74,13 +67,14 @@ const buildEvent = (
   );
 };
 
-export const sendAuditEvent = async (
-  event: EventInstance,
-  apiGatewayProxyEvent: APIGatewayProxyEvent,
+export const sendAuditEvent = async <T extends EventName = never>(
+  ...[event, apiGatewayProxyEvent]: [T] extends [never]
+    ? never
+    : [event: NoInfer<Event<T>>, apiGatewayProxyEvent: APIGatewayProxyEvent]
 ) => {
   assert.ok(process.env["AUDIT_EVENTS_QUEUE_URL"]);
 
-  const builtEvent = buildEvent(event, apiGatewayProxyEvent);
+  const builtEvent = buildEvent<T>(event, apiGatewayProxyEvent);
 
   const sqsClient = getSqsClient();
   await sqsClient.sendMessage({

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { startSessionAndGoToJourney } from "./startSessionAndGoToJourney.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { Scope } from "../../../../../commons/utils/interfaces.js";
+import { Scope } from "../../../../../commons/utils/commonTypes.js";
 import * as jose from "jose";
 import type { Claims } from "../../../utils/getClaimsSchema.js";
 

@@ -4,7 +4,7 @@ import { metrics } from "../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import assert from "node:assert";
 import type { ClientEntry } from "../../../config/schema/types.js";
-import { Scope } from "../../../commons/utils/interfaces.js";
+import { Scope } from "../../../commons/utils/commonTypes.js";
 
 export const getClaimsSchema = (
   client: ClientEntry,
