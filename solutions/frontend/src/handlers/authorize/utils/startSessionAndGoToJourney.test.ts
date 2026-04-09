@@ -55,7 +55,6 @@ describe("startSessionAndGoToJourney", () => {
 
     expect(mockRegenerate).toHaveBeenCalledTimes(1);
     expect(request.session.claims).toBe(claims);
-    expect(request.session.user_id).toBe("user-123");
     expect(request.session.expires).toBe(1704110400 + 1800);
     expect(mockRedirect).toHaveBeenCalledWith("/testing-journey/step-1");
   });

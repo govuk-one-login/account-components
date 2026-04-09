@@ -180,6 +180,7 @@ components:
         - `sub` (string): Internal pairwise identifier
         - `public_sub` (string): Public subject identifier
         - `email` (string): User email address
+        - `channel` ("web" | "strategic_app" | "generic_app", optional): Channel the user is coming via (defaults to "web")
       required: true
       schema:
         type: string

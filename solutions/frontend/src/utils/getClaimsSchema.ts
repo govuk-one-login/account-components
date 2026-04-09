@@ -99,6 +99,10 @@ export const getClaimsSchema = (
     sub: v.pipe(v.string(), v.nonEmpty()),
     public_sub: v.pipe(v.string(), v.nonEmpty()),
     email: v.pipe(v.string(), v.email()),
+    channel: v.optional(
+      v.picklist(["web", "strategic_app", "generic_app"]),
+      "web",
+    ),
   });
 
   return claimsSchema;

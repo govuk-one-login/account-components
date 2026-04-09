@@ -31,6 +31,7 @@ declare module "fastify" {
       currentUrl?: URL;
       htmlLang?: string | undefined;
       authFrontEndUrl?: string | undefined;
+      isAppChannel?: boolean | undefined;
       analyticsCookieDomain?: string | undefined;
       ga4ContainerId?: string | undefined;
       analyticsEnabled?: boolean | undefined;
@@ -69,7 +70,6 @@ declare module "fastify" {
   interface Session {
     expires?: number;
     _csrf?: string;
-    user_id?: string;
     claims?: v.InferOutput<ReturnType<typeof getClaimsSchema>>;
     journeyStateSnapshot?: AnyMachineSnapshot;
   }

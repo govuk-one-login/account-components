@@ -13,6 +13,7 @@ on:
       - solutions/core/**
       - solutions/stubs/**
       - solutions/commons/**
+      - solutions/integration-tests/**
       - .github/workflows/deploy.yaml
       - package.json
       - package-lock.json
@@ -45,7 +46,7 @@ jobs:
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@062b18b96a7aff071d4dc91bc00c4c1a7945b076
+        uses: aws-actions/amazon-ecr-login@f2e9fc6c2b355c1890b65e6f6f0e2ac3e6e22f78
 
       - name: Build & publish Docker image
         working-directory: solutions/integration-tests

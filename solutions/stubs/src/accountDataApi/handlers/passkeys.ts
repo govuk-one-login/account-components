@@ -48,7 +48,6 @@ export async function passkeysGetHandler(
         isBackUpEligible: true,
         isBackedUp: true,
         createdAt: "2026-01-19T19:04:16.341Z",
-        lastUsedAt: "2026-02-25T20:06:19.341Z",
       },
     ],
   });

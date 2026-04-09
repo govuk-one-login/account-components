@@ -48,7 +48,6 @@ export const startSessionAndGoToJourney = async (
     }
 
     request.session.claims = claims;
-    request.session.user_id = claims.sub;
     request.session.expires = sessionExpiry;
 
     return await reply.redirect(initialJourneyPaths[claims.scope]);

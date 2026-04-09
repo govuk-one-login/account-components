@@ -14,6 +14,13 @@ vi.mock(import("../../../commons/utils/metrics/index.js"), () => ({
   metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
+vi.mock(
+  import("../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js"),
+  () => ({
+    normalizeAPIGatewayProxyEventHandlerWrapper: (fn) => fn,
+  }),
+);
+
 describe("healthcheck handler", () => {
   it("returns 200 status with ok body", async () => {
     const result = await handler({} as APIGatewayProxyEvent, {} as Context);

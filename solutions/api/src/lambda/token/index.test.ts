@@ -37,6 +37,13 @@ vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
   loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
+vi.mock(
+  import("../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js"),
+  () => ({
+    normalizeAPIGatewayProxyEventHandlerWrapper: (fn) => fn,
+  }),
+);
+
 vi.mock(import("./utils/createAccessToken.js"));
 const mockCreateAccessToken = vi.mocked(
   await import("./utils/createAccessToken.js"),

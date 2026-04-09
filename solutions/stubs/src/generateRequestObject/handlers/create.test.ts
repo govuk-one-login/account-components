@@ -82,6 +82,7 @@ describe("createRequestObjectPost", () => {
         algorithm: "ES256",
         scenario: "valid",
         scope: "account-delete",
+        channel: "web",
         jti: "nonce-123",
         exp: "1234567890",
         iss: "issuer.example.com",

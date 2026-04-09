@@ -1,6 +1,5 @@
 import { Metrics } from "@aws-lambda-powertools/metrics";
 import type { APIGatewayProxyHandler } from "../interfaces.js";
-import { logger } from "../logger/index.js";
 
 export const metrics = new Metrics({
   namespace: "account-components",
@@ -20,13 +19,9 @@ export const metricsAPIGatewayProxyHandlerWrapper = (
       metrics.publishStoredMetrics();
       return res;
     } catch (error) {
-      logger.error("An error occurred", { error });
       metrics.captureColdStartMetric();
       metrics.publishStoredMetrics();
-      return {
-        statusCode: 500,
-        body: "",
-      };
+      throw error;
     }
   };
   return wrappedHandler;

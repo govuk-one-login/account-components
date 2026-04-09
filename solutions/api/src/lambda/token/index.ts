@@ -11,50 +11,53 @@ import { verifyJti } from "./utils/verifyJti.js";
 import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
 import { createAccessToken } from "./utils/createAccessToken.js";
 import { getApiBaseUrlWithStage } from "../../utils/common.js";
+import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
 
-export const handler = loggerAPIGatewayProxyHandlerWrapper(
-  metricsAPIGatewayProxyHandlerWrapper(
-    async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-      try {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        const request = querystring.parse(
-          e.body ?? "{}",
-        ) as unknown as TokenRequest;
+export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
+  loggerAPIGatewayProxyHandlerWrapper(
+    metricsAPIGatewayProxyHandlerWrapper(
+      async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+        try {
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+          const request = querystring.parse(
+            e.body ?? "{}",
+          ) as unknown as TokenRequest;
 
-        assertTokenRequest(request);
+          assertTokenRequest(request);
 
-        const apiBaseUrl = getApiBaseUrlWithStage(e);
+          const apiBaseUrl = getApiBaseUrlWithStage(e);
 
-        const assertion = await verifyClientAssertion(
-          request.client_assertion,
-          apiBaseUrl,
-        );
+          const assertion = await verifyClientAssertion(
+            request.client_assertion,
+            apiBaseUrl,
+          );
 
-        const authRequest = await getAuthRequest(
-          request.code,
-          request.redirect_uri,
-          String(assertion.iss),
-        );
+          const authRequest = await getAuthRequest(
+            request.code,
+            request.redirect_uri,
+            String(assertion.iss),
+          );
 
-        await verifyJti(assertion.jti);
+          await verifyJti(assertion.jti);
 
-        const accessToken = await createAccessToken(authRequest, apiBaseUrl);
+          const accessToken = await createAccessToken(authRequest, apiBaseUrl);
 
-        return {
-          statusCode: 200,
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            access_token: accessToken,
-            token_type: "Bearer",
-            expires_in: 300,
-          }),
-        };
-      } catch (error) {
-        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-        return errorManager.handleError(error as TokenAppError | Error);
-      }
-    },
+          return {
+            statusCode: 200,
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              access_token: accessToken,
+              token_type: "Bearer",
+              expires_in: 300,
+            }),
+          };
+        } catch (error) {
+          // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+          return errorManager.handleError(error as TokenAppError | Error);
+        }
+      },
+    ),
   ),
 );
