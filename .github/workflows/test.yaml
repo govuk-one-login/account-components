@@ -9,9 +9,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    permissions:
-      packages: read
-      contents: read
 
     steps:
       - name: Checkout
