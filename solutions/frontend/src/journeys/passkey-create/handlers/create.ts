@@ -245,6 +245,7 @@ export async function postHandler(
     request.awsLambda?.event,
   );
 
+  // this is necessary to prevent a user from registering more passkeys than the maximum allowed, as there is no limit on the client side and a user could bypass it by sending requests directly to the API
   const getPasskeysResult = await accountDataApiClient.getPasskeys(
     request.session.claims.public_sub
   );
@@ -257,14 +258,17 @@ export async function postHandler(
 
   if (getPasskeysResult.result.passkeys.length >= appConfig.max_number_of_passkeys) {
     request.log.warn("Register passkey - user has maximum number of passkeys");
-    metrics.addMetric("UserHasMaximumNumberOfPasskeys", MetricUnit.Count, 1)
+    metrics.addMetric("UserHasMaximumNumberOfPasskeys", MetricUnit.Count, 1);
 
     await render(request, reply, {
       stringsSuffix,
-      showErrorUi: true
+      showErrorUi: true,
     });
+
     return reply;
+    
   }
+  // end of check for maximum number of passkeys
 
   const savePasskeyResult = await accountDataApiClient.createPasskey(
     request.session.claims.public_sub,
