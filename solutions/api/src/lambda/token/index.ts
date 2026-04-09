@@ -8,7 +8,10 @@ import { assertTokenRequest } from "./utils/assertTokenRequest.js";
 import * as querystring from "node:querystring";
 import { getAuthRequest } from "./utils/getAuthRequest.js";
 import { verifyJti } from "./utils/verifyJti.js";
-import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
+import {
+  logger,
+  loggerAPIGatewayProxyHandlerWrapper,
+} from "../../../../commons/utils/logger/index.js";
 import { createAccessToken } from "./utils/createAccessToken.js";
 import { getApiBaseUrlWithStage } from "../../utils/common.js";
 import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
@@ -17,6 +20,12 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+        logger.debug("DEBUG3");
+        logger.info("INFO3");
+        logger.warn("WARN3");
+        logger.error("ERROR3");
+        logger.critical("CRITICAL3");
+
         try {
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           const request = querystring.parse(

@@ -7,7 +7,10 @@ import assert from "node:assert";
 import { getKMSKey } from "./utils/getKmsKey.js";
 import { verifySignatureAndGetPayload } from "./utils/verifySignatureAndGetPayload.js";
 import { validateJourneyOutcomeJwtClaims } from "./utils/validateJourneyOutcomeJwtClaims.js";
-import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
+import {
+  logger,
+  loggerAPIGatewayProxyHandlerWrapper,
+} from "../../../../commons/utils/logger/index.js";
 import { getJourneyOutcome } from "./utils/getJourneyOutcome.js";
 import type { JourneyOutcomePayload } from "./utils/interfaces.js";
 import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
@@ -16,6 +19,12 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+        logger.debug("DEBUG2");
+        logger.info("INFO2");
+        logger.warn("WARN2");
+        logger.error("ERROR2");
+        logger.critical("CRITICAL2");
+
         const bearerPrefix = "Bearer ";
         const authorisationHeader = getHeader(event.headers, "Authorization");
         assert(

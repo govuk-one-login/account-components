@@ -14,6 +14,18 @@ export const onRequest = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
+  logger.debug("DEBUG4");
+  logger.info("INFO4");
+  logger.warn("WARN4");
+  logger.error("ERROR4");
+  logger.critical("CRITICAL4");
+
+  request.log.debug("DEBUG5");
+  request.log.info("INFO5");
+  request.log.warn("WARN5");
+  request.log.error("ERROR5");
+  request.log.fatal("FATAL5");
+
   if (!request.session.claims) {
     request.log.warn("NoClaimsInSession");
     metrics.addMetric("NoClaimsInSession", MetricUnit.Count, 1);
