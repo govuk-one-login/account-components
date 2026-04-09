@@ -1,4 +1,4 @@
-name: Deploy to dev
+name: Deploy API to dev
 
 on:
   workflow_dispatch:
@@ -52,7 +52,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
 
-  deploy-to-dev:
+  deploy-api-to-dev:
     needs: publish-integration-tests-image
     runs-on: ubuntu-latest
     permissions:
