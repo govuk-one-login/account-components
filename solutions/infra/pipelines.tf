@@ -34,7 +34,7 @@ resource "aws_cloudformation_stack" "amc_pipeline_stack" {
   }
 
   capabilities = var.capabilities
-  depends_on   = [aws_cloudformation_stack.vpc_stack, aws_cloudformation_stack.build_notifications_stack]
+  depends_on   = [aws_cloudformation_stack.spoke_vpc_stack, aws_cloudformation_stack.build_notifications_stack]
 }
 
 resource "aws_cloudformation_stack" "amc_config_pipeline_stack" {

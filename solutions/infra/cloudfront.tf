@@ -1,6 +1,6 @@
 resource "aws_cloudformation_stack" "main_cloudfront_stack" {
   # See https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/4035936392/cloudfront-distribution+readme
-  name         = "cloudfront-main"
+  name         = "cloudfront"
   template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/cloudfront-distribution/template.yaml"
 
   parameters = {

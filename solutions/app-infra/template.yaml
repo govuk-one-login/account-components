@@ -2047,7 +2047,7 @@ Resources:
     Type: "AWS::WAFv2::WebACLAssociation"
     Properties:
       WebACLArn:
-        Fn::ImportValue: "cloudfront-main-CloakingOriginWebACLArn"
+        Fn::ImportValue: "cloudfront-CloakingOriginWebACLArn"
       ResourceArn: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${FrontendApiGateway}/stages/${Environment}"
     DependsOn:
       - FrontendApiGatewayStage # This resource is created as part of the RestApi resource
@@ -2062,7 +2062,7 @@ Resources:
         Fn::ImportValue: hosted-zone-HostedZoneID
       AliasTarget:
         DNSName:
-          Fn::ImportValue: "cloudfront-main-DistributionDomain"
+          Fn::ImportValue: "cloudfront-DistributionDomain"
         HostedZoneId: "Z2FDTNDATAQYW2"
         EvaluateTargetHealth: false
 

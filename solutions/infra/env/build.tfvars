@@ -8,3 +8,5 @@ signing_profile_version_arn    = "arn:aws:signer:eu-west-2:629382882013:/signing
 allowed_promotion_accounts     = ["837553126879"]
 allowed_config_access_accounts = ["837553126879", "549834518434", "494066295151"]
 config_artefact_path           = "build-config.json"
+transit_gateway_hub_account_id = "731493186013"
+transit_gateway_id             = "tgw-06493a63242d7fa50"

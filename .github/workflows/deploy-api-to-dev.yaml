@@ -27,6 +27,8 @@ jobs:
     permissions:
       id-token: write
     timeout-minutes: 10
+    environment: development
+
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -36,7 +38,7 @@ jobs:
       - name: Assume AWS role
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7
         with:
-          role-to-assume: ${{ secrets.DEV_PIPELINE_GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.PIPELINE_GH_ACTIONS_ROLE_ARN }}
           aws-region: "eu-west-2"
 
       - name: Login to Amazon ECR
@@ -47,7 +49,7 @@ jobs:
         working-directory: solutions/integration-tests
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.DEV_POST_DEPLOY_TESTS_IMAGE_REPOSITORY }}
+          ECR_REPOSITORY: ${{ secrets.POST_DEPLOY_TESTS_IMAGE_REPOSITORY }}
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
@@ -57,6 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+    environment: development
 
     steps:
       - name: Checkout
@@ -103,7 +106,7 @@ jobs:
       - name: Assume AWS role
         uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7
         with:
-          role-to-assume: ${{ secrets.DEV_PIPELINE_GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.PIPELINE_GH_ACTIONS_ROLE_ARN }}
           aws-region: "eu-west-2"
 
       - name: Install dependencies
@@ -115,7 +118,7 @@ jobs:
       - name: Deploy
         uses: govuk-one-login/devplatform-upload-action@b7bc01ed6e0b61d54f42e7f3d12dd3fdbb0f172a
         with:
-          artifact-bucket-name: ${{ secrets.DEV_PIPELINE_GH_ACTIONS_SOURCE_BUCKET_NAME }}
-          signing-profile-name: ${{ secrets.DEV_PIPELINE_GH_ACTIONS_ROLE_NAME }}
+          artifact-bucket-name: ${{ secrets.PIPELINE_GH_ACTIONS_SOURCE_BUCKET_NAME }}
+          signing-profile-name: ${{ secrets.PIPELINE_GH_ACTIONS_ROLE_NAME }}
           working-directory: ./solutions/app-infra
           template-file: .aws-sam/build/template.yaml

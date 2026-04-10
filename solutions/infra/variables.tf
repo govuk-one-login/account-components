@@ -162,3 +162,25 @@ variable "config_final_bake_time_in_minutes" {
   description = "After the deployment this represents a period of time that AppConfig should continue to monitor the specified alarms for errors to trigger an rollback."
   default     = 0
 }
+
+variable "transit_gateway_hub_account_id" {
+  type        = string
+  description = "Transit Gateway Hub AWS Account ID where the Lambda execution role lives."
+}
+
+variable "disaster_recovery_transit_gateway_hub_account_id" {
+  type        = string
+  description = "Disaster recovery Transit Gateway Hub AWS Account ID where the Lambda execution role lives."
+  default     = null
+}
+
+variable "transit_gateway_id" {
+  type        = string
+  description = "ID of the Transit Gateway."
+}
+
+variable "disaster_recovery_transit_gateway_id" {
+  type        = string
+  description = "ID of the disaster recovery Transit Gateway."
+  default     = null
+}

@@ -31,6 +31,7 @@ jobs:
     permissions:
       id-token: write
     timeout-minutes: 10
+    environment: build
 
     steps:
       - name: Checkout
@@ -62,6 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+    environment: build
 
     steps:
       - name: Checkout

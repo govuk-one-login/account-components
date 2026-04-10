@@ -10,3 +10,5 @@ config_artifact_source_bucket_arn                    = "arn:aws:s3:::pipeline-ap
 config_artifact_source_bucket_event_trigger_role_arn = "arn:aws:iam::629382882013:role/PL-pipeline-app-config-DepTrigRole-0636b3c8efc9"
 api_artifact_source_bucket_arn                       = "arn:aws:s3:::pipeline-api-artifactpromotionbucket-cjb2d4o79nj6"
 api_artifact_source_bucket_event_trigger_role_arn    = "arn:aws:iam::629382882013:role/PL-pipeline-api-PromoTrigRole-0a20265e107d"
+transit_gateway_hub_account_id                       = "208182292933"
+transit_gateway_id                                   = "tgw-0b64a5ae3108f37da"
