@@ -9,7 +9,7 @@ vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
 
 // @ts-expect-error
 vi.mock(import("../../../commons/utils/metrics/index.js"), () => ({
-  metrics: { addMetric: vi.fn() },
+  metrics: { addMetric: vi.fn(), addDimensions: vi.fn() },
 }));
 
 vi.mock(import("../../../commons/utils/getEnvironment/index.js"), () => ({
@@ -95,17 +95,32 @@ describe("getApiBaseUrlWithStage", () => {
 
 describe("errorManager", () => {
   const errors = {
-    notFound: { code: "E404", description: "not_found", statusCode: 404 },
+    notFound: {
+      code: "E404",
+      description: "not_found",
+      statusCode: 404,
+      metric: {
+        type: "TestError",
+        subType: "NotFound",
+      },
+    },
     badRequest: {
       code: "E400",
       description: "invalid_request",
       statusCode: 400,
-      metric: "BadRequest",
+      metric: {
+        type: "TestError",
+        subType: "BadRequest",
+      },
     },
     genericError: {
       code: "E500",
       description: "internal_server_error",
       statusCode: 500,
+      metric: {
+        type: "TestError",
+        subType: "GenericError",
+      },
     },
   };
 
@@ -179,19 +194,29 @@ describe("errorManager", () => {
       error.code = "badRequest";
       errorManager.handleError(error);
 
+      expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
+        error_type: "BadRequest",
+      });
       expect(mockMetrics.addMetric).toHaveBeenCalledWith(
-        "BadRequest",
+        "TestError",
         "Count",
         1,
       );
     });
 
-    it("does not add a metric when the error type has no metric defined", () => {
+    it("adds the correct metric dimensions for a known error", () => {
       const error = new Error("test") as Error & { code: string };
       error.code = "notFound";
       errorManager.handleError(error);
 
-      expect(mockMetrics.addMetric).not.toHaveBeenCalled();
+      expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
+        error_type: "NotFound",
+      });
+      expect(mockMetrics.addMetric).toHaveBeenCalledWith(
+        "TestError",
+        "Count",
+        1,
+      );
     });
 
     it("logs a warning with the error details", () => {

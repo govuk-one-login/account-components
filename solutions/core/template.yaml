@@ -74,8 +74,8 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "82836a7c-d861-4a76-a2d1-f75c1e49d9fa"
         }
       notificationsMaxReceiveCount: 5
       notificationsVisibilityTimeout: 30
@@ -86,8 +86,8 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "82836a7c-d861-4a76-a2d1-f75c1e49d9fa"
         }
       notificationsMaxReceiveCount: 5
       notificationsVisibilityTimeout: 30
@@ -98,8 +98,8 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "82836a7c-d861-4a76-a2d1-f75c1e49d9fa"
         }
       notificationsMaxReceiveCount: 5
       notificationsVisibilityTimeout: 30
@@ -110,8 +110,8 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "a37858f1-45e5-4b9f-8d93-efbbc955ffbf",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "e3f82979-69c8-4f85-8bd3-660d526c35c2"
         }
       notificationsVisibilityTimeout: 300
       notificationsMaxReceiveCount: 576
@@ -122,8 +122,8 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables #pragma: allowlist secret
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "a37858f1-45e5-4b9f-8d93-efbbc955ffbf",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "e3f82979-69c8-4f85-8bd3-660d526c35c2"
         }
       notificationsVisibilityTimeout: 300
       notificationsMaxReceiveCount: 576
@@ -867,7 +867,7 @@ Resources:
         - Id: errors
           MetricStat:
             Metric:
-              Namespace: AWS/Lambda
+              Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
               MetricName: Errors
               Dimensions:
                 - Name: FunctionName
@@ -878,7 +878,7 @@ Resources:
         - Id: invocations
           MetricStat:
             Metric:
-              Namespace: AWS/Lambda
+              Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
               MetricName: Invocations
               Dimensions:
                 - Name: FunctionName

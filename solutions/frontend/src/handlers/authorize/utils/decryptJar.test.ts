@@ -17,17 +17,16 @@ const ORIGINAL_ENV = { ...process.env };
 
 vi.mock(import("./common.js"), async () => {
   process.env["AUTHORIZE_ERROR_PAGE_URL"] = "https://example.com/error";
-  return await vi.importActual("./common.js");
+  const actual = await vi.importActual("./common.js");
+  return {
+    ...actual,
+    addAuthorizeErrorMetric: vi.fn(),
+  };
 });
 
 // @ts-expect-error
 vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
   logger: { warn: vi.fn(), error: vi.fn() },
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
-  metrics: { addMetric: vi.fn() },
 }));
 
 const mockKmsClient = {
