@@ -4,6 +4,7 @@ import type { APIGatewayProxyEvent } from "aws-lambda";
 
 export class AccountManagementApiClient extends JsonApiClient {
   private readonly baseUrl: string;
+  private readonly commonHeaders: NonNullable<RequestInit["headers"]>;
 
   constructor(accessToken: string, event?: APIGatewayProxyEvent) {
     super("Account management API", event);
@@ -16,8 +17,6 @@ export class AccountManagementApiClient extends JsonApiClient {
     this.baseUrl = process.env["ACCOUNT_MANAGEMENT_API_URL"];
 
     this.commonHeaders = {
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread
-      ...this.commonHeaders,
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     };
@@ -26,7 +25,7 @@ export class AccountManagementApiClient extends JsonApiClient {
   async authenticate(emailAddress: string, password: string) {
     return this.logOnError("authenticate", async () => {
       try {
-        const response = await fetch(`${this.baseUrl}/authenticate`, {
+        const response = await this.fetch(`${this.baseUrl}/authenticate`, {
           method: "POST",
           headers: this.commonHeaders,
           body: JSON.stringify({
@@ -59,7 +58,7 @@ export class AccountManagementApiClient extends JsonApiClient {
   async deleteAccount(emailAddress: string) {
     return this.logOnError("deleteAccount", async () => {
       try {
-        const response = await fetch(`${this.baseUrl}/delete-account`, {
+        const response = await this.fetch(`${this.baseUrl}/delete-account`, {
           method: "POST",
           headers: this.commonHeaders,
           body: JSON.stringify({
@@ -86,7 +85,7 @@ export class AccountManagementApiClient extends JsonApiClient {
   async sendOtpChallenge(publicSubjectId: string) {
     return this.logOnError("sendOtpChallenge", async () => {
       try {
-        const response = await fetch(
+        const response = await this.fetch(
           `${this.baseUrl}/send-otp-challenge/${publicSubjectId}`,
           {
             method: "POST",
@@ -119,7 +118,7 @@ export class AccountManagementApiClient extends JsonApiClient {
   async verifyOtpChallenge(publicSubjectId: string, otp: string) {
     return this.logOnError("verifyOtpChallenge", async () => {
       try {
-        const response = await fetch(
+        const response = await this.fetch(
           `${this.baseUrl}/verify-otp-challenge/${publicSubjectId}`,
           {
             method: "POST",

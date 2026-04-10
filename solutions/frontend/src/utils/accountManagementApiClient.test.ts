@@ -2,22 +2,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AccountManagementApiClient } from "./accountManagementApiClient.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 
+const mockThisFetch = vi.fn();
+
 // @ts-expect-error
 vi.mock(import("./jsonApiClient.js"), () => ({
   JsonApiClient: class MockJsonApiClient {
     serviceName: string;
-    commonHeaders: Record<string, string>;
+    fetch = mockThisFetch;
 
     constructor(serviceName: string) {
       this.serviceName = serviceName;
-      this.commonHeaders = {
-        "di-persistent-session-id": "test-persistent-session-id",
-        "session-id": "test-session-id",
-        "client-session-id": "test-client-session-id",
-        "user-language": "en",
-        "x-forwarded-for": "192.168.1.1",
-        "txma-audit-encoded": "test-txma-audit",
-      };
     }
 
     logOnError = vi.fn((_methodName: string, fn: () => Promise<any>) => fn());
@@ -27,9 +21,6 @@ vi.mock(import("./jsonApiClient.js"), () => ({
     static unknownError = { success: false, error: "UnknownError" };
   },
 }));
-
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
 
 describe("accountManagementApiClient", () => {
   const mockAccessToken = "test-access-token";
@@ -67,21 +58,15 @@ describe("accountManagementApiClient", () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
       const publicSubjectId = "test-public-subject-id";
 
-      mockFetch.mockResolvedValueOnce(new Response());
+      mockThisFetch.mockResolvedValueOnce(new Response());
 
       await client.sendOtpChallenge(publicSubjectId);
 
-      expect(mockFetch).toHaveBeenCalledWith(
+      expect(mockThisFetch).toHaveBeenCalledWith(
         "https://api.example.com/send-otp-challenge/test-public-subject-id",
         {
           method: "POST",
           headers: {
-            "di-persistent-session-id": "test-persistent-session-id",
-            "session-id": "test-session-id",
-            "client-session-id": "test-client-session-id",
-            "user-language": "en",
-            "x-forwarded-for": "192.168.1.1",
-            "txma-audit-encoded": "test-txma-audit",
             "Content-Type": "application/json",
             Authorization: `Bearer ${mockAccessToken}`,
           },
@@ -95,7 +80,7 @@ describe("accountManagementApiClient", () => {
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
 
-      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
 
       const result = await client.sendOtpChallenge("test-public-subject-id");
 
@@ -109,21 +94,15 @@ describe("accountManagementApiClient", () => {
       const email = "test@example.com";
       const password = "password123"; // pragma: allowlist secret
 
-      mockFetch.mockResolvedValueOnce(new Response());
+      mockThisFetch.mockResolvedValueOnce(new Response());
 
       await client.authenticate(email, password);
 
-      expect(mockFetch).toHaveBeenCalledWith(
+      expect(mockThisFetch).toHaveBeenCalledWith(
         "https://api.example.com/authenticate",
         {
           method: "POST",
           headers: {
-            "di-persistent-session-id": "test-persistent-session-id",
-            "session-id": "test-session-id",
-            "client-session-id": "test-client-session-id",
-            "user-language": "en",
-            "x-forwarded-for": "192.168.1.1",
-            "txma-audit-encoded": "test-txma-audit",
             "Content-Type": "application/json",
             Authorization: `Bearer ${mockAccessToken}`,
           },
@@ -138,7 +117,7 @@ describe("accountManagementApiClient", () => {
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
 
-      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
 
       const result = await client.authenticate(
         "test@example.com",
@@ -154,21 +133,15 @@ describe("accountManagementApiClient", () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
       const email = "test@example.com";
 
-      mockFetch.mockResolvedValueOnce(new Response());
+      mockThisFetch.mockResolvedValueOnce(new Response());
 
       await client.deleteAccount(email);
 
-      expect(mockFetch).toHaveBeenCalledWith(
+      expect(mockThisFetch).toHaveBeenCalledWith(
         "https://api.example.com/delete-account",
         {
           method: "POST",
           headers: {
-            "di-persistent-session-id": "test-persistent-session-id",
-            "session-id": "test-session-id",
-            "client-session-id": "test-client-session-id",
-            "user-language": "en",
-            "x-forwarded-for": "192.168.1.1",
-            "txma-audit-encoded": "test-txma-audit",
             "Content-Type": "application/json",
             Authorization: `Bearer ${mockAccessToken}`,
           },
@@ -182,7 +155,7 @@ describe("accountManagementApiClient", () => {
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
 
-      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
 
       const result = await client.deleteAccount("test@example.com");
 
@@ -196,21 +169,15 @@ describe("accountManagementApiClient", () => {
       const publicSubjectId = "test-public-subject-id";
       const otp = "123456";
 
-      mockFetch.mockResolvedValueOnce(new Response());
+      mockThisFetch.mockResolvedValueOnce(new Response());
 
       await client.verifyOtpChallenge(publicSubjectId, otp);
 
-      expect(mockFetch).toHaveBeenCalledWith(
+      expect(mockThisFetch).toHaveBeenCalledWith(
         "https://api.example.com/verify-otp-challenge/test-public-subject-id",
         {
           method: "POST",
           headers: {
-            "di-persistent-session-id": "test-persistent-session-id",
-            "session-id": "test-session-id",
-            "client-session-id": "test-client-session-id",
-            "user-language": "en",
-            "x-forwarded-for": "192.168.1.1",
-            "txma-audit-encoded": "test-txma-audit",
             "Content-Type": "application/json",
             Authorization: `Bearer ${mockAccessToken}`,
           },
@@ -225,7 +192,7 @@ describe("accountManagementApiClient", () => {
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
 
-      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
 
       const result = await client.verifyOtpChallenge(
         "test-public-subject-id",

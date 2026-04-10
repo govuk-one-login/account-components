@@ -21,8 +21,8 @@ vi.mock(
   }),
 );
 class TestJsonApiClient extends JsonApiClient {
-  public get testCommonHeaders() {
-    return this.commonHeaders;
+  public get testFetch() {
+    return this.fetch;
   }
 
   public testLogOnError<T extends { success: boolean; error?: string }>(
@@ -70,16 +70,18 @@ describe("jsonApiClient", () => {
   });
 
   describe("constructor", () => {
-    it("should initialize with empty commonHeaders when no event provided", () => {
+    it("should not call getPropsFromAPIGatewayEvent when no event provided", () => {
       vi.clearAllMocks();
-      const testClient = new TestJsonApiClient("TestService");
+      new TestJsonApiClient("TestService");
 
-      expect(testClient.testCommonHeaders).toStrictEqual({});
       expect(mockGetPropsFromAPIGatewayEvent).not.toHaveBeenCalled();
     });
 
-    it("should initialize commonHeaders from event", () => {
+    it("should inject common headers from event into fetch calls", async () => {
       vi.clearAllMocks();
+      const mockFetch = vi
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(new Response());
       const mockEvent = {} as unknown as APIGatewayProxyEvent;
       mockGetPropsFromAPIGatewayEvent.mockReturnValue({
         persistentSessionId: "persistent-123",
@@ -91,20 +93,31 @@ describe("jsonApiClient", () => {
       });
 
       const clientWithEvent = new TestJsonApiClient("TestService", mockEvent);
+      await clientWithEvent.testFetch("http://example.com");
 
-      expect(clientWithEvent.testCommonHeaders).toStrictEqual({
-        "di-persistent-session-id": "persistent-123",
-        "session-id": "session-456",
-        "client-session-id": "client-789",
-        "user-language": "en",
-        "x-forwarded-for": "192.168.1.1",
-        "txma-audit-encoded": "audit-data",
-      });
       expect(mockGetPropsFromAPIGatewayEvent).toHaveBeenCalledWith(mockEvent);
+      expect(mockFetch).toHaveBeenCalledWith(
+        "http://example.com",
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            "di-persistent-session-id": "persistent-123",
+            "session-id": "session-456",
+            "client-session-id": "client-789",
+            "user-language": "en",
+            "x-forwarded-for": "192.168.1.1",
+            "txma-audit-encoded": "audit-data",
+          }),
+        }),
+      );
+
+      mockFetch.mockRestore();
     });
 
-    it("should handle partial props from event", () => {
+    it("should handle partial props from event", async () => {
       vi.clearAllMocks();
+      const mockFetch = vi
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(new Response());
       const mockEvent = {} as APIGatewayProxyEvent;
       mockGetPropsFromAPIGatewayEvent.mockReturnValue({
         sessionId: "session-only",
@@ -112,11 +125,73 @@ describe("jsonApiClient", () => {
       });
 
       const clientWithEvent = new TestJsonApiClient("TestService", mockEvent);
+      await clientWithEvent.testFetch("http://example.com");
 
-      expect(clientWithEvent.testCommonHeaders).toStrictEqual({
-        "session-id": "session-only",
-        "x-forwarded-for": "10.0.0.1",
+      expect(mockFetch).toHaveBeenCalledWith(
+        "http://example.com",
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            "session-id": "session-only",
+            "x-forwarded-for": "10.0.0.1",
+          }),
+        }),
+      );
+      expect(
+        (mockFetch.mock.calls[0]![1]!.headers as Record<string, string>)[
+          "di-persistent-session-id"
+        ],
+      ).toBeUndefined();
+
+      mockFetch.mockRestore();
+    });
+
+    it("should merge caller-provided headers with common headers", async () => {
+      vi.clearAllMocks();
+      const mockFetch = vi
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(new Response());
+      const mockEvent = {} as APIGatewayProxyEvent;
+      mockGetPropsFromAPIGatewayEvent.mockReturnValue({
+        sessionId: "session-456",
+        clientSessionId: "client-session-id-789",
       });
+
+      const clientWithEvent = new TestJsonApiClient("TestService", mockEvent);
+      await clientWithEvent.testFetch("http://example.com", {
+        headers: {
+          "content-type": "application/json",
+          "client-session-id": undefined,
+        },
+      });
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "http://example.com",
+        expect.objectContaining({
+          headers: expect.objectContaining({
+            "session-id": "session-456",
+            "content-type": "application/json",
+            "client-session-id": undefined,
+          }),
+        }),
+      );
+
+      mockFetch.mockRestore();
+    });
+
+    it("should set an abort signal timeout of 60 seconds", async () => {
+      vi.clearAllMocks();
+      const mockFetch = vi
+        .spyOn(globalThis, "fetch")
+        .mockResolvedValue(new Response());
+
+      const testClient = new TestJsonApiClient("TestService");
+      await testClient.testFetch("http://example.com");
+
+      const callArgs = mockFetch.mock.calls[0]![1]!;
+
+      expect(callArgs.signal).toBeInstanceOf(AbortSignal);
+
+      mockFetch.mockRestore();
     });
   });
 
