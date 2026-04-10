@@ -21,7 +21,7 @@ export abstract class JsonApiClient {
 
     this.fetch = async (...args: Parameters<typeof fetch>) => {
       args[1] = {
-        signal: AbortSignal.timeout(60000),
+        signal: AbortSignal.timeout(10000),
         ...args[1],
         headers: {
           ...(propsFromEvent?.persistentSessionId
