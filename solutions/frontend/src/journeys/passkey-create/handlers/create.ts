@@ -19,6 +19,16 @@ import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { paths } from "../../../utils/paths.js";
+import {
+  NotificationType,
+  sendNotification,
+} from "../../../../../commons/utils/notifications/index.js";
+import { getPasskeyConvenienceMetadataByAaguid } from "../../../../../commons/utils/passkeysConvenienceMetadata/index.js";
+
+const addErrorMetric = (reason: string) => {
+  metrics.addDimensions({ error_type: reason });
+  metrics.addMetric("PasskeyCreateError", MetricUnit.Count, 1);
+};
 
 const setRegistrationOptions = async (
   request: FastifyRequest,
@@ -123,7 +133,7 @@ export async function postHandler(
       { issues: bodyParseResult.issues },
       "Register passkey - invalid request body",
     );
-    metrics.addMetric("InvalidRequestBody", MetricUnit.Count, 1);
+    addErrorMetric("InvalidRequestBody");
 
     await render(request, reply, {
       stringsSuffix,
@@ -170,7 +180,7 @@ export async function postHandler(
       "Register passkey - client error",
     );
     metrics.addMetadata("ClientErrorMessage", body.registrationError);
-    metrics.addMetric("ClientError", MetricUnit.Count, 1);
+    addErrorMetric("ClientError");
 
     await render(request, reply, {
       stringsSuffix,
@@ -201,7 +211,7 @@ export async function postHandler(
     });
   } catch (error) {
     request.log.warn({ error }, "Register passkey - verification error");
-    metrics.addMetric("VerificationError", MetricUnit.Count, 1);
+    addErrorMetric("VerificationError");
 
     await render(request, reply, {
       stringsSuffix,
@@ -212,7 +222,7 @@ export async function postHandler(
 
   if (!verification.verified) {
     request.log.warn("Register passkey - verification failed");
-    metrics.addMetric("VerificationFailed", MetricUnit.Count, 1);
+    addErrorMetric("VerificationFailed");
 
     await render(request, reply, {
       stringsSuffix,
@@ -255,6 +265,25 @@ export async function postHandler(
   if (!savePasskeyResult.success) {
     throw new Error(savePasskeyResult.error);
   }
+
+  const passkeyConvenienceMetadata =
+    await getPasskeyConvenienceMetadataByAaguid(
+      verification.registrationInfo.aaguid,
+    );
+
+  await sendNotification(
+    passkeyConvenienceMetadata
+      ? {
+          notificationType: NotificationType.CREATE_PASSKEY_WITH_PASSKEY_NAME,
+          emailAddress: request.session.claims.email,
+          passkeyName: passkeyConvenienceMetadata.name,
+        }
+      : {
+          notificationType:
+            NotificationType.CREATE_PASSKEY_WITHOUT_PASSKEY_NAME,
+          emailAddress: request.session.claims.email,
+        },
+  );
 
   return await completeJourney(
     request,

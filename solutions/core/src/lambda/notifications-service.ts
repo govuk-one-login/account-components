@@ -140,13 +140,15 @@ const processNotification = async (
       optionalContentSwitches: Record<string, boolean>;
     } = messageParsed.output;
 
+    metrics.addDimensions({ notificationType: message.notificationType });
+    logger.appendKeys({ notificationType: message.notificationType });
+
     const templateId = notifyTemplateIds[message.notificationType];
 
     if (!templateId) {
       const errorName = "template_id_not_found";
       logger.error(errorName, {
         messageId: record.messageId,
-        notificationType: message.notificationType,
       });
       addSendNotificationFailedMetric(errorName);
       batchItemFailures.push({ itemIdentifier: record.messageId });
@@ -175,7 +177,6 @@ const processNotification = async (
         const errorName = "unable_to_send_notification";
         logger.error(errorName, {
           messageId: record.messageId,
-          notificationType: message.notificationType,
           status: error.response?.status,
           statusText: error.response?.statusText,
           details: error.response?.data,
@@ -185,7 +186,6 @@ const processNotification = async (
         const errorName = "unable_to_send_notification_due_to_an_unknown_error";
         logger.error(errorName, {
           messageId: record.messageId,
-          notificationType: message.notificationType,
           details: error instanceof Error ? error.message : undefined,
         });
         addSendNotificationFailedMetric(errorName);
@@ -206,7 +206,6 @@ const processNotification = async (
       const errorName = "invalid_result_format";
       logger.error(errorName, {
         messageId: record.messageId,
-        notificationType: message.notificationType,
       });
       addSendNotificationFailedMetric(errorName);
       batchItemFailures.push({ itemIdentifier: record.messageId });
@@ -217,7 +216,6 @@ const processNotification = async (
       messageId: record.messageId,
       id: resultParsed.output.data.id,
       reference: resultParsed.output.data.reference,
-      notificationType: message.notificationType,
     });
     metrics.addMetric("SendNotificationSucceeded", MetricUnit.Count, 1);
   } catch (error) {
@@ -242,7 +240,6 @@ export const handler = async (event: SQSEvent): Promise<SQSBatchResponse> => {
   );
 
   logger.resetKeys();
-  metrics.captureColdStartMetric();
   metrics.publishStoredMetrics();
 
   return {

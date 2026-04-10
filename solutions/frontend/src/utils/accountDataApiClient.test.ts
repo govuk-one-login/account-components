@@ -2,22 +2,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AccountDataApiClient } from "./accountDataApiClient.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 
+const mockThisFetch = vi.fn();
+
 // @ts-expect-error
 vi.mock(import("./jsonApiClient.js"), () => ({
   JsonApiClient: class MockJsonApiClient {
     serviceName: string;
-    commonHeaders: Record<string, string>;
+    fetch = mockThisFetch;
 
     constructor(serviceName: string) {
       this.serviceName = serviceName;
-      this.commonHeaders = {
-        "di-persistent-session-id": "test-persistent-session-id",
-        "session-id": "test-session-id",
-        "client-session-id": "test-client-session-id",
-        "user-language": "en",
-        "x-forwarded-for": "192.168.1.1",
-        "txma-audit-encoded": "test-txma-audit",
-      };
     }
 
     logOnError = vi.fn((_methodName: string, fn: () => Promise<any>) => fn());
@@ -44,9 +38,6 @@ vi.mock(import("../../../commons/utils/constants.js"), async () => {
     }),
   };
 });
-
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
 
 describe("accountDataApiClient", () => {
   const mockAccessToken = "test-access-token";
@@ -84,20 +75,14 @@ describe("accountDataApiClient", () => {
       const client = new AccountDataApiClient(mockAccessToken, mockEvent);
       const publicSubjectId = "test-public-subject-id";
 
-      mockFetch.mockResolvedValueOnce(new Response());
+      mockThisFetch.mockResolvedValueOnce(new Response());
 
       await client.getPasskeys(publicSubjectId);
 
-      expect(mockFetch).toHaveBeenCalledWith(
+      expect(mockThisFetch).toHaveBeenCalledWith(
         "https://api.example.com/accounts/test-public-subject-id/authenticators/passkeys",
         {
           headers: {
-            "di-persistent-session-id": "test-persistent-session-id",
-            "session-id": "test-session-id",
-            "client-session-id": "test-client-session-id",
-            "user-language": "en",
-            "x-forwarded-for": "192.168.1.1",
-            "txma-audit-encoded": "test-txma-audit",
             "Content-Type": "application/json",
             Authorization: `Bearer ${mockAccessToken}`,
           },
@@ -108,7 +93,7 @@ describe("accountDataApiClient", () => {
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountDataApiClient(mockAccessToken, mockEvent);
 
-      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
 
       const result = await client.getPasskeys("test-public-subject-id");
 
@@ -132,21 +117,15 @@ describe("accountDataApiClient", () => {
         isResidentKey: true,
       };
 
-      mockFetch.mockResolvedValueOnce(new Response());
+      mockThisFetch.mockResolvedValueOnce(new Response());
 
       await client.createPasskey(publicSubjectId, passkeyDetails);
 
-      expect(mockFetch).toHaveBeenCalledWith(
+      expect(mockThisFetch).toHaveBeenCalledWith(
         "https://api.example.com/accounts/test-public-subject-id/authenticators/passkeys",
         {
           method: "POST",
           headers: {
-            "di-persistent-session-id": "test-persistent-session-id",
-            "session-id": "test-session-id",
-            "client-session-id": "test-client-session-id",
-            "user-language": "en",
-            "x-forwarded-for": "192.168.1.1",
-            "txma-audit-encoded": "test-txma-audit",
             "Content-Type": "application/json",
             Authorization: `Bearer ${mockAccessToken}`,
           },
@@ -158,7 +137,7 @@ describe("accountDataApiClient", () => {
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountDataApiClient(mockAccessToken, mockEvent);
 
-      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
 
       const result = await client.createPasskey("test-public-subject-id", {
         credential: "test-credential",

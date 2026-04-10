@@ -80,8 +80,8 @@ Mappings:
       accountDataApiUrl: https://stubs.manage.dev.account.gov.uk/account-data-api
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "82836a7c-d861-4a76-a2d1-f75c1e49d9fa"
         }
       notificationsVisibilityTimeout: 120
       notificationsMaxReceiveCount: 5
@@ -113,8 +113,8 @@ Mappings:
       accountDataApiUrl: https://stubs.manage.build.account.gov.uk/account-data-api
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "82836a7c-d861-4a76-a2d1-f75c1e49d9fa"
         }
       notificationsVisibilityTimeout: 120
       notificationsMaxReceiveCount: 5
@@ -148,8 +148,8 @@ Mappings:
       accountDataApiUrl: https://7xgl7lexy4.execute-api.eu-west-2.amazonaws.com/staging
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "82836a7c-d861-4a76-a2d1-f75c1e49d9fa"
         }
       notificationsVisibilityTimeout: 120
       notificationsMaxReceiveCount: 5
@@ -183,8 +183,8 @@ Mappings:
       accountDataApiUrl: https://hoidt6wujb.execute-api.eu-west-2.amazonaws.com/integration
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "a37858f1-45e5-4b9f-8d93-efbbc955ffbf",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "e3f82979-69c8-4f85-8bd3-660d526c35c2"
         }
       notificationsVisibilityTimeout: 300
       notificationsMaxReceiveCount: 36
@@ -218,8 +218,8 @@ Mappings:
       accountDataApiUrl: https://0218o1p9tj.execute-api.eu-west-2.amazonaws.com/production
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "TODO",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "TODO"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "a37858f1-45e5-4b9f-8d93-efbbc955ffbf",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "e3f82979-69c8-4f85-8bd3-660d526c35c2"
         }
       notificationsVisibilityTimeout: 300
       notificationsMaxReceiveCount: 36
@@ -1052,7 +1052,7 @@ Resources:
         - Id: errors
           MetricStat:
             Metric:
-              Namespace: AWS/Lambda
+              Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
               MetricName: Errors
               Dimensions:
                 - Name: FunctionName
@@ -1063,7 +1063,7 @@ Resources:
         - Id: invocations
           MetricStat:
             Metric:
-              Namespace: AWS/Lambda
+              Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
               MetricName: Invocations
               Dimensions:
                 - Name: FunctionName
@@ -1723,7 +1723,7 @@ Resources:
   ApiHealthcheckLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
       MetricName: Errors
       Dimensions:
         - Name: FunctionName
@@ -1741,7 +1741,7 @@ Resources:
   ApiHealthcheckLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
@@ -1759,7 +1759,7 @@ Resources:
   ApiHealthcheckLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
       MetricName: Duration
       Dimensions:
         - Name: FunctionName
@@ -1774,10 +1774,36 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  ApiHealthcheckLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiHealthcheckLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/HealthcheckLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiHealthcheckLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/HealthcheckLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
   ApiTokenLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
       MetricName: Errors
       Dimensions:
         - Name: FunctionName
@@ -1795,7 +1821,7 @@ Resources:
   ApiTokenLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
@@ -1813,7 +1839,7 @@ Resources:
   ApiTokenLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
       MetricName: Duration
       Dimensions:
         - Name: FunctionName
@@ -1828,10 +1854,36 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  ApiTokenLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiTokenLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/TokenLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
   ApiJourneyOutcomeLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
       MetricName: Errors
       Dimensions:
         - Name: FunctionName
@@ -1849,7 +1901,7 @@ Resources:
   ApiJourneyOutcomeLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
@@ -1867,7 +1919,7 @@ Resources:
   ApiJourneyOutcomeLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
       MetricName: Duration
       Dimensions:
         - Name: FunctionName
@@ -1877,6 +1929,32 @@ Resources:
       EvaluationPeriods: 15
       DatapointsToAlarm: 15
       Threshold: 1000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiJourneyOutcomeLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiJourneyOutcomeLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
@@ -2256,7 +2334,7 @@ Resources:
   FrontendLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
       MetricName: Errors
       Dimensions:
         - Name: FunctionName
@@ -2274,7 +2352,7 @@ Resources:
   FrontendLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
@@ -2289,10 +2367,36 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  FrontendLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  FrontendLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
   FrontendLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
       MetricName: Duration
       Dimensions:
         - Name: FunctionName

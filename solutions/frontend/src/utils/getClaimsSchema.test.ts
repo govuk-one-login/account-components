@@ -17,12 +17,8 @@ vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
   logger: { warn: vi.fn() },
 }));
 
-// @ts-expect-error
-vi.mock(import("../../../commons/utils/metrics/index.js"), () => ({
-  metrics: { addMetric: vi.fn() },
-}));
-
 describe("getClaimsSchema", () => {
+  const mockAddMetricDimension = vi.fn();
   const mockClient = {
     client_id: "test-client",
     scope: "account-delete other-scope",
@@ -49,19 +45,36 @@ describe("getClaimsSchema", () => {
   });
 
   it("creates schema with valid client and state", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope, state);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
 
     expect(schema).toBeDefined();
   });
 
   it("creates schema without state", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+    );
 
     expect(schema).toBeDefined();
   });
 
   it("validates correct claims", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope, state);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
     const validClaims = {
       client_id: "test-client",
       iss: "test-client",
@@ -86,7 +99,13 @@ describe("getClaimsSchema", () => {
   });
 
   it("validates correct claims when optional fields aren't present", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope, state);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
     const validClaims = {
       client_id: "test-client",
       iss: "test-client",
@@ -109,7 +128,12 @@ describe("getClaimsSchema", () => {
   });
 
   it("validates claims without state when state is undefined", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+    );
     const validClaims = {
       client_id: "test-client",
       iss: "test-client",
@@ -134,7 +158,13 @@ describe("getClaimsSchema", () => {
   });
 
   it("fails validation for wrong client_id", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope, state);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
     const invalidClaims = {
       client_id: "wrong-client",
       iss: "test-client",
@@ -159,7 +189,13 @@ describe("getClaimsSchema", () => {
   });
 
   it("fails validation for wrong issuer", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope, state);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
     const invalidClaims = {
       client_id: "test-client",
       iss: "wrong-issuer",
@@ -184,7 +220,13 @@ describe("getClaimsSchema", () => {
   });
 
   it("fails validation for wrong audience", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope, state);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
     const invalidClaims = {
       client_id: "test-client",
       iss: "test-client",
@@ -209,7 +251,13 @@ describe("getClaimsSchema", () => {
   });
 
   it("fails validation for wrong response_type", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope, state);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
     const invalidClaims = {
       client_id: "test-client",
       iss: "test-client",
@@ -234,7 +282,13 @@ describe("getClaimsSchema", () => {
   });
 
   it("fails validation for future iat", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope, state);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
     const invalidClaims = {
       client_id: "test-client",
       iss: "test-client",
@@ -259,7 +313,13 @@ describe("getClaimsSchema", () => {
   });
 
   it("fails validation for wrong redirect_uri", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope, state);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
     const invalidClaims = {
       client_id: "test-client",
       iss: "test-client",
@@ -284,7 +344,13 @@ describe("getClaimsSchema", () => {
   });
 
   it("fails validation for invalid scope", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope, state);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
     const invalidClaims = {
       client_id: "test-client",
       iss: "test-client",
@@ -309,7 +375,13 @@ describe("getClaimsSchema", () => {
   });
 
   it("fails validation for wrong state", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope, state);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
     const invalidClaims = {
       client_id: "test-client",
       iss: "test-client",
@@ -334,7 +406,13 @@ describe("getClaimsSchema", () => {
   });
 
   it("fails validation for empty jti", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope, state);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
     const invalidClaims = {
       client_id: "test-client",
       iss: "test-client",
@@ -359,7 +437,13 @@ describe("getClaimsSchema", () => {
   });
 
   it("fails validation for invalid email", () => {
-    const schema = getClaimsSchema(mockClient, redirectUri, scope, state);
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
     const invalidClaims = {
       client_id: "test-client",
       iss: "test-client",
@@ -390,6 +474,7 @@ describe("getClaimsSchema", () => {
     };
 
     const schema = getClaimsSchema(
+      mockAddMetricDimension,
       clientWithMixedScopes,
       redirectUri,
       scope,
@@ -422,7 +507,13 @@ describe("getClaimsSchema", () => {
     delete process.env["AUTHORIZE_ENDPOINT_URL"];
 
     expect(() => {
-      getClaimsSchema(mockClient, redirectUri, scope, state);
+      getClaimsSchema(
+        mockAddMetricDimension,
+        mockClient,
+        redirectUri,
+        scope,
+        state,
+      );
     }).toThrow("AUTHORIZE_ENDPOINT_URL is not set");
   });
 });

@@ -1,7 +1,6 @@
 import { logger } from "../../../../../commons/utils/logger/index.js";
-import { metrics } from "../../../../../commons/utils/metrics/index.js";
-import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import {
+  addAuthorizeErrorMetric,
   ErrorResponse,
   getRedirectToClientRedirectUriResponse,
 } from "./common.js";
@@ -56,11 +55,7 @@ export const startSessionAndGoToJourney = async (
       client_id: clientId,
       error,
     });
-    metrics.addMetric(
-      "FailedToStartSessionAndGoToJourney",
-      MetricUnit.Count,
-      1,
-    );
+    addAuthorizeErrorMetric("FailedToStartSessionAndGoToJourney");
     return new ErrorResponse(
       getRedirectToClientRedirectUriResponse(
         reply,
