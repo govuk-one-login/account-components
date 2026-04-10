@@ -1,5 +1,8 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import { metricsAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/metrics/index.js";
+import {
+  metrics,
+  metricsAPIGatewayProxyHandlerWrapper,
+} from "../../../../commons/utils/metrics/index.js";
 import { verifyClientAssertion } from "./utils/verifyClientAssertion.js";
 import { errorManager } from "./utils/errors.js";
 import type { TokenAppError } from "./utils/errors.js";
@@ -12,11 +15,14 @@ import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/l
 import { createAccessToken } from "./utils/createAccessToken.js";
 import { getApiBaseUrlWithStage } from "../../utils/common.js";
 import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
 export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+        metrics.addMetric("TokenRequest", MetricUnit.Count, 1);
+
         try {
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           const request = querystring.parse(

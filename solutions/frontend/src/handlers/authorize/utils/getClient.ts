@@ -1,8 +1,10 @@
 import { logger } from "../../../../../commons/utils/logger/index.js";
-import { metrics } from "../../../../../commons/utils/metrics/index.js";
-import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { getClientRegistry } from "../../../../../commons/utils/getClientRegistry/index.js";
-import { getBadRequestReply, ErrorResponse } from "./common.js";
+import {
+  getBadRequestReply,
+  ErrorResponse,
+  addAuthorizeErrorMetric,
+} from "./common.js";
 import type { FastifyReply } from "fastify";
 
 export const getClient = async (
@@ -17,7 +19,7 @@ export const getClient = async (
     logger.warn("Client Not Found", {
       client_id: clientId,
     });
-    metrics.addMetric("ClientNotFound", MetricUnit.Count, 1);
+    addAuthorizeErrorMetric("ClientNotFound");
     return new ErrorResponse(getBadRequestReply(reply));
   }
 
@@ -27,7 +29,7 @@ export const getClient = async (
       received_redirect_uri: redirectUri,
       allowed_redirect_uris: client.redirect_uris,
     });
-    metrics.addMetric("InvalidRedirectUri", MetricUnit.Count, 1);
+    addAuthorizeErrorMetric("InvalidRedirectUri");
     return new ErrorResponse(getBadRequestReply(reply));
   }
 

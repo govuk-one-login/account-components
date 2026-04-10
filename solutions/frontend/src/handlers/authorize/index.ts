@@ -1,18 +1,24 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import { getQueryParams } from "./utils/getQueryParams.js";
-import { ErrorResponse, getBadRequestReply } from "./utils/common.js";
+import {
+  addAuthorizeErrorMetric,
+  ErrorResponse,
+  getBadRequestReply,
+} from "./utils/common.js";
 import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { logger } from "../../../../commons/utils/logger/index.js";
 import { getClient } from "./utils/getClient.js";
 import { decryptJar } from "./utils/decryptJar.js";
 import { verifyJwt } from "./utils/verifyJwt.js";
 import { checkJtiUnused } from "./utils/checkJtiUnused.js";
-import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { startSessionAndGoToJourney } from "./utils/startSessionAndGoToJourney.js";
 import { checkSameUserAgent } from "./utils/checkSameUserAgent.js";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
 export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
+    metrics.addMetric("AuthorizeRequest", MetricUnit.Count, 1);
+
     const queryParams = getQueryParams(reply, request.query);
     if (queryParams instanceof ErrorResponse) {
       return await queryParams.reply;
@@ -104,7 +110,7 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
     logger.error("Authorize error", {
       error,
     });
-    metrics.addMetric("InvalidAuthorizeRequest", MetricUnit.Count, 1);
+    addAuthorizeErrorMetric("InvalidAuthorizeRequest");
     return getBadRequestReply(reply);
   }
 }
