@@ -83,12 +83,12 @@ jobs:
 
       - name: Install dependencies
         env:
-          GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run install-all
 
       - name: Build frontend
         env:
-          GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:frontend
 
       - name: Deploy frontend
