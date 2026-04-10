@@ -1,12 +1,11 @@
 import * as v from "valibot";
 import { logger } from "../../../commons/utils/logger/index.js";
-import { metrics } from "../../../commons/utils/metrics/index.js";
-import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import assert from "node:assert";
 import type { ClientEntry } from "../../../config/schema/types.js";
 import { Scope } from "../../../commons/utils/interfaces.js";
 
 export const getClaimsSchema = (
+  callback: (dimension: string) => void,
   client: ClientEntry,
   redirectUri: string,
   scope: string,
@@ -31,7 +30,7 @@ export const getClaimsSchema = (
         expected_client_id: client.client_id,
         received_client_id: issue.received,
       });
-      metrics.addMetric("ClientIdDiscrepancy", MetricUnit.Count, 1);
+      callback("ClientIdDiscrepancy");
       return "";
     }),
     iss: v.literal(client.client_id, (issue) => {
@@ -40,7 +39,7 @@ export const getClaimsSchema = (
         expected_client_id: client.client_id,
         received_client_id: issue.received,
       });
-      metrics.addMetric("IssuerDiscrepancy", MetricUnit.Count, 1);
+      callback("IssuerDiscrepancy");
       return "";
     }),
     aud: v.literal(process.env["AUTHORIZE_ENDPOINT_URL"], (issue) => {
@@ -49,7 +48,7 @@ export const getClaimsSchema = (
         expected_aud: process.env["AUTHORIZE_ENDPOINT_URL"],
         received_aud: issue.received,
       });
-      metrics.addMetric("UnexpectedAudience", MetricUnit.Count, 1);
+      callback("UnexpectedAudience");
       return "";
     }),
     response_type: v.literal(expectedResponseType, (issue) => {
@@ -58,7 +57,7 @@ export const getClaimsSchema = (
         expected_response_type: expectedResponseType,
         received_response_type: issue.received,
       });
-      metrics.addMetric("UnexpectedResponseType", MetricUnit.Count, 1);
+      callback("UnexpectedResponseType");
       return "";
     }),
     exp: v.number(),
@@ -70,7 +69,7 @@ export const getClaimsSchema = (
           iat: new Date(Number(issue.received) * 1000).toISOString(),
           current_datetime: new Date().toISOString(),
         });
-        metrics.addMetric("IATInTheFuture", MetricUnit.Count, 1);
+        callback("IATInTheFuture");
         return "";
       }),
     ),
@@ -85,7 +84,7 @@ export const getClaimsSchema = (
           valid_client_scopes: validClientScopes,
           received_scope: issue.received,
         });
-        metrics.addMetric("ScopeDenied", MetricUnit.Count, 1);
+        callback("ScopeDenied");
         return "";
       }),
       v.enum(Scope),

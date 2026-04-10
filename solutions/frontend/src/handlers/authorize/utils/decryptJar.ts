@@ -3,9 +3,8 @@ import { createDecipheriv } from "node:crypto";
 import * as v from "valibot";
 import { getKmsClient } from "../../../../../commons/utils/awsClient/kmsClient/index.js";
 import { logger } from "../../../../../commons/utils/logger/index.js";
-import { metrics } from "../../../../../commons/utils/metrics/index.js";
-import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import {
+  addAuthorizeErrorMetric,
   ErrorResponse,
   getRedirectToClientRedirectUriResponse,
 } from "./common.js";
@@ -107,7 +106,7 @@ export const decryptJar = async (
         client_id: clientId,
         error,
       });
-      metrics.addMetric("JARDecryptFailed", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JARDecryptFailed");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -122,7 +121,7 @@ export const decryptJar = async (
       client_id: clientId,
       error,
     });
-    metrics.addMetric("JARDecryptUnknownError", MetricUnit.Count, 1);
+    addAuthorizeErrorMetric("JARDecryptUnknownError");
     return new ErrorResponse(
       getRedirectToClientRedirectUriResponse(
         reply,
