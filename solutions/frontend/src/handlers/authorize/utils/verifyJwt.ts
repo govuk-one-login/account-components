@@ -1,8 +1,8 @@
 import * as v from "valibot";
 import { logger } from "../../../../../commons/utils/logger/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
-import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import {
+  addAuthorizeErrorMetric,
   ErrorResponse,
   getRedirectToClientRedirectUriResponse,
 } from "./common.js";
@@ -31,7 +31,7 @@ const handleJwtError = (
   switch (errorName) {
     case "JWKSTimeout":
       logger.warn("JWKSTimeout", { client_id: client.client_id });
-      metrics.addMetric("JWKSTimeout", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JWKSTimeout");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -43,7 +43,7 @@ const handleJwtError = (
 
     case "JWKSInvalid":
       logger.warn("JWKSInvalid", { client_id: client.client_id });
-      metrics.addMetric("JWKSInvalid", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JWKSInvalid");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -55,7 +55,7 @@ const handleJwtError = (
 
     case "JWKSNoMatchingKey":
       logger.warn("JWKSNoMatchingKey", { client_id: client.client_id });
-      metrics.addMetric("JWKSNoMatchingKey", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JWKSNoMatchingKey");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -67,7 +67,7 @@ const handleJwtError = (
 
     case "JWKSMultipleMatchingKeys":
       logger.warn("JWKSMultipleMatchingKeys", { client_id: client.client_id });
-      metrics.addMetric("JWKSMultipleMatchingKeys", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JWKSMultipleMatchingKeys");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -79,7 +79,7 @@ const handleJwtError = (
 
     case "JWKInvalid":
       logger.warn("JWKInvalid", { client_id: client.client_id });
-      metrics.addMetric("JWKInvalid", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JWKInvalid");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -91,7 +91,7 @@ const handleJwtError = (
 
     case "JOSEAlgNotAllowed":
       logger.warn("JOSEAlgNotAllowed", { client_id: client.client_id });
-      metrics.addMetric("JOSEAlgNotAllowed", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JOSEAlgNotAllowed");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -103,7 +103,7 @@ const handleJwtError = (
 
     case "JWSInvalid":
       logger.warn("JWSInvalid", { client_id: client.client_id });
-      metrics.addMetric("JWSInvalid", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JWSInvalid");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -117,7 +117,7 @@ const handleJwtError = (
       logger.warn("JWSSignatureVerificationFailed", {
         client_id: client.client_id,
       });
-      metrics.addMetric("JWSSignatureVerificationFailed", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JWSSignatureVerificationFailed");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -129,7 +129,7 @@ const handleJwtError = (
 
     case "JWTInvalid":
       logger.warn("JWTInvalid", { client_id: client.client_id });
-      metrics.addMetric("JWTInvalid", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JWTInvalid");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -147,7 +147,7 @@ const handleJwtError = (
         exp: new Date(Number(expiredError.payload.exp) * 1000).toISOString(),
         current_datetime: new Date().toISOString(),
       });
-      metrics.addMetric("JWTExpired", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JWTExpired");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -160,7 +160,7 @@ const handleJwtError = (
 
     case "JWTClaimValidationFailed":
       logger.warn("JWTClaimValidationFailed", { client_id: client.client_id });
-      metrics.addMetric("JWTClaimValidationFailed", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JWTClaimValidationFailed");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -181,7 +181,7 @@ const handleJwtError = (
           jose_error_stack: error.stack,
         });
         metrics.addMetadata("jose_error_code", error.code);
-        metrics.addMetric("JOSEError", MetricUnit.Count, 1);
+        addAuthorizeErrorMetric("JOSEError");
         return new ErrorResponse(
           getRedirectToClientRedirectUriResponse(
             reply,
@@ -196,7 +196,7 @@ const handleJwtError = (
         client_id: client.client_id,
         error,
       });
-      metrics.addMetric("VerifyJwtUnknownError", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("VerifyJwtUnknownError");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -224,7 +224,7 @@ const verify = async (
     const header = decodeProtectedHeader(signedJwt);
     if (!header.kid) {
       logger.warn("JWTMissingKid");
-      metrics.addMetric("JWTMissingKid", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JWTMissingKid");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -260,7 +260,13 @@ const checkClaims = async (
   scope: string,
   state?: string,
 ) => {
-  const claimsSchema = getClaimsSchema(client, redirectUri, scope, state);
+  const claimsSchema = getClaimsSchema(
+    addAuthorizeErrorMetric,
+    client,
+    redirectUri,
+    scope,
+    state,
+  );
 
   const claimsResult = v.safeParse(claimsSchema, payload, {
     abortEarly: false,
@@ -273,7 +279,7 @@ const checkClaims = async (
         v.getDotPath(issue),
       ),
     });
-    metrics.addMetric("InvalidRequestObject", MetricUnit.Count, 1);
+    addAuthorizeErrorMetric("InvalidRequestObject");
 
     return new ErrorResponse(
       getRedirectToClientRedirectUriResponse(

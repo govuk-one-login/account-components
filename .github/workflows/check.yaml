@@ -36,7 +36,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up JSON Schema CLI
-        uses: sourcemeta/jsonschema@f0b6672d82955e58a73efd320068284a4e7a4483
+        uses: sourcemeta/jsonschema@de5d93249013195a09f88e8fc8ff836412c544d0
 
       - name: Set up cfn-lint
         uses: scottbrenner/cfn-lint-action@9636da81fb2e0cef75725d8dda11b0148940b7ae

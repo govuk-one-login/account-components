@@ -1,7 +1,17 @@
 import { describe, it, expect, vi } from "vitest";
 import { authorizeErrors } from "../../../utils/authorizeErrors.js";
-import { getRedirectToClientRedirectUriResponse } from "./common.js";
+import {
+  getRedirectToClientRedirectUriResponse,
+  addAuthorizeErrorMetric,
+} from "./common.js";
 import type { FastifyReply } from "fastify";
+import { metrics } from "../../../../../commons/utils/metrics/index.js";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
+
+// @ts-expect-error
+vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
+  metrics: { addDimensions: vi.fn(), addMetric: vi.fn() },
+}));
 
 describe("getRedirectToClientRedirectUriResponse", () => {
   it("redirects with code parameter", () => {
@@ -101,5 +111,20 @@ describe("getRedirectToClientRedirectUriResponse", () => {
     );
 
     expect(reply.redirect).toHaveBeenCalledWith("https://example.com/callback");
+  });
+});
+
+describe("addAuthorizeErrorMetric", () => {
+  it("adds a dimension with the error reason and records the metric", () => {
+    addAuthorizeErrorMetric("invalid_client");
+
+    expect(metrics.addDimensions).toHaveBeenCalledWith({
+      error_type: "invalid_client",
+    });
+    expect(metrics.addMetric).toHaveBeenCalledWith(
+      "AuthorizeError",
+      MetricUnit.Count,
+      1,
+    );
   });
 });

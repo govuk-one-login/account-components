@@ -10,7 +10,7 @@ export abstract class JsonApiClient {
     error: "UnknownError",
   } as const;
   protected static readonly undefinedSchema = v.undefined();
-  protected commonHeaders: NonNullable<RequestInit["headers"]>;
+  protected fetch: typeof fetch;
 
   constructor(errorScope: string, event?: APIGatewayProxyEvent) {
     this.errorScope = errorScope;
@@ -19,31 +19,40 @@ export abstract class JsonApiClient {
       ? getPropsFromAPIGatewayEvent(event)
       : undefined;
 
-    this.commonHeaders = {
-      ...(propsFromEvent?.persistentSessionId
-        ? {
-            "di-persistent-session-id": propsFromEvent.persistentSessionId,
-          }
-        : {}),
-      ...(propsFromEvent?.sessionId
-        ? { "session-id": propsFromEvent.sessionId }
-        : {}),
-      ...(propsFromEvent?.clientSessionId
-        ? {
-            "client-session-id": propsFromEvent.clientSessionId,
-          }
-        : {}),
-      ...(propsFromEvent?.userLanguage
-        ? { "user-language": propsFromEvent.userLanguage }
-        : {}),
-      ...(propsFromEvent?.sourceIp
-        ? { "x-forwarded-for": propsFromEvent.sourceIp }
-        : {}),
-      ...(propsFromEvent?.txmaAuditEncoded
-        ? {
-            "txma-audit-encoded": propsFromEvent.txmaAuditEncoded,
-          }
-        : {}),
+    this.fetch = async (...args: Parameters<typeof fetch>) => {
+      args[1] = {
+        signal: AbortSignal.timeout(10000),
+        ...args[1],
+        headers: {
+          ...(propsFromEvent?.persistentSessionId
+            ? {
+                "di-persistent-session-id": propsFromEvent.persistentSessionId,
+              }
+            : {}),
+          ...(propsFromEvent?.sessionId
+            ? { "session-id": propsFromEvent.sessionId }
+            : {}),
+          ...(propsFromEvent?.clientSessionId
+            ? {
+                "client-session-id": propsFromEvent.clientSessionId,
+              }
+            : {}),
+          ...(propsFromEvent?.userLanguage
+            ? { "user-language": propsFromEvent.userLanguage }
+            : {}),
+          ...(propsFromEvent?.sourceIp
+            ? { "x-forwarded-for": propsFromEvent.sourceIp }
+            : {}),
+          ...(propsFromEvent?.txmaAuditEncoded
+            ? {
+                "txma-audit-encoded": propsFromEvent.txmaAuditEncoded,
+              }
+            : {}),
+          // eslint-disable-next-line @typescript-eslint/no-misused-spread
+          ...args[1]?.headers,
+        },
+      };
+      return await fetch(...args);
     };
   }
 

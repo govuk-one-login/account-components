@@ -6,6 +6,7 @@ import { passkeyDetailsSchema } from "../../../commons/utils/constants.js";
 
 export class AccountDataApiClient extends JsonApiClient {
   private readonly baseUrl: string;
+  private readonly commonHeaders: NonNullable<RequestInit["headers"]>;
 
   constructor(accessToken: string, event?: APIGatewayProxyEvent) {
     super("Account data API", event);
@@ -18,8 +19,6 @@ export class AccountDataApiClient extends JsonApiClient {
     this.baseUrl = process.env["ACCOUNT_DATA_API_URL"];
 
     this.commonHeaders = {
-      // eslint-disable-next-line @typescript-eslint/no-misused-spread
-      ...this.commonHeaders,
       "Content-Type": "application/json",
       Authorization: `Bearer ${accessToken}`,
     };
@@ -28,7 +27,7 @@ export class AccountDataApiClient extends JsonApiClient {
   async getPasskeys(publicSubjectId: string) {
     return this.logOnError("getPasskeys", async () => {
       try {
-        const response = await fetch(
+        const response = await this.fetch(
           `${this.baseUrl}/accounts/${publicSubjectId}/authenticators/passkeys`,
           {
             headers: this.commonHeaders,
@@ -72,7 +71,7 @@ export class AccountDataApiClient extends JsonApiClient {
   ) {
     return this.logOnError("createPasskey", async () => {
       try {
-        const response = await fetch(
+        const response = await this.fetch(
           `${this.baseUrl}/accounts/${publicSubjectId}/authenticators/passkeys`,
           {
             method: "POST",
