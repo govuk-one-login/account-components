@@ -6,7 +6,7 @@ This repo contains the code for Account Components
 
 - Copy `solutions/frontend/.env.sample` to `solutions/frontend/.env` and replace any placeholder values as appropriate
 - Copy `solutions/stubs/.env.sample` to `solutions/stubs/.env` and replace any placeholder values as appropriate
-- Copy `solutions/app-infra/env.json.sample` to `solutions/app-infra/env.json` and replace any placeholder values as appropriate
+- Copy `solutions/api/env.json.sample` to `solutions/api/env.json` and replace any placeholder values as appropriate
 - Install [NVM](https://github.com/nvm-sh/nvm) or [FNM](https://github.com/Schniz/fnm) and select the correct Node version by running `nvm use` or `fnm use`
 - Install Docker
 - Install [Homebrew](https://brew.sh/)
