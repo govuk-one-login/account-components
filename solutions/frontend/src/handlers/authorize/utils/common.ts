@@ -2,6 +2,8 @@ import type { authorizeErrors } from "../../../utils/authorizeErrors.js";
 import { buildRedirectToClientRedirectUri } from "../../../utils/buildRedirectToClientRedirectUri.js";
 import type { FastifyReply } from "fastify";
 import { paths } from "../../../utils/paths.js";
+import { metrics } from "../../../../../commons/utils/metrics/index.js";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
 export class ErrorResponse {
   reply: FastifyReply;
@@ -27,4 +29,9 @@ export const getRedirectToClientRedirectUriResponse = (
     buildRedirectToClientRedirectUri(redirectUri, error, state, code),
   );
   return reply;
+};
+
+export const addAuthorizeErrorMetric = (reason: string) => {
+  metrics.addDimensions({ error_type: reason });
+  metrics.addMetric("AuthorizeError", MetricUnit.Count, 1);
 };

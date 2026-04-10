@@ -161,8 +161,11 @@ describe("onRequest", () => {
       await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
       expect(mockRequest.log?.warn).toHaveBeenCalledWith("NoClaimsInSession");
+      expect(metrics.addDimensions).toHaveBeenCalledWith({
+        error_type: "NoClaimsInSession",
+      });
       expect(metrics.addMetric).toHaveBeenCalledWith(
-        "NoClaimsInSession",
+        "JourneyRequestError",
         "Count",
         1,
       );
@@ -188,8 +191,11 @@ describe("onRequest", () => {
         { client_id: "non-existent-client" },
         "ClientNotFound",
       );
+      expect(metrics.addDimensions).toHaveBeenCalledWith({
+        error_type: "ClientNotFound",
+      });
       expect(metrics.addMetric).toHaveBeenCalledWith(
-        "ClientNotFound",
+        "JourneyRequestError",
         "Count",
         1,
       );
@@ -220,8 +226,11 @@ describe("onRequest", () => {
         { missingRequiredClaims: ["account_management_api_access_token"] },
         "RequiredClaimsMissing",
       );
+      expect(metrics.addDimensions).toHaveBeenCalledWith({
+        error_type: "RequiredClaimsMissing",
+      });
       expect(metrics.addMetric).toHaveBeenCalledWith(
-        "RequiredClaimsMissing",
+        "JourneyRequestError",
         "Count",
         1,
       );

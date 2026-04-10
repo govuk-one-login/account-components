@@ -25,7 +25,10 @@ export interface ErrorType {
   code: string;
   description: string;
   statusCode: number;
-  metric?: string;
+  metric: {
+    type: string;
+    subType: string;
+  };
 }
 
 export class ErrorManager<T extends Record<string, ErrorType>> {
@@ -68,9 +71,8 @@ export class ErrorManager<T extends Record<string, ErrorType>> {
     });
     logger.debug("Error", e);
 
-    if (error.metric) {
-      metrics.addMetric(error.metric, MetricUnit.Count, 1);
-    }
+    metrics.addDimensions({ error_type: error.metric.subType });
+    metrics.addMetric(error.metric.type, MetricUnit.Count, 1);
 
     return {
       statusCode: error.statusCode,

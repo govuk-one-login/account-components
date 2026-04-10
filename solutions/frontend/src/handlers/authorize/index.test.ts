@@ -1,7 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { getHandler } from "./index.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
-import { ErrorResponse } from "./utils/common.js";
+import { addAuthorizeErrorMetric, ErrorResponse } from "./utils/common.js";
+
+vi.mock(import("./utils/common.js"), async (importOriginal) => {
+  const original = await importOriginal();
+  return {
+    ...original,
+    addAuthorizeErrorMetric: vi.fn(),
+  };
+});
 
 vi.mock(import("./utils/getQueryParams.js"), () => ({
   getQueryParams: vi.fn(),
@@ -407,8 +415,6 @@ describe("getHandler", () => {
     const { getQueryParams } = await import("./utils/getQueryParams.js");
     const { logger } =
       await import("../../../../commons/utils/logger/index.js");
-    const { metrics } =
-      await import("../../../../commons/utils/metrics/index.js");
 
     vi.mocked(getQueryParams).mockImplementation(() => {
       throw new Error("Unexpected error");
@@ -420,10 +426,8 @@ describe("getHandler", () => {
     expect(logger.error).toHaveBeenCalledWith("Authorize error", {
       error: expect.any(Error),
     });
-    expect(metrics.addMetric).toHaveBeenCalledWith(
+    expect(addAuthorizeErrorMetric).toHaveBeenCalledWith(
       "InvalidAuthorizeRequest",
-      expect.anything(),
-      1,
     );
   });
 });

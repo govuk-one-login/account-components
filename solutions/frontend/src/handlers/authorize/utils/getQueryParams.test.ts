@@ -13,14 +13,17 @@ import { ErrorResponse } from "./common.js";
 
 const ORIGINAL_ENV = { ...process.env };
 
+vi.mock(import("./common.js"), async () => {
+  const actual = await vi.importActual("./common.js");
+  return {
+    ...actual,
+    addAuthorizeErrorMetric: vi.fn(),
+  };
+});
+
 // @ts-expect-error
 vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
   logger: { warn: vi.fn() },
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
-  metrics: { addMetric: vi.fn() },
 }));
 
 const createMockReply = () =>

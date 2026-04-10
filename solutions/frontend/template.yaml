@@ -659,7 +659,7 @@ Resources:
   FrontendLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
       MetricName: Errors
       Dimensions:
         - Name: FunctionName
@@ -677,7 +677,7 @@ Resources:
   FrontendLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
@@ -692,10 +692,36 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  FrontendLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  FrontendLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
   FrontendLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
       MetricName: Duration
       Dimensions:
         - Name: FunctionName
