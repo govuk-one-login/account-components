@@ -25,6 +25,11 @@ import {
 } from "../../../../../commons/utils/notifications/index.js";
 import { getPasskeyConvenienceMetadataByAaguid } from "../../../../../commons/utils/passkeysConvenienceMetadata/index.js";
 
+const addErrorMetric = (reason: string) => {
+  metrics.addDimensions({ error_type: reason });
+  metrics.addMetric("PasskeyCreateError", MetricUnit.Count, 1);
+};
+
 const setRegistrationOptions = async (
   request: FastifyRequest,
   reply: FastifyReply,
@@ -128,7 +133,7 @@ export async function postHandler(
       { issues: bodyParseResult.issues },
       "Register passkey - invalid request body",
     );
-    metrics.addMetric("InvalidRequestBody", MetricUnit.Count, 1);
+    addErrorMetric("InvalidRequestBody");
 
     await render(request, reply, {
       stringsSuffix,
@@ -175,7 +180,7 @@ export async function postHandler(
       "Register passkey - client error",
     );
     metrics.addMetadata("ClientErrorMessage", body.registrationError);
-    metrics.addMetric("ClientError", MetricUnit.Count, 1);
+    addErrorMetric("ClientError");
 
     await render(request, reply, {
       stringsSuffix,
@@ -206,7 +211,7 @@ export async function postHandler(
     });
   } catch (error) {
     request.log.warn({ error }, "Register passkey - verification error");
-    metrics.addMetric("VerificationError", MetricUnit.Count, 1);
+    addErrorMetric("VerificationError");
 
     await render(request, reply, {
       stringsSuffix,
@@ -217,7 +222,7 @@ export async function postHandler(
 
   if (!verification.verified) {
     request.log.warn("Register passkey - verification failed");
-    metrics.addMetric("VerificationFailed", MetricUnit.Count, 1);
+    addErrorMetric("VerificationFailed");
 
     await render(request, reply, {
       stringsSuffix,
@@ -261,16 +266,17 @@ export async function postHandler(
     throw new Error(savePasskeyResult.error);
   }
 
-  const passkeyDisplayName = await getPasskeyConvenienceMetadataByAaguid(
-    verification.registrationInfo.aaguid,
-  );
+  const passkeyConvenienceMetadata =
+    await getPasskeyConvenienceMetadataByAaguid(
+      verification.registrationInfo.aaguid,
+    );
 
   await sendNotification(
-    passkeyDisplayName
+    passkeyConvenienceMetadata
       ? {
           notificationType: NotificationType.CREATE_PASSKEY_WITH_PASSKEY_NAME,
           emailAddress: request.session.claims.email,
-          passkeyName: passkeyDisplayName.name,
+          passkeyName: passkeyConvenienceMetadata.name,
         }
       : {
           notificationType:

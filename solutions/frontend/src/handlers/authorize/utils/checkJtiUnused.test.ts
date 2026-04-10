@@ -15,17 +15,16 @@ import type { Claims } from "../../../utils/getClaimsSchema.js";
 
 vi.mock(import("./common.js"), async () => {
   process.env["AUTHORIZE_ERROR_PAGE_URL"] = "https://example.com/error";
-  return await vi.importActual("./common.js");
+  const actual = await vi.importActual("./common.js");
+  return {
+    ...actual,
+    addAuthorizeErrorMetric: vi.fn(),
+  };
 });
 
 // @ts-expect-error
 vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
   logger: { warn: vi.fn() },
-}));
-
-// @ts-expect-error
-vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
-  metrics: { addMetric: vi.fn() },
 }));
 
 const mockTransactWrite = vi.fn();

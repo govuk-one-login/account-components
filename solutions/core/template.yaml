@@ -867,7 +867,7 @@ Resources:
         - Id: errors
           MetricStat:
             Metric:
-              Namespace: AWS/Lambda
+              Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
               MetricName: Errors
               Dimensions:
                 - Name: FunctionName
@@ -878,7 +878,7 @@ Resources:
         - Id: invocations
           MetricStat:
             Metric:
-              Namespace: AWS/Lambda
+              Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
               MetricName: Invocations
               Dimensions:
                 - Name: FunctionName

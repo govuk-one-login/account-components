@@ -1,7 +1,6 @@
 import { logger } from "../../../../../commons/utils/logger/index.js";
-import { metrics } from "../../../../../commons/utils/metrics/index.js";
-import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import {
+  addAuthorizeErrorMetric,
   ErrorResponse,
   getRedirectToClientRedirectUriResponse,
 } from "./common.js";
@@ -53,7 +52,7 @@ export const checkJtiUnused = async (
         client_id: clientId,
         jti: claims.jti,
       });
-      metrics.addMetric("JTIAlreadyUsed", MetricUnit.Count, 1);
+      addAuthorizeErrorMetric("JTIAlreadyUsed");
       return new ErrorResponse(
         getRedirectToClientRedirectUriResponse(
           reply,
@@ -69,7 +68,7 @@ export const checkJtiUnused = async (
       jti: claims.jti,
       error,
     });
-    metrics.addMetric("FailedToCheckJtiUnused", MetricUnit.Count, 1);
+    addAuthorizeErrorMetric("FailedToCheckJtiUnused");
     return new ErrorResponse(
       getRedirectToClientRedirectUriResponse(
         reply,

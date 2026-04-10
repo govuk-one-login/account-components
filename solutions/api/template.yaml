@@ -720,7 +720,7 @@ Resources:
   HealthcheckLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
       MetricName: Errors
       Dimensions:
         - Name: FunctionName
@@ -738,7 +738,7 @@ Resources:
   HealthcheckLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
@@ -756,7 +756,7 @@ Resources:
   HealthcheckLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
       MetricName: Duration
       Dimensions:
         - Name: FunctionName
@@ -771,10 +771,36 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  HealthcheckLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref HealthcheckLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/HealthcheckLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  HealthcheckLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/HealthcheckLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
   TokenLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
       MetricName: Errors
       Dimensions:
         - Name: FunctionName
@@ -792,7 +818,7 @@ Resources:
   TokenLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
@@ -810,7 +836,7 @@ Resources:
   TokenLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
       MetricName: Duration
       Dimensions:
         - Name: FunctionName
@@ -825,10 +851,36 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  TokenLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref TokenLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  TokenLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/TokenLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
   JourneyOutcomeLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
       MetricName: Errors
       Dimensions:
         - Name: FunctionName
@@ -846,7 +898,7 @@ Resources:
   JourneyOutcomeLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
@@ -864,7 +916,7 @@ Resources:
   JourneyOutcomeLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: AWS/Lambda
+      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
       MetricName: Duration
       Dimensions:
         - Name: FunctionName
@@ -874,6 +926,32 @@ Resources:
       EvaluationPeriods: 15
       DatapointsToAlarm: 15
       Threshold: 1000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  JourneyOutcomeLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref JourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  JourneyOutcomeLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:

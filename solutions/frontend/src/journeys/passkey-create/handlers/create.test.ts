@@ -13,6 +13,7 @@ const mockCreatePasskey = vi.fn();
 const mockDecodeAttestationObject = vi.fn();
 const mockAddMetric = vi.fn();
 const mockAddMetadata = vi.fn();
+const mockAddDimensions = vi.fn();
 const mockSendNotification = vi.fn();
 const mockGetPasskeyConvenienceMetadataByAaguid = vi.fn();
 
@@ -46,6 +47,7 @@ vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
   metrics: {
     addMetric: mockAddMetric,
     addMetadata: mockAddMetadata,
+    addDimensions: mockAddDimensions,
   },
 }));
 
@@ -272,8 +274,11 @@ describe("passkey-create handlers", () => {
           }),
           "Register passkey - invalid request body",
         );
+        expect(mockAddDimensions).toHaveBeenCalledWith({
+          error_type: "InvalidRequestBody",
+        });
         expect(mockAddMetric).toHaveBeenCalledWith(
-          "InvalidRequestBody",
+          "PasskeyCreateError",
           "Count",
           1,
         );
@@ -454,8 +459,11 @@ describe("passkey-create handlers", () => {
           { error: new Error("Verification error") },
           "Register passkey - verification error",
         );
+        expect(mockAddDimensions).toHaveBeenCalledWith({
+          error_type: "VerificationError",
+        });
         expect(mockAddMetric).toHaveBeenCalledWith(
-          "VerificationError",
+          "PasskeyCreateError",
           "Count",
           1,
         );
@@ -480,8 +488,11 @@ describe("passkey-create handlers", () => {
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
           "Register passkey - verification failed",
         );
+        expect(mockAddDimensions).toHaveBeenCalledWith({
+          error_type: "VerificationFailed",
+        });
         expect(mockAddMetric).toHaveBeenCalledWith(
-          "VerificationFailed",
+          "PasskeyCreateError",
           "Count",
           1,
         );
@@ -561,7 +572,14 @@ describe("passkey-create handlers", () => {
           "ClientErrorMessage",
           "Client error occurred",
         );
-        expect(mockAddMetric).toHaveBeenCalledWith("ClientError", "Count", 1);
+        expect(mockAddDimensions).toHaveBeenCalledWith({
+          error_type: "ClientError",
+        });
+        expect(mockAddMetric).toHaveBeenCalledWith(
+          "PasskeyCreateError",
+          "Count",
+          1,
+        );
       });
 
       it("should throw when journey state is missing", async () => {
