@@ -1,7 +1,6 @@
 import { logger } from "../../../../../commons/utils/logger/index.js";
-import { metrics } from "../../../../../commons/utils/metrics/index.js";
-import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import {
+  addAuthorizeErrorMetric,
   ErrorResponse,
   getRedirectToClientRedirectUriResponse,
 } from "./common.js";
@@ -24,7 +23,7 @@ export const checkSameUserAgent = async (
     logger.warn("Cookie for checking user agent not set", {
       client_id: clientId,
     });
-    metrics.addMetric("CookieForCheckingUserAgentNotSet", MetricUnit.Count, 1);
+    addAuthorizeErrorMetric("CookieForCheckingUserAgentNotSet");
     return new ErrorResponse(
       getRedirectToClientRedirectUriResponse(
         reply,
@@ -43,7 +42,7 @@ export const checkSameUserAgent = async (
       received_hash: cookie,
       calculated_hash: hash,
     });
-    metrics.addMetric("UserAgentMismatch", MetricUnit.Count, 1);
+    addAuthorizeErrorMetric("UserAgentMismatch");
     return new ErrorResponse(
       getRedirectToClientRedirectUriResponse(
         reply,

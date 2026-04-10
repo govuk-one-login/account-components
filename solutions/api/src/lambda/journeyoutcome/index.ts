@@ -2,7 +2,10 @@ import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { getApiBaseUrlWithStage, getHeader } from "../../utils/common.js";
 import { errorManager } from "./utils/errors.js";
 import type { JourneyOutcomeAppError } from "./utils/errors.js";
-import { metricsAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/metrics/index.js";
+import {
+  metrics,
+  metricsAPIGatewayProxyHandlerWrapper,
+} from "../../../../commons/utils/metrics/index.js";
 import assert from "node:assert";
 import { getKMSKey } from "./utils/getKmsKey.js";
 import { verifySignatureAndGetPayload } from "./utils/verifySignatureAndGetPayload.js";
@@ -11,11 +14,14 @@ import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/l
 import { getJourneyOutcome } from "./utils/getJourneyOutcome.js";
 import type { JourneyOutcomePayload } from "./utils/interfaces.js";
 import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
 export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+        metrics.addMetric("JourneyOutcomeRequest", MetricUnit.Count, 1);
+
         const bearerPrefix = "Bearer ";
         const authorisationHeader = getHeader(event.headers, "Authorization");
         assert(

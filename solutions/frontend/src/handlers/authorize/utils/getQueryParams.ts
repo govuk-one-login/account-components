@@ -1,7 +1,9 @@
 import * as v from "valibot";
-import { metrics } from "../../../../../commons/utils/metrics/index.js";
-import { MetricUnit } from "@aws-lambda-powertools/metrics";
-import { ErrorResponse, getBadRequestReply } from "./common.js";
+import {
+  addAuthorizeErrorMetric,
+  ErrorResponse,
+  getBadRequestReply,
+} from "./common.js";
 import type { FastifyReply } from "fastify";
 import { logger } from "../../../../../commons/utils/logger/index.js";
 
@@ -23,7 +25,7 @@ export const getQueryParams = (reply: FastifyReply, query: unknown) => {
     logger.warn("Invalid Request", {
       issues: queryParams.issues,
     });
-    metrics.addMetric("InvalidAuthorizeRequest", MetricUnit.Count, 1);
+    addAuthorizeErrorMetric("InvalidAuthorizeRequest");
     return new ErrorResponse(getBadRequestReply(reply));
   }
   return queryParams.output;

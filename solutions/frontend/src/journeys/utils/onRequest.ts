@@ -10,13 +10,20 @@ import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErr
 import { logger } from "../../../../commons/utils/logger/index.js";
 import type { failedJourneyErrors } from "./failedJourneyErrors.js";
 
+const addErrorMetric = (reason: string) => {
+  metrics.addDimensions({ error_type: reason });
+  metrics.addMetric("JourneyRequestError", MetricUnit.Count, 1);
+};
+
 export const onRequest = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
+  metrics.addMetric("JourneyRequest", MetricUnit.Count, 1);
+
   if (!request.session.claims) {
     request.log.warn("NoClaimsInSession");
-    metrics.addMetric("NoClaimsInSession", MetricUnit.Count, 1);
+    addErrorMetric("NoClaimsInSession");
     return await redirectToAuthorizeErrorPage(request, reply);
   }
 
@@ -40,7 +47,7 @@ export const onRequest = async (
       },
       "ClientNotFound",
     );
-    metrics.addMetric("ClientNotFound", MetricUnit.Count, 1);
+    addErrorMetric("ClientNotFound");
     return await redirectToAuthorizeErrorPage(request, reply);
   }
 
@@ -72,7 +79,7 @@ export const onRequest = async (
       },
       "RequiredClaimsMissing",
     );
-    metrics.addMetric("RequiredClaimsMissing", MetricUnit.Count, 1);
+    addErrorMetric("RequiredClaimsMissing");
     return await redirectToAuthorizeErrorPage(request, reply);
   }
 
