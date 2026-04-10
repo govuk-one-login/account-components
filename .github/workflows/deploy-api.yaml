@@ -97,7 +97,7 @@ jobs:
       - name: Deploy
         uses: govuk-one-login/devplatform-upload-action@b7bc01ed6e0b61d54f42e7f3d12dd3fdbb0f172a
         with:
-          artifact-bucket-name: ${{ secrets.PIPELINE_GH_ACTIONS_SOURCE_BUCKET_NAME }}
-          signing-profile-name: ${{ secrets.PIPELINE_GH_ACTIONS_ROLE_NAME }}
+          artifact-bucket-name: ${{ secrets.PIPELINE_SOURCE_BUCKET_NAME }}
+          signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
           working-directory: ./solutions/app-infra
           template-file: .aws-sam/build/template.yaml
