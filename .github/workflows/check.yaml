@@ -44,6 +44,9 @@ jobs:
       - name: Install dependencies
         run: npm run install-all && cd solutions/integration-tests && npm ci
 
+      - name: Build
+        run: npm run build:all
+
       - name: Check types
         run: npm run check-types
 
@@ -70,9 +73,6 @@ jobs:
 
       - name: Validate API Specs
         run: npm run api-specs:validate
-
-      - name: Build
-        run: npm run build:all
 
       - name: Validate passkeys convenience metadata
         run: |
