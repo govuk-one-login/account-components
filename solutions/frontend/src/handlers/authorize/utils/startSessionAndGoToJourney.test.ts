@@ -10,10 +10,13 @@ vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
   logger: { warn: vi.fn() },
 }));
 
-// @ts-expect-error
-vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
-  metrics: { addMetric: vi.fn() },
-}));
+vi.mock(import("./common.js"), async () => {
+  const actual = await vi.importActual("./common.js");
+  return {
+    ...actual,
+    addAuthorizeErrorMetric: vi.fn(),
+  };
+});
 
 vi.mock(import("jose"), () => ({
   decodeJwt: vi.fn(),

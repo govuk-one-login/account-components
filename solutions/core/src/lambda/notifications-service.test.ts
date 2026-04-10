@@ -8,12 +8,13 @@ const mockLogger = {
   info: vi.fn(),
   error: vi.fn(),
   resetKeys: vi.fn(),
+  appendKeys: vi.fn(),
 };
 const mockMetrics = {
   addMetadata: vi.fn(),
   addMetric: vi.fn(),
-  captureColdStartMetric: vi.fn(),
   publishStoredMetrics: vi.fn(),
+  addDimensions: vi.fn(),
 };
 
 enum MockNotificationType {
@@ -209,7 +210,6 @@ describe("notifications-service", () => {
       expect.objectContaining({
         messageId: "test-message-id",
         id: "notify-id-123",
-        notificationType: "WITH_PERSONALISATION",
       }),
     );
   });
@@ -312,9 +312,7 @@ describe("notifications-service", () => {
     expect(result.batchItemFailures).toHaveLength(1);
     expect(mockLogger.error).toHaveBeenCalledWith(
       "template_id_not_found",
-      expect.objectContaining({
-        notificationType: "WITH_PERSONALISATION",
-      }),
+      expect.any(Object),
     );
     expect(mockSendEmail).not.toHaveBeenCalledWith();
   });
@@ -434,7 +432,6 @@ describe("notifications-service", () => {
       expect.objectContaining({
         messageId: "msg-1",
         id: "notify-1",
-        notificationType: "WITH_PERSONALISATION",
         reference: "ref-1",
       }),
     );
@@ -457,7 +454,6 @@ describe("notifications-service", () => {
     await handler(event);
 
     expect(mockLogger.resetKeys).toHaveBeenCalledWith();
-    expect(mockMetrics.captureColdStartMetric).toHaveBeenCalledWith();
     expect(mockMetrics.publishStoredMetrics).toHaveBeenCalledWith();
   });
 

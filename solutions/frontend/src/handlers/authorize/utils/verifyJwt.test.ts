@@ -8,7 +8,7 @@ import {
   afterAll,
 } from "vitest";
 import type { verifyJwt as verifyJwtForType } from "./verifyJwt.js";
-import { ErrorResponse } from "./common.js";
+import { ErrorResponse, addAuthorizeErrorMetric } from "./common.js";
 import {
   JOSEAlgNotAllowed,
   JOSEError,
@@ -31,7 +31,11 @@ const ORIGINAL_ENV = { ...process.env };
 
 vi.mock(import("./common.js"), async () => {
   process.env["AUTHORIZE_ERROR_PAGE_URL"] = "https://example.com/error";
-  return await vi.importActual("./common.js");
+  const actual = await vi.importActual("./common.js");
+  return {
+    ...actual,
+    addAuthorizeErrorMetric: vi.fn(),
+  };
 });
 
 // @ts-expect-error
@@ -41,7 +45,7 @@ vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
 
 // @ts-expect-error
 vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
-  metrics: { addMetric: vi.fn(), addMetadata: vi.fn() },
+  metrics: { addMetadata: vi.fn() },
 }));
 
 const mockJwtVerify = vi.fn();
@@ -454,6 +458,7 @@ describe("verifyJwt", () => {
 
     expect(result).toStrictEqual(payload);
     expect(mockGetClaimsSchema).toHaveBeenCalledWith(
+      addAuthorizeErrorMetric,
       client,
       redirectUri,
       scope,
