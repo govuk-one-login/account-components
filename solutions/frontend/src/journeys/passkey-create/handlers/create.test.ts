@@ -680,7 +680,13 @@ describe("passkey-create handlers", () => {
           mockReply as FastifyReply,
         );
 
-        expect(mockVerifyRegistrationResponse).toHaveBeenCalled();
+        expect(mockVerifyRegistrationResponse).toHaveBeenCalledWith(
+          expect.objectContaining({
+            expectedChallenge: "test-challenge",
+            expectedOrigin: "https://example.com",
+            expectedRPID: "example.com",
+          }),
+        );
         expect(mockCreatePasskey).not.toHaveBeenCalled();
       });
 
@@ -710,8 +716,17 @@ describe("passkey-create handlers", () => {
           mockReply as FastifyReply,
         );
         
-        expect(mockVerifyRegistrationResponse).toHaveBeenCalled();
-        expect(mockCreatePasskey).toHaveBeenCalled();
+        expect(mockVerifyRegistrationResponse).toHaveBeenCalledWith(
+          expect.objectContaining({
+            expectedChallenge: "test-challenge",
+            expectedOrigin: "https://example.com",
+            expectedRPID: "example.com",
+          }),
+        );
+        expect(mockCreatePasskey).toHaveBeenCalledWith(
+          "user-123",
+          expect.any(Object),
+        );
 
       });
     });
