@@ -860,6 +860,89 @@ Resources:
       RetentionInDays: 30
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
+  NotificationsServiceLambdaThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref NotificationsServiceLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  NotificationsServiceLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref NotificationsServiceLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  NotificationsServiceLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  NotificationsServiceLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref NotificationsServiceLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: notificationType
+              Value: $.notificationType
+
+  NotificationsServiceLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref NotificationsServiceLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: notificationType
+              Value: $.notificationType
+
+  NotificationsServiceLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref NotificationsServiceLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: notificationType
+              Value: $.notificationType
+
   NotificationsServiceFunctionSuccessRate:
     Type: AWS::CloudWatch::Alarm
     Properties:
