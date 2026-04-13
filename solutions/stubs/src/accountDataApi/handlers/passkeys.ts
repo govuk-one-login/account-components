@@ -93,11 +93,15 @@ export async function passkeysGetHandler(
 
   const token = request.headers.authorization.split(" ")[1];
   if (token) {
-    const claims = decodeJwt(token);
+    try {
+      const claims = decodeJwt(token);
       if (claims["getPasskeys_scenario"] === "max_number_of_passkeys") {
         reply.send({ passkeys });
         return reply;
       }
+    } catch {
+      // token is not a valid JWT, continue with default response
+    }
   }
 
   reply.send({ passkeys: passkeys.slice(0, 2) });
