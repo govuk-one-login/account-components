@@ -245,7 +245,6 @@ export async function postHandler(
     request.awsLambda?.event,
   );
 
-  // this is necessary to prevent a user from registering more passkeys than the maximum allowed, as there is no limit on the client side and a user could bypass it by sending requests directly to the API
   const getPasskeysResult = await accountDataApiClient.getPasskeys(
     request.session.claims.public_sub
   );
@@ -268,7 +267,6 @@ export async function postHandler(
     return reply;
     
   }
-  // end of check for maximum number of passkeys
 
   const savePasskeyResult = await accountDataApiClient.createPasskey(
     request.session.claims.public_sub,
