@@ -7,8 +7,9 @@ import type { FastifyInstance } from "fastify";
 import { testingJourney } from "./testing-journey/index.js";
 import { onRequest } from "./utils/onRequest.js";
 import { onSend } from "./utils/onSend.js";
-import { completeFailedJourneyHandler } from "./completeFailedJourney/handler.js";
 import { paths } from "../utils/paths.js";
+
+const mockCompleteFailedJourneyHandler = vi.fn();
 
 vi.mock(import("./utils/onRequest.js"), () => ({
   onRequest: vi.fn(),
@@ -17,7 +18,7 @@ vi.mock(import("./utils/onSend.js"), () => ({
   onSend: vi.fn(),
 }));
 vi.mock(import("./completeFailedJourney/handler.js"), () => ({
-  completeFailedJourneyHandler: vi.fn(),
+  completeFailedJourneyHandler: mockCompleteFailedJourneyHandler,
 }));
 
 describe("journeyRoutes plugin", () => {
@@ -102,16 +103,53 @@ describe("journeyRoutes plugin", () => {
     expect(mockRegister).toHaveBeenCalledWith(passkeyCreate);
   });
 
-  it("registers completeFailedJourneyHandler routes", () => {
+  it("registers GET route for completeFailedJourney", () => {
     journeyRoutes(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
       paths.journeys.others.completeFailedJourney.path,
-      completeFailedJourneyHandler,
+      expect.any(Function),
     );
+  });
+
+  it("registers POST route for completeFailedJourney", () => {
+    journeyRoutes(mockFastify);
+
     expect(mockPost).toHaveBeenCalledWith(
       paths.journeys.others.completeFailedJourney.path,
-      completeFailedJourneyHandler,
+      expect.any(Function),
+    );
+  });
+
+  it("calls completeFailedJourneyHandler via dynamic import for GET route", async () => {
+    journeyRoutes(mockFastify);
+
+    const getHandler = mockGet.mock.calls.find(
+      (call) => call[0] === paths.journeys.others.completeFailedJourney.path,
+    )?.[1];
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    await getHandler(mockRequest, mockReply);
+
+    expect(mockCompleteFailedJourneyHandler).toHaveBeenCalledWith(
+      mockRequest,
+      mockReply,
+    );
+  });
+
+  it("calls completeFailedJourneyHandler via dynamic import for POST route", async () => {
+    journeyRoutes(mockFastify);
+
+    const postHandler = mockPost.mock.calls.find(
+      (call) => call[0] === paths.journeys.others.completeFailedJourney.path,
+    )?.[1];
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    await postHandler(mockRequest, mockReply);
+
+    expect(mockCompleteFailedJourneyHandler).toHaveBeenCalledWith(
+      mockRequest,
+      mockReply,
     );
   });
 });

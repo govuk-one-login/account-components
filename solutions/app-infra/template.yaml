@@ -1045,6 +1045,89 @@ Resources:
       RetentionInDays: 30
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
+  NotificationsServiceLambdaThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref NotificationsServiceLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  NotificationsServiceLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref NotificationsServiceLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  NotificationsServiceLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  NotificationsServiceLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref NotificationsServiceLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: notificationType
+              Value: $.notificationType
+
+  NotificationsServiceLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref NotificationsServiceLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: notificationType
+              Value: $.notificationType
+
+  NotificationsServiceLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref NotificationsServiceLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: notificationType
+              Value: $.notificationType
+
   NotificationsServiceFunctionSuccessRate:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -1854,6 +1937,51 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  ApiTokenLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  ApiTokenLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  ApiTokenLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
   ApiTokenLambdaLogErrorMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -1864,6 +1992,29 @@ Resources:
           MetricName: ErrorAndCriticalLogCount
           MetricValue: "1"
           DefaultValue: 0
+
+  ApiTokenLambdaColdStartCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: ColdStartCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiTokenLambdaColdStartDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: ColdStartDuration
+          MetricValue: $init_duration_value
+          DefaultValue: 0
+          Unit: Milliseconds
 
   ApiTokenLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1934,6 +2085,51 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  ApiJourneyOutcomeLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  ApiJourneyOutcomeLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  ApiJourneyOutcomeLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
   ApiJourneyOutcomeLambdaLogErrorMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -1944,6 +2140,29 @@ Resources:
           MetricName: ErrorAndCriticalLogCount
           MetricValue: "1"
           DefaultValue: 0
+
+  ApiJourneyOutcomeLambdaColdStartCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: ColdStartCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiJourneyOutcomeLambdaColdStartDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: ColdStartDuration
+          MetricValue: $init_duration_value
+          DefaultValue: 0
+          Unit: Milliseconds
 
   ApiJourneyOutcomeLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2367,6 +2586,57 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  FrontendLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+            - Key: path
+              Value: $.path
+
+  FrontendLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+            - Key: path
+              Value: $.path
+
+  FrontendLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+            - Key: path
+              Value: $.path
+
   FrontendLambdaLogErrorMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -2392,6 +2662,29 @@ Resources:
       TreatMissingData: notBreaching
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  FrontendLambdaColdStartCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: ColdStartCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  FrontendLambdaColdStartDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: ColdStartDuration
+          MetricValue: $init_duration_value
+          DefaultValue: 0
+          Unit: Milliseconds
 
   FrontendLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
