@@ -120,7 +120,6 @@ export abstract class JsonApiClient {
       }
 
       const body = v.safeParse(successResponseBodySchema, responseJson);
-      console.log("body", body.issues);
       if (!body.success) {
         return {
           success: false,
