@@ -851,6 +851,51 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  TokenLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref TokenLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  TokenLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref TokenLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  TokenLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref TokenLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
   TokenLambdaLogErrorMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -861,6 +906,29 @@ Resources:
           MetricName: ErrorAndCriticalLogCount
           MetricValue: "1"
           DefaultValue: 0
+
+  TokenLambdaColdStartCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref TokenLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: ColdStartCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  TokenLambdaColdStartDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref TokenLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: ColdStartDuration
+          MetricValue: $init_duration_value
+          DefaultValue: 0
+          Unit: Milliseconds
 
   TokenLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -931,6 +999,51 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  JourneyOutcomeLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref JourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  JourneyOutcomeLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref JourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  JourneyOutcomeLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref JourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
   JourneyOutcomeLambdaLogErrorMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -941,6 +1054,29 @@ Resources:
           MetricName: ErrorAndCriticalLogCount
           MetricValue: "1"
           DefaultValue: 0
+
+  JourneyOutcomeLambdaColdStartCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref JourneyOutcomeLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: ColdStartCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  JourneyOutcomeLambdaColdStartDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref JourneyOutcomeLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: ColdStartDuration
+          MetricValue: $init_duration_value
+          DefaultValue: 0
+          Unit: Milliseconds
 
   JourneyOutcomeLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
