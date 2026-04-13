@@ -64,15 +64,15 @@ variable "signing_profile_version_arn" {
   description = "The ARN of the signing profile version used to sign Lambda code. This is the shared profile deployed in build from the signer stack"
 }
 
-variable "api_artifact_source_bucket_arn" {
+variable "artifact_source_bucket_arn" {
   type        = string
-  description = "The ARN of the promotion bucket from the previous environment's API pipeline"
+  description = "The ARN of the promotion bucket from the previous environment's pipeline"
   default     = "none"
 }
 
-variable "api_artifact_source_bucket_event_trigger_role_arn" {
+variable "artifact_source_bucket_event_trigger_role_arn" {
   type        = string
-  description = "The ARN of the role to assume for promotion events from the previous environment's API pipeline"
+  description = "The ARN of the role to assume for promotion events from the previous environment's pipeline"
   default     = "none"
 }
 

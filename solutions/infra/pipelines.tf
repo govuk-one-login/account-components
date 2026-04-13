@@ -12,8 +12,8 @@ resource "aws_cloudformation_stack" "amc_pipeline_stack" {
     SigningProfileVersionArn                = var.signing_profile_version_arn
     AdditionalCodeSigningVersionArns        = var.additional_code_signing_version_arns
     CustomKmsKeyArns                        = var.custom_kms_key_arn
-    ArtifactSourceBucketArn                 = var.api_artifact_source_bucket_arn
-    ArtifactSourceBucketEventTriggerRoleArn = var.api_artifact_source_bucket_event_trigger_role_arn
+    ArtifactSourceBucketArn                 = var.artifact_source_bucket_arn
+    ArtifactSourceBucketEventTriggerRoleArn = var.artifact_source_bucket_event_trigger_role_arn
     GitHubRepositoryName                    = var.create_build_stacks ? var.repository_name : "none"
     TestImageRepositoryNames                = contains(["dev", "build"], var.environment) ? var.repository_name : ""
     TestImageRepositoryUri                  = contains(["dev", "build"], var.environment) ? aws_cloudformation_stack.test_image_repository[0].outputs["TestRunnerImageEcrRepositoryUri"] : "none"
