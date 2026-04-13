@@ -911,7 +911,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref TokenLambdaLogGroup
-      FilterPattern: "[report_label=\"REPORT\", ..., init_duration_label=\"Init\", duration_label=\"Duration:\", init_duration_value, init_duration_unit=\"ms\"]"
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
           MetricName: ColdStartCount
@@ -922,7 +922,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref TokenLambdaLogGroup
-      FilterPattern: "[report_label=\"REPORT\", ..., init_duration_label=\"Init\", duration_label=\"Duration:\", init_duration_value, init_duration_unit=\"ms\"]"
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
           MetricName: ColdStartDuration
@@ -1059,7 +1059,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref JourneyOutcomeLambdaLogGroup
-      FilterPattern: "[report_label=\"REPORT\", ..., init_duration_label=\"Init\", duration_label=\"Duration:\", init_duration_value, init_duration_unit=\"ms\"]"
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
           MetricName: ColdStartCount
@@ -1070,7 +1070,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref JourneyOutcomeLambdaLogGroup
-      FilterPattern: "[report_label=\"REPORT\", ..., init_duration_label=\"Init\", duration_label=\"Duration:\", init_duration_value, init_duration_unit=\"ms\"]"
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
           MetricName: ColdStartDuration

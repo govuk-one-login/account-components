@@ -773,7 +773,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref FrontendLambdaLogGroup
-      FilterPattern: "[report_label=\"REPORT\", ..., init_duration_label=\"Init\", duration_label=\"Duration:\", init_duration_value, init_duration_unit=\"ms\"]"
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
           MetricName: ColdStartCount
@@ -784,7 +784,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref FrontendLambdaLogGroup
-      FilterPattern: "[report_label=\"REPORT\", ..., init_duration_label=\"Init\", duration_label=\"Duration:\", init_duration_value, init_duration_unit=\"ms\"]"
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
           MetricName: ColdStartDuration
