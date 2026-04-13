@@ -715,7 +715,7 @@ describe("passkey-create handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         );
-        
+
         expect(mockVerifyRegistrationResponse).toHaveBeenCalledWith(
           expect.objectContaining({
             expectedChallenge: "test-challenge",
@@ -727,7 +727,6 @@ describe("passkey-create handlers", () => {
           "user-123",
           expect.any(Object),
         );
-
       });
     });
   });

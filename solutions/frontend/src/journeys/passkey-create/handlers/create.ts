@@ -246,16 +246,18 @@ export async function postHandler(
   );
 
   const getPasskeysResult = await accountDataApiClient.getPasskeys(
-    request.session.claims.public_sub
+    request.session.claims.public_sub,
   );
 
-  if(!getPasskeysResult.success) {
+  if (!getPasskeysResult.success) {
     throw new Error(getPasskeysResult.error);
   }
 
   const appConfig = await getAppConfig();
 
-  if (getPasskeysResult.result.passkeys.length >= appConfig.max_number_of_passkeys) {
+  if (
+    getPasskeysResult.result.passkeys.length >= appConfig.max_number_of_passkeys
+  ) {
     request.log.warn("Register passkey - user has maximum number of passkeys");
     metrics.addMetric("UserHasMaximumNumberOfPasskeys", MetricUnit.Count, 1);
 
@@ -265,7 +267,6 @@ export async function postHandler(
     });
 
     return reply;
-    
   }
 
   const savePasskeyResult = await accountDataApiClient.createPasskey(

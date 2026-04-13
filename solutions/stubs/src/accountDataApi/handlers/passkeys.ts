@@ -23,7 +23,7 @@ export async function passkeysGetHandler(
     },
   );
 
-    const passkeys = [
+  const passkeys = [
     {
       credential: "fake-credential-1",
       id: "f5cf86e0-6eb5-4965-8c5e-2516b8f1c625",
