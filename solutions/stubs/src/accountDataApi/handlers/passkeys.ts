@@ -100,7 +100,7 @@ export async function passkeysGetHandler(
     return reply;
   }
 
-  const token = request.headers.authorization!.split(" ")[1];
+  const token = request.headers.authorization?.split(" ")[1];
   if (token) {
     try {
       const claims = decodeJwt(token);
