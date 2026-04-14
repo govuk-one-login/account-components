@@ -117,34 +117,6 @@ describe("sendAuditEvent", () => {
     });
   });
 
-  it("should use NO_VALUE for missing optional fields", async () => {
-    mockGetPropsFromAPIGatewayEvent.mockReturnValue({
-      sourceIp: "192.168.1.1",
-    });
-
-    const event = {
-      event_name: "AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE" as const,
-      client_id: "client-123",
-    };
-
-    await sendAuditEvent<"AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE">(
-      event,
-      mockApiGatewayEvent,
-    );
-
-    const sentMessage = JSON.parse(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      mockSendMessage.mock.calls[0]?.[0]?.MessageBody as string,
-    ) as { user: unknown };
-
-    expect(sentMessage.user).toStrictEqual({
-      session_id: "NO_VALUE",
-      persistent_session_id: "NO_VALUE",
-      ip_address: "192.168.1.1",
-      govuk_signin_journey_id: "NO_VALUE",
-    });
-  });
-
   it("should throw error when AUDIT_EVENTS_QUEUE_URL is not set", async () => {
     delete process.env["AUDIT_EVENTS_QUEUE_URL"];
 

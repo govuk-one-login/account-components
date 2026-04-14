@@ -37,7 +37,6 @@ const buildEvent = <T extends EventName>(
   event: Event<T>,
   apiGatewayProxyEvent: APIGatewayProxyEvent,
 ) => {
-  const noValue = "NO_VALUE";
   const now = new Date();
   const propsFromEvent = getPropsFromAPIGatewayEvent(apiGatewayProxyEvent);
 
@@ -48,10 +47,10 @@ const buildEvent = <T extends EventName>(
       event_timestamp_ms_formatted: now.toISOString(),
       component_id: "AMC" as const,
       user: {
-        session_id: propsFromEvent.sessionId ?? noValue,
-        persistent_session_id: propsFromEvent.persistentSessionId ?? noValue,
+        session_id: propsFromEvent.sessionId,
+        persistent_session_id: propsFromEvent.persistentSessionId,
         ip_address: propsFromEvent.sourceIp,
-        govuk_signin_journey_id: propsFromEvent.clientSessionId ?? noValue,
+        govuk_signin_journey_id: propsFromEvent.clientSessionId,
       },
       ...(propsFromEvent.txmaAuditEncoded === undefined
         ? {}
