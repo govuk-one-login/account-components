@@ -2,10 +2,15 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import * as v from "valibot";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { passkeysGetHandler, passkeysPostHandler } from "./passkeys.js";
+import { decodeJwt } from "jose";
 
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/constants.js"), () => ({
   passkeyDetailsSchema: v.object({}),
+}));
+
+vi.mock(import("jose"), () => ({
+  decodeJwt: vi.fn(),
 }));
 
 describe("passkeysGetHandler", () => {
@@ -37,6 +42,8 @@ describe("passkeysGetHandler", () => {
   });
 
   it("should return passkeys array for valid request", async () => {
+    vi.mocked(decodeJwt).mockReturnValue({});
+
     mockRequest.headers = { authorization: "Bearer token" };
     mockRequest.params = { publicSubjectId: "test-subject-id" };
 
@@ -71,12 +78,15 @@ describe("passkeysGetHandler", () => {
           isBackUpEligible: true,
           isBackedUp: true,
           createdAt: "2026-01-19T19:04:16.341Z",
+          lastUsedAt: "2026-02-25T20:06:19.341Z",
         },
       ],
     });
   });
 
   it("should throw error when publicSubjectId is missing", async () => {
+    vi.mocked(decodeJwt).mockReturnValue({});
+
     mockRequest.headers = { authorization: "Bearer token" };
     mockRequest.params = {};
 
@@ -118,6 +128,8 @@ describe("passkeysPostHandler", () => {
   });
 
   it("should return 201 for valid request", async () => {
+    vi.mocked(decodeJwt).mockReturnValue({});
+
     mockRequest.headers = { authorization: "Bearer token" };
     mockRequest.params = { publicSubjectId: "test-subject-id" };
     mockRequest.body = {};
@@ -132,6 +144,8 @@ describe("passkeysPostHandler", () => {
   });
 
   it("should throw error when publicSubjectId is missing", async () => {
+    vi.mocked(decodeJwt).mockReturnValue({});
+
     mockRequest.headers = { authorization: "Bearer token" };
     mockRequest.params = {};
 

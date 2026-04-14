@@ -614,5 +614,120 @@ describe("passkey-create handlers", () => {
         ).rejects.toThrow();
       });
     });
+
+    describe("maximum passkeys", () => {
+      it("should re-render with error UI when the maximum number of passkeys is reached", async () => {
+        mockRequest.body = {
+          action: "register",
+          registrationResponse: JSON.stringify({}),
+        };
+
+        mockGetPasskeys.mockResolvedValue({
+          success: true,
+          result: {
+            passkeys: [
+              { id: "passkey-1" },
+              { id: "passkey-2" },
+              { id: "passkey-3" },
+              { id: "passkey-4" },
+              { id: "passkey-5" },
+            ],
+          },
+        });
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockReply.render).toHaveBeenCalledWith(
+          "journeys/passkey-create/templates/create.njk",
+          expect.objectContaining({
+            showErrorUi: true,
+          }),
+        );
+        expect(mockRequest.log?.warn).toHaveBeenCalledWith(
+          "Register passkey - user has maximum number of passkeys",
+        );
+        expect(mockAddMetric).toHaveBeenCalledWith(
+          "UserHasMaximumNumberOfPasskeys",
+          "Count",
+          1,
+        );
+      });
+
+      it("should prevent registration when the maximum number of passkeys is reached", async () => {
+        mockRequest.body = {
+          action: "register",
+          registrationResponse: JSON.stringify({}),
+        };
+
+        mockGetPasskeys.mockResolvedValue({
+          success: true,
+          result: {
+            passkeys: [
+              { id: "passkey-1" },
+              { id: "passkey-2" },
+              { id: "passkey-3" },
+              { id: "passkey-4" },
+              { id: "passkey-5" },
+            ],
+          },
+        });
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockVerifyRegistrationResponse).toHaveBeenCalledWith(
+          expect.objectContaining({
+            expectedChallenge: "test-challenge",
+            expectedOrigin: "https://example.com",
+            expectedRPID: "example.com",
+          }),
+        );
+        expect(mockCreatePasskey).not.toHaveBeenCalled();
+      });
+
+      it("should allow registration when the maximum number of passkeys is not reached", async () => {
+        mockRequest.body = {
+          action: "register",
+          registrationResponse: JSON.stringify({
+            id: "credential-id",
+            rawId: "credential-id",
+            response: {
+              clientDataJSON: "client-data",
+              attestationObject: "attestation-object",
+            },
+            type: "public-key",
+          }),
+        };
+
+        mockGetPasskeys.mockResolvedValue({
+          success: true,
+          result: {
+            passkeys: [{ id: "passkey-1" }],
+          },
+        });
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockVerifyRegistrationResponse).toHaveBeenCalledWith(
+          expect.objectContaining({
+            expectedChallenge: "test-challenge",
+            expectedOrigin: "https://example.com",
+            expectedRPID: "example.com",
+          }),
+        );
+        expect(mockCreatePasskey).toHaveBeenCalledWith(
+          "user-123",
+          expect.any(Object),
+        );
+      });
+    });
   });
 });

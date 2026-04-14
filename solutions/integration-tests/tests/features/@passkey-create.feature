@@ -211,6 +211,19 @@ Feature: Passkey create
     "success": true,
     """
 
+  Scenario: User has maximum number of passkeys
+    Given I go to the journey initiator
+    And I select the option beginning with "Maximum number of passkeys" in the "Get passkeys" select    
+    And I begin a "passkey-create" journey
+    And I have an authenticator with the following options:
+    """
+    hasUserVerification: true
+    isUserVerified: true
+    hasResidentKey: true
+    """    
+    And I click the "Continue" button
+    Then the page title is prefixed with "We could not set up your passkey"  
+
   Scenario: Successfully create a passkey from error screen
     Given I go to the journey initiator
     And I begin a "passkey-create" journey

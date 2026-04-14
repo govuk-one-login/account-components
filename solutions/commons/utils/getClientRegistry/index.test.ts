@@ -28,6 +28,7 @@ describe("getClientRegistry", () => {
       jwks_cache_max_age: 1000,
       jwks_http_timeout: 1000,
       journey_outcome_ttl: 300,
+      max_number_of_passkeys: 5,
     };
 
     const { getAppConfig } = await import("../getAppConfig/index.js");

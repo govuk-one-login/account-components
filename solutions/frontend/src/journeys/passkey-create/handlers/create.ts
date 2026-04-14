@@ -29,6 +29,7 @@ const addErrorMetric = (reason: string) => {
   metrics.addDimensions({ error_type: reason });
   metrics.addMetric("PasskeyCreateError", MetricUnit.Count, 1);
 };
+import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 
 const setRegistrationOptions = async (
   request: FastifyRequest,
@@ -243,6 +244,30 @@ export async function postHandler(
     request.session.claims.account_data_api_access_token,
     request.awsLambda?.event,
   );
+
+  const getPasskeysResult = await accountDataApiClient.getPasskeys(
+    request.session.claims.public_sub,
+  );
+
+  if (!getPasskeysResult.success) {
+    throw new Error(getPasskeysResult.error);
+  }
+
+  const appConfig = await getAppConfig();
+
+  if (
+    getPasskeysResult.result.passkeys.length >= appConfig.max_number_of_passkeys
+  ) {
+    request.log.warn("Register passkey - user has maximum number of passkeys");
+    metrics.addMetric("UserHasMaximumNumberOfPasskeys", MetricUnit.Count, 1);
+
+    await render(request, reply, {
+      stringsSuffix,
+      showErrorUi: true,
+    });
+
+    return reply;
+  }
 
   const savePasskeyResult = await accountDataApiClient.createPasskey(
     request.session.claims.public_sub,
