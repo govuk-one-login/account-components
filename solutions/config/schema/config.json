@@ -39,6 +39,10 @@
       "description": "Time-to-live in seconds for journey outcome",
       "type": "integer",
       "minimum": 1
+    },
+    "max_number_of_passkeys": {
+      "description": "The maximum number of passkeys a user can have",
+      "type": "integer"
     }
   },
   "required": [
@@ -47,7 +51,8 @@
     "auth_code_ttl",
     "jwks_cache_max_age",
     "jwks_http_timeout",
-    "journey_outcome_ttl"
+    "journey_outcome_ttl",
+    "max_number_of_passkeys"
   ],
   "$defs": {
     "analytics": {
