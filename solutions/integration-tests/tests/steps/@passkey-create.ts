@@ -5,17 +5,6 @@ import * as yaml from "yaml";
 const { Given } = bdd;
 
 Given(
-  "I click the {string} button to continue the create passkey journey",
-  async ({ page }, name: string) => {
-    await page.getByRole("button", { name, exact: true }).click();
-  },
-);
-
-Given("the page has finished loading", async ({ page }) => {
-  await page.waitForLoadState("load");
-});
-
-Given(
   "I have an authenticator with the following options:",
   async ({ scenarioData }, optionsYaml: string) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
