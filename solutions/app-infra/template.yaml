@@ -2179,30 +2179,12 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  SecretsEncryptionKey:
-    Type: AWS::KMS::Key
-    Properties:
-      EnableKeyRotation: true
-      KeyPolicy:
-        Statement:
-          - Effect: Allow
-            Principal:
-              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
-            Action: "kms:*"
-            Resource: "*"
-
-  SecretsEncryptionKeyAlias:
-    Type: AWS::KMS::Alias
-    Properties:
-      AliasName: !Sub "alias/${AWS::StackName}-SecretsEncryptionKey"
-      TargetKeyId: !GetAtt SecretsEncryptionKey.Arn
-
   SessionSecret:
     Type: AWS::SecretsManager::Secret
     Properties:
       GenerateSecretString:
         PasswordLength: 64
-      KmsKeyId: !Ref SecretsEncryptionKey
+      KmsKeyId: !Ref SecretsKmsKey
 
   SessionsTable:
     Type: AWS::DynamoDB::Table
