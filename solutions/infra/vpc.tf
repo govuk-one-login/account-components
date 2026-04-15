@@ -33,6 +33,7 @@ resource "aws_cloudformation_stack" "spoke_vpc_stack" {
     SQSApiEnabled                    = "Yes"
     ExecuteApiGatewayEnabled         = "Yes"
     AllowedDomains                   = "*.notifications.service.gov.uk"
+    TestEgress                       = "https://www.notifications.service.gov.uk/"
   }
 
   capabilities = var.capabilities
