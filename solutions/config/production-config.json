@@ -7,7 +7,7 @@
         "https://signin.account.gov.uk/create-passkey-callback"
       ],
       "client_name": "Auth",
-      "jwks_uri": "https://signin.account.gov.uk/.well-known/amc-jwks.json",
+      "jwks_uri": "https://86n9innl95.execute-api.eu-west-2.amazonaws.com/production/.well-known/amc-jwks.json",
       "consider_user_logged_in": false
     },
     {
@@ -24,5 +24,6 @@
   "auth_code_ttl": 300,
   "jwks_cache_max_age": 900000,
   "jwks_http_timeout": 2500,
-  "journey_outcome_ttl": 60
+  "journey_outcome_ttl": 60,
+  "max_number_of_passkeys": 5
 }
