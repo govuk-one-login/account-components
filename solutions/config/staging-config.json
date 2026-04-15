@@ -7,7 +7,7 @@
         "https://signin.staging.account.gov.uk/create-passkey-callback"
       ],
       "client_name": "Auth",
-      "jwks_uri": "https://signin.staging.account.gov.uk/.well-known/amc-jwks.json",
+      "jwks_uri": "https://z02rnzbqw8.execute-api.eu-west-2.amazonaws.com/staging/.well-known/amc-jwks.json",
       "consider_user_logged_in": false
     },
     {
