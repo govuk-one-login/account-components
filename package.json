@@ -24,6 +24,7 @@
     "@fastify/helmet": "^13.0.2",
     "@fastify/session": "^11.1.1",
     "@fastify/static": "^9.0.0",
+    "@govuk-one-login/event-catalogue-utils": "^0.3.0",
     "@govuk-one-login/frontend-device-intelligence": "^1.2.0",
     "@govuk-one-login/frontend-ui": "^5.0.1",
     "@simplewebauthn/browser": "^13.3.0",
@@ -43,13 +44,14 @@
     "notifications-node-client": "^8.3.2",
     "nunjucks": "^3.2.4",
     "obscenity": "^0.4.6",
-    "ts-deepmerge": "^7.0.3",
     "valibot": "^1.3.1",
     "xstate": "^5.30.0"
   },
   "devDependencies": {
     "@eslint/compat": "^2.0.4",
     "@eslint/js": "^10.0.1",
+    "@govuk-one-login/event-catalogue": "^43.2.4",
+    "@govuk-one-login/event-catalogue-schemas": "^43.2.4",
     "@redocly/cli": "^2.25.4",
     "@tsconfig/node24": "^24.0.4",
     "@tsconfig/strictest": "^2.0.8",
@@ -78,7 +80,7 @@
     "vitest": "^4.0.13"
   },
   "scripts": {
-    "install-all": "npm ci && npm install @govuk-one-login/event-catalogue --registry=https://npm.pkg.github.com --no-save && npm run install-submodules",
+    "install-all": "npm ci && npm run install-submodules",
     "install-submodules": "git submodule update --init --recursive",
     "install-brewfile": "cat Brewfile; echo; echo; read -p \"Install/update Brewfile dependencies as shown above (y/N)?\" -n 1 -r; echo; if [ \"$REPLY\" == \"y\" ]; then brew bundle check || brew bundle install; fi",
     "install-git-hooks": "pre-commit install --install-hooks --overwrite",

@@ -24,6 +24,8 @@ import {
   sendNotification,
 } from "../../../../../commons/utils/notifications/index.js";
 import { getPasskeyConvenienceMetadataByAaguid } from "../../../../../commons/utils/passkeysConvenienceMetadata/index.js";
+import { createEvent } from "@govuk-one-login/event-catalogue-utils";
+import { getCommonAuditEventProps } from "../../../../../commons/utils/auditEvents/index.js";
 
 const addErrorMetric = (reason: string) => {
   metrics.addDimensions({ error_type: reason });
@@ -284,6 +286,11 @@ export async function postHandler(
           emailAddress: request.session.claims.email,
         },
   );
+
+  createEvent("AUTH_MFA_METHOD_ADD_COMPLETED", {
+    event_name: "AUTH_MFA_METHOD_ADD_COMPLETED",
+    ...getCommonAuditEventProps(request.awsLambda?.event),
+  });
 
   return await completeJourney(
     request,

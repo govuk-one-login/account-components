@@ -1,135 +1,124 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { sendAuditEvent } from "./index.js";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 
 const mockSendMessage = vi.fn();
-const mockGetPropsFromAPIGatewayEvent = vi.fn();
 
 // @ts-expect-error
 vi.mock(import("../awsClient/sqsClient/index.js"), () => ({
-  getSqsClient: vi.fn(() => ({
-    sendMessage: vi.fn(),
+  getSqsClient: () => ({ sendMessage: mockSendMessage }),
+}));
+
+// @ts-expect-error
+vi.mock(import("../getPropsFromAPIGatewayEvent/index.js"), () => ({
+  getPropsFromAPIGatewayEvent: vi.fn((event: APIGatewayProxyEvent) => ({
+    sessionId: "session-123",
+    persistentSessionId: "persistent-456",
+    sourceIp: "192.168.1.1",
+    clientSessionId: "client-789",
+    txmaAuditEncoded: event.headers["txma-audit-encoded"],
   })),
 }));
 
-vi.mock(import("../getPropsFromAPIGatewayEvent/index.js"), () => ({
-  getPropsFromAPIGatewayEvent: vi.fn(),
-}));
+const createMockEvent = (
+  headers: Record<string, string> = {},
+): APIGatewayProxyEvent =>
+  ({
+    headers,
+    requestContext: { identity: { sourceIp: "127.0.0.1" } },
+  }) as APIGatewayProxyEvent;
+
+describe("getCommonAuditEventProps", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2024-01-15T12:00:00.000Z"));
+  });
+
+  it("returns common audit event properties", async () => {
+    const { getCommonAuditEventProps } = await import("./index.js");
+    const event = createMockEvent();
+
+    const result = getCommonAuditEventProps(event);
+
+    expect(result).toStrictEqual({
+      timestamp: Math.floor(
+        new Date("2024-01-15T12:00:00.000Z").getTime() / 1000,
+      ),
+      event_timestamp_ms: new Date("2024-01-15T12:00:00.000Z").getTime(),
+      event_timestamp_ms_formatted: "2024-01-15T12:00:00.000Z",
+      component_id: "AMC",
+      user: {
+        session_id: "session-123",
+        persistent_session_id: "persistent-456",
+        ip_address: "192.168.1.1",
+        govuk_signin_journey_id: "client-789",
+      },
+    });
+  });
+
+  it("includes restricted device_information when txmaAuditEncoded is present", async () => {
+    const { getCommonAuditEventProps } = await import("./index.js");
+    const event = createMockEvent({ "txma-audit-encoded": "encoded-data" });
+
+    const result = getCommonAuditEventProps(event);
+
+    expect(result.restricted).toStrictEqual({
+      device_information: { encoded: "encoded-data" },
+    });
+  });
+
+  it("does not include restricted when txmaAuditEncoded is undefined", async () => {
+    const { getCommonAuditEventProps } = await import("./index.js");
+    const event = createMockEvent();
+
+    const result = getCommonAuditEventProps(event);
+
+    expect(result).not.toHaveProperty("restricted");
+  });
+
+  it("returns undefined user fields when apiGatewayProxyEvent is not provided", async () => {
+    const { getCommonAuditEventProps } = await import("./index.js");
+
+    const result = getCommonAuditEventProps();
+
+    expect(result).toStrictEqual({
+      timestamp: Math.floor(
+        new Date("2024-01-15T12:00:00.000Z").getTime() / 1000,
+      ),
+      event_timestamp_ms: new Date("2024-01-15T12:00:00.000Z").getTime(),
+      event_timestamp_ms_formatted: "2024-01-15T12:00:00.000Z",
+      component_id: "AMC",
+      user: {
+        session_id: undefined,
+        persistent_session_id: undefined,
+        ip_address: undefined,
+        govuk_signin_journey_id: undefined,
+      },
+    });
+  });
+});
 
 describe("sendAuditEvent", () => {
-  const originalEnv = process.env["AUDIT_EVENTS_QUEUE_URL"];
-  const mockApiGatewayEvent = {} as APIGatewayProxyEvent;
-
-  beforeEach(async () => {
-    const { getSqsClient } = await import("../awsClient/sqsClient/index.js");
-    const { getPropsFromAPIGatewayEvent } =
-      await import("../getPropsFromAPIGatewayEvent/index.js");
-    vi.mocked(getSqsClient).mockReturnValue({
-      sendMessage: mockSendMessage,
-    } as never);
-    vi.mocked(getPropsFromAPIGatewayEvent).mockImplementation(
-      mockGetPropsFromAPIGatewayEvent,
-    );
-
-    process.env["AUDIT_EVENTS_QUEUE_URL"] =
-      "https://sqs.eu-west-2.amazonaws.com/123456789012/audit-queue";
+  beforeEach(() => {
     vi.clearAllMocks();
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2024-01-01T12:00:00.000Z"));
-
-    mockGetPropsFromAPIGatewayEvent.mockReturnValue({
-      sessionId: "session-123",
-      persistentSessionId: "persistent-123",
-      sourceIp: "192.168.1.1",
-      clientSessionId: "client-session-123",
-    });
+    delete process.env["AUDIT_EVENTS_QUEUE_URL"];
   });
 
-  afterEach(() => {
-    process.env["AUDIT_EVENTS_QUEUE_URL"] = originalEnv;
-    vi.useRealTimers();
-  });
+  it("sends event to SQS queue", async () => {
+    process.env["AUDIT_EVENTS_QUEUE_URL"] = "https://sqs.example.com/queue";
+    const { sendAuditEvent } = await import("./index.js");
+    const mockEvent = { event_name: "AUTH_MFA_METHOD_ADD_COMPLETED" };
 
-  it("should send audit event to SQS queue", async () => {
-    const event = {
-      event_name: "AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE" as const,
-      client_id: "client-123",
-      user: {
-        user_id: "user-123",
-        email: "test@example.com",
-      },
-    };
-
-    await sendAuditEvent<"AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE">(
-      event,
-      mockApiGatewayEvent,
-    );
+    await sendAuditEvent(mockEvent);
 
     expect(mockSendMessage).toHaveBeenCalledWith({
-      QueueUrl: "https://sqs.eu-west-2.amazonaws.com/123456789012/audit-queue",
-      MessageBody: JSON.stringify({
-        timestamp: 1704110400,
-        event_timestamp_ms: 1704110400000,
-        event_timestamp_ms_formatted: "2024-01-01T12:00:00.000Z",
-        component_id: "AMC",
-        user: {
-          session_id: "session-123",
-          persistent_session_id: "persistent-123",
-          ip_address: "192.168.1.1",
-          govuk_signin_journey_id: "client-session-123",
-          user_id: "user-123",
-          email: "test@example.com",
-        },
-        event_name: "AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE",
-        client_id: "client-123",
-      }),
+      QueueUrl: "https://sqs.example.com/queue",
+      MessageBody: JSON.stringify(mockEvent),
     });
   });
 
-  it("should include device information when txmaAuditEncoded is present", async () => {
-    mockGetPropsFromAPIGatewayEvent.mockReturnValue({
-      sessionId: "session-123",
-      persistentSessionId: "persistent-123",
-      sourceIp: "192.168.1.1",
-      clientSessionId: "client-session-123",
-      txmaAuditEncoded: "encoded-device-info",
-    });
+  it("throws when AUDIT_EVENTS_QUEUE_URL is not set", async () => {
+    const { sendAuditEvent } = await import("./index.js");
 
-    const event = {
-      event_name: "AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE_FAILURE" as const,
-      client_id: "client-123",
-    };
-
-    await sendAuditEvent<"AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE_FAILURE">(
-      event,
-      mockApiGatewayEvent,
-    );
-
-    const sentMessage = JSON.parse(
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      mockSendMessage.mock.calls[0]?.[0]?.MessageBody as string,
-    ) as { restricted: unknown };
-
-    expect(sentMessage.restricted).toStrictEqual({
-      device_information: {
-        encoded: "encoded-device-info",
-      },
-    });
-  });
-
-  it("should throw error when AUDIT_EVENTS_QUEUE_URL is not set", async () => {
-    delete process.env["AUDIT_EVENTS_QUEUE_URL"];
-
-    const event = {
-      event_name: "AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE" as const,
-      client_id: "client-123",
-    };
-
-    await expect(
-      sendAuditEvent<"AUTH_ACCOUNT_MANAGEMENT_AUTHENTICATE">(
-        event,
-        mockApiGatewayEvent,
-      ),
-    ).rejects.toThrow();
+    await expect(sendAuditEvent({} as never)).rejects.toThrow();
   });
 });
