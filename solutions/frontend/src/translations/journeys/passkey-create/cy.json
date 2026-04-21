@@ -1,3 +1,61 @@
 {
-  "create": {}
+  "create": {
+    "pageTitle_signedOut": "Sefydlu allwedd mynediad",
+    "pageTitle_signedIn": "Sefydlu allwedd mynediad",
+
+    "heading_signedOut": "Sefydlu allwedd mynediad",
+    "heading_signedIn": "Sefydlu allwedd mynediad",
+
+    "paragraphs_signedOut": [
+      "Gofynnir i chi sganio'ch wyneb neu'ch olion bysedd, neu roi cod mynediad, PIN neu batrwm eich dyfais."
+    ],
+    "paragraphs_signedIn": [
+      "Mae allwedd mynediad yn caniatáu i chi fewngofnodi yn gyflymach, heb fod angen eich cyfrinair GOV.UK One Login.",
+      "Er enghraifft, gan ddefnyddio'ch wyneb, olion bysedd neu god mynediad dyfais.",
+      "Bydd hyn yn yr un ffordd rydych chi'n datgloi eich ffôn, cyfrifiadur neu dabled."
+    ],
+
+    "insetText_signedIn": "Ni ddylech sefydlu allwedd mynediad ar ddyfais rydych yn ei rhannu â phobl eraill.",
+
+    "detailsTitle_signedOut": "Ble fydd fy allwedd mynediad yn cael ei arbed?",
+    "detailsTitle_signedIn": "Ble fydd fy allwedd mynediad yn cael ei arbed?",
+
+    "detailsParagraphs_signedOut": [
+      "Bydd eich allwedd mynediad yn cael ei arbed yn breifat i'ch dyfais neu'ch cyfrif cwmwl - fel eich rheolwr cyfrinair.",
+      "Ni fydd eich data biometrig yn cael ei rannu gyda GOV.UK One Login nac unrhyw wasanaethau rydych yn eu cyrchu gydag ef."
+    ],
+    "detailsParagraphs_signedIn": [
+      "Bydd eich allwedd mynediad yn cael ei arbed yn breifat i'ch dyfais neu'ch cyfrif cwmwl - fel eich rheolwr cyfrinair.",
+      "Ni fydd eich data biometrig yn cael ei rannu gyda GOV.UK One Login nac unrhyw wasanaethau rydych yn eu cyrchu gydag ef."
+    ],
+
+    "buttonLabel_signedOut": "Parhau",
+    "buttonLabel_signedIn": "Sefydlu allwedd mynediad",
+
+    "skipLinkText_signedOut": "Osgoi am y tro",
+    "skipLinkText_signedIn": "Canslo a mynd yn ôl",
+
+    "error": {
+      "pageTitle_signedOut": "Nid oeddem yn gallu sefydlu eich allwedd mynediad",
+      "pageTitle_signedIn": "Nid oeddem yn gallu sefydlu eich allwedd mynediad",
+
+      "heading_signedOut": "Nid oeddem yn gallu sefydlu eich allwedd mynediad",
+      "heading_signedIn": "Nid oeddem yn gallu sefydlu eich allwedd mynediad",
+
+      "radioButtonsLegendText_signedOut": "Beth hoffech chi ei wneud?",
+      "radioButtonsLegendText_signedIn": "Beth hoffech chi ei wneud?",
+
+      "registerRadioButtonLabel_signedOut": "Ceisio sefydlu allwedd mynediad eto",
+      "registerRadioButtonLabel_signedIn": "Ceisio sefydlu allwedd mynediad eto",
+
+      "skipRadioButtonLabel_signedOut": "Osgoi am y tro",
+      "skipRadioButtonLabel_signedIn": "Canslo a mynd yn ôl",
+
+      "mustSelectAnActionErrorMessage_signedOut": "Dewiswch beth hoffech ei wneud",
+      "mustSelectAnActionErrorMessage_signedIn": "Dewiswch beth hoffech ei wneud",
+
+      "buttonLabel_signedOut": "Parhau",
+      "buttonLabel_signedIn": "Parhau"
+    }
+  }
 }
