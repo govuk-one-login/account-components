@@ -51,7 +51,6 @@
     "@eslint/compat": "^2.0.5",
     "@eslint/js": "^10.0.1",
     "@govuk-one-login/event-catalogue": "^43.2.4",
-    "@govuk-one-login/event-catalogue-schemas": "^43.2.4",
     "@redocly/cli": "^2.27.1",
     "@tsconfig/node24": "^24.0.4",
     "@tsconfig/strictest": "^2.0.8",
