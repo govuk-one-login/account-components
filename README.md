@@ -13,8 +13,7 @@ This repo contains the code for Account Components
 - Install Brewfile dependencies with `npm run install-brewfile`
 - Install dependencies with `npm run install-all`
 - Install Git Hooks with `npm run install-git-hooks`
-- Run `cd solutions/integration-tests && npm ci` to install integration testing dependencies
-- Run `npm run run:all` to start all the local servers and watch for changes. The frontend will be available at `http://localhost:6002`, the stubs at `http://localhost:6003` and the API at `http://localhost:6004`.
+- Run `npm run run:all` to start all the local servers. The frontend will be available at `http://localhost:6002`, the stubs at `http://localhost:6003` and the API at `http://localhost:6004`. The frontend and stubs will watch for changes and rebuild on demand but the API will not and needs to be restarted for changes to take effect.
 
 ## Updating Node version
 
@@ -53,6 +52,7 @@ There are various commands which can be run manually and which may also be run b
 - `npm run check-gh-actions` to check GitHub Actions with [Zizmor](https://docs.zizmor.sh/)
 - `npm run detect-secrets` to detect secrets which should not be in the repo. False positives can be [ignored with comments](https://github.com/Yelp/detect-secrets?tab=readme-ov-file#inline-allowlisting)
 - `npm run config:validate` to validate the application's config
+- `npm run api-specs:validate` to validate the OpenAPI specs
 - `npm run audit` to check for NPM package vulnerabilities and check package signature integrity
 
 If these commands detect issues it may be possible to fix them by running:
@@ -61,7 +61,6 @@ If these commands detect issues it may be possible to fix them by running:
 - `npm run eslint:fix`
 - `npm run knip:fix`
 - `npm run tflint:fix`
-- `npm run cfnlint:fix`
 - `npm run check-gh-actions:fix`
 
 ## Integration testing
