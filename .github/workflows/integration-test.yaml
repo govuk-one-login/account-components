@@ -127,7 +127,7 @@ jobs:
           EOF
 
       - name: Install integration tests dependencies
-        run: cd solutions/integration-tests && npm ci
+        run: npm run install-integration-tests
 
       - name: Run integration tests
         run: |

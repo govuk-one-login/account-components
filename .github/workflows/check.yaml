@@ -46,9 +46,6 @@ jobs:
           GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run install-all
 
-      - name: Install integration tests dependencies
-        run: cd solutions/integration-tests && npm ci
-
       - name: Check types
         run: npm run check-types
 
