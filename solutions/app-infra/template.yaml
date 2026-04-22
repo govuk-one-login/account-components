@@ -1554,7 +1554,7 @@ Resources:
     Type: AWS::SSM::Parameter
     Condition: IsDevOrBuild
     Properties:
-      Name: !Sub "/${AWS::StackName}/tests/PrivateApiGatewayUrl"
+      Name: !Sub "/tests/PrivateApiGatewayUrl"
       Type: String
       Value: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
       Description: URL of the AMC Private API
