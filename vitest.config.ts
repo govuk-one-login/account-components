@@ -11,5 +11,10 @@ export default defineConfig({
       include: ["solutions/**/*.ts"],
       reporter: ["lcov", "text"],
     },
+    server: {
+      deps: {
+        inline: ["@govuk-one-login/frontend-ui"],
+      },
+    },
   },
 });
