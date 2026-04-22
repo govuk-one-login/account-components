@@ -1,4 +1,4 @@
-name: Deploy API
+name: Deploy
 
 permissions: {}
 
@@ -58,7 +58,7 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
 
-  deploy-api:
+  deploy:
     needs: publish-integration-tests-image
     runs-on: ubuntu-latest
     permissions:
