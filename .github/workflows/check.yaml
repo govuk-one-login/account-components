@@ -86,9 +86,13 @@ jobs:
         run: npm run build:core
 
       - name: Build frontend
+        env:
+          GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:frontend
 
       - name: Build stubs
+        env:
+          GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:stubs
 
       - name: Build API

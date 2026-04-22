@@ -53,6 +53,8 @@ jobs:
         run: npm run install-all
 
       - name: Build stubs
+        env:
+          GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:stubs
 
       - name: Deploy stubs

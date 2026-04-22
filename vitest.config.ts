@@ -13,10 +13,7 @@ export default defineConfig({
     },
     server: {
       deps: {
-        inline: [
-          "@govuk-one-login/frontend-ui",
-          "@govuk-one-login/event-catalogue-utils",
-        ],
+        inline: ["@govuk-one-login/frontend-ui"],
       },
     },
   },
