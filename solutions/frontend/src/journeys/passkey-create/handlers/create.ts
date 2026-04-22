@@ -255,6 +255,13 @@ export async function postHandler(
 
   const appConfig = await getAppConfig();
 
+  console.log(
+    "MHTEST",
+    JSON.stringify(getPasskeysResult, null, 2),
+    appConfig.max_number_of_passkeys,
+    appConfig,
+  );
+
   if (
     getPasskeysResult.result.passkeys.length >= appConfig.max_number_of_passkeys
   ) {
