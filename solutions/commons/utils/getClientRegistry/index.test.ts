@@ -27,7 +27,8 @@ describe("getClientRegistry", () => {
       auth_code_ttl: 300,
       jwks_cache_max_age: 1000,
       jwks_http_timeout: 1000,
-      journey_outcome_ttl: 300,
+      access_token_max_age: 300,
+      journey_outcome_ttl: 360,
       max_number_of_passkeys: 5,
     };
 
