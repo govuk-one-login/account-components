@@ -1550,11 +1550,11 @@ Resources:
                   application/json: '{"statusCode": 200}'
                 type: mock
 
-  ApiApiGatewayUrlParameter: # for use by Stubs template.yaml and Integration Tests only
+  ApiApiGatewayUrlParameter: # for use by Integration Tests only
     Type: AWS::SSM::Parameter
     Condition: IsDevOrBuild
     Properties:
-      Name: !Sub "/${AWS::StackName}/PrivateApiGatewayUrl"
+      Name: !Sub "/${AWS::StackName}/tests/PrivateApiGatewayUrl"
       Type: String
       Value: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
       Description: URL of the AMC Private API

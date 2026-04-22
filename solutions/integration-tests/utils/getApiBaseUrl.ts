@@ -7,7 +7,7 @@ export const getApiBaseUrl = async () => {
   }
 
   try {
-    const apiBaseUrl = await getParameter("/amc/PrivateApiGatewayUrl", {
+    const apiBaseUrl = await getParameter("/amc/tests/PrivateApiGatewayUrl", {
       maxAge: 300,
     });
     if (!apiBaseUrl || apiBaseUrl.trim().length <= 0) {
