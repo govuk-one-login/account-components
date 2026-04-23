@@ -170,12 +170,6 @@ Metadata:
           - LambdaValidatorArn
 
 Conditions:
-  ArtifactSourceBucketProvided:
-    Fn::Not:
-      - Fn::Equals:
-          - !Ref ArtifactSourceBucketArn
-          - "none"
-
   ArtifactSourceBucketEventTriggerRoleProvided:
     Fn::Not:
       - Fn::Equals:
@@ -584,13 +578,16 @@ Resources:
               - "kms:UpdatePrimaryRegion"
               - "kms:Verify"
             Resource: "*"
-          - Sid: Allow Github Actions to Sign
-            Effect: "Allow"
-            Principal:
-              AWS: !GetAtt GitHubActionsRole.Arn
-            Action:
-              - "kms:Sign"
-            Resource: "*"
+          - !If
+            - CreateSourceBucket
+            - Sid: Allow Github Actions to Sign
+              Effect: "Allow"
+              Principal:
+                AWS: !GetAtt GitHubActionsRole.Arn
+              Action:
+                - "kms:Sign"
+              Resource: "*"
+            - !Ref AWS::NoValue
           - !If
             - AllowAdditionalAccounts
             - Effect: Allow
@@ -1077,20 +1074,17 @@ Resources:
             key:
               - wildcard: "*.zip"
       Targets:
-        - !If
-          - AllowAdditionalAccounts
-          - Arn: !Sub
-              - "arn:${AWS::Partition}:events:${AWS::Region}:${AccountId}:event-bus/default"
-              - AccountId: !Select
-                  - 0
-                  - !Ref ArtifactSourceBucketAllowedAccounts
-            RoleArn: !GetAtt DeploymentTriggerCloudWatchEventRole.Arn
-            Id: !Sub
-              - "codepipeline-config-${ApplicationName}-${AccountId}"
-              - AccountId: !Select
-                  - 0
-                  - !Ref ArtifactSourceBucketAllowedAccounts
-          - !Ref AWS::NoValue
+        - Arn: !Sub
+            - "arn:${AWS::Partition}:events:${AWS::Region}:${AccountId}:event-bus/default"
+            - AccountId: !Select
+                - 0
+                - !Ref ArtifactSourceBucketAllowedAccounts
+          RoleArn: !GetAtt DeploymentTriggerCloudWatchEventRole.Arn
+          Id: !Sub
+            - "codepipeline-config-${ApplicationName}-${AccountId}"
+            - AccountId: !Select
+                - 0
+                - !Ref ArtifactSourceBucketAllowedAccounts
         - !If
           - AllowAdditionalAccountTwo
           - Arn: !Sub

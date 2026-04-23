@@ -27,3 +27,5 @@ solutions/integration-tests/playwright/.cache/
 solutions/integration-tests/.features-gen
 solutions/integration-tests/cucumber-report
 solutions/integration-tests/snapshots-updated
+
+solutions/**/static-hash*.json

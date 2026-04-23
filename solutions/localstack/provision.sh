@@ -85,22 +85,22 @@ create_ssm_parameters() {
   STRING="String"
 
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-    --name "/components-mocks/MockClientEcPrivateKey" \
+    --name "/amc/MockClientEcPrivateKey" \
     --value "${MOCK_CLIENT_EC_PRIVATE_KEY}" \
     --type "${STRING}"
 
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-    --name "/components-mocks/MockClientEcPublicKey" \
+    --name "/amc/MockClientEcPublicKey" \
     --value "${MOCK_CLIENT_EC_PUBLIC_KEY}" \
     --type "${STRING}"
 
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-    --name "/components-mocks/MockClientRsaPrivateKey" \
+    --name "/amc/MockClientRsaPrivateKey" \
     --value "${MOCK_CLIENT_RSA_PRIVATE_KEY}" \
     --type "${STRING}"
 
   aws --endpoint-url=http://localhost:4566 ssm put-parameter \
-    --name "/components-mocks/MockClientRsaPublicKey" \
+    --name "/amc/MockClientRsaPublicKey" \
     --value "${MOCK_CLIENT_RSA_PUBLIC_KEY}" \
     --type "${STRING}"
   
@@ -119,7 +119,7 @@ create_kms_keys() {
     --output text)
 
   aws --endpoint-url=http://localhost:4567 kms create-alias \
-    --alias-name alias/components-core-JARRSAEncryptionKey \
+    --alias-name alias/amc-JARRSAEncryptionKey \
     --target-key-id "$KEY_ID"
 
   JWT_SIGNING_KEY_ID=$(aws --endpoint-url=http://localhost:4567 kms create-key \
@@ -131,7 +131,7 @@ create_kms_keys() {
     --output text)
 
   aws --endpoint-url=http://localhost:4567 kms create-alias \
-    --alias-name alias/components-core-JWTSigningKey \
+    --alias-name alias/amc-JWTSigningKey \
     --target-key-id "$JWT_SIGNING_KEY_ID"
 
   echo "Finished creating KMS keys"
@@ -143,7 +143,7 @@ create_dynamodb_tables() {
 
   # JourneyOutcomeTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-core-JourneyOutcome" \
+    --table-name "amc-JourneyOutcome" \
     --attribute-definitions \
       AttributeName=outcome_id,AttributeType=S \
     --key-schema \
@@ -151,12 +151,12 @@ create_dynamodb_tables() {
     --billing-mode PAY_PER_REQUEST
 
   aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
-    --table-name "components-core-JourneyOutcome" \
+    --table-name "amc-JourneyOutcome" \
     --time-to-live-specification "Enabled=true,AttributeName=expires"
 
   # SessionStore
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-main-SessionStore" \
+    --table-name "amc-SessionStore" \
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
     --key-schema \
@@ -164,12 +164,12 @@ create_dynamodb_tables() {
     --billing-mode PAY_PER_REQUEST
 
   aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
-    --table-name "components-main-SessionStore" \
+    --table-name "amc-SessionStore" \
     --time-to-live-specification "Enabled=true,AttributeName=expires"    
     
   # AuthCodeTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-core-AuthCode" \
+    --table-name "amc-AuthCode" \
     --attribute-definitions \
       AttributeName=code,AttributeType=S \
     --key-schema \
@@ -177,12 +177,12 @@ create_dynamodb_tables() {
     --billing-mode PAY_PER_REQUEST
 
   aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
-    --table-name "components-core-AuthCode" \
+    --table-name "amc-AuthCode" \
     --time-to-live-specification "Enabled=true,AttributeName=expires"
 
   # ReplayAttackTable
   aws --endpoint-url=http://localhost:4566 dynamodb create-table \
-    --table-name "components-core-ReplayAttack" \
+    --table-name "amc-ReplayAttack" \
     --attribute-definitions \
       AttributeName=nonce,AttributeType=S \
     --key-schema \
@@ -190,7 +190,7 @@ create_dynamodb_tables() {
     --billing-mode PAY_PER_REQUEST
 
   aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
-    --table-name "components-core-ReplayAttack" \
+    --table-name "amc-ReplayAttack" \
     --time-to-live-specification "Enabled=true,AttributeName=expires"    
 
   echo "Finished creating DynamoDB tables"
@@ -201,10 +201,10 @@ create_sqs_queues() {
   echo "Creating SQS queues"
 
   aws --endpoint-url=http://localhost:4566 sqs create-queue \
-    --queue-name "components-core-NotificationsQueue"
+    --queue-name "amc-NotificationsQueue"
 
   aws --endpoint-url=http://localhost:4566 sqs create-queue \
-    --queue-name "components-core-TxMASQSProducerAuditEventQueue"
+    --queue-name "amc-TxMASQSProducerAuditEventQueue"
 
   echo "Finished creating SQS queues"
   return 0

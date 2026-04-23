@@ -40,6 +40,11 @@
       "type": "integer",
       "minimum": 1
     },
+    "access_token_max_age": {
+      "description": "Maximum age of access token",
+      "type": "integer",
+      "minimum": 1
+    },
     "max_number_of_passkeys": {
       "description": "The maximum number of passkeys a user can have",
       "type": "integer"
@@ -51,6 +56,7 @@
     "auth_code_ttl",
     "jwks_cache_max_age",
     "jwks_http_timeout",
+    "access_token_max_age",
     "journey_outcome_ttl",
     "max_number_of_passkeys"
   ],

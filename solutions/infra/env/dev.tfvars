@@ -7,3 +7,5 @@ signing_profile_arn            = "arn:aws:signer:eu-west-2:621833521570:/signing
 signing_profile_version_arn    = "arn:aws:signer:eu-west-2:621833521570:/signing-profiles/SigningProfile_XQk3kGQ3RvMJ/stYeKc9mAG"
 allowed_config_access_accounts = []
 config_artefact_path           = "dev-config.json"
+transit_gateway_hub_account_id = "796973488515"
+transit_gateway_id             = "tgw-037ccd82182b7d1da"

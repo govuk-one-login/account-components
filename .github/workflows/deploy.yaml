@@ -1,4 +1,4 @@
-name: Deploy API
+name: Deploy
 
 permissions: {}
 
@@ -7,9 +7,14 @@ on:
     branches:
       - main
     paths:
+      - solutions/app-infra/**
+      - solutions/frontend/**
       - solutions/api/**
+      - solutions/core/**
+      - solutions/stubs/**
       - solutions/commons/**
-      - .github/workflows/deploy-api.yaml
+      - solutions/integration-tests/**
+      - .github/workflows/deploy.yaml
       - package.json
       - package-lock.json
       - .npmrc
@@ -26,6 +31,7 @@ jobs:
     permissions:
       id-token: write
     timeout-minutes: 10
+    environment: build
 
     steps:
       - name: Checkout
@@ -36,7 +42,7 @@ jobs:
       - name: Assume AWS role
         uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37
         with:
-          role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN }}
+          role-to-assume: ${{ secrets.PIPELINE_GH_ACTIONS_ROLE_ARN }}
           aws-region: "eu-west-2"
 
       - name: Login to Amazon ECR
@@ -52,11 +58,12 @@ jobs:
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
           docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
 
-  deploy-api:
+  deploy:
     needs: publish-integration-tests-image
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+    environment: build
 
     steps:
       - name: Checkout
@@ -78,19 +85,19 @@ jobs:
       - name: Assume AWS role
         uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37
         with:
-          role-to-assume: ${{ secrets.GH_ACTIONS_ROLE_ARN_API }}
+          role-to-assume: ${{ secrets.PIPELINE_GH_ACTIONS_ROLE_ARN }}
           aws-region: "eu-west-2"
 
       - name: Install dependencies
         run: npm run install-all
 
-      - name: Build API
-        run: npm run build:api
+      - name: Build
+        run: npm run build:all
 
-      - name: Deploy API
+      - name: Deploy
         uses: govuk-one-login/devplatform-upload-action@5879c30205266ad61e8299a4fcea76364530c9c1
         with:
-          artifact-bucket-name: ${{ secrets.ARTIFACT_BUCKET_NAME_API }}
+          artifact-bucket-name: ${{ secrets.PIPELINE_SOURCE_BUCKET_NAME }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
-          working-directory: ./solutions/api
+          working-directory: ./solutions/app-infra
           template-file: .aws-sam/build/template.yaml

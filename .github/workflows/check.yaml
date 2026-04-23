@@ -44,6 +44,9 @@ jobs:
       - name: Install dependencies
         run: npm run install-all && cd solutions/integration-tests && npm ci
 
+      - name: Build
+        run: npm run build:all
+
       - name: Check types
         run: npm run check-types
 
@@ -53,17 +56,8 @@ jobs:
       - name: Lint Terraform
         run: npm run tflint
 
-      - name: SAM validate frontend
-        run: npm run sam-validate:frontend
-
-      - name: SAM validate API
-        run: npm run sam-validate:api
-
-      - name: SAM validate stubs
-        run: npm run sam-validate:stubs
-
-      - name: SAM validate core
-        run: npm run sam-validate:core
+      - name: SAM validate
+        run: npm run sam-validate
 
       - name: Lint CloudFormation
         run: npm run cfnlint
@@ -79,18 +73,6 @@ jobs:
 
       - name: Validate API Specs
         run: npm run api-specs:validate
-
-      - name: Build core
-        run: npm run build:core
-
-      - name: Build frontend
-        run: npm run build:frontend
-
-      - name: Build stubs
-        run: npm run build:stubs
-
-      - name: Build API
-        run: npm run build:api
 
       - name: Validate passkeys convenience metadata
         run: |

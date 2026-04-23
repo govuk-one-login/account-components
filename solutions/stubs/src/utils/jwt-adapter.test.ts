@@ -53,14 +53,14 @@ describe("jwtAdapter", () => {
         mockGet.mockRejectedValue("error");
         const signatureType = SignatureTypes.EC;
         process.env["MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME"] =
-          "/components-mocks/MockClientEcPrivateKey";
+          "/amc/MockClientEcPrivateKey";
 
         const jwtAdapter = new JwtAdapter();
 
         await expect(
           jwtAdapter.sign(header, payload, signatureType),
         ).rejects.toThrow(
-          "Failed to retrieve key from SSM for param /components-mocks/MockClientEcPrivateKey",
+          "Failed to retrieve key from SSM for param /amc/MockClientEcPrivateKey",
         );
       });
     });
