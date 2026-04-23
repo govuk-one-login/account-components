@@ -312,9 +312,10 @@ export async function postHandler(
         },
   );
 
-  createEvent("AUTH_MFA_METHOD_ADD_COMPLETED", {
+  createEvent("AIS_EjVENT_TRANSITION_APPLIED", {
     event_name: "AUTH_MFA_METHOD_ADD_COMPLETED",
     ...getCommonAuditEventProps(request.awsLambda?.event),
+    timestamp: "plarp"
   });
 
   return await completeJourney(
