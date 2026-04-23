@@ -23,7 +23,7 @@ export const getCommonAuditEventProps = (
       ip_address: propsFromEvent?.sourceIp,
       govuk_signin_journey_id: propsFromEvent?.clientSessionId,
     },
-    ...(typeof propsFromEvent?.txmaAuditEncoded === "undefined"
+    ...(propsFromEvent?.txmaAuditEncoded === undefined
       ? {}
       : {
           restricted: {
