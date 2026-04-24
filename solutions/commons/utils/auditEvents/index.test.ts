@@ -75,7 +75,7 @@ describe("getCommonAuditEventProps", () => {
     expect(result).not.toHaveProperty("restricted");
   });
 
-  it("returns undefined user fields when apiGatewayProxyEvent is not provided", async () => {
+  it("returns NO_VALUE user fields when apiGatewayProxyEvent is not provided", async () => {
     const { getCommonAuditEventProps } = await import("./index.js");
 
     const result = getCommonAuditEventProps();
@@ -88,10 +88,10 @@ describe("getCommonAuditEventProps", () => {
       event_timestamp_ms_formatted: "2024-01-15T12:00:00.000Z",
       component_id: "AMC",
       user: {
-        session_id: undefined,
-        persistent_session_id: undefined,
-        ip_address: undefined,
-        govuk_signin_journey_id: undefined,
+        session_id: "NO_VALUE",
+        persistent_session_id: "NO_VALUE",
+        ip_address: "NO_VALUE",
+        govuk_signin_journey_id: "NO_VALUE",
       },
     });
   });

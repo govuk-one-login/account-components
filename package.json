@@ -24,7 +24,7 @@
     "@fastify/helmet": "^13.0.2",
     "@fastify/session": "^11.1.1",
     "@fastify/static": "^9.1.1",
-    "@govuk-one-login/event-catalogue-utils": "^0.3.1",
+    "@govuk-one-login/event-catalogue-utils": "^0.3.2",
     "@govuk-one-login/frontend-device-intelligence": "^1.2.0",
     "@govuk-one-login/frontend-ui": "^5.1.2",
     "@simplewebauthn/browser": "^13.3.0",
