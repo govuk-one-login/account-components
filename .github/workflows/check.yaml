@@ -47,6 +47,11 @@ jobs:
           GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run install-all
 
+      - name: Build
+        env:
+          GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build:all
+
       - name: Check types
         run: npm run check-types
 
@@ -56,17 +61,8 @@ jobs:
       - name: Lint Terraform
         run: npm run tflint
 
-      - name: SAM validate frontend
-        run: npm run sam-validate:frontend
-
-      - name: SAM validate API
-        run: npm run sam-validate:api
-
-      - name: SAM validate stubs
-        run: npm run sam-validate:stubs
-
-      - name: SAM validate core
-        run: npm run sam-validate:core
+      - name: SAM validate
+        run: npm run sam-validate
 
       - name: Lint CloudFormation
         run: npm run cfnlint
@@ -82,22 +78,6 @@ jobs:
 
       - name: Validate API Specs
         run: npm run api-specs:validate
-
-      - name: Build core
-        run: npm run build:core
-
-      - name: Build frontend
-        env:
-          GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run build:frontend
-
-      - name: Build stubs
-        env:
-          GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run build:stubs
-
-      - name: Build API
-        run: npm run build:api
 
       - name: Validate passkeys convenience metadata
         run: |

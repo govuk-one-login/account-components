@@ -1,4 +1,4 @@
-name: Production - Deploy Configuration
+name: Deploy Configuration - production
 
 on:
   push:
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  deploy-config-to-production:
     name: Deploy Config (Production)
     uses: ./.github/workflows/deploy-config.yaml
     permissions:

@@ -1,4 +1,4 @@
-name: Deploy core to dev
+name: Deploy Application - dev
 
 on:
   workflow_dispatch:
@@ -22,7 +22,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy-core-to-dev:
+  publish-integration-tests-image:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+
+      - name: Assume AWS role
+        uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37
+        with:
+          role-to-assume: ${{ secrets.DEV_PIPELINE_GH_ACTIONS_ROLE_ARN }}
+          aws-region: "eu-west-2"
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@376925c9d111252e87ae59691e5a442dd100ef6a
+
+      - name: Build & publish Docker image
+        working-directory: solutions/integration-tests
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          ECR_REPOSITORY: ${{ secrets.DEV_POST_DEPLOY_TESTS_IMAGE_REPOSITORY }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$GITHUB_SHA -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push -a $ECR_REGISTRY/$ECR_REPOSITORY
+
+  deploy-to-dev:
+    needs: publish-integration-tests-image
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -34,11 +66,6 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ inputs.gitRef }}
-
-      - name: Set up Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
-        with:
-          node-version-file: .nvmrc
 
       - name: Set commit SHA
         if: github.event.inputs.refType == 'Commit SHA'
@@ -64,6 +91,11 @@ jobs:
       - name: Set current datetime
         run: echo "date=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
 
+      - name: Set up Node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+        with:
+          node-version-file: .nvmrc
+
       - name: Set up SAM CLI
         uses: aws-actions/setup-sam@f84ec7d548307efafe33230528756de3c5841a17
         with:
@@ -73,7 +105,7 @@ jobs:
       - name: Assume AWS role
         uses: aws-actions/configure-aws-credentials@ec61189d14ec14c8efccab744f656cffd0e33f37
         with:
-          role-to-assume: ${{ secrets.DEV_GH_ACTIONS_ROLE_ARN_CORE }}
+          role-to-assume: ${{ secrets.DEV_PIPELINE_GH_ACTIONS_ROLE_ARN }}
           aws-region: "eu-west-2"
 
       - name: Install dependencies
@@ -81,13 +113,15 @@ jobs:
           GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run install-all
 
-      - name: Build core
-        run: npm run build:core
+      - name: Build
+        env:
+          GITHUB_NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run build:all
 
-      - name: Deploy core
+      - name: Deploy
         uses: govuk-one-login/devplatform-upload-action@5879c30205266ad61e8299a4fcea76364530c9c1
         with:
-          artifact-bucket-name: ${{ secrets.DEV_ARTIFACT_BUCKET_NAME_CORE }}
+          artifact-bucket-name: ${{ secrets.DEV_PIPELINE_SOURCE_BUCKET_NAME }}
           signing-profile-name: ${{ secrets.DEV_SIGNING_PROFILE_NAME }}
-          working-directory: ./solutions/core
+          working-directory: ./solutions/app-infra
           template-file: .aws-sam/build/template.yaml

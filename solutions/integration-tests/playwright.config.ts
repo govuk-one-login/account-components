@@ -71,17 +71,21 @@ if (env.TEST_TARGET === "local") {
 export default defineConfig({
   testDir,
   forbidOnly: !env.HUMAN_IN_THE_LOOP,
-  preserveOutput: env.HUMAN_IN_THE_LOOP ? "always" : "failures-only",
+  preserveOutput:
+    env.HUMAN_IN_THE_LOOP || env.TEST_REPORT_DIR ? "always" : "failures-only",
   workers: "50%",
   snapshotPathTemplate: `./${env.UPDATE_SNAPSHOTS ? "snapshots-updated" : "snapshots"}/{projectName}/{testFilePath}/{arg}{ext}`,
-  reporter: env.TEST_REPORT_DIR
-    ? [
-        // See https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/3054010402/How+to+run+tests+against+your+deployed+application+in+a+SAM+deployment+pipeline#Test-reports
-        cucumberReporter("json", {
-          outputFile: path.join(env.TEST_REPORT_DIR, "report.json"),
-        }),
-      ]
-    : "list",
+  reporter: [
+    ["list"],
+    // See https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/3054010402/How+to+run+tests+against+your+deployed+application+in+a+SAM+deployment+pipeline#Test-reports
+    ...(env.TEST_REPORT_DIR
+      ? [
+          cucumberReporter("json", {
+            outputFile: path.join(env.TEST_REPORT_DIR, "report.json"),
+          }),
+        ]
+      : []),
+  ],
   webServer: webServers,
   use: {
     baseURL: getBaseUrl(),

@@ -1,0 +1,2893 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Description: >
+      The environment type
+    AllowedValues:
+      - "dev"
+      - "build"
+      - "staging"
+      - "integration"
+      - "production"
+  CodeSigningConfigArn:
+    Type: String
+    Description: >
+      The ARN of the Code Signing Config to use, provided by the deployment pipeline
+    Default: "none"
+  PermissionsBoundary:
+    Type: String
+    Description: >
+      The ARN of the permissions boundary to apply to any role created by the template, provided by the deployment pipeline
+    Default: "none"
+  VpcStackName:
+    Type: String
+    Description: >
+      The name of the stack that defines the VPC in which resources will be located, provided by the deployment pipeline
+  ApiStageName:
+    Description: The stage name of the API
+    Type: String
+    Default: v1
+  LambdaArchitecture:
+    Type: String
+    Description: >
+      The Lambda function architecture
+    AllowedValues:
+      - "x86_64"
+      - "arm64"
+    Default: "arm64"
+  LambdaDeploymentPreference:
+    Description: Specifies the configuration to enable gradual Lambda deployments. It can be used to set deployment type and also allows skipping canary deployment by setting to 'AllAtOnce'
+    Type: String
+    Default: "Canary10Percent10Minutes"
+    AllowedValues:
+      - AllAtOnce
+      - Canary10Percent5Minutes
+      - Canary10Percent10Minutes
+      - Canary10Percent15Minutes
+      - Canary10Percent30Minutes
+  AlertsStackName:
+    Type: String
+    Description: The name of the alerting stack that contains SNS topics for alarms
+    Default: "build-notifications"
+
+Mappings:
+  EnvironmentConfiguration:
+    dev:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      authorizeEndpointUrl: https://manage.dev.account.gov.uk/authorize
+      issuerUrl: https://manage.dev.account.gov.uk
+      apiAllowedVpceIds: []
+      LambdaLogLevel: DEBUG
+      UseCanary: false
+      frontendUrl: https://manage.dev.account.gov.uk
+      cacheHeaderMaxAge: 5
+      frontendDomain: manage.dev.account.gov.uk
+      authFrontendUrl: https://signin.dev.account.gov.uk
+      analyticsCookieDomain: dev.account.gov.uk
+      ga4ContainerId: "GTM-KD86CMZ"
+      analyticsEnabled: "1"
+      accountManagementApiUrl: https://stubs.manage.dev.account.gov.uk/account-management-api
+      contactUrl: https://home.dev.account.gov.uk/contact-gov-uk-one-login
+      passkeysRpId: dev.account.gov.uk
+      passkeysRpName: "GOV.UK One Login (dev)"
+      passkeysExpectedOrigin: https://manage.dev.account.gov.uk
+      yourServicesUrl: https://home.dev.account.gov.uk/your-services
+      securityUrl: https://home.dev.account.gov.uk/security
+      dynatraceRumUrl: ""
+      accountDataApiUrl: https://stubs.manage.dev.account.gov.uk/account-data-api
+      notifyTemplateIds: |
+        {
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "82836a7c-d861-4a76-a2d1-f75c1e49d9fa"
+        }
+      notificationsVisibilityTimeout: 120
+      notificationsMaxReceiveCount: 5
+      txmaAccountArn: ""
+      stubsDomain: stubs.manage.dev.account.gov.uk
+      rootDomain: dev.account.gov.uk
+    build:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      authorizeEndpointUrl: https://manage.build.account.gov.uk/authorize
+      issuerUrl: https://manage.build.account.gov.uk
+      apiAllowedVpceIds: []
+      LambdaLogLevel: INFO
+      UseCanary: false
+      frontendUrl: https://manage.build.account.gov.uk
+      cacheHeaderMaxAge: 5
+      frontendDomain: manage.build.account.gov.uk
+      authFrontendUrl: https://signin.build.account.gov.uk
+      analyticsCookieDomain: build.account.gov.uk
+      ga4ContainerId: "GTM-KD86CMZ"
+      analyticsEnabled: "1"
+      accountManagementApiUrl: https://stubs.manage.build.account.gov.uk/account-management-api
+      contactUrl: https://home.build.account.gov.uk/contact-gov-uk-one-login
+      passkeysRpId: build.account.gov.uk
+      passkeysRpName: "GOV.UK One Login (build)"
+      passkeysExpectedOrigin: https://manage.build.account.gov.uk
+      yourServicesUrl: https://home.build.account.gov.uk/your-services
+      securityUrl: https://home.build.account.gov.uk/security
+      dynatraceRumUrl: ""
+      accountDataApiUrl: https://stubs.manage.build.account.gov.uk/account-data-api
+      notifyTemplateIds: |
+        {
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "82836a7c-d861-4a76-a2d1-f75c1e49d9fa"
+        }
+      notificationsVisibilityTimeout: 120
+      notificationsMaxReceiveCount: 5
+      txmaAccountArn: ""
+      stubsDomain: stubs.manage.build.account.gov.uk
+      rootDomain: build.account.gov.uk
+    staging:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      authorizeEndpointUrl: https://manage.staging.account.gov.uk/authorize
+      issuerUrl: https://manage.staging.account.gov.uk
+      apiAllowedVpceIds:
+        - "vpce-0c9ce65be09f99db7" # di-account-staging
+        - "vpce-07078f5f005fe5efc" # di-authentication-staging
+      LambdaLogLevel: INFO
+      UseCanary: true
+      frontendUrl: https://manage.staging.account.gov.uk
+      cacheHeaderMaxAge: 60
+      frontendDomain: manage.staging.account.gov.uk
+      authFrontendUrl: https://signin.staging.account.gov.uk
+      analyticsCookieDomain: staging.account.gov.uk
+      ga4ContainerId: "GTM-KD86CMZ"
+      analyticsEnabled: "1"
+      accountManagementApiUrl: "https://cgh8nx4500.execute-api.eu-west-2.amazonaws.com/staging"
+      contactUrl: https://home.staging.account.gov.uk/contact-gov-uk-one-login
+      passkeysRpId: staging.account.gov.uk
+      passkeysRpName: "GOV.UK One Login (staging)"
+      passkeysExpectedOrigin: https://manage.staging.account.gov.uk
+      yourServicesUrl: https://home.staging.account.gov.uk/your-services
+      securityUrl: https://home.staging.account.gov.uk/security
+      dynatraceRumUrl: TODO
+      accountDataApiUrl: https://7xgl7lexy4.execute-api.eu-west-2.amazonaws.com/staging
+      notifyTemplateIds: |
+        {
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "82836a7c-d861-4a76-a2d1-f75c1e49d9fa"
+        }
+      notificationsVisibilityTimeout: 120
+      notificationsMaxReceiveCount: 5
+      txmaAccountArn: "arn:aws:iam::178023842775:root"
+      stubsDomain: ""
+      rootDomain: staging.account.gov.uk
+    integration:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
+      authorizeEndpointUrl: https://manage.integration.account.gov.uk/authorize
+      issuerUrl: https://manage.integration.account.gov.uk
+      apiAllowedVpceIds:
+        - "vpce-0e594accb3d775457" # di-account-integration
+        - "vpce-0df10df14d851e1c9" # di-authentication-integration
+      LambdaLogLevel: INFO
+      UseCanary: true
+      frontendUrl: https://manage.integration.account.gov.uk
+      cacheHeaderMaxAge: 60
+      frontendDomain: manage.integration.account.gov.uk
+      authFrontendUrl: https://signin.integration.account.gov.uk
+      analyticsCookieDomain: integration.account.gov.uk
+      ga4ContainerId: "TODO"
+      analyticsEnabled: "0"
+      accountManagementApiUrl: "https://z7lornzyy5.execute-api.eu-west-2.amazonaws.com/integration"
+      contactUrl: https://home.integration.account.gov.uk/contact-gov-uk-one-login
+      passkeysRpId: integration.account.gov.uk
+      passkeysRpName: "GOV.UK One Login (integration)"
+      passkeysExpectedOrigin: https://manage.integration.account.gov.uk
+      yourServicesUrl: https://home.integration.account.gov.uk/your-services
+      securityUrl: https://home.integration.account.gov.uk/security
+      dynatraceRumUrl: TODO
+      accountDataApiUrl: https://hoidt6wujb.execute-api.eu-west-2.amazonaws.com/integration
+      notifyTemplateIds: |
+        {
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "a37858f1-45e5-4b9f-8d93-efbbc955ffbf",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "e3f82979-69c8-4f85-8bd3-660d526c35c2"
+        }
+      notificationsVisibilityTimeout: 300
+      notificationsMaxReceiveCount: 36
+      txmaAccountArn: "arn:aws:iam::729485541398:root"
+      stubsDomain: ""
+      rootDomain: integration.account.gov.uk
+    production:
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
+      authorizeEndpointUrl: https://manage.account.gov.uk/authorize
+      issuerUrl: https://manage.account.gov.uk
+      apiAllowedVpceIds:
+        - "vpce-0d7972874707185a0" # di-account-production
+        - "vpce-0db136878c87bf2d0" # di-authentication-production
+      LambdaLogLevel: INFO
+      UseCanary: true
+      frontendUrl: https://manage.account.gov.uk
+      cacheHeaderMaxAge: 60
+      frontendDomain: manage.account.gov.uk
+      authFrontendUrl: https://signin.account.gov.uk
+      analyticsCookieDomain: account.gov.uk
+      ga4ContainerId: "GTM-K4PBJH3"
+      analyticsEnabled: "1"
+      accountManagementApiUrl: "https://63qq2dsjo5.execute-api.eu-west-2.amazonaws.com/production"
+      contactUrl: https://home.account.gov.uk/contact-gov-uk-one-login
+      passkeysRpId: account.gov.uk
+      passkeysRpName: "GOV.UK One Login"
+      passkeysExpectedOrigin: https://manage.account.gov.uk
+      yourServicesUrl: https://home.account.gov.uk/your-services
+      securityUrl: https://home.account.gov.uk/security
+      dynatraceRumUrl: TODO
+      accountDataApiUrl: https://0218o1p9tj.execute-api.eu-west-2.amazonaws.com/production
+      notifyTemplateIds: |
+        {
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "a37858f1-45e5-4b9f-8d93-efbbc955ffbf",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "e3f82979-69c8-4f85-8bd3-660d526c35c2"
+        }
+      notificationsVisibilityTimeout: 300
+      notificationsMaxReceiveCount: 36
+      txmaAccountArn: "arn:aws:iam::451773080033:root"
+      stubsDomain: ""
+      rootDomain: account.gov.uk
+
+Conditions:
+  UseCodeSigning:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref CodeSigningConfigArn
+          - "none"
+  UsePermissionsBoundary:
+    Fn::Not:
+      - Fn::Equals:
+          - !Ref PermissionsBoundary
+          - "none"
+  IsLocal:
+    Fn::Equals:
+      - !Ref "AWS::Region"
+      - "local"
+  CanariesEnabled: !Equals
+    - !FindInMap [EnvironmentConfiguration, !Ref Environment, UseCanary]
+    - true
+  IsDevEnvironment: !Equals [!Ref Environment, "dev"]
+  IsBuildEnvironment: !Equals [!Ref Environment, "build"]
+  IsDevOrBuild: !Or [Condition: IsDevEnvironment, Condition: IsBuildEnvironment]
+  IsLocalOrDev: !Or [Condition: IsDevEnvironment, Condition: IsLocal]
+  HasTxmaAccountArn: !Not
+    - !Equals
+      - !FindInMap [EnvironmentConfiguration, !Ref Environment, txmaAccountArn]
+      - ""
+
+Globals:
+  Function:
+    DeploymentPreference:
+      Type: !If
+        - CanariesEnabled
+        - !Ref LambdaDeploymentPreference
+        - AllAtOnce
+      Alarms: []
+      Role: !GetAtt CodeDeployServiceRole.Arn
+    Tracing: Active
+    AutoPublishAlias: live
+    KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
+    Layers:
+      - !If [
+          IsLocal,
+          !Ref AWS::NoValue,
+          "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1",
+        ]
+    CodeSigningConfigArn: !If
+      - UseCodeSigning
+      - !Ref CodeSigningConfigArn
+      - !Ref AWS::NoValue
+    PermissionsBoundary: !If
+      - UsePermissionsBoundary
+      - !Ref PermissionsBoundary
+      - !Ref AWS::NoValue
+    VpcConfig:
+      SubnetIds: !If
+        - IsDevOrBuild
+        - - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
+        - - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdC
+      SecurityGroupIds:
+        - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+    Timeout: 10
+    MemorySize: 1769 # so that we get ~1 VCPU
+    Architectures:
+      - !Ref LambdaArchitecture
+    Runtime: nodejs24.x
+    Environment:
+      Variables:
+        POWERTOOLS_LOG_LEVEL:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            LambdaLogLevel,
+          ]
+        POWERTOOLS_SERVICE_NAME: !Ref AWS::StackName
+        POWERTOOLS_PARAMETERS_MAX_AGE: 300
+        AWS_XRAY_CONTEXT_MISSING: IGNORE_ERROR
+        NODE_OPTIONS:
+          !If [IsLocalOrDev, "--enable-source-maps", !Ref AWS::NoValue]
+        USE_LOCALSTACK: !Ref AWS::NoValue
+        ENVIRONMENT: !Ref Environment
+        NODE_ENV: "production"
+        LOCALSTACK_ENDPOINT: !Ref AWS::NoValue
+        LOCALSTACK_ACCESS_KEY_ID: !Ref AWS::NoValue
+        LOCALSTACK_ACCESS_KEY: !Ref AWS::NoValue
+        LOCAL_KMS_ENDPOINT: !Ref AWS::NoValue
+        AWS_LAMBDA_EXEC_WRAPPER:
+          !If [IsLocal, !Ref AWS::NoValue, "/opt/dynatrace"]
+        DT_CONNECTION_AUTH_TOKEN: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_CONNECTION_BASE_URL: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_CLUSTER_ID: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_LOG_COLLECTION_AUTH_TOKEN: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_TENANT: !Sub
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}" # pragma: allowlist-secret
+          - SecretArn:
+              !FindInMap [
+                EnvironmentConfiguration,
+                !Ref Environment,
+                dynatraceSecretArn,
+              ]
+        DT_LOGGING_NODEJS_FLAGS: Exporter=true,LambdaSensor=false
+        DT_OPEN_TELEMETRY_ENABLE_INTEGRATION: true
+        DT_OPEN_TELEMETRY_ALLOW_EXPLICIT_PARENT: true
+
+Resources:
+  CodeDeployServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - codedeploy.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRoleForLambda
+      PermissionsBoundary:
+        !If [
+          UsePermissionsBoundary,
+          !Ref PermissionsBoundary,
+          !Ref AWS::NoValue,
+        ]
+
+  DynamoDbSSEKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: AWS KMS key for encrypting the data stored within DynamoDB tables
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - "kms:*"
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: "dynamodb.amazonaws.com"
+            Action:
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:DescribeKey"
+              - "kms:CreateGrant"
+            Resource: "*"
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Sub "arn:aws:dynamodb:${AWS::Region}:${AWS::AccountId}:table/*"
+          - Effect: Allow
+            Principal:
+              Service: "lambda.amazonaws.com"
+            Action:
+              - "kms:Decrypt"
+              - "kms:GenerateDataKey"
+            Resource: "*"
+            Condition:
+              ArnEquals:
+                aws:SourceArn: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-DynamoDbSSEKey"
+
+  DynamoDbSSEKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-DynamoDbSSEKey"
+      TargetKeyId: !GetAtt DynamoDbSSEKey.Arn
+
+  CloudWatchEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: AWS KMS key for encrypting CloudWatch logs
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: !Sub "logs.${AWS::Region}.amazonaws.com"
+            Action:
+              - "kms:Encrypt*"
+              - "kms:Decrypt*"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:Describe*"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "kms:EncryptionContext:aws:logs:arn": !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-CloudWatchEncryptionKey"
+
+  CloudWatchEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-CloudWatchEncryptionKey"
+      TargetKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  LambdaEnvironmentVariableEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: "KMS key used to encrypt lambda environment variables"
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: "Allow"
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - "kms:Decrypt"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-LambdaEnvironmentVariableEncryptionKey"
+
+  LambdaEnvironmentVariableEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-LambdaEnvironmentVariableEncryptionKey"
+      TargetKeyId: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
+
+  JARRSAEncryptionKey:
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Type: AWS::KMS::Key
+    Properties:
+      Description: "RSA KMS key pair used to encrypt and decrypt JARs"
+      KeySpec: RSA_2048
+      KeyUsage: ENCRYPT_DECRYPT
+      Origin: AWS_KMS
+      Enabled: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: "Allow"
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - "kms:Decrypt"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "aws:SourceArn":
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-AuthorizeLambda*"
+          - Effect: "Allow"
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - "kms:ListAliases"
+              - "kms:GetPublicKey"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "aws:SourceArn":
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-StubsLambda*"
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-JARRSAEncryptionKey"
+
+  JARRSAEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-JARRSAEncryptionKey"
+      TargetKeyId: !GetAtt JARRSAEncryptionKey.Arn
+
+  JWTSigningKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: "JWT Signing Key"
+      KeySpec: ECC_NIST_P256
+      KeyUsage: SIGN_VERIFY
+      Origin: AWS_KMS
+      Enabled: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: "Allow"
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - "kms:Sign"
+              - "kms:Verify"
+              - "kms:DescribeKey"
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "aws:SourceArn":
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-*"
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-JWTSigningKey"
+
+  JWTSigningKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-JWTSigningKey"
+      TargetKeyId: !GetAtt JWTSigningKey.Arn
+
+  S3SSEKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for encrypting JWKSStore bucket
+      KeyUsage: ENCRYPT_DECRYPT
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:DescribeKey
+            Resource: "*"
+            Condition:
+              StringEquals:
+                kms:ViaService: !Sub "s3.${AWS::Region}.amazonaws.com"
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - kms:GenerateDataKey
+            Resource: "*"
+            Condition:
+              ArnLike:
+                "aws:SourceArn":
+                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}*"
+
+  S3SSEKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-S3SSEKey"
+      TargetKeyId: !GetAtt S3SSEKey.Arn
+
+  JWKSStoreBucket:
+    Type: AWS::S3::Bucket
+    DependsOn: AccessLogsBucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-${Environment}-jwks-store"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Sub "${AWS::StackName}-${Environment}-access-logs"
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref S3SSEKey
+
+  JWKSStoreBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref JWKSStoreBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Deny
+            Principal: "*"
+            Action: s3:*
+            Resource:
+              - !Sub "arn:aws:s3:::${JWKSStoreBucket}"
+              - !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+              NumericLessThan:
+                s3:TlsVersion: "1.2"
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
+            Action:
+              - s3:PutObject
+          - Effect: Allow
+            Resource: !Sub "arn:aws:s3:::${JWKSStoreBucket}/*"
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action:
+              - s3:GetObject
+
+  AccessLogsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${AWS::StackName}-${Environment}-access-logs"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref S3SSEKey
+
+  AccessLogBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref AccessLogsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EnforceHTTPSOnly
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !Sub "${AccessLogsBucket.Arn}"
+              - !Sub "${AccessLogsBucket.Arn}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+              NumericLessThan:
+                s3:TlsVersion: "1.2"
+          - Sid: AllowS3LoggingService
+            Effect: Allow
+            Principal:
+              Service: "logging.s3.amazonaws.com"
+            Action: "s3:PutObject"
+            Resource: !Sub "${AccessLogsBucket.Arn}/AWSLogs/${AWS::AccountId}/*"
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+
+  JwksGeneratorLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: "Creates a JWKS doc and stores it into a S3 Bucket"
+      Timeout: 15
+      MemorySize: 128
+      Handler: jwks-creator.handler
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdC
+      DeploymentPreference:
+        Enabled: false
+      LoggingConfig:
+        LogGroup: !Ref JwksGeneratorLambdaLogGroup
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref JWKSStoreBucket
+          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Ref JARRSAEncryptionKeyAlias
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - kms:GetPublicKey
+                - kms:DescribeKey
+              Resource: !GetAtt JARRSAEncryptionKey.Arn
+            - Effect: Allow
+              Action:
+                - kms:GenerateDataKey
+              Resource: !GetAtt S3SSEKey.Arn
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource: !Sub "${JWKSStoreBucket.Arn}/*"
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !GetAtt JwksGeneratorLambdaLogGroup.Arn
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Target: es2024
+        Sourcemap: true
+        EntryPoints:
+          - solutions/core/src/lambda/jwks-creator.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+
+  JwksGeneratorLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/JwksGeneratorLambda"
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  JwksGeneratorLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref JwksGeneratorLambda
+      Action: lambda:InvokeFunction
+      Principal: cloudformation.amazonaws.com
+
+  JwksGeneratorTrigger:
+    Type: AWS::CloudFormation::CustomResource
+    Properties:
+      ServiceToken: !GetAtt JwksGeneratorLambda.Arn
+      ForceUpdate: !Ref JwksGeneratorLambda
+
+  AuthCodeTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-AuthCode
+      AttributeDefinitions:
+        - AttributeName: "code"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "code"
+          KeyType: "HASH"
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      TimeToLiveSpecification:
+        AttributeName: "expires"
+        Enabled: true
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-auth_code"
+
+  JourneyOutcomeTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-JourneyOutcome
+      AttributeDefinitions:
+        - AttributeName: outcome_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: outcome_id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      TimeToLiveSpecification:
+        AttributeName: "expires"
+        Enabled: true
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-journey_outcome"
+
+  ReplayAttackTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-ReplayAttack
+      AttributeDefinitions:
+        - AttributeName: nonce
+          AttributeType: S
+      KeySchema:
+        - AttributeName: nonce
+          KeyType: HASH
+      TimeToLiveSpecification:
+        AttributeName: expires
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+      Tags:
+        - Key: Name
+          Value: !Sub "${AWS::StackName}-replay_attack"
+
+  SecretsKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action: "kms:*"
+            Resource: "*"
+
+  SecretsKmsKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-SecretsKmsKey"
+      TargetKeyId: !GetAtt SecretsKmsKey.Arn
+
+  NotifyAPIKeySecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      KmsKeyId: !Ref SecretsKmsKey
+      SecretString: set-me # pragma: allowlist secret
+
+  SqsKmsKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action: kms:*
+            Resource:
+              - "*"
+
+  SqsKmsKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-SqsKmsKey"
+      TargetKeyId: !Ref SqsKmsKey
+
+  NotificationsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+      VisibilityTimeout:
+        !FindInMap [
+          EnvironmentConfiguration,
+          !Ref Environment,
+          notificationsVisibilityTimeout,
+        ]
+      KmsMasterKeyId: !GetAtt SqsKmsKey.Arn
+      RedriveAllowPolicy:
+        redrivePermission: denyAll
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt NotificationsDLQ.Arn
+        maxReceiveCount:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            notificationsMaxReceiveCount,
+          ]
+
+  NotificationsDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      KmsMasterKeyId: !GetAtt SqsKmsKey.Arn
+      MessageRetentionPeriod: 1209600
+
+  NotificationsServiceLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 15
+      MemorySize: 128
+      LoggingConfig:
+        LogGroup: !Ref NotificationsServiceLambdaLogGroup
+      Events:
+        NotificationsQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt NotificationsQueue.Arn
+            BatchSize: 10
+            FunctionResponseTypes:
+              - ReportBatchItemFailures
+      Handler: notifications-service.handler
+      Runtime: nodejs22.x # as at 2026-02-03 the notifications-node-client library does not work with Node 24 or newer
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
+      Environment:
+        Variables:
+          NOTIFY_API_KEY_SECRET_ARN: !Ref NotifyAPIKeySecret
+          NOTIFY_TEMPLATE_IDS:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              notifyTemplateIds,
+            ]
+      DeploymentPreference:
+        Alarms: !If
+          - IsDevEnvironment
+          - []
+          - - !Ref NotificationsServiceFunctionSuccessRate
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - sqs:ReceiveMessage
+                - sqs:DeleteMessage
+                - sqs:GetQueueAttributes
+              Resource: !GetAtt NotificationsQueue.Arn
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource: !GetAtt SqsKmsKey.Arn
+            - Effect: Allow
+              Action:
+                - "kms:Decrypt"
+              Resource:
+                - !GetAtt SecretsKmsKey.Arn
+            - Effect: Allow
+              Action: secretsmanager:GetSecretValue # pragma: allowlist secret
+              Resource: !Ref NotifyAPIKeySecret
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Target: es2022 # as at 2026-02-03 the notifications-node-client library does not work with Node 24 or newer
+        Sourcemap: true
+        EntryPoints:
+          - solutions/core/src/lambda/notifications-service.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+
+  NotificationsServiceLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/NotificationsService"
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  NotificationsServiceLambdaThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref NotificationsServiceLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  NotificationsServiceLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref NotificationsServiceLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  NotificationsServiceLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  NotificationsServiceLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref NotificationsServiceLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: notificationType
+              Value: $.notificationType
+
+  NotificationsServiceLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref NotificationsServiceLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: notificationType
+              Value: $.notificationType
+
+  NotificationsServiceLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref NotificationsServiceLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: notificationType
+              Value: $.notificationType
+
+  NotificationsServiceFunctionSuccessRate:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+              MetricName: Errors
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref NotificationsServiceLambda
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Id: invocations
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+              MetricName: Invocations
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref NotificationsServiceLambda
+            Period: 300
+            Stat: Sum
+          ReturnData: false
+        - Id: successRate
+          Expression: "1 - (errors / invocations)"
+          Label: "Success Rate"
+          ReturnData: true
+      Threshold: 0.95
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  NotificationsQueueProcessingTooSlow:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 600
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt NotificationsQueue.QueueName
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      Period: 60
+      Statistic: Maximum
+
+  NotificationsDLQHasMessages:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt NotificationsDLQ.QueueName
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Period: 60
+      Statistic: Maximum
+
+  TxMASQSProducerAuditEventQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: !If [IsDevOrBuild, 3600, 1209600]
+      KmsMasterKeyId: !Ref TxMASQSProducerAuditEventQueueEncryptionKeyAlias
+      RedriveAllowPolicy:
+        redrivePermission: denyAll
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt TxMAAuditEventDeadLetterQueue.Arn
+        maxReceiveCount: 10
+      Tags:
+        - Key: "AuthoredBy"
+          Value: "TxMA"
+        - Key: "ProducerType"
+          Value: "SQS"
+        - Key: "QueueType"
+          Value: "Main"
+
+  TxMASQSProducerAuditEventQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref TxMASQSProducerAuditEventQueue
+      PolicyDocument:
+        Statement:
+          - Sid: "AllowReadByTxMAAccount"
+            Effect: Allow
+            Principal:
+              AWS: !If
+                - HasTxmaAccountArn
+                - !FindInMap [
+                    EnvironmentConfiguration,
+                    !Ref Environment,
+                    txmaAccountArn,
+                  ]
+                - !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - "sqs:ChangeMessageVisibility"
+              - "sqs:ReceiveMessage"
+              - "sqs:DeleteMessage"
+              - "sqs:GetQueueAttributes"
+            Resource: !GetAtt TxMASQSProducerAuditEventQueue.Arn
+
+  TxMAAuditEventDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+      KmsMasterKeyId: !Ref TxMASQSProducerAuditEventQueueEncryptionKeyAlias
+      Tags:
+        - Key: "AuthoredBy"
+          Value: "TxMA"
+        - Key: "ProducerType"
+          Value: "SQS"
+        - Key: "QueueType"
+          Value: "DLQ"
+
+  TxMASQSProducerAuditEventQueueEncryptionKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: Symmetric key used to encrypt TxMA audit messages at rest in SQS
+      EnableKeyRotation: true
+      KeySpec: SYMMETRIC_DEFAULT
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: "Enable root account access"
+            Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - "kms:*"
+            Resource: "*"
+          - Sid: "Allow decryption of events by TxMA"
+            Effect: Allow
+            Principal:
+              AWS: !If
+                - HasTxmaAccountArn
+                - !FindInMap [
+                    EnvironmentConfiguration,
+                    !Ref Environment,
+                    txmaAccountArn,
+                  ]
+                - !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - "kms:decrypt"
+            Resource: "*"
+      Tags:
+        - Key: "AuthoredBy"
+          Value: "TxMA"
+        - Key: "ProducerType"
+          Value: "SQS"
+
+  TxMASQSProducerAuditEventQueueEncryptionKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub alias/${AWS::StackName}/AuditEventEncryptionKey
+      TargetKeyId: !Ref TxMASQSProducerAuditEventQueueEncryptionKey
+
+  TxMASQSProducerAuditEventQueueProcessingTooSlow:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 86400
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt TxMASQSProducerAuditEventQueue.QueueName
+      MetricName: ApproximateAgeOfOldestMessage
+      Namespace: AWS/SQS
+      Period: 300
+      Statistic: Maximum
+
+  TxMAAuditEventDeadLetterQueueHasMessages:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      ActionsEnabled: true
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      EvaluationPeriods: 1
+      TreatMissingData: notBreaching
+      Dimensions:
+        - Name: QueueName
+          Value: !GetAtt TxMAAuditEventDeadLetterQueue.QueueName
+      MetricName: ApproximateNumberOfMessagesVisible
+      Namespace: AWS/SQS
+      Period: 300
+      Statistic: Maximum
+
+  LambdaClaimedAccountConcurrencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/Lambda
+      MetricName: ClaimedAccountConcurrency
+      Statistic: Maximum
+      Period: 60
+      EvaluationPeriods: 10
+      DatapointsToAlarm: 10
+      Threshold: 900
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-CriticalAlertsTopicArn
+
+  ApiApiGatewayS3Role:
+    Type: AWS::IAM::Role
+    Properties:
+      PermissionsBoundary: !If
+        - UsePermissionsBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: S3Access
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: s3:GetObject
+                Resource: !Sub
+                  - "arn:aws:s3:::${BucketName}/jwks.json"
+                  - BucketName: !Ref JWKSStoreBucket
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: !GetAtt S3SSEKey.Arn
+
+  ApiApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Description: Account Components API
+      StageName: !Ref ApiStageName
+      AlwaysDeploy: true
+      DisableExecuteApiEndpoint: false
+      TracingEnabled: true
+      EndpointConfiguration:
+        Type: PRIVATE
+        VpcEndpointIds:
+          - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+      AccessLogSetting:
+        Format: >-
+          {
+          "requestId": "$context.requestId",
+          "requestTime": "$context.requestTime",
+          "requestTimeEpoch": "$context.requestTimeEpoch",
+          "httpMethod": "$context.httpMethod",
+          "domainName": "$context.domainName",
+          "path": "$context.path",
+          "routeKey": "$context.routeKey",
+          "protocol": "$context.protocol",
+          "status": "$context.status",
+          "responseLength": "$context.responseLength",
+          "responseLatency": "$context.responseLatency",
+          "authorizerLatency": "$context.authorizer.latency",
+          "integrationStatus": "$context.integrationStatus",
+          "integrationLatency": "$context.integrationLatency",
+          "integrationErrorMessage": "$context.integrationErrorMessage",
+          "errorMessage": "$context.error.message",
+          "errorResponseType": "$context.error.responseType",
+          "validationErrorString": "$context.error.validationErrorString",
+          "xrayTraceId": "$context.xrayTraceId",
+          "tlsVersion": "$context.tlsVersion",
+          "cipherSuite": "$context.cipherSuite"
+          }
+        DestinationArn: !GetAtt ApiApiGatewayAccessLogGroup.Arn
+      MethodSettings:
+        - MetricsEnabled: true
+          ResourcePath: /*
+          HttpMethod: "*"
+      Policy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal: "*"
+            Action: execute-api:Invoke
+            Resource: "*"
+            Condition:
+              StringEquals:
+                aws:sourceVpce: !If
+                  - IsDevOrBuild
+                  - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+                  - !FindInMap
+                    - EnvironmentConfiguration
+                    - !Ref Environment
+                    - apiAllowedVpceIds
+      Variables:
+        ApiDomain: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+        AuthorizeEndpointUrl:
+          !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            authorizeEndpointUrl,
+          ]
+        IssuerUrl:
+          !FindInMap [EnvironmentConfiguration, !Ref Environment, issuerUrl]
+      DefinitionBody:
+        openapi: 3.0.3
+        info:
+          title: Account Components API
+          version: 1.0.0
+        paths:
+          /healthcheck:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiHealthcheckLambda.Alias}/invocations"
+          /token:
+            post:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiTokenLambda.Alias}/invocations"
+          /journeyoutcome:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiJourneyOutcomeLambda.Alias}/invocations"
+          /.well-known/jwks.json:
+            get:
+              responses:
+                "200":
+                  description: JWKS response
+                  headers:
+                    Content-Type:
+                      schema:
+                        type: string
+                        example: "application/json"
+                    Cache-Control:
+                      schema:
+                        type: string
+                        example: "max-age=60"
+              x-amazon-apigateway-integration:
+                type: aws
+                httpMethod: GET
+                uri: !Sub
+                  - "arn:aws:apigateway:${AWS::Region}:s3:path/${BucketName}/jwks.json"
+                  - BucketName: !Ref JWKSStoreBucket
+                credentials: !GetAtt ApiApiGatewayS3Role.Arn
+                responses:
+                  default:
+                    statusCode: 200
+                    responseParameters:
+                      method.response.header.Content-Type: "'application/json'"
+                      method.response.header.Cache-Control: !Sub
+                        - "'max-age=${headerMaxAge}'"
+                        - headerMaxAge:
+                            !FindInMap [
+                              EnvironmentConfiguration,
+                              !Ref Environment,
+                              cacheHeaderMaxAge,
+                            ]
+          /.well-known/oauth-authorization-server:
+            get:
+              responses:
+                "200":
+                  description: OAuth Discovery
+                  headers:
+                    Content-Type:
+                      schema:
+                        type: string
+                        example: "application/json"
+                    Cache-Control:
+                      schema:
+                        type: string
+                        example: "max-age=60"
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: 200
+                    responseParameters:
+                      method.response.header.Content-Type: "'application/json'"
+                      method.response.header.Cache-Control: !Sub
+                        - "'max-age=${headerMaxAge}'"
+                        - headerMaxAge:
+                            !FindInMap [
+                              EnvironmentConfiguration,
+                              !Ref Environment,
+                              cacheHeaderMaxAge,
+                            ]
+                    responseTemplates:
+                      application/json: !Sub >-
+                        {
+                            "issuer": "$stageVariables.IssuerUrl",
+                            "authorization_endpoint": "$stageVariables.AuthorizeEndpointUrl",
+                            "token_endpoint": "$stageVariables.ApiDomain/token",
+                            "jwks_uri": "$stageVariables.ApiDomain/.well-known/jwks.json",
+                            "response_types_supported": ["code"],
+                            "token_endpoint_auth_methods_supported": ["private_key_jwt"],
+                            "token_endpoint_auth_signing_alg_values_supported": ["ES256"],
+                            "scopes_supported": ["testing-journey", "account-delete", "passkey-create"],
+                            "grant_types_supported": ["authorization_code"]
+                        }
+                passthroughBehavior: when_no_match
+                requestTemplates:
+                  application/json: '{"statusCode": 200}'
+                type: mock
+
+  ApiApiGatewayUrlParameter: # for use by Integration Tests only
+    Type: AWS::SSM::Parameter
+    Condition: IsDevOrBuild
+    Properties:
+      Name: !Sub "/tests/PrivateApiGatewayUrl"
+      Type: String
+      Value: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+      Description: URL of the AMC Private API
+
+  ApiApiGatewayAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/${ApiApiGateway}/${ApiStageName}"
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  ApiHealthcheckLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/HealthcheckLambdaLogGroup"
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  ApiHealthcheckLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      DeploymentPreference:
+        Alarms:
+          - !Ref ApiHealthcheckLambdaErrorsAlarm
+          - !Ref ApiHealthcheckLambdaThrottlesAlarm
+      LoggingConfig:
+        LogGroup: !Ref ApiHealthcheckLambdaLogGroup
+      Handler: healthcheck.handler
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
+      Events:
+        Healthcheck:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiApiGateway
+            Path: /healthcheck
+            Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2024"
+        Sourcemap: true
+        EntryPoints:
+          - solutions/api/src/lambda/healthcheck.ts
+
+  ApiTokenLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/TokenLambdaLogGroup"
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  ApiTokenLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      DeploymentPreference:
+        Alarms:
+          - !Ref ApiTokenLambdaErrorsAlarm
+          - !Ref ApiTokenLambdaThrottlesAlarm
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
+      LoggingConfig:
+        LogGroup: !Ref ApiTokenLambdaLogGroup
+      Handler: index.handler
+      Environment:
+        Variables:
+          AUTH_TABLE_NAME: !Ref AuthCodeTable
+          REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
+          JWT_SIGNING_KEY_ALIAS: !Ref JWTSigningKeyAlias
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+              Resource: !GetAtt ReplayAttackTable.Arn
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+                - dynamodb:DeleteItem
+              Resource: !GetAtt AuthCodeTable.Arn
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource: !GetAtt DynamoDbSSEKey.Arn
+            - Effect: Allow
+              Action:
+                - kms:DescribeKey
+                - kms:Sign
+              Resource: !GetAtt JWTSigningKey.Arn
+            - Effect: Allow
+              Action:
+                - appconfig:GetLatestConfiguration
+                - appconfig:StartConfigurationSession
+              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
+      Events:
+        Token:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiApiGateway
+            Path: /token
+            Method: POST
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2024"
+        Sourcemap: true
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+        EntryPoints:
+          - solutions/api/src/lambda/token/index.ts
+
+  ApiJourneyOutcomeLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/JourneyOutcomeLambdaLogGroup"
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  ApiJourneyOutcomeLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      DeploymentPreference:
+        Alarms:
+          - !Ref ApiJourneyOutcomeLambdaErrorsAlarm
+          - !Ref ApiJourneyOutcomeLambdaThrottlesAlarm
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
+      LoggingConfig:
+        LogGroup: !Ref ApiJourneyOutcomeLambdaLogGroup
+      Handler: index.handler
+      Environment:
+        Variables:
+          JWT_SIGNING_KEY_ALIAS: !Ref JWTSigningKeyAlias
+          JOURNEY_OUTCOME_TABLE_NAME: !Ref JourneyOutcomeTable
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:GetItem
+              Resource:
+                - !GetAtt JourneyOutcomeTable.Arn
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource: !GetAtt DynamoDbSSEKey.Arn
+            - Effect: Allow
+              Action:
+                - kms:DescribeKey
+                - kms:GetPublicKey
+              Resource: !GetAtt JWTSigningKey.Arn
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
+      Events:
+        JourneyOutcome:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiApiGateway
+            Path: /journeyoutcome
+            Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2024"
+        Sourcemap: true
+        EntryPoints:
+          - solutions/api/src/lambda/journeyoutcome/index.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+
+  ApiHealthcheckLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiHealthcheckLambda.Alias
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
+
+  ApiTokenLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiTokenLambda.Alias
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
+
+  ApiJourneyOutcomeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiJourneyOutcomeLambda.Alias
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
+
+  ApiApiGateway5XXErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/ApiGateway
+      MetricName: 5XXError
+      Dimensions:
+        - Name: ApiName
+          Value: !Ref ApiApiGateway
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiApiGatewayHighLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/ApiGateway
+      MetricName: Latency
+      Dimensions:
+        - Name: ApiName
+          Value: !Ref ApiApiGateway
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 5000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiHealthcheckLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiHealthcheckLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiHealthcheckLambdaThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiHealthcheckLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiHealthcheckLambdaDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiHealthcheckLambda
+      ExtendedStatistic: p90
+      Period: 60
+      EvaluationPeriods: 15
+      DatapointsToAlarm: 15
+      Threshold: 1000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiHealthcheckLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiHealthcheckLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/HealthcheckLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiHealthcheckLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/HealthcheckLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiTokenLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiTokenLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiTokenLambdaThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiTokenLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiTokenLambdaDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiTokenLambda
+      ExtendedStatistic: p90
+      Period: 60
+      EvaluationPeriods: 15
+      DatapointsToAlarm: 15
+      Threshold: 1000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiTokenLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  ApiTokenLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  ApiTokenLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  ApiTokenLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiTokenLambdaColdStartCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: ColdStartCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiTokenLambdaColdStartDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+          MetricName: ColdStartDuration
+          MetricValue: $init_duration_value
+          DefaultValue: 0
+          Unit: Milliseconds
+
+  ApiTokenLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/TokenLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiJourneyOutcomeLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiJourneyOutcomeLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiJourneyOutcomeLambdaThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiJourneyOutcomeLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiJourneyOutcomeLambdaDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiJourneyOutcomeLambda
+      ExtendedStatistic: p90
+      Period: 60
+      EvaluationPeriods: 15
+      DatapointsToAlarm: 15
+      Threshold: 1000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiJourneyOutcomeLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  ApiJourneyOutcomeLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  ApiJourneyOutcomeLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  ApiJourneyOutcomeLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiJourneyOutcomeLambdaColdStartCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: ColdStartCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiJourneyOutcomeLambdaColdStartDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+          MetricName: ColdStartDuration
+          MetricValue: $init_duration_value
+          DefaultValue: 0
+          Unit: Milliseconds
+
+  ApiJourneyOutcomeLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  SessionSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      GenerateSecretString:
+        PasswordLength: 64
+      KmsKeyId: !Ref SecretsKmsKey
+
+  SessionsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-SessionStore
+      AttributeDefinitions:
+        - AttributeName: "id"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "id"
+          KeyType: "HASH"
+      TimeToLiveSpecification:
+        AttributeName: "expires"
+        Enabled: true
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: false
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+      TableClass: STANDARD
+
+  FrontendApiDomain:
+    Type: AWS::ApiGateway::DomainName
+    Properties:
+      DomainName:
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendDomain]
+      RegionalCertificateArn:
+        Fn::ImportValue: certificate-CertificateARN
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: SecurityPolicy_TLS13_1_2_FIPS_PQ_2025_09
+      EndpointAccessMode: STRICT
+
+  FrontendApiOriginRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name: !Sub
+        - "origin.${BaseAlias}"
+        - BaseAlias:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              frontendDomain,
+            ]
+      Type: A
+      HostedZoneId:
+        Fn::ImportValue: hosted-zone-HostedZoneID
+      AliasTarget:
+        DNSName: !GetAtt FrontendApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt FrontendApiDomain.RegionalHostedZoneId
+        EvaluateTargetHealth: false
+
+  FrontendApiWafAssociation:
+    Type: "AWS::WAFv2::WebACLAssociation"
+    Properties:
+      WebACLArn:
+        Fn::ImportValue: "cloudfront-CloakingOriginWebACLArn"
+      ResourceArn: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${FrontendApiGateway}/stages/${Environment}"
+    DependsOn:
+      - FrontendApiGatewayStage # This resource is created as part of the RestApi resource
+
+  FrontendDomainRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      Name:
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendDomain]
+      Type: A
+      HostedZoneId:
+        Fn::ImportValue: hosted-zone-HostedZoneID
+      AliasTarget:
+        DNSName:
+          Fn::ImportValue: "cloudfront-DistributionDomain"
+        HostedZoneId: "Z2FDTNDATAQYW2"
+        EvaluateTargetHealth: false
+
+  FrontendApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      DomainName: !Ref FrontendApiDomain
+      RestApiId: !Ref FrontendApiGateway
+      Stage: !Ref Environment
+    DependsOn:
+      - FrontendApiGatewayStage # This resource is created as part of the RestApi resource
+
+  FrontendApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      Description: Account Components Frontend API
+      StageName: !Ref Environment
+      AlwaysDeploy: true
+      DisableExecuteApiEndpoint: true
+      TracingEnabled: true
+      EndpointConfiguration:
+        Type: REGIONAL
+      BinaryMediaTypes: !If
+        - IsLocal
+        - !Ref AWS::NoValue
+        - - "*/*"
+      AccessLogSetting:
+        Format: >-
+          {
+          "requestId": "$context.requestId",
+          "requestTime": "$context.requestTime",
+          "requestTimeEpoch": "$context.requestTimeEpoch",
+          "httpMethod": "$context.httpMethod",
+          "domainName": "$context.domainName",
+          "path": "$context.path",
+          "routeKey": "$context.routeKey",
+          "protocol": "$context.protocol",
+          "status": "$context.status",
+          "responseLength": "$context.responseLength",
+          "responseLatency": "$context.responseLatency",
+          "authorizerLatency": "$context.authorizer.latency",
+          "integrationStatus": "$context.integrationStatus",
+          "integrationLatency": "$context.integrationLatency",
+          "integrationErrorMessage": "$context.integrationErrorMessage",
+          "errorMessage": "$context.error.message",
+          "errorResponseType": "$context.error.responseType",
+          "validationErrorString": "$context.error.validationErrorString",
+          "xrayTraceId": "$context.xrayTraceId",
+          "tlsVersion": "$context.tlsVersion",
+          "cipherSuite": "$context.cipherSuite"    
+          }
+        DestinationArn: !GetAtt FrontendApiGatewayAccessLogGroup.Arn
+      MethodSettings:
+        - MetricsEnabled: true
+          ResourcePath: /*
+          HttpMethod: "*"
+      Tags:
+        FMSRegionalPolicy: false
+
+  FrontendApiGatewayAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/${FrontendApiGateway}/${Environment}"
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  FrontendLambda:
+    Type: AWS::Serverless::Function
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      CodeUri: solutions/frontend/dist
+      Handler: lambda.handler
+      DeploymentPreference:
+        Alarms:
+          - !Ref FrontendLambdaErrorsAlarm
+          - !Ref FrontendLambdaThrottlesAlarm
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 1
+      LoggingConfig:
+        LogGroup: !Ref FrontendLambdaLogGroup
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /
+            RestApiId: !Ref FrontendApiGateway
+        CatchAll:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /{proxy+}
+            RestApiId: !Ref FrontendApiGateway
+      Environment:
+        Variables:
+          SESSIONS_SIGNER: !Sub "{{resolve:secretsmanager:${SessionSecret}:SecretString}}"
+          SESSIONS_TABLE_NAME: !Sub ${AWS::StackName}-SessionStore
+          ROOT_DOMAIN:
+            !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
+          NOTIFICATIONS_QUEUE_URL: !GetAtt NotificationsQueue.QueueUrl
+          AUTH_CODE_TABLE_NAME: !Ref AuthCodeTable
+          JOURNEY_OUTCOME_TABLE_NAME: !Ref JourneyOutcomeTable
+          AUTHORIZE_ENDPOINT_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              authorizeEndpointUrl,
+            ]
+          AUDIT_EVENTS_QUEUE_URL: !GetAtt TxMASQSProducerAuditEventQueue.QueueUrl
+          AUTH_FRONTEND_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              authFrontendUrl,
+            ]
+          ANALYTICS_COOKIE_DOMAIN:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              analyticsCookieDomain,
+            ]
+          GA4_CONTAINER_ID:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              ga4ContainerId,
+            ]
+          ACCOUNT_MANAGEMENT_API_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              accountManagementApiUrl,
+            ]
+          CONTACT_URL:
+            !FindInMap [EnvironmentConfiguration, !Ref Environment, contactUrl]
+          PASSKEYS_RP_ID:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              passkeysRpId,
+            ]
+          PASSKEYS_RP_NAME:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              passkeysRpName,
+            ]
+          PASSKEYS_EXPECTED_ORIGIN:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              passkeysExpectedOrigin,
+            ]
+          YOUR_SERVICES_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              yourServicesUrl,
+            ]
+          SECURITY_URL:
+            !FindInMap [EnvironmentConfiguration, !Ref Environment, securityUrl]
+          ANALYTICS_ENABLED:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              analyticsEnabled,
+            ]
+          DYNATRACE_RUM_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              dynatraceRumUrl,
+            ]
+          ACCOUNT_DATA_API_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              accountDataApiUrl,
+            ]
+          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Ref JARRSAEncryptionKeyAlias
+          REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:DescribeTable
+                - dynamodb:PutItem
+                - dynamodb:DeleteItem
+                - dynamodb:GetItem
+                - dynamodb:Scan
+                - dynamodb:UpdateItem
+              Resource: !GetAtt SessionsTable.Arn
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt AuthCodeTable.Arn
+                - !GetAtt JourneyOutcomeTable.Arn
+                - !GetAtt ReplayAttackTable.Arn
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Resource: !GetAtt DynamoDbSSEKey.Arn
+            - Effect: Allow
+              Action:
+                - kms:DescribeKey
+                - kms:Decrypt
+              Resource: !GetAtt JARRSAEncryptionKey.Arn
+            - Effect: Allow
+              Action:
+                - appconfig:GetLatestConfiguration
+                - appconfig:StartConfigurationSession
+              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
+            - Effect: Allow
+              Action:
+                - sqs:SendMessage
+              Resource:
+                - !GetAtt NotificationsQueue.Arn
+                - !GetAtt TxMASQSProducerAuditEventQueue.Arn
+            - Effect: Allow
+              Action:
+                - kms:GenerateDataKey
+              Resource: !GetAtt SqsKmsKey.Arn
+
+  FrontendLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/FrontendLambda"
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  FrontendApiGateway5XXErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/ApiGateway
+      MetricName: 5XXError
+      Dimensions:
+        - Name: ApiName
+          Value: !Ref FrontendApiGateway
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  FrontendApiGatewayHighLatencyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/ApiGateway
+      MetricName: Latency
+      Dimensions:
+        - Name: ApiName
+          Value: !Ref FrontendApiGateway
+      Statistic: Average
+      Period: 300
+      EvaluationPeriods: 2
+      Threshold: 5000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  FrontendLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref FrontendLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  FrontendLambdaThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref FrontendLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  FrontendLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+            - Key: path
+              Value: $.path
+
+  FrontendLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+            - Key: path
+              Value: $.path
+
+  FrontendLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+            - Key: path
+              Value: $.path
+
+  FrontendLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: ErrorAndCriticalLogCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  FrontendLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  FrontendLambdaColdStartCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: ColdStartCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  FrontendLambdaColdStartDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: ColdStartDuration
+          MetricValue: $init_duration_value
+          DefaultValue: 0
+          Unit: Milliseconds
+
+  FrontendLambdaDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref FrontendLambda
+      ExtendedStatistic: p90
+      Period: 60
+      EvaluationPeriods: 15
+      DatapointsToAlarm: 15
+      Threshold: 1000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  StubsMockClientECPrivateKeySSM:
+    Type: AWS::SSM::Parameter
+    Condition: IsDevOrBuild
+    Properties:
+      Description: A mock client EC private key
+      Name: !Sub /${AWS::StackName}/MockClientEcPrivateKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment
+
+  StubsMockClientECPublicKeySSM:
+    Type: AWS::SSM::Parameter
+    Condition: IsDevOrBuild
+    Properties:
+      Description: A mock client EC public key
+      Name: !Sub /${AWS::StackName}/MockClientEcPublicKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment
+
+  StubsMockClientRSAPrivateKeySSM:
+    Type: AWS::SSM::Parameter
+    Condition: IsDevOrBuild
+    Properties:
+      Description: A mock client RSA private key
+      Name: !Sub /${AWS::StackName}/MockClientRsaPrivateKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment
+
+  StubsMockClientRSAPublicKeySSM:
+    Type: AWS::SSM::Parameter
+    Condition: IsDevOrBuild
+    Properties:
+      Description: A mock client RSA public key
+      Name: !Sub /${AWS::StackName}/MockClientRsaPublicKey
+      Type: String
+      Value: "set-me"
+      Tags:
+        Environment: !Ref Environment
+
+  StubsApiDomain:
+    Type: AWS::ApiGateway::DomainName
+    Condition: IsDevOrBuild
+    Properties:
+      DomainName:
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, stubsDomain]
+      RegionalCertificateArn:
+        Fn::ImportValue: certificate-CertificateARN
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+      SecurityPolicy: SecurityPolicy_TLS13_1_2_FIPS_PQ_2025_09
+      EndpointAccessMode: STRICT
+
+  StubsRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: IsDevOrBuild
+    Properties:
+      Name: !Ref StubsApiDomain
+      Type: A
+      HostedZoneId:
+        Fn::ImportValue: hosted-zone-HostedZoneID
+      AliasTarget:
+        DNSName: !GetAtt StubsApiDomain.RegionalDomainName
+        HostedZoneId: !GetAtt StubsApiDomain.RegionalHostedZoneId
+        EvaluateTargetHealth: false
+
+  StubsApiMapping:
+    Type: AWS::ApiGateway::BasePathMapping
+    Condition: IsDevOrBuild
+    Properties:
+      DomainName: !Ref StubsApiDomain
+      RestApiId: !Ref StubsApiGateway
+      Stage: !Ref Environment
+    DependsOn:
+      - StubsApiGatewayStage # This resource is created as part of the RestApi resource
+
+  StubsApiGateway:
+    Type: AWS::Serverless::Api
+    Condition: IsDevOrBuild
+    Properties:
+      Description: Account Components Stub API
+      StageName: !Ref Environment
+      AlwaysDeploy: true
+      DisableExecuteApiEndpoint: true
+      TracingEnabled: true
+      EndpointConfiguration:
+        Type: REGIONAL
+      BinaryMediaTypes: !If
+        - IsLocal
+        - !Ref AWS::NoValue
+        - - "*/*"
+      AccessLogSetting:
+        Format: >-
+          {
+          "requestId": "$context.requestId",
+          "requestTime": "$context.requestTime",
+          "requestTimeEpoch": "$context.requestTimeEpoch",
+          "httpMethod": "$context.httpMethod",
+          "domainName": "$context.domainName",
+          "path": "$context.path",
+          "routeKey": "$context.routeKey",
+          "protocol": "$context.protocol",
+          "status": "$context.status",
+          "responseLength": "$context.responseLength",
+          "responseLatency": "$context.responseLatency",
+          "authorizerLatency": "$context.authorizer.latency",
+          "integrationStatus": "$context.integrationStatus",
+          "integrationLatency": "$context.integrationLatency",
+          "integrationErrorMessage": "$context.integrationErrorMessage",
+          "errorMessage": "$context.error.message",
+          "errorResponseType": "$context.error.responseType",
+          "validationErrorString": "$context.error.validationErrorString",
+          "xrayTraceId": "$context.xrayTraceId",
+          "tlsVersion": "$context.tlsVersion",
+          "cipherSuite": "$context.cipherSuite"
+          }
+        DestinationArn: !GetAtt StubsApiGatewayAccessLogGroup.Arn
+      MethodSettings:
+        - MetricsEnabled: true
+          ResourcePath: /*
+          HttpMethod: "*"
+      Tags:
+        FMSRegionalPolicy: false
+        CustomPolicy: mock
+
+  StubsApiGatewayAccessLogGroup:
+    Type: AWS::Logs::LogGroup
+    Condition: IsDevOrBuild
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/${StubsApiGateway}/${Environment}"
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  StubsLambda:
+    Type: AWS::Serverless::Function
+    Condition: IsDevOrBuild
+    Metadata:
+      BuildMethod: makefile
+    Properties:
+      CodeUri: solutions/stubs/dist
+      Handler: lambda.handler
+      LoggingConfig:
+        LogGroup: !Ref StubsLambdaLogGroup
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /
+            RestApiId: !Ref StubsApiGateway
+        CatchAll:
+          Type: Api
+          Properties:
+            Method: ANY
+            Path: /{proxy+}
+            RestApiId: !Ref StubsApiGateway
+      Environment:
+        Variables:
+          MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPrivateKey"
+          MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientEcPublicKey"
+          MOCK_CLIENT_RSA_PRIVATE_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientRsaPrivateKey"
+          MOCK_CLIENT_RSA_PUBLIC_KEY_SSM_NAME: !Sub "/${AWS::StackName}/MockClientRsaPublicKey"
+          JAR_RSA_ENCRYPTION_KEY_ALIAS: !Ref JARRSAEncryptionKeyAlias
+          DEFAULT_AUDIENCE: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
+          ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
+          AUTHORIZE_URL: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
+          API_BASE_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+          ROOT_DOMAIN:
+            !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - ssm:GetParameter
+                - ssm:GetParameters
+                - ssm:GetParametersByPath
+              Resource:
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPublicKey
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientEcPrivateKey
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientRsaPublicKey
+                - !Sub arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${AWS::StackName}/MockClientRsaPrivateKey
+            - Effect: Allow
+              Action:
+                - appconfig:GetLatestConfiguration
+                - appconfig:StartConfigurationSession
+              Resource: !Sub arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/*
+            - Effect: Allow
+              Action:
+                - kms:DescribeKey
+                - kms:GetPublicKey
+              Resource: !GetAtt JARRSAEncryptionKey.Arn
+
+  StubsLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Condition: IsDevOrBuild
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/StubsLambda"
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn

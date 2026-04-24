@@ -21,6 +21,7 @@ export const getJourneyOutcome = async (
         "#sub": "sub",
         "#scope": "scope",
       },
+      ConsistentRead: true,
     });
 
     if (!result.Item) {

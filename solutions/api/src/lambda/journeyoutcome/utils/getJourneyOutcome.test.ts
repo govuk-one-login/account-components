@@ -85,6 +85,7 @@ describe("getJourneyOutcome", () => {
         "#sub": "sub",
         "#scope": "scope",
       },
+      ConsistentRead: true,
     });
     expect(mockMetricsAddDimensions).toHaveBeenCalledWith({
       scope: "test-scope",

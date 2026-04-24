@@ -14,7 +14,7 @@ This repo contains the code for Account Components
 - Install Brewfile dependencies with `npm run install-brewfile`
 - Install dependencies with `npm run install-all`
 - Install Git Hooks with `npm run install-git-hooks`
-- Run `npm run run:all` to start all the local servers and watch for changes. The frontend will be available at `http://localhost:6002`, the stubs at `http://localhost:6003` and the API at `http://localhost:6004`.
+- Run `npm run run:all` to start all the local servers. The frontend will be available at `http://localhost:6002`, the stubs at `http://localhost:6003` and the API at `http://localhost:6004`. The frontend and stubs will watch for changes and rebuild on demand but the API will not and needs to be restarted for changes to take effect.
 
 ## Updating Node version
 
@@ -37,10 +37,9 @@ There are various commands which can be run manually and which may also be run b
 - `npm run build:frontend` to build the frontend
 - `npm run run:stubs` to run the stubs locally and watch for changes
 - `npm run build:stubs` to build the stubs
-- `npm run run:api` to run the API locally and watch for changes
+- `npm run run:api` to run the API locally
 - `npm run generate-config-types` to generate TypeScript types from the App Config JSON schema
-- `npm run build:api` to build the API
-- `npm run build:core` to build core
+- `npm run build:all` to build everything
 - `npm run test` to run [Vitest](https://vitest.dev/) tests
 - `npm run test:watch` to run [Vitest](https://vitest.dev/) tests in watch mode
 - `npm run test:coverage` to run [Vitest](https://vitest.dev/) tests and report coverage
@@ -50,13 +49,11 @@ There are various commands which can be run manually and which may also be run b
 - `npm run knip` to run [Knip](https://knip.dev/)
 - `npm run tflint` to [lint Terraform](https://github.com/terraform-linters/tflint) files
 - `npm run cfnlint` to [lint CloudFormation](https://github.com/aws-cloudformation/cfn-lint) templates with the file extension `.cf.yaml`
-- `npm run sam-validate:frontend` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the frontend CloudFormation template
-- `npm run sam-validate:stubs` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the stubs CloudFormation template
-- `npm run sam-validate:core` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the core CloudFormation template
-- `npm run sam-validate:api` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the API CloudFormation template
+- `npm run sam-validate` to run [SAM validation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-cli-command-reference-sam-validate.html) against the CloudFormation template
 - `npm run check-gh-actions` to check GitHub Actions with [Zizmor](https://docs.zizmor.sh/)
 - `npm run detect-secrets` to detect secrets which should not be in the repo. False positives can be [ignored with comments](https://github.com/Yelp/detect-secrets?tab=readme-ov-file#inline-allowlisting)
 - `npm run config:validate` to validate the application's config
+- `npm run api-specs:validate` to validate the OpenAPI specs
 - `npm run audit` to check for NPM package vulnerabilities and check package signature integrity
 
 If these commands detect issues it may be possible to fix them by running:
@@ -65,7 +62,6 @@ If these commands detect issues it may be possible to fix them by running:
 - `npm run eslint:fix`
 - `npm run knip:fix`
 - `npm run tflint:fix`
-- `npm run cfnlint:fix`
 - `npm run check-gh-actions:fix`
 
 ## Integration testing

@@ -64,39 +64,15 @@ variable "signing_profile_version_arn" {
   description = "The ARN of the signing profile version used to sign Lambda code. This is the shared profile deployed in build from the signer stack"
 }
 
-variable "core_artifact_source_bucket_arn" {
+variable "artifact_source_bucket_arn" {
   type        = string
-  description = "The ARN of the promotion bucket from the previous environment's core pipeline"
+  description = "The ARN of the promotion bucket from the previous environment's pipeline"
   default     = "none"
 }
 
-variable "core_artifact_source_bucket_event_trigger_role_arn" {
+variable "artifact_source_bucket_event_trigger_role_arn" {
   type        = string
-  description = "The ARN of the role to assume for promotion events from the previous environment's core pipeline"
-  default     = "none"
-}
-
-variable "main_artifact_source_bucket_arn" {
-  type        = string
-  description = "The ARN of the promotion bucket from the previous environment's main pipeline"
-  default     = "none"
-}
-
-variable "api_artifact_source_bucket_arn" {
-  type        = string
-  description = "The ARN of the promotion bucket from the previous environment's API pipeline"
-  default     = "none"
-}
-
-variable "main_artifact_source_bucket_event_trigger_role_arn" {
-  type        = string
-  description = "The ARN of the role to assume for promotion events from the previous environment's main pipeline"
-  default     = "none"
-}
-
-variable "api_artifact_source_bucket_event_trigger_role_arn" {
-  type        = string
-  description = "The ARN of the role to assume for promotion events from the previous environment's API pipeline"
+  description = "The ARN of the role to assume for promotion events from the previous environment's pipeline"
   default     = "none"
 }
 
@@ -185,4 +161,26 @@ variable "config_final_bake_time_in_minutes" {
   type        = number
   description = "After the deployment this represents a period of time that AppConfig should continue to monitor the specified alarms for errors to trigger an rollback."
   default     = 0
+}
+
+variable "transit_gateway_hub_account_id" {
+  type        = string
+  description = "Transit Gateway Hub AWS Account ID where the Lambda execution role lives."
+}
+
+variable "disaster_recovery_transit_gateway_hub_account_id" {
+  type        = string
+  description = "Disaster recovery Transit Gateway Hub AWS Account ID where the Lambda execution role lives."
+  default     = null
+}
+
+variable "transit_gateway_id" {
+  type        = string
+  description = "ID of the Transit Gateway."
+}
+
+variable "disaster_recovery_transit_gateway_id" {
+  type        = string
+  description = "ID of the disaster recovery Transit Gateway."
+  default     = null
 }

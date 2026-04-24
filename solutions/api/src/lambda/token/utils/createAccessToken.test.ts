@@ -111,7 +111,7 @@ describe("createAccessToken", () => {
     );
 
     expect(accessToken).toBe(
-      "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2V5LWlkIn0.eyJvdXRjb21lX2lkIjoib3V0Y29tZS0xMjMiLCJpc3MiOiJodHRwczovL2V4YW1wbGUuY29tL3Rva2VuIiwic3ViIjoidXNlci14eXoiLCJhdWQiOiJodHRwczovL2V4YW1wbGUuY29tL2pvdXJuZXlvdXRjb21lIiwiaWF0IjoxNzA0MDY3MjAwLCJleHAiOjE3MDQwNjcyNjAsImp0aSI6InVuaXF1ZS1qdGktdmFsdWUtbW9jay1yZXNwb25zZSJ9.jose-format-signature-of-mock-signature", // pragma: allowlist secret
+      "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2V5LWlkIn0.eyJvdXRjb21lX2lkIjoib3V0Y29tZS0xMjMiLCJpc3MiOiJodHRwczovL2V4YW1wbGUuY29tL3Rva2VuIiwic3ViIjoidXNlci14eXoiLCJhdWQiOiJodHRwczovL2V4YW1wbGUuY29tL2pvdXJuZXlvdXRjb21lIiwiaWF0IjoxNzA0MDY3MjAwLCJleHAiOjE3MDQwNjc1MDAsImp0aSI6InVuaXF1ZS1qdGktdmFsdWUtbW9jay1yZXNwb25zZSJ9.jose-format-signature-of-mock-signature", // pragma: allowlist secret
     );
   });
 
@@ -160,7 +160,7 @@ describe("createAccessToken", () => {
       { error: deleteError },
     );
     expect(accessToken).toBe(
-      "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2V5LWlkIn0.eyJvdXRjb21lX2lkIjoib3V0Y29tZS0xMjMiLCJpc3MiOiJodHRwczovL2V4YW1wbGUuY29tL3Rva2VuIiwic3ViIjoidXNlci14eXoiLCJhdWQiOiJodHRwczovL2V4YW1wbGUuY29tL2pvdXJuZXlvdXRjb21lIiwiaWF0IjoxNzA0MDY3MjAwLCJleHAiOjE3MDQwNjcyNjAsImp0aSI6InVuaXF1ZS1qdGktdmFsdWUtbW9jay1yZXNwb25zZSJ9.jose-format-signature-of-mock-signature", // pragma: allowlist secret
+      "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InRlc3Qta2V5LWlkIn0.eyJvdXRjb21lX2lkIjoib3V0Y29tZS0xMjMiLCJpc3MiOiJodHRwczovL2V4YW1wbGUuY29tL3Rva2VuIiwic3ViIjoidXNlci14eXoiLCJhdWQiOiJodHRwczovL2V4YW1wbGUuY29tL2pvdXJuZXlvdXRjb21lIiwiaWF0IjoxNzA0MDY3MjAwLCJleHAiOjE3MDQwNjc1MDAsImp0aSI6InVuaXF1ZS1qdGktdmFsdWUtbW9jay1yZXNwb25zZSJ9.jose-format-signature-of-mock-signature", // pragma: allowlist secret
     );
   });
 });
