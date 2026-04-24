@@ -155,7 +155,7 @@ Mappings:
       notificationsMaxReceiveCount: 5
       txmaAccountArn: "arn:aws:iam::178023842775:root"
       stubsDomain: ""
-      rootDomain: ""
+      rootDomain: staging.account.gov.uk
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       authorizeEndpointUrl: https://manage.integration.account.gov.uk/authorize
@@ -190,7 +190,7 @@ Mappings:
       notificationsMaxReceiveCount: 36
       txmaAccountArn: "arn:aws:iam::729485541398:root"
       stubsDomain: ""
-      rootDomain: ""
+      rootDomain: integration.account.gov.uk
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       authorizeEndpointUrl: https://manage.account.gov.uk/authorize
@@ -225,7 +225,7 @@ Mappings:
       notificationsMaxReceiveCount: 36
       txmaAccountArn: "arn:aws:iam::451773080033:root"
       stubsDomain: ""
-      rootDomain: ""
+      rootDomain: account.gov.uk
 
 Conditions:
   UseCodeSigning:
