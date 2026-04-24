@@ -1,4 +1,4 @@
-name: Build - Deploy Configuration
+name: Deploy Configuration - build
 
 on:
   push:
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  deploy-config-to-build:
     name: Deploy Config (Build)
     uses: ./.github/workflows/deploy-config.yaml
     permissions:

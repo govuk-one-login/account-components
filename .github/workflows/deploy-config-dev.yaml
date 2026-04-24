@@ -1,4 +1,4 @@
-name: Dev - Deploy Configuration
+name: Deploy Configuration - dev
 
 on:
   workflow_dispatch:
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  deploy-config-to-dev:
     name: Deploy Config (Dev)
     uses: ./.github/workflows/deploy-config.yaml
     permissions:
