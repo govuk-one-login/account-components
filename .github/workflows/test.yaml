@@ -1,4 +1,4 @@
-name: Tests
+name: Test
 
 permissions: {}
 
@@ -7,7 +7,7 @@ on:
   merge_group:
 
 jobs:
-  tests:
+  test:
     runs-on: ubuntu-latest
 
     steps:

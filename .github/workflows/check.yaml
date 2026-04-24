@@ -1,4 +1,4 @@
-name: Checks
+name: Check
 
 permissions: {}
 
@@ -7,7 +7,7 @@ on:
   merge_group:
 
 jobs:
-  checks:
+  check:
     runs-on: ubuntu-latest
     permissions:
       security-events: write

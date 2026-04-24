@@ -1,4 +1,4 @@
-name: Integration tests
+name: Integration test
 
 permissions: {}
 
@@ -7,7 +7,7 @@ on:
   merge_group:
 
 jobs:
-  integration-tests:
+  integration-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     concurrency:
