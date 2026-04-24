@@ -97,7 +97,7 @@
             <fieldset>
                 <legend>User email address (optional)</legend>
                 <input type="email" name="user_email_address" aria-label="User email address (optional)"/>
-                {% if emailsCanBeSent %}
+                {% if not isLocal %}
                     <i>Defaults to {{mockEmailAddress}} which will be sent to the Notify stub, not the real Notify service</i>                
                 {% else %}
                     <i>Emails are not sent when running locally</i>
