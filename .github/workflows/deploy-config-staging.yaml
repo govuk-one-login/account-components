@@ -1,4 +1,4 @@
-name: Staging - Deploy Configuration
+name: Deploy Configuration - staging
 
 on:
   push:
@@ -14,7 +14,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
+  deploy-config-to-staging:
     name: Deploy Config (Staging)
     uses: ./.github/workflows/deploy-config.yaml
     permissions:
