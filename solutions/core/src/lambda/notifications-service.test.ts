@@ -446,9 +446,8 @@ describe("notifications-service", () => {
     );
   });
 
-  it("uses stub URL when email matches mockEmailAddress and NOTIFY_SEND_EMAIL_STUB_URL is set", async () => {
-    process.env["NOTIFY_SEND_EMAIL_STUB_URL"] =
-      "http://localhost:6003/notify/send-email";
+  it("uses stub URL when email matches mockEmailAddress and NOTIFY_STUB_URL is set", async () => {
+    process.env["NOTIFY_STUB_URL"] = "http://localhost:6003";
 
     const { handler } = await import("./notifications-service.js");
 
@@ -466,16 +465,15 @@ describe("notifications-service", () => {
     await handler(event);
 
     expect(mockNotifyClientConstructor).toHaveBeenCalledWith(
-      "http://localhost:6003/notify/send-email",
+      "http://localhost:6003",
       "test-api-key",
     );
 
-    delete process.env["NOTIFY_SEND_EMAIL_STUB_URL"];
+    delete process.env["NOTIFY_STUB_URL"];
   });
 
   it("uses API key when email does not match mockEmailAddress", async () => {
-    process.env["NOTIFY_SEND_EMAIL_STUB_URL"] =
-      "http://localhost:6003/notify/send-email";
+    process.env["NOTIFY_STUB_URL"] = "http://localhost:6003";
 
     const { handler } = await import("./notifications-service.js");
 
@@ -494,11 +492,11 @@ describe("notifications-service", () => {
 
     expect(mockNotifyClientConstructor).toHaveBeenCalledWith("test-api-key");
 
-    delete process.env["NOTIFY_SEND_EMAIL_STUB_URL"];
+    delete process.env["NOTIFY_STUB_URL"];
   });
 
-  it("uses API key when NOTIFY_SEND_EMAIL_STUB_URL is not set", async () => {
-    delete process.env["NOTIFY_SEND_EMAIL_STUB_URL"];
+  it("uses API key when NOTIFY_STUB_URL is not set", async () => {
+    delete process.env["NOTIFY_STUB_URL"];
 
     const { handler } = await import("./notifications-service.js");
 

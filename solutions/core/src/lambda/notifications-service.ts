@@ -150,10 +150,10 @@ const processNotification = async (
 
       if (
         message.emailAddress === mockEmailAddress &&
-        process.env["NOTIFY_SEND_EMAIL_STUB_URL"]
+        process.env["NOTIFY_STUB_URL"]
       ) {
         notifyClient = new NotifyClient(
-          process.env["NOTIFY_SEND_EMAIL_STUB_URL"],
+          process.env["NOTIFY_STUB_URL"],
           notifyApiKey,
         );
       } else {

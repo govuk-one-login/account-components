@@ -78,7 +78,7 @@ Mappings:
       securityUrl: https://home.dev.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.dev.account.gov.uk/account-data-api
-      notifySendEmailStubUrl: https://stubs.manage.dev.account.gov.uk/notify/send-email
+      notifyStubUrl: https://stubs.manage.dev.account.gov.uk/notify
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
@@ -112,7 +112,7 @@ Mappings:
       securityUrl: https://home.build.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.build.account.gov.uk/account-data-api
-      notifySendEmailStubUrl: https://stubs.manage.build.account.gov.uk/notify/send-email
+      notifyStubUrl: https://stubs.manage.build.account.gov.uk/notify
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
@@ -148,7 +148,7 @@ Mappings:
       securityUrl: https://home.staging.account.gov.uk/security
       dynatraceRumUrl: TODO
       accountDataApiUrl: https://7xgl7lexy4.execute-api.eu-west-2.amazonaws.com/staging
-      notifySendEmailStubUrl: ""
+      notifyStubUrl: ""
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
@@ -184,7 +184,7 @@ Mappings:
       securityUrl: https://home.integration.account.gov.uk/security
       dynatraceRumUrl: TODO
       accountDataApiUrl: https://hoidt6wujb.execute-api.eu-west-2.amazonaws.com/integration
-      notifySendEmailStubUrl: ""
+      notifyStubUrl: ""
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_PASSKEY_NAME": "a37858f1-45e5-4b9f-8d93-efbbc955ffbf",
@@ -220,7 +220,7 @@ Mappings:
       securityUrl: https://home.account.gov.uk/security
       dynatraceRumUrl: TODO
       accountDataApiUrl: https://0218o1p9tj.execute-api.eu-west-2.amazonaws.com/production
-      notifySendEmailStubUrl: ""
+      notifyStubUrl: ""
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_PASSKEY_NAME": "a37858f1-45e5-4b9f-8d93-efbbc955ffbf",
@@ -1003,11 +1003,11 @@ Resources:
               !Ref Environment,
               notifyTemplateIds,
             ]
-          NOTIFY_SEND_EMAIL_STUB_URL:
+          NOTIFY_STUB_URL:
             !FindInMap [
               EnvironmentConfiguration,
               !Ref Environment,
-              notifySendEmailStubUrl,
+              notifyStubUrl,
             ]
       DeploymentPreference:
         Alarms: !If
