@@ -58,3 +58,43 @@ Given("I click the sign out button in the header", async ({ page }) => {
     .getByRole("button", { name: "Sign out", exact: true })
     .click();
 });
+
+Then("the phase banner does not show", async ({ page }) => {
+  await expect(page.locator(".govuk-phase-banner")).toBeHidden();
+});
+
+Then(
+  "a 'govuk-template__mobile' class is applied to the document",
+  async ({ page }) => {
+    await expect(page.locator("html.govuk-template__mobile")).toBeAttached();
+  },
+);
+
+Then("the footer does not show", async ({ page }) => {
+  await expect(page.locator("footer")).toBeHidden();
+});
+
+Then("the GOVUK logo is not a link", async ({ page }) => {
+  await expect(page.locator("a.govuk-header__link--homepage")).toBeHidden();
+});
+
+Then("the phase banner shows", async ({ page }) => {
+  await expect(page.locator(".govuk-phase-banner")).toBeVisible();
+});
+
+Then(
+  "a 'govuk-template__mobile' class is not applied to the document",
+  async ({ page }) => {
+    await expect(
+      page.locator("html.govuk-template__mobile"),
+    ).not.toBeAttached();
+  },
+);
+
+Then("the footer shows", async ({ page }) => {
+  await expect(page.locator("footer")).toBeVisible();
+});
+
+Then("the GOVUK logo is a link", async ({ page }) => {
+  await expect(page.locator("a.govuk-header__link--homepage")).toBeVisible();
+});

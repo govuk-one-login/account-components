@@ -4,6 +4,16 @@
 {% from "frontend-ui/build/components/language-select/macro.njk" import frontendUiLanguageSelect %}
 
 {% set htmlLang = globals.htmlLang %}
+{% set htmlClasses = 'govuk-template__mobile' if globals.isAppChannel %}
+{% set phaseBannerHtml %}
+  {%- if isProd -%}
+  {{ 'FECTranslations.phaseBanner.text' | translate }} <a href='{{ globals.authFrontEndUrl + "/contact-us-questions?theme=suggestions_feedback" }}' class="govuk-link" rel="noreferrer noopener" target="_blank">{{ 'FECTranslations.phaseBanner.link' | translate | replace(".","") }}</a>.
+  {%- else -%}
+  {{ 'general.phaseBanner.testText' | translate }}
+  {%- endif -%}
+{% endset %}
+{% set phaseBannerTagText =  'FECTranslations.phaseBanner.tag' | translate | capitalize if isProd else "Test" %}
+{% set phaseBannerClasses =  'govuk-tag--yellow' if not isProd %}
 
 {%- set headerClasses -%}
 {%- if reply.client.consider_user_logged_in %} govuk-header--with-signout {%- endif -%}
@@ -45,25 +55,13 @@
 
 {% block main %}
   <div class="govuk-width-container {{ containerClasses }}">
-    {% if isProd %}
-      {% set bannerHtml %}
-        {{ 'FECTranslations.phaseBanner.text' | translate }} <a href='{{ globals.authFrontEndUrl + "/contact-us-questions?theme=suggestions_feedback" }}' class="govuk-link" rel="noreferrer noopener" target="_blank">{{ 'FECTranslations.phaseBanner.link' | translate | replace(".","") }}</a>.
-      {% endset %}
-      {{ govukPhaseBanner({
-          tag: {
-            text: 'FECTranslations.phaseBanner.tag' | translate | capitalize
-          },
-          html: bannerHtml
-      })}}
-    {% else %}
-      {{ govukPhaseBanner({
-          tag: {
-            text: "Test",
-            classes: "govuk-tag--yellow"
-          },
-          text: 'general.phaseBanner.testText' | translate
-      })}}
-    {% endif %}
+    {{ govukPhaseBanner({
+      tag: {
+        text: phaseBannerTagText,
+        classes: phaseBannerClasses
+      },
+      html: phaseBannerHtml
+    }) if not globals.isAppChannel }}
 
     {{ frontendUiLanguageSelect({
         url: globals.currentUrl,
@@ -87,7 +85,7 @@
 {% endblock %}
 
 {% block footer %}
-  {{ frontendUiFooter({ translations: 'FECTranslations.footer' | translate({returnObjects: true}) })}}
+  {{ frontendUiFooter({ translations: 'FECTranslations.footer' | translate({returnObjects: true}) }) if not globals.isAppChannel }}
 {% endblock %}
 
 

@@ -242,3 +242,15 @@ Then(
     ).toStrictEqual(responseBody);
   },
 );
+
+Given("I select the {string} channel", async ({ page }, channel: string) => {
+  const legend = page.locator('legend:has-text("Channel")');
+  const fieldset = page.locator("fieldset").filter({ has: legend });
+  await fieldset.getByLabel(channel).check();
+  await page
+    .getByRole("button", { name: "Generate Request Object", exact: true })
+    .click();
+  await page
+    .getByRole("link", { name: "Start AMC Journey", exact: true })
+    .click();
+});
