@@ -71,6 +71,7 @@ export async function createRequestObjectGet(
     jwtHeader,
     originalRequestBody,
     mockEmailAddress,
+    emailsCanBeSent: getEnvironment() !== "local",
   });
   return reply;
 }

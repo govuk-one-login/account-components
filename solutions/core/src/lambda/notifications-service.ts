@@ -146,12 +146,19 @@ const processNotification = async (
 
     let sendResult: unknown;
     try {
-      const notifyClient = new NotifyClient(
+      let notifyClient: InstanceType<typeof NotifyClient>;
+
+      if (
         message.emailAddress === mockEmailAddress &&
-          process.env["NOTIFY_SEND_EMAIL_STUB_URL"]
-          ? process.env["NOTIFY_SEND_EMAIL_STUB_URL"]
-          : notifyApiKey,
-      );
+        process.env["NOTIFY_SEND_EMAIL_STUB_URL"]
+      ) {
+        notifyClient = new NotifyClient(
+          process.env["NOTIFY_SEND_EMAIL_STUB_URL"],
+          notifyApiKey,
+        );
+      } else {
+        notifyClient = new NotifyClient(notifyApiKey);
+      }
 
       sendResult = await notifyClient.sendEmail(
         templateId,

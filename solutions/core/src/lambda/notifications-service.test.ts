@@ -467,6 +467,7 @@ describe("notifications-service", () => {
 
     expect(mockNotifyClientConstructor).toHaveBeenCalledWith(
       "http://localhost:6003/notify/send-email",
+      "test-api-key",
     );
 
     delete process.env["NOTIFY_SEND_EMAIL_STUB_URL"];
