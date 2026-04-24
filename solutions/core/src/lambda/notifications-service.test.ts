@@ -4,6 +4,7 @@ import * as v from "valibot";
 
 const mockGetSecret = vi.fn();
 const mockSendEmail = vi.fn();
+const mockNotifyClientConstructor = vi.fn();
 const mockLogger = {
   info: vi.fn(),
   error: vi.fn(),
@@ -90,8 +91,16 @@ vi.mock(import("@aws-lambda-powertools/parameters/secrets"), () => ({
 // @ts-expect-error
 vi.mock(import("notifications-node-client"), () => ({
   NotifyClient: class {
+    constructor(...args: unknown[]) {
+      mockNotifyClientConstructor(...args);
+    }
     sendEmail = mockSendEmail;
   },
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../commons/utils/constants.js"), () => ({
+  mockEmailAddress: "testuser@test.null.local",
 }));
 
 // @ts-expect-error
@@ -435,6 +444,77 @@ describe("notifications-service", () => {
         reference: "ref-1",
       }),
     );
+  });
+
+  it("uses stub URL when email matches mockEmailAddress and NOTIFY_SEND_EMAIL_STUB_URL is set", async () => {
+    process.env["NOTIFY_SEND_EMAIL_STUB_URL"] =
+      "http://localhost:6003/notify/send-email";
+
+    const { handler } = await import("./notifications-service.js");
+
+    mockSendEmail.mockResolvedValue({
+      data: { id: "notify-id", reference: "ref" },
+    });
+
+    const message = {
+      emailAddress: "testuser@test.null.local",
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
+    };
+
+    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
+    await handler(event);
+
+    expect(mockNotifyClientConstructor).toHaveBeenCalledWith(
+      "http://localhost:6003/notify/send-email",
+    );
+
+    delete process.env["NOTIFY_SEND_EMAIL_STUB_URL"];
+  });
+
+  it("uses API key when email does not match mockEmailAddress", async () => {
+    process.env["NOTIFY_SEND_EMAIL_STUB_URL"] =
+      "http://localhost:6003/notify/send-email";
+
+    const { handler } = await import("./notifications-service.js");
+
+    mockSendEmail.mockResolvedValue({
+      data: { id: "notify-id", reference: "ref" },
+    });
+
+    const message = {
+      emailAddress: "other@example.com",
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
+    };
+
+    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
+    await handler(event);
+
+    expect(mockNotifyClientConstructor).toHaveBeenCalledWith("test-api-key");
+
+    delete process.env["NOTIFY_SEND_EMAIL_STUB_URL"];
+  });
+
+  it("uses API key when NOTIFY_SEND_EMAIL_STUB_URL is not set", async () => {
+    delete process.env["NOTIFY_SEND_EMAIL_STUB_URL"];
+
+    const { handler } = await import("./notifications-service.js");
+
+    mockSendEmail.mockResolvedValue({
+      data: { id: "notify-id", reference: "ref" },
+    });
+
+    const message = {
+      emailAddress: "testuser@test.null.local",
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
+    };
+
+    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
+    await handler(event);
+
+    expect(mockNotifyClientConstructor).toHaveBeenCalledWith("test-api-key");
   });
 
   it("calls metrics and logger cleanup methods", async () => {

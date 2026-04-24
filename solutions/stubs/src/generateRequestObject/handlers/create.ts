@@ -18,7 +18,10 @@ import * as v from "valibot";
 import type { JWTPayload } from "jose";
 import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.js";
 import { createHash } from "node:crypto";
-import { checkUserAgentCookieName } from "../../../../commons/utils/constants.js";
+import {
+  checkUserAgentCookieName,
+  mockEmailAddress,
+} from "../../../../commons/utils/constants.js";
 
 export const requestBodySchema = v.object({
   client_id: v.string(),
@@ -67,6 +70,7 @@ export async function createRequestObjectGet(
     jwtPayload,
     jwtHeader,
     originalRequestBody,
+    mockEmailAddress,
   });
   return reply;
 }

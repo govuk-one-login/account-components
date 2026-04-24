@@ -18,18 +18,9 @@ import {
   messageSchema,
   NotificationType,
 } from "../../../commons/utils/notifications/index.js";
+import { mockEmailAddress } from "../../../commons/utils/constants.js";
 
 type Personalisation = Record<string, string>;
-interface NotifyClientType {
-  sendEmail: (
-    templateId: string,
-    emailAddress: string,
-    options: {
-      personalisation: Personalisation;
-      reference: string;
-    },
-  ) => Promise<unknown>;
-}
 
 const addSendNotificationFailedMetric = (failureReason: string) => {
   metrics.addMetadata("SendNotificationFailedReason", failureReason);
@@ -86,8 +77,6 @@ if (
     }),
   );
 }
-
-const notifyClient: NotifyClientType = new NotifyClient(notifyApiKey);
 
 const notifyTemplateIDsSchema = v.pipe(
   v.string(),
@@ -157,6 +146,13 @@ const processNotification = async (
 
     let sendResult: unknown;
     try {
+      const notifyClient = new NotifyClient(
+        message.emailAddress === mockEmailAddress &&
+          process.env["NOTIFY_SEND_EMAIL_STUB_URL"]
+          ? process.env["NOTIFY_SEND_EMAIL_STUB_URL"]
+          : notifyApiKey,
+      );
+
       sendResult = await notifyClient.sendEmail(
         templateId,
         message.emailAddress,
