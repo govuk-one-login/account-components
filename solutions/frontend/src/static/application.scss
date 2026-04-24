@@ -28,6 +28,10 @@
 // FEC language toggle component import
 @import "components/language-select";
 
+.govuk-template__mobile {
+  background-color: $govuk-body-background-colour;
+}
+
 .govuk-input--disabled {
   background-color: govuk-colour("light-grey", $legacy: "grey-3");
 }
