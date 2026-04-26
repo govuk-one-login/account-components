@@ -18,6 +18,6 @@ export const paths = {
       "/account-data-api/accounts/:publicSubjectId/authenticators/passkeys",
   },
   notify: {
-    sendEmail: "/notify/v2/notifications/email",
+    sendEmail: "/notify/*",
   },
 } as const;

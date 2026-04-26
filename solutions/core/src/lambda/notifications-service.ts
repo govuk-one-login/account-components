@@ -204,6 +204,8 @@ const processNotification = async (
       }),
     });
 
+    console.log("MHTEST_sendResult", sendResult);
+
     const resultParsed = v.safeParse(notifySuccessSchema, sendResult);
     if (!resultParsed.success) {
       const errorName = "invalid_result_format";
