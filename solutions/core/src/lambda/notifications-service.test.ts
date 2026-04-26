@@ -383,28 +383,6 @@ describe("notifications-service", () => {
     expect(mockSendEmail).not.toHaveBeenCalledWith();
   });
 
-  it("adds to batch failures for invalid result format", async () => {
-    const { handler } = await import("./notifications-service.js");
-
-    mockSendEmail.mockResolvedValue({ invalid: "response" });
-
-    const message = {
-      emailAddress: "test@example.com",
-      notificationType: "WITH_PERSONALISATION",
-      name: "Test User",
-    };
-
-    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
-    const result = await handler(event);
-
-    expect(result.batchItemFailures).toHaveLength(1);
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      "invalid_result_format",
-      expect.any(Object),
-    );
-    expect(mockSendEmail).not.toHaveBeenCalledWith();
-  });
-
   it("processes multiple records and returns partial failures", async () => {
     const { handler } = await import("./notifications-service.js");
 

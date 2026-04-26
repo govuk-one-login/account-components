@@ -6,7 +6,7 @@ import { notify } from "./index.js";
 vi.mock(import("../utils/paths.js"), () => ({
   paths: {
     notify: {
-      sendEmail: "/notify/v2/notifications/email",
+      sendEmail: "/notify/*",
     },
   },
 }));
@@ -29,7 +29,7 @@ describe("notify", () => {
 
     expect(mockApp.post).toHaveBeenCalledTimes(1);
     expect(mockApp.post).toHaveBeenCalledWith(
-      "/notify/v2/notifications/email",
+      "/notify/*",
       expect.any(Function),
     );
   });

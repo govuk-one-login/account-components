@@ -144,7 +144,9 @@ const processNotification = async (
       return;
     }
 
-    let sendResult: unknown;
+    let sendResult: Awaited<
+      ReturnType<InstanceType<typeof NotifyClient>["sendEmail"]>
+    >;
     try {
       let notifyClient: InstanceType<typeof NotifyClient>;
 
@@ -197,30 +199,10 @@ const processNotification = async (
       return;
     }
 
-    const notifySuccessSchema = v.object({
-      data: v.object({
-        id: v.string(),
-        reference: v.nullish(v.string()),
-      }),
-    });
-
-    console.log("MHTEST_sendResult", sendResult);
-
-    const resultParsed = v.safeParse(notifySuccessSchema, sendResult);
-    if (!resultParsed.success) {
-      const errorName = "invalid_result_format";
-      logger.error(errorName, {
-        messageId: record.messageId,
-      });
-      addSendNotificationFailedMetric(errorName);
-      batchItemFailures.push({ itemIdentifier: record.messageId });
-      return;
-    }
-
     logger.info("notification_sent", {
       messageId: record.messageId,
-      id: resultParsed.output.data.id,
-      reference: resultParsed.output.data.reference,
+      id: sendResult.data.id,
+      reference: sendResult.data.reference,
     });
     metrics.addMetric("SendNotificationSucceeded", MetricUnit.Count, 1);
   } catch (error) {
