@@ -14,9 +14,10 @@ import { metrics } from "../../../commons/utils/metrics/index.js";
 // notifications-node-client uses axios under the hood so we have to rely on it here
 // eslint-disable-next-line depend/ban-dependencies
 import { isAxiosError } from "axios";
+import type { NotificationType } from "../../../commons/utils/notifications/index.js";
 import {
   messageSchema,
-  NotificationType,
+  notifyTemplateIDsSchema,
 } from "../../../commons/utils/notifications/index.js";
 import { mockEmailAddress } from "../../../commons/utils/constants.js";
 
@@ -77,12 +78,6 @@ if (
     }),
   );
 }
-
-const notifyTemplateIDsSchema = v.pipe(
-  v.string(),
-  v.parseJson(),
-  v.record(v.enum(NotificationType), v.string()),
-);
 
 const templateIds = v.safeParse(
   notifyTemplateIDsSchema,

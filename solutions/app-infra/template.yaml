@@ -2871,6 +2871,12 @@ Resources:
           API_BASE_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
           ROOT_DOMAIN:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
+          NOTIFY_TEMPLATE_IDS:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              notifyTemplateIds,
+            ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:

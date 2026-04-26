@@ -17,7 +17,9 @@ describe("sendEmailPostHandler", () => {
   });
 
   it("should return id and reference when reference is provided", async () => {
-    mockRequest = { body: { reference: "test-reference" } };
+    mockRequest = {
+      body: { template_id: "test-template-id", reference: "test-reference" },
+    };
 
     await sendEmailPostHandler(
       mockRequest as FastifyRequest,
@@ -33,7 +35,7 @@ describe("sendEmailPostHandler", () => {
   });
 
   it("should return id and undefined reference when reference is not provided", async () => {
-    mockRequest = { body: {} };
+    mockRequest = { body: { template_id: "test-template-id" } };
 
     await sendEmailPostHandler(
       mockRequest as FastifyRequest,
@@ -49,7 +51,7 @@ describe("sendEmailPostHandler", () => {
   });
 
   it("should throw when body is invalid", async () => {
-    mockRequest = { body: { reference: 123 } };
+    mockRequest = { body: { template_id: 123 } };
 
     await expect(
       sendEmailPostHandler(

@@ -117,6 +117,11 @@ vi.mock(import("../../../commons/utils/metrics/index.js"), () => ({
 vi.mock(import("../../../commons/utils/notifications/index.js"), () => ({
   messageSchema: mockMessageSchema,
   NotificationType: MockNotificationType,
+  notifyTemplateIDsSchema: v.pipe(
+    v.string(),
+    v.parseJson(),
+    v.record(v.enum(MockNotificationType), v.string()),
+  ),
   sendNotification: vi.fn(),
 }));
 
