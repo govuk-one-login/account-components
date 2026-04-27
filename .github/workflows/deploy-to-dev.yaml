@@ -58,6 +58,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+      packages: read
 
     steps:
       - name: Checkout
@@ -91,7 +92,7 @@ jobs:
         run: echo "date=$(date +'%Y-%m-%dT%H:%M:%S')" >> $GITHUB_OUTPUT
 
       - name: Set up Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version-file: .nvmrc
 
@@ -108,9 +109,13 @@ jobs:
           aws-region: "eu-west-2"
 
       - name: Install dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run install-all
 
       - name: Build
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:all
 
       - name: Deploy

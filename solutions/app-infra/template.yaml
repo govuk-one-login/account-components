@@ -78,6 +78,7 @@ Mappings:
       securityUrl: https://home.dev.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.dev.account.gov.uk/account-data-api
+      notifyStubUrl: https://stubs.manage.dev.account.gov.uk/notify
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_PASSKEY_NAME": "aa8697b6-23e6-4317-9aff-5a274142e7f2",
@@ -111,6 +112,7 @@ Mappings:
       securityUrl: https://home.build.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.build.account.gov.uk/account-data-api
+      notifyStubUrl: https://stubs.manage.build.account.gov.uk/notify
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_PASSKEY_NAME": "aa8697b6-23e6-4317-9aff-5a274142e7f2",
@@ -146,6 +148,7 @@ Mappings:
       securityUrl: https://home.staging.account.gov.uk/security
       dynatraceRumUrl: TODO
       accountDataApiUrl: https://7xgl7lexy4.execute-api.eu-west-2.amazonaws.com/staging
+      notifyStubUrl: ""
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_PASSKEY_NAME": "aa8697b6-23e6-4317-9aff-5a274142e7f2",
@@ -181,6 +184,7 @@ Mappings:
       securityUrl: https://home.integration.account.gov.uk/security
       dynatraceRumUrl: TODO
       accountDataApiUrl: https://hoidt6wujb.execute-api.eu-west-2.amazonaws.com/integration
+      notifyStubUrl: ""
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_PASSKEY_NAME": "07fc5ed8-4775-4f03-b6cf-08a273458849",
@@ -216,6 +220,7 @@ Mappings:
       securityUrl: https://home.account.gov.uk/security
       dynatraceRumUrl: TODO
       accountDataApiUrl: https://0218o1p9tj.execute-api.eu-west-2.amazonaws.com/production
+      notifyStubUrl: ""
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_PASSKEY_NAME": "07fc5ed8-4775-4f03-b6cf-08a273458849",
@@ -997,6 +1002,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               notifyTemplateIds,
+            ]
+          NOTIFY_STUB_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              notifyStubUrl,
             ]
       DeploymentPreference:
         Alarms: !If
@@ -2860,6 +2871,12 @@ Resources:
           API_BASE_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
           ROOT_DOMAIN:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
+          NOTIFY_TEMPLATE_IDS:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              notifyTemplateIds,
+            ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:

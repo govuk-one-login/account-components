@@ -6,7 +6,7 @@ import type { testingJourneyStateMachine } from "../../../frontend/src/journeys/
 import type { passkeyCreateStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/passkey-create.ts";
 import type { ClientEntry } from "../../../config/schema/types.ts";
 import type { failedJourneyErrors } from "../../../frontend/src/journeys/utils/failedJourneyErrors.ts";
-import type { Scope } from "../interfaces.ts";
+import type { Scope } from "../commonTypes.ts";
 import type { getClaimsSchema } from "../../../frontend/src/utils/getClaimsSchema.ts";
 
 declare module "fastify" {

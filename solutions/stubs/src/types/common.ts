@@ -1,3 +1,5 @@
+import { mockEmailAddress } from "../../../commons/utils/constants.js";
+
 export enum HttpCodesEnum {
   BAD_REQUEST = 400,
 }
@@ -92,7 +94,7 @@ export const getUsers = (user: string): User => {
     return {
       sub: "urn:fdc:gov.uk:default",
       public_sub: "4c950955-03c3-45a4-a97e-763152c172ff",
-      email: "testuser@test.null.local",
+      email: mockEmailAddress,
     };
   }
 };

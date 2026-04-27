@@ -2,7 +2,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import { randomBytes } from "node:crypto";
 import { getAppConfig } from "../../../../commons/utils/getAppConfig/index.js";
-import type { JourneyOutcome } from "../../../../commons/utils/interfaces.js";
+import type { JourneyOutcome } from "../../../../commons/utils/commonTypes.js";
 import { buildRedirectToClientRedirectUri } from "../../utils/buildRedirectToClientRedirectUri.js";
 import { destroySession } from "../../utils/session.js";
 import assert from "node:assert";

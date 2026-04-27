@@ -3,7 +3,7 @@ import type { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy.
 import type { Context } from "aws-lambda";
 import type { CryptoKey } from "jose";
 import type { JourneyOutcomePayload } from "./utils/interfaces.js";
-import type { JourneyOutcome } from "../../../../commons/utils/interfaces.js";
+import type { JourneyOutcome } from "../../../../commons/utils/commonTypes.js";
 
 const mockContext = {} as unknown as Context;
 

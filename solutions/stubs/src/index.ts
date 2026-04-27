@@ -18,6 +18,7 @@ import { FastifyPowertoolsLogger } from "../../commons/utils/fastify/powertoolsL
 import { getEnvironment } from "../../commons/utils/getEnvironment/index.js";
 import { accountManagementApi } from "./accountManagementApi/index.js";
 import { accountDataApi } from "./accountDataApi/index.js";
+import { notify } from "./notify/index.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
@@ -114,6 +115,7 @@ export const initStubs = async function () {
   fastify.register(clientCallback);
   fastify.register(accountManagementApi);
   fastify.register(accountDataApi);
+  fastify.register(notify);
 
   return fastify;
 };

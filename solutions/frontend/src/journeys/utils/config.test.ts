@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import { journeys } from "./config.js";
 import { Lang } from "../../utils/configureI18n.js";
-import { Scope } from "../../../../commons/utils/interfaces.js";
+import { Scope } from "../../../../commons/utils/commonTypes.js";
 
 // @ts-expect-error
 vi.mock(import("./stateMachines/testing-journey.js"), () => ({

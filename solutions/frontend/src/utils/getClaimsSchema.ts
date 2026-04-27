@@ -2,7 +2,7 @@ import * as v from "valibot";
 import { logger } from "../../../commons/utils/logger/index.js";
 import assert from "node:assert";
 import type { ClientEntry } from "../../../config/schema/types.js";
-import { Scope } from "../../../commons/utils/interfaces.js";
+import { Scope } from "../../../commons/utils/commonTypes.js";
 
 export const getClaimsSchema = (
   callback: (dimension: string) => void,

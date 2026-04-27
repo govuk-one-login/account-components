@@ -14,22 +14,14 @@ import { metrics } from "../../../commons/utils/metrics/index.js";
 // notifications-node-client uses axios under the hood so we have to rely on it here
 // eslint-disable-next-line depend/ban-dependencies
 import { isAxiosError } from "axios";
+import type { NotificationType } from "../../../commons/utils/notifications/index.js";
 import {
   messageSchema,
-  NotificationType,
+  notifyTemplateIDsSchema,
 } from "../../../commons/utils/notifications/index.js";
+import { mockEmailAddress } from "../../../commons/utils/constants.js";
 
 type Personalisation = Record<string, string>;
-interface NotifyClientType {
-  sendEmail: (
-    templateId: string,
-    emailAddress: string,
-    options: {
-      personalisation: Personalisation;
-      reference: string;
-    },
-  ) => Promise<unknown>;
-}
 
 const addSendNotificationFailedMetric = (failureReason: string) => {
   metrics.addMetadata("SendNotificationFailedReason", failureReason);
@@ -86,14 +78,6 @@ if (
     }),
   );
 }
-
-const notifyClient: NotifyClientType = new NotifyClient(notifyApiKey);
-
-const notifyTemplateIDsSchema = v.pipe(
-  v.string(),
-  v.parseJson(),
-  v.record(v.enum(NotificationType), v.string()),
-);
 
 const templateIds = v.safeParse(
   notifyTemplateIDsSchema,
@@ -155,8 +139,24 @@ const processNotification = async (
       return;
     }
 
-    let sendResult: unknown;
+    let sendResult: Awaited<
+      ReturnType<InstanceType<typeof NotifyClient>["sendEmail"]>
+    >;
     try {
+      let notifyClient: InstanceType<typeof NotifyClient>;
+
+      if (
+        message.emailAddress === mockEmailAddress &&
+        process.env["NOTIFY_STUB_URL"]
+      ) {
+        notifyClient = new NotifyClient(
+          process.env["NOTIFY_STUB_URL"],
+          notifyApiKey,
+        );
+      } else {
+        notifyClient = new NotifyClient(notifyApiKey);
+      }
+
       sendResult = await notifyClient.sendEmail(
         templateId,
         message.emailAddress,
@@ -194,28 +194,10 @@ const processNotification = async (
       return;
     }
 
-    const notifySuccessSchema = v.object({
-      data: v.object({
-        id: v.string(),
-        reference: v.nullish(v.string()),
-      }),
-    });
-
-    const resultParsed = v.safeParse(notifySuccessSchema, sendResult);
-    if (!resultParsed.success) {
-      const errorName = "invalid_result_format";
-      logger.error(errorName, {
-        messageId: record.messageId,
-      });
-      addSendNotificationFailedMetric(errorName);
-      batchItemFailures.push({ itemIdentifier: record.messageId });
-      return;
-    }
-
     logger.info("notification_sent", {
       messageId: record.messageId,
-      id: resultParsed.output.data.id,
-      reference: resultParsed.output.data.reference,
+      id: sendResult.data.id,
+      reference: sendResult.data.reference,
     });
     metrics.addMetric("SendNotificationSucceeded", MetricUnit.Count, 1);
   } catch (error) {

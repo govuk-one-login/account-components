@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
+      packages: read
 
     steps:
       - name: Checkout
@@ -22,7 +23,7 @@ jobs:
         uses: zizmorcore/zizmor-action@b1d7e1fb5de872772f31590499237e7cce841e8e
 
       - name: Set up Node
-        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
           node-version-file: .nvmrc
 
@@ -39,12 +40,16 @@ jobs:
         uses: sourcemeta/jsonschema@de5d93249013195a09f88e8fc8ff836412c544d0
 
       - name: Set up cfn-lint
-        uses: scottbrenner/cfn-lint-action@9636da81fb2e0cef75725d8dda11b0148940b7ae
+        uses: scottbrenner/cfn-lint-action@c5f18dc4be13042d564f3052f4067dc9ceafe355
 
       - name: Install dependencies
-        run: npm run install-all && cd solutions/integration-tests && npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run install-all
 
       - name: Build
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:all
 
       - name: Check types

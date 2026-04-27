@@ -4,6 +4,7 @@ This repo contains the code for Account Components
 
 ## Set up and installation
 
+- In GitHub create a personal access token which has `read:packages` permission and in the configuration file for your shell export a variable called `NODE_AUTH_TOKEN` with the value of the personal access token
 - Copy `solutions/frontend/.env.sample` to `solutions/frontend/.env` and replace any placeholder values as appropriate
 - Copy `solutions/stubs/.env.sample` to `solutions/stubs/.env` and replace any placeholder values as appropriate
 - Copy `solutions/api/env.json.sample` to `solutions/api/env.json` and replace any placeholder values as appropriate

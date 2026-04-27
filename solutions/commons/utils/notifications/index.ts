@@ -7,6 +7,12 @@ export enum NotificationType {
   CREATE_PASSKEY_WITHOUT_PASSKEY_NAME = "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME",
 }
 
+export const notifyTemplateIDsSchema = v.pipe(
+  v.string(),
+  v.parseJson(),
+  v.record(v.enum(NotificationType), v.string()),
+);
+
 export const messageSchema = v.variant("notificationType", [
   v.pipe(
     v.object({

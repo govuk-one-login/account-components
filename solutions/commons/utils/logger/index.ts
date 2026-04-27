@@ -1,4 +1,4 @@
-import type { APIGatewayProxyHandler } from "../interfaces.js";
+import type { APIGatewayProxyHandler } from "../commonTypes.js";
 // eslint-disable-next-line no-restricted-imports
 import { Logger } from "@aws-lambda-powertools/logger";
 import { getPropsFromAPIGatewayEvent } from "../getPropsFromAPIGatewayEvent/index.js";
