@@ -2923,7 +2923,8 @@ Resources:
               "property": "client_id",
               "namespace": "account-components",
               "inputType": "select",
-              "defaultValue": ""
+              "defaultValue": "",
+              "values": []
             },
             {
               "type": "property",
@@ -2932,7 +2933,8 @@ Resources:
               "property": "scope",
               "namespace": "account-components",
               "inputType": "select",
-              "defaultValue": ""
+              "defaultValue": "",
+              "values": []
             },
             {
               "type": "property",
@@ -2941,7 +2943,8 @@ Resources:
               "property": "error_type",
               "namespace": "account-components",
               "inputType": "select",
-              "defaultValue": ""
+              "defaultValue": "",
+              "values": []
             },
             {
               "type": "property",
@@ -2950,7 +2953,8 @@ Resources:
               "property": "method",
               "namespace": "account-components",
               "inputType": "select",
-              "defaultValue": ""
+              "defaultValue": "",
+              "values": []
             },
             {
               "type": "property",
@@ -2959,7 +2963,8 @@ Resources:
               "property": "path",
               "namespace": "account-components",
               "inputType": "select",
-              "defaultValue": ""
+              "defaultValue": "",
+              "values": []
             } 
           ],
           "widgets": [
