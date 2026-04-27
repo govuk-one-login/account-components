@@ -1,5 +1,7 @@
 import * as v from "valibot";
 
+export const mockEmailAddress = "testuser@test.null.local";
+
 export const fiveMinutesInSeconds = 300;
 export const oneDayInSeconds = 86400;
 export const oneYearInSeconds = 31536000;
