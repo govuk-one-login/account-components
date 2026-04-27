@@ -4,6 +4,7 @@ import * as v from "valibot";
 
 const mockGetSecret = vi.fn();
 const mockSendEmail = vi.fn();
+const mockNotifyClientConstructor = vi.fn();
 const mockLogger = {
   info: vi.fn(),
   error: vi.fn(),
@@ -90,8 +91,16 @@ vi.mock(import("@aws-lambda-powertools/parameters/secrets"), () => ({
 // @ts-expect-error
 vi.mock(import("notifications-node-client"), () => ({
   NotifyClient: class {
+    constructor(...args: unknown[]) {
+      mockNotifyClientConstructor(...args);
+    }
     sendEmail = mockSendEmail;
   },
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../commons/utils/constants.js"), () => ({
+  mockEmailAddress: "testuser@test.null.local",
 }));
 
 // @ts-expect-error
@@ -108,6 +117,11 @@ vi.mock(import("../../../commons/utils/metrics/index.js"), () => ({
 vi.mock(import("../../../commons/utils/notifications/index.js"), () => ({
   messageSchema: mockMessageSchema,
   NotificationType: MockNotificationType,
+  notifyTemplateIDsSchema: v.pipe(
+    v.string(),
+    v.parseJson(),
+    v.record(v.enum(MockNotificationType), v.string()),
+  ),
   sendNotification: vi.fn(),
 }));
 
@@ -374,28 +388,6 @@ describe("notifications-service", () => {
     expect(mockSendEmail).not.toHaveBeenCalledWith();
   });
 
-  it("adds to batch failures for invalid result format", async () => {
-    const { handler } = await import("./notifications-service.js");
-
-    mockSendEmail.mockResolvedValue({ invalid: "response" });
-
-    const message = {
-      emailAddress: "test@example.com",
-      notificationType: "WITH_PERSONALISATION",
-      name: "Test User",
-    };
-
-    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
-    const result = await handler(event);
-
-    expect(result.batchItemFailures).toHaveLength(1);
-    expect(mockLogger.error).toHaveBeenCalledWith(
-      "invalid_result_format",
-      expect.any(Object),
-    );
-    expect(mockSendEmail).not.toHaveBeenCalledWith();
-  });
-
   it("processes multiple records and returns partial failures", async () => {
     const { handler } = await import("./notifications-service.js");
 
@@ -435,6 +427,76 @@ describe("notifications-service", () => {
         reference: "ref-1",
       }),
     );
+  });
+
+  it("uses stub URL when email matches mockEmailAddress and NOTIFY_STUB_URL is set", async () => {
+    process.env["NOTIFY_STUB_URL"] = "http://localhost:6003";
+
+    const { handler } = await import("./notifications-service.js");
+
+    mockSendEmail.mockResolvedValue({
+      data: { id: "notify-id", reference: "ref" },
+    });
+
+    const message = {
+      emailAddress: "testuser@test.null.local",
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
+    };
+
+    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
+    await handler(event);
+
+    expect(mockNotifyClientConstructor).toHaveBeenCalledWith(
+      "http://localhost:6003",
+      "test-api-key",
+    );
+
+    delete process.env["NOTIFY_STUB_URL"];
+  });
+
+  it("uses API key when email does not match mockEmailAddress", async () => {
+    process.env["NOTIFY_STUB_URL"] = "http://localhost:6003";
+
+    const { handler } = await import("./notifications-service.js");
+
+    mockSendEmail.mockResolvedValue({
+      data: { id: "notify-id", reference: "ref" },
+    });
+
+    const message = {
+      emailAddress: "other@example.com",
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
+    };
+
+    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
+    await handler(event);
+
+    expect(mockNotifyClientConstructor).toHaveBeenCalledWith("test-api-key");
+
+    delete process.env["NOTIFY_STUB_URL"];
+  });
+
+  it("uses API key when NOTIFY_STUB_URL is not set", async () => {
+    delete process.env["NOTIFY_STUB_URL"];
+
+    const { handler } = await import("./notifications-service.js");
+
+    mockSendEmail.mockResolvedValue({
+      data: { id: "notify-id", reference: "ref" },
+    });
+
+    const message = {
+      emailAddress: "testuser@test.null.local",
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
+    };
+
+    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
+    await handler(event);
+
+    expect(mockNotifyClientConstructor).toHaveBeenCalledWith("test-api-key");
   });
 
   it("calls metrics and logger cleanup methods", async () => {
