@@ -11,6 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       security-events: write
+      packages: read
 
     steps:
       - name: Checkout
@@ -42,9 +43,13 @@ jobs:
         uses: scottbrenner/cfn-lint-action@9636da81fb2e0cef75725d8dda11b0148940b7ae
 
       - name: Install dependencies
-        run: npm run install-all && cd solutions/integration-tests && npm ci
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npm run install-all
 
       - name: Build
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:all
 
       - name: Check types

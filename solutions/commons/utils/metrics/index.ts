@@ -1,5 +1,5 @@
 import { Metrics } from "@aws-lambda-powertools/metrics";
-import type { APIGatewayProxyHandler } from "../interfaces.js";
+import type { APIGatewayProxyHandler } from "../commonTypes.js";
 
 export const metrics = new Metrics({
   namespace: "account-components",

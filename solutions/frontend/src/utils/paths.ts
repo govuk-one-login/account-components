@@ -2,7 +2,7 @@ import type { FastifyReply } from "fastify";
 import { AcountDeleteJourneyState } from "../journeys/utils/stateMachines/account-delete.js";
 import { PasskeyCreateState } from "../journeys/utils/stateMachines/passkey-create.js";
 import { TestingJourneyState } from "../journeys/utils/stateMachines/testing-journey.js";
-import { Scope } from "../../../commons/utils/interfaces.js";
+import { Scope } from "../../../commons/utils/commonTypes.js";
 
 type PathsMap = Record<
   string,

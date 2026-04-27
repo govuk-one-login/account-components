@@ -12,6 +12,8 @@ on:
 jobs:
   sonarcloud:
     runs-on: ubuntu-latest
+    permissions:
+      packages: read
 
     steps:
       - name: Checkout
@@ -25,6 +27,8 @@ jobs:
           node-version-file: .nvmrc
 
       - name: Install dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run install-all
 
       - name: Run tests and report coverage

@@ -62,6 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+      packages: read
 
     steps:
       - name: Checkout
@@ -87,9 +88,13 @@ jobs:
           aws-region: "eu-west-2"
 
       - name: Install dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run install-all
 
       - name: Build
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:all
 
       - name: Deploy
