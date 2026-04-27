@@ -81,8 +81,8 @@ Mappings:
       notifyStubUrl: https://stubs.manage.dev.account.gov.uk/notify
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "82836a7c-d861-4a76-a2d1-f75c1e49d9fa"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "aa8697b6-23e6-4317-9aff-5a274142e7f2",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "369a29fd-1e7b-4c1f-bd92-a08a51c99b2e"
         }
       notificationsVisibilityTimeout: 120
       notificationsMaxReceiveCount: 5
@@ -115,8 +115,8 @@ Mappings:
       notifyStubUrl: https://stubs.manage.build.account.gov.uk/notify
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "82836a7c-d861-4a76-a2d1-f75c1e49d9fa"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "aa8697b6-23e6-4317-9aff-5a274142e7f2",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "369a29fd-1e7b-4c1f-bd92-a08a51c99b2e"
         }
       notificationsVisibilityTimeout: 120
       notificationsMaxReceiveCount: 5
@@ -151,8 +151,8 @@ Mappings:
       notifyStubUrl: ""
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "e85e22eb-ab14-4881-8334-5e51ac46b08f",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "82836a7c-d861-4a76-a2d1-f75c1e49d9fa"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "aa8697b6-23e6-4317-9aff-5a274142e7f2",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "369a29fd-1e7b-4c1f-bd92-a08a51c99b2e"
         }
       notificationsVisibilityTimeout: 120
       notificationsMaxReceiveCount: 5
@@ -187,8 +187,8 @@ Mappings:
       notifyStubUrl: ""
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "a37858f1-45e5-4b9f-8d93-efbbc955ffbf",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "e3f82979-69c8-4f85-8bd3-660d526c35c2"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "07fc5ed8-4775-4f03-b6cf-08a273458849",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "b6cec4ce-a23e-4132-87d8-952697c58851"
         }
       notificationsVisibilityTimeout: 300
       notificationsMaxReceiveCount: 36
@@ -223,8 +223,8 @@ Mappings:
       notifyStubUrl: ""
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "a37858f1-45e5-4b9f-8d93-efbbc955ffbf",
-          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "e3f82979-69c8-4f85-8bd3-660d526c35c2"
+          "CREATE_PASSKEY_WITH_PASSKEY_NAME": "07fc5ed8-4775-4f03-b6cf-08a273458849",
+          "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME": "b6cec4ce-a23e-4132-87d8-952697c58851"
         }
       notificationsVisibilityTimeout: 300
       notificationsMaxReceiveCount: 36
