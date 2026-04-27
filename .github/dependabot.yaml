@@ -120,4 +120,4 @@ registries:
   github-npm-registry:
     type: npm-registry
     url: https://npm.pkg.github.com
-    token: ${{ secrets.GITHUB_TOKEN }}
+    token: ${{ secrets.NODE_AUTH_TOKEN }}
