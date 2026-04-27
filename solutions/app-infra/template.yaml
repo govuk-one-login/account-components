@@ -2915,8 +2915,45 @@ Resources:
       DashboardName: !Sub "${AWS::StackName}-dashboard"
       DashboardBody: !Sub |
         {
-          "widgets": [
+          "variables": [
             {
+              "type": "property",
+              "key": "ClientId",
+              "label": "Client ID",
+              "values": "SELECT DISTINCT(client_id) FROM SCHEMA(\"account-components\")",
+              "defaultValue": ""
+            },
+            {
+              "type": "property",
+              "key": "Scope",
+              "label": "Scope",
+              "values": "SELECT DISTINCT(scope) FROM SCHEMA(\"account-components\")",
+              "defaultValue": ""
+            },
+            {
+              "type": "property",
+              "key": "ErrorType",
+              "label": "Error type",
+              "values": "SELECT DISTINCT(error_type) FROM SCHEMA(\"account-components\")",
+              "defaultValue": ""
+            },
+            {
+              "type": "property",
+              "key": "Method",
+              "label": "Method",
+              "values": "SELECT DISTINCT(method) FROM SCHEMA(\"account-components\")",
+              "defaultValue": ""
+            },
+            {
+              "type": "property",
+              "key": "Path",
+              "label": "Path",
+              "values": "SELECT DISTINCT(path) FROM SCHEMA(\"account-components\")",
+              "defaultValue": ""
+            } 
+          ],           
+          "widgets": [
+            {         
               "type": "metric",
               "properties": {
                 "title": "Journey requests",
@@ -2924,250 +2961,13 @@ Resources:
                 "stacked": false,
                 "region": "${AWS::Region}",
                 "metrics": [
-                  [{ "expression": "SEARCH('{account-components,client_id,scope,method,path,error_type} MetricName=\"JourneyRequest\"', 'Sum')", "id": "journeyRequests", "label": "JourneyRequest" }],
-                  [{ "expression": "SEARCH('{account-components,client_id,scope,method,path,error_type} MetricName=\"JourneyRequestError\"', 'Sum')", "id": "journeyRequestErrors", "label": "JourneyRequestError" }]
+                  [ { "expression": "SUM(SEARCH('Namespace=\"account-components\" MetricName=\"JourneyRequest\" ${!ClientId} ${!Scope} ${!ErrorType} ${!Method} ${!Path}', 'Sum', 60))", "id": "journeyRequests", "label": "JourneyRequest" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"account-components\" MetricName=\"JourneyRequestError\" ${!ClientId} ${!Scope} ${!ErrorType} ${!Method} ${!Path}', 'Sum', 60))", "id": "journeyRequestErrors", "label": "JourneyRequestError" } ]
                 ],
                 "stat": "Sum",
-                "period": 300
+                "period": 60
               },
               "width": 12,
-              "height": 6
-            },
-            {
-              "type": "metric",
-              "properties": {
-                "title": "Authorize requests",
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "${AWS::Region}",
-                "metrics": [
-                  [{ "expression": "SEARCH('{account-components,client_id,scope,error_type} MetricName=\"AuthorizeRequest\"', 'Sum')", "id": "authorizeRequests", "label": "AuthorizeRequest" }],
-                  [{ "expression": "SEARCH('{account-components,client_id,scope,error_type} MetricName=\"AuthorizeError\"', 'Sum')", "id": "authorizeErrors", "label": "AuthorizeError" }]
-                ],
-                "stat": "Sum",
-                "period": 300
-              },
-              "width": 12,
-              "height": 6
-            },
-            {
-              "type": "metric",
-              "properties": {
-                "title": "Token requests",
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "${AWS::Region}",
-                "metrics": [
-                  [{ "expression": "SEARCH('{account-components,client_id,scope,error_type} MetricName=\"TokenRequest\"', 'Sum')", "id": "tokenRequests", "label": "TokenRequest" }],
-                  [{ "expression": "SEARCH('{account-components,client_id,scope,error_type} MetricName=\"TokenError\"', 'Sum')", "id": "tokenErrors", "label": "TokenError" }]
-                ],
-                "stat": "Sum",
-                "period": 300
-              },
-              "width": 12,
-              "height": 6
-            },
-            {
-              "type": "metric",
-              "properties": {
-                "title": "Journey outcome requests",
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "${AWS::Region}",
-                "metrics": [
-                  [{ "expression": "SEARCH('{account-components,client_id,scope,error_type} MetricName=\"JourneyOutcomeRequest\"', 'Sum')", "id": "journeyOutcomeRequests", "label": "JourneyOutcomeRequest" }],
-                  [{ "expression": "SEARCH('{account-components,client_id,scope,error_type} MetricName=\"JourneyOutcomeError\"', 'Sum')", "id": "journeyOutcomeErrors", "label": "JourneyOutcomeError" }]
-                ],
-                "stat": "Sum",
-                "period": 300
-              },
-              "width": 12,
-              "height": 6
-            },
-            {
-              "type": "metric",
-              "properties": {
-                "title": "Notifications service requests",
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "${AWS::Region}",
-                "metrics": [
-                  [{ "expression": "SEARCH('{account-components,notificationType} MetricName=\"SendNotificationSucceeded\"', 'Sum')", "id": "sendNotificationSucceeded", "label": "SendNotificationSucceeded" }],
-                  [{ "expression": "SEARCH('{account-components,notificationType} MetricName=\"SendNotificationFailed\"', 'Sum')", "id": "sendNotificationFailed", "label": "SendNotificationFailed" }]
-                ],
-                "stat": "Sum",
-                "period": 300
-              },
-              "width": 12,
-              "height": 6
-            },
-            {
-              "type": "metric",
-              "properties": {
-                "title": "Frontend lambda errors",
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "${AWS::Region}",
-                "metrics": [
-                  [{ "expression": "SEARCH('{${AWS::StackName}/FrontendLambda,client_id,scope,path} MetricName=\"WarnLogCountByContext\"', 'Sum')", "id": "frontendWarn", "label": "WarnLogCountByContext" }],
-                  [{ "expression": "SEARCH('{${AWS::StackName}/FrontendLambda,client_id,scope,path} MetricName=\"ErrorLogCountByContext\"', 'Sum')", "id": "frontendError", "label": "ErrorLogCountByContext" }],
-                  [{ "expression": "SEARCH('{${AWS::StackName}/FrontendLambda,client_id,scope,path} MetricName=\"CriticalLogCountByContext\"', 'Sum')", "id": "frontendCritical", "label": "CriticalLogCountByContext" }]
-                ],
-                "stat": "Sum",
-                "period": 300
-              },
-              "width": 12,
-              "height": 6
-            },
-            {
-              "type": "metric",
-              "properties": {
-                "title": "Token lambda errors",
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "${AWS::Region}",
-                "metrics": [
-                  [{ "expression": "SEARCH('{${AWS::StackName}/ApiTokenLambda,client_id,scope} MetricName=\"WarnLogCountByContext\"', 'Sum')", "id": "tokenWarn", "label": "WarnLogCountByContext" }],
-                  [{ "expression": "SEARCH('{${AWS::StackName}/ApiTokenLambda,client_id,scope} MetricName=\"ErrorLogCountByContext\"', 'Sum')", "id": "tokenError", "label": "ErrorLogCountByContext" }],
-                  [{ "expression": "SEARCH('{${AWS::StackName}/ApiTokenLambda,client_id,scope} MetricName=\"CriticalLogCountByContext\"', 'Sum')", "id": "tokenCritical", "label": "CriticalLogCountByContext" }]
-                ],
-                "stat": "Sum",
-                "period": 300
-              },
-              "width": 12,
-              "height": 6
-            },
-            {
-              "type": "metric",
-              "properties": {
-                "title": "Journey outcome lambda errors",
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "${AWS::Region}",
-                "metrics": [
-                  [{ "expression": "SEARCH('{${AWS::StackName}/ApiJourneyOutcomeLambda,client_id,scope} MetricName=\"WarnLogCountByContext\"', 'Sum')", "id": "journeyOutcomeWarn", "label": "WarnLogCountByContext" }],
-                  [{ "expression": "SEARCH('{${AWS::StackName}/ApiJourneyOutcomeLambda,client_id,scope} MetricName=\"ErrorLogCountByContext\"', 'Sum')", "id": "journeyOutcomeError", "label": "ErrorLogCountByContext" }],
-                  [{ "expression": "SEARCH('{${AWS::StackName}/ApiJourneyOutcomeLambda,client_id,scope} MetricName=\"CriticalLogCountByContext\"', 'Sum')", "id": "journeyOutcomeCritical", "label": "CriticalLogCountByContext" }]
-                ],
-                "stat": "Sum",
-                "period": 300
-              },
-              "width": 12,
-              "height": 6
-            },
-            {
-              "type": "metric",
-              "properties": {
-                "title": "Notifications service lambda errors",
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "${AWS::Region}",
-                "metrics": [
-                  [{ "expression": "SEARCH('{${AWS::StackName}/NotificationsServiceLambda,notificationType} MetricName=\"WarnLogCountByContext\"', 'Sum')", "id": "notificationsWarn", "label": "WarnLogCountByContext" }],
-                  [{ "expression": "SEARCH('{${AWS::StackName}/NotificationsServiceLambda,notificationType} MetricName=\"ErrorLogCountByContext\"', 'Sum')", "id": "notificationsError", "label": "ErrorLogCountByContext" }],
-                  [{ "expression": "SEARCH('{${AWS::StackName}/NotificationsServiceLambda,notificationType} MetricName=\"CriticalLogCountByContext\"', 'Sum')", "id": "notificationsCritical", "label": "CriticalLogCountByContext" }]
-                ],
-                "stat": "Sum",
-                "period": 300
-              },
-              "width": 12,
-              "height": 6
-            },
-            {
-              "type": "metric",
-              "properties": {
-                "title": "Passkey creation errors",
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "${AWS::Region}",
-                "metrics": [
-                  [{ "expression": "SEARCH('{account-components,client_id,error_type} MetricName=\"PasskeyCreateError\"', 'Sum')", "id": "passkeyCreateError", "label": "PasskeyCreateError" }]
-                ],
-                "stat": "Sum",
-                "period": 300
-              },
-              "width": 12,
-              "height": 6
-            },
-            {
-              "type": "metric",
-              "properties": {
-                "title": "Passkey AAGUID not found errors",
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "${AWS::Region}",
-                "metrics": [
-                  ["account-components", "AaguidNotFoundInPasskeysConvenienceMetadata", { "stat": "Sum" }]
-                ],
-                "period": 300
-              },
-              "width": 12,
-              "height": 6
-            },
-            {
-              "type": "metric",
-              "properties": {
-                "title": "Lambda concurrency",
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "${AWS::Region}",
-                "metrics": [
-                  [{ "expression": "SEARCH('{AWS/Lambda,FunctionName} MetricName=\"ConcurrentExecutions\"', 'Sum')", "id": "concurrentExecutions", "label": "ConcurrentExecutions" }]
-                ],
-                "stat": "Sum",
-                "period": 300
-              },
-              "width": 12,
-              "height": 6
-            },
-            {
-              "type": "metric",
-              "properties": {
-                "title": "Lambda invocations",
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "${AWS::Region}",
-                "metrics": [
-                  [{ "expression": "SEARCH('{AWS/Lambda,FunctionName} MetricName=\"Invocations\"', 'Sum')", "id": "invocations", "label": "Invocations" }]
-                ],
-                "stat": "Sum",
-                "period": 300
-              },
-              "width": 12,
-              "height": 6
-            },
-            {
-              "type": "metric",
-              "properties": {
-                "title": "Cold starts",
-                "view": "timeSeries",
-                "stacked": false,
-                "region": "${AWS::Region}",
-                "yAxis": {
-                  "left": {
-                    "label": "Cold start rate (%)"
-                  },
-                  "right": {
-                    "label": "Cold start duration (ms)"
-                  }
-                },
-                "metrics": [
-                  [{ "expression": "(METRICS(\"frontendColdStartCount\") / METRICS(\"frontendInvocations\")) * 100", "id": "frontendColdStartRate", "label": "Frontend cold start rate (%)", "yAxis": "left" }],
-                  [{ "expression": "(METRICS(\"tokenColdStartCount\") / METRICS(\"tokenInvocations\")) * 100", "id": "tokenColdStartRate", "label": "Token cold start rate (%)", "yAxis": "left" }],
-                  [{ "expression": "(METRICS(\"journeyOutcomeColdStartCount\") / METRICS(\"journeyOutcomeInvocations\")) * 100", "id": "journeyOutcomeColdStartRate", "label": "Journey outcome cold start rate (%)", "yAxis": "left" }],
-                  ["${AWS::StackName}/FrontendLambda", "ColdStartCount", { "id": "frontendColdStartCount", "stat": "Sum", "visible": false }],
-                  ["AWS/Lambda", "Invocations", "FunctionName", "${FrontendLambda}", { "id": "frontendInvocations", "stat": "Sum", "visible": false }],
-                  ["${AWS::StackName}/ApiTokenLambda", "ColdStartCount", { "id": "tokenColdStartCount", "stat": "Sum", "visible": false }],
-                  ["AWS/Lambda", "Invocations", "FunctionName", "${ApiTokenLambda}", { "id": "tokenInvocations", "stat": "Sum", "visible": false }],
-                  ["${AWS::StackName}/ApiJourneyOutcomeLambda", "ColdStartCount", { "id": "journeyOutcomeColdStartCount", "stat": "Sum", "visible": false }],
-                  ["AWS/Lambda", "Invocations", "FunctionName", "${ApiJourneyOutcomeLambda}", { "id": "journeyOutcomeInvocations", "stat": "Sum", "visible": false }],
-                  ["${AWS::StackName}/FrontendLambda", "ColdStartDuration", { "id": "frontendColdStartDuration", "stat": "p90", "label": "Frontend cold start duration p90 (ms)", "yAxis": "right" }],
-                  ["${AWS::StackName}/ApiTokenLambda", "ColdStartDuration", { "id": "tokenColdStartDuration", "stat": "p90", "label": "Token cold start duration p90 (ms)", "yAxis": "right" }],
-                  ["${AWS::StackName}/ApiJourneyOutcomeLambda", "ColdStartDuration", { "id": "journeyOutcomeColdStartDuration", "stat": "p90", "label": "Journey outcome cold start duration p90 (ms)", "yAxis": "right" }]
-                ],
-                "period": 300
-              },
-              "width": 24,
               "height": 6
             }
           ]
