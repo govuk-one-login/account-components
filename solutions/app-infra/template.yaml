@@ -2918,40 +2918,50 @@ Resources:
           "variables": [
             {
               "type": "property",
-              "key": "ClientId",
+              "id": "ClientId",
               "label": "Client ID",
-              "values": "SELECT DISTINCT(client_id) FROM SCHEMA(\"account-components\")",
+              "property": "client_id",
+              "namespace": "account-components",
+              "inputType": "select",
               "defaultValue": ""
             },
             {
               "type": "property",
-              "key": "Scope",
+              "id": "Scope",
               "label": "Scope",
-              "values": "SELECT DISTINCT(scope) FROM SCHEMA(\"account-components\")",
+              "property": "scope",
+              "namespace": "account-components",
+              "inputType": "select",
               "defaultValue": ""
             },
             {
               "type": "property",
-              "key": "ErrorType",
+              "id": "ErrorType",
               "label": "Error type",
-              "values": "SELECT DISTINCT(error_type) FROM SCHEMA(\"account-components\")",
+              "property": "error_type",
+              "namespace": "account-components",
+              "inputType": "select",
               "defaultValue": ""
             },
             {
               "type": "property",
-              "key": "Method",
+              "id": "Method",
               "label": "Method",
-              "values": "SELECT DISTINCT(method) FROM SCHEMA(\"account-components\")",
+              "property": "method",
+              "namespace": "account-components",
+              "inputType": "select",
               "defaultValue": ""
             },
             {
               "type": "property",
-              "key": "Path",
+              "id": "Path",
               "label": "Path",
-              "values": "SELECT DISTINCT(path) FROM SCHEMA(\"account-components\")",
+              "property": "path",
+              "namespace": "account-components",
+              "inputType": "select",
               "defaultValue": ""
             } 
-          ],           
+          ],
           "widgets": [
             {         
               "type": "metric",
