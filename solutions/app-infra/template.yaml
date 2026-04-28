@@ -2940,11 +2940,9 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
-                  [ { "expression": "SEARCH('{account-components,client_id,scope} MetricName=\"AuthorizeRequest\" client_id=$client_id scope=$scope', 'Sum')", "id": "authorizeRequest", "visible": false } ],
-                  [ { "expression": "SUM(authorizeRequest)", "id": "authorizeRequestTotal", "label": "AuthorizeRequest" } ],
-                  [ { "expression": "SEARCH('{account-components,client_id,scope} MetricName=\"AuthorizeRequestWithContext\" client_id=$client_id scope=$scope', 'Sum')", "id": "authorizeRequestWithContext", "visible": false } ],
-                  [ { "expression": "SUM(authorizeRequestWithContext)", "id": "authorizeRequestWithContextTotal", "label": "AuthorizeRequestWithContext" } ],
-                  [ { "expression": "SEARCH('{account-components,client_id,scope} MetricName=\"AuthorizeRequestWithContext\" client_id=$client_id scope=$scope', 'Sum')", "id": "authorizeRequestWithContextByDimension" } ]
+                  [ { "expression": "SUM(SEARCH('AuthorizeRequest', 'Sum'))", "id": "authorizeRequest" } ],
+                  [ { "expression": "SUM(SEARCH('{account-components,client_id,scope} AuthorizeRequestWithContext client_id=$client_id scope=$scope', 'Sum'))", "id": "authorizeRequestWithContext" } ],
+                  [ { "expression": "SEARCH('{account-components,client_id,scope} AuthorizeRequestWithContext client_id=$client_id scope=$scope', 'Sum')", "id": "authorizeRequestWithContextByDimension" } ]
                 ],
                 "view": "timeSeries",
                 "stacked": false,
