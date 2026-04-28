@@ -2909,39 +2909,54 @@ Resources:
       RetentionInDays: 30
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
-  CloudWatchDashboard:
+  AuthorizeRequestDashboard:
     Type: AWS::CloudWatch::Dashboard
     Properties:
-      DashboardName: !Sub "${AWS::StackName}-dashboard"
+      DashboardName: !Sub "${AWS::StackName}-AuthorizeRequest"
       DashboardBody: !Sub |
         {
           "variables": [
             {
               "type": "property",
-              "property": "scope",
-              "id": "scope",
-              "label": "Scope",
+              "property": "client_id",
               "inputType": "select",
-              "search": "{account-components,scope} MetricName=\"AuthorizeRequest\"",
+              "id": "client_id",
+              "label": "Client ID",
+              "search": "{account-components,client_id,scope} MetricName=\"AuthorizeRequestWithContext\"",
+              "populateFrom": "client_id"
+            },
+            {
+              "type": "property",
+              "property": "scope",
+              "inputType": "select",
+              "id": "scope",
+              "label": "scope",
+              "search": "{account-components,client_id,scope} MetricName=\"AuthorizeRequestWithContext\"",
               "populateFrom": "scope"
             }
           ],
           "widgets": [
-            {         
+            {
               "type": "metric",
               "properties": {
-                "title": "Authorize requests",
+                "metrics": [
+                  [ { "expression": "SEARCH('{account-components,client_id,scope} MetricName=\"AuthorizeRequest\" client_id=$client_id scope=$scope', 'Sum')", "id": "authorizeRequest", "visible": false } ],
+                  [ { "expression": "SUM(authorizeRequest)", "id": "authorizeRequestTotal", "label": "AuthorizeRequest" } ],
+                  [ { "expression": "SEARCH('{account-components,client_id,scope} MetricName=\"AuthorizeRequestWithContext\" client_id=$client_id scope=$scope', 'Sum')", "id": "authorizeRequestWithContext", "visible": false } ],
+                  [ { "expression": "SUM(authorizeRequestWithContext)", "id": "authorizeRequestWithContextTotal", "label": "AuthorizeRequestWithContext" } ],
+                  [ { "expression": "SEARCH('{account-components,client_id,scope} MetricName=\"AuthorizeRequestWithContext\" client_id=$client_id scope=$scope', 'Sum')", "id": "authorizeRequestWithContextByDimension" } ]
+                ],
                 "view": "timeSeries",
                 "stacked": false,
                 "region": "${AWS::Region}",
-                "metrics": [
-                  [ { "expression": "SUM(SEARCH('Namespace=\"account-components\" MetricName=\"AuthorizeRequest\" ${!scope}, 'Sum', 60))", "id": "authorizeRequests", "label": "AuthorizeRequest" } ]
-                ],
                 "stat": "Sum",
-                "period": 60
+                "period": 60,
+                "title": "Authorize Requests"
               },
-              "width": 12,
-              "height": 6
+              "width": 24,
+              "height": 6,
+              "x": 0,
+              "y": 0
             }
           ]
         }
