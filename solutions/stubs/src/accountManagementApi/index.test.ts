@@ -19,7 +19,7 @@ describe("accountManagementApi", () => {
     mockReply = {
       send: vi.fn(),
       status: vi.fn(),
-    } as unknown as Partial<FastifyReply>;
+    };
   });
 
   it("should register routes", () => {

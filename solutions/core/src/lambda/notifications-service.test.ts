@@ -128,23 +128,22 @@ vi.mock(import("../../../commons/utils/notifications/index.js"), () => ({
 const createSQSRecord = (
   body: string,
   messageId = "test-message-id",
-): SQSRecord =>
-  ({
-    messageId,
-    body,
-    receiptHandle: "test-receipt-handle",
-    attributes: {
-      ApproximateReceiveCount: "1",
-      SentTimestamp: "1234567890",
-      SenderId: "test-sender",
-      ApproximateFirstReceiveTimestamp: "1234567890",
-    },
-    messageAttributes: {},
-    md5OfBody: "test-md5",
-    eventSource: "aws:sqs",
-    eventSourceARN: "arn:aws:sqs:us-east-1:123456789012:test-queue",
-    awsRegion: "us-east-1",
-  }) as SQSRecord;
+): SQSRecord => ({
+  messageId,
+  body,
+  receiptHandle: "test-receipt-handle",
+  attributes: {
+    ApproximateReceiveCount: "1",
+    SentTimestamp: "1234567890",
+    SenderId: "test-sender",
+    ApproximateFirstReceiveTimestamp: "1234567890",
+  },
+  messageAttributes: {},
+  md5OfBody: "test-md5",
+  eventSource: "aws:sqs",
+  eventSourceARN: "arn:aws:sqs:us-east-1:123456789012:test-queue",
+  awsRegion: "us-east-1",
+});
 
 const createSQSEvent = (records: SQSRecord[]): SQSEvent => ({
   Records: records,

@@ -45,6 +45,5 @@ export async function verifySignatureAndGetPayload(
     }
   }
   // Line below is unreachable. It's to appease TS
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-  return {} as JourneyOutcomePayload;
+  return {};
 }

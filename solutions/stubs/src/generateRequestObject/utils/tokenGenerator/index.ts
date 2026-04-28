@@ -152,7 +152,7 @@ export function getJwtPayload(
     typeof bodyUserEmailAddress === "string" && bodyUserEmailAddress.length > 0
       ? bodyUserEmailAddress
       : user.email;
-  // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+
   return {
     ...payload,
     aud: bodyAud ?? process.env["DEFAULT_AUDIENCE"],
@@ -180,7 +180,7 @@ export function getJwtPayload(
     sub: user.sub,
     public_sub: user.public_sub,
     email: userEmailAddress,
-  } as JWTPayload;
+  };
 }
 
 async function generateToken(

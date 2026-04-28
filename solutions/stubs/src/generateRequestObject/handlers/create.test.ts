@@ -73,7 +73,7 @@ describe("createRequestObjectPost", () => {
           jwtHeader: { alg: "ES256" },
           token: "mock-token",
         }),
-      } as unknown as Response),
+      }),
     };
 
     mockRequest = {
