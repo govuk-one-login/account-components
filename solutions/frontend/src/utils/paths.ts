@@ -37,10 +37,10 @@ export const paths = {
     },
     [Scope.passkeyCreate]: {
       [PasskeyCreateState.notCreated]: {
-        createGet: {
+        setUpPasskey: {
           path: "/set-up-passkey",
         },
-        createPost: {
+        cannotSetUpPasskey: {
           path: "/cannot-set-up-passkey",
         },
       },
@@ -114,5 +114,5 @@ export const initialJourneyPaths: Record<Scope, string> = {
   [Scope.accountDelete]:
     paths.journeys[Scope.accountDelete].EMAIL_NOT_VERIFIED.introduction.path,
   [Scope.passkeyCreate]:
-    paths.journeys[Scope.passkeyCreate].NOT_CREATED.createGet.path,
+    paths.journeys[Scope.passkeyCreate].NOT_CREATED.setUpPasskey.path,
 } as const;

@@ -25,11 +25,11 @@ describe("passkeyCreate", () => {
   it("registers all routes", () => {
     passkeyCreate(mockFastify);
 
-    expect(mockGet).toHaveBeenCalledTimes(1);
+    expect(mockGet).toHaveBeenCalledTimes(2);
     expect(mockPost).toHaveBeenCalledTimes(1);
   });
 
-  it("registers create GET route", () => {
+  it("registers set up passkey GET route", () => {
     passkeyCreate(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
@@ -38,7 +38,16 @@ describe("passkeyCreate", () => {
     );
   });
 
-  it("registers create POST route", () => {
+  it("registers cannot set up passkey GET route", () => {
+    passkeyCreate(mockFastify);
+
+    expect(mockGet).toHaveBeenCalledWith(
+      "/cannot-set-up-passkey",
+      expect.any(Function),
+    );
+  });
+
+  it("registers cannot set up passkey POST route", () => {
     passkeyCreate(mockFastify);
 
     expect(mockPost).toHaveBeenCalledWith(
