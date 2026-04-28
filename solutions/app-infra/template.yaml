@@ -1580,7 +1580,7 @@ Resources:
   ApiHealthcheckLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/HealthcheckLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiHealthcheckLambdaLogGroup"
       RetentionInDays: 30
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
@@ -1621,7 +1621,7 @@ Resources:
   ApiTokenLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/TokenLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiTokenLambdaLogGroup"
       RetentionInDays: 30
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
@@ -1695,7 +1695,7 @@ Resources:
   ApiJourneyOutcomeLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/JourneyOutcomeLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambdaLogGroup"
       RetentionInDays: 30
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
@@ -1874,7 +1874,7 @@ Resources:
       LogGroupName: !Ref ApiHealthcheckLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/HealthcheckLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
           MetricName: ErrorAndCriticalLogCount
           MetricValue: "1"
           DefaultValue: 0
@@ -1882,7 +1882,7 @@ Resources:
   ApiHealthcheckLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: !Sub "${AWS::StackName}/HealthcheckLambda"
+      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
       Period: 60
@@ -1954,7 +1954,7 @@ Resources:
       LogGroupName: !Ref ApiTokenLambdaLogGroup
       FilterPattern: '{ $.level = "WARN" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
           MetricName: WarnLogCountByContext
           MetricValue: "1"
           Dimensions:
@@ -1969,7 +1969,7 @@ Resources:
       LogGroupName: !Ref ApiTokenLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
           MetricName: ErrorLogCountByContext
           MetricValue: "1"
           Dimensions:
@@ -1984,7 +1984,7 @@ Resources:
       LogGroupName: !Ref ApiTokenLambdaLogGroup
       FilterPattern: '{ $.level = "CRITICAL" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
           MetricName: CriticalLogCountByContext
           MetricValue: "1"
           Dimensions:
@@ -1999,7 +1999,7 @@ Resources:
       LogGroupName: !Ref ApiTokenLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
           MetricName: ErrorAndCriticalLogCount
           MetricValue: "1"
           DefaultValue: 0
@@ -2010,7 +2010,7 @@ Resources:
       LogGroupName: !Ref ApiTokenLambdaLogGroup
       FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
           MetricName: ColdStartCount
           MetricValue: "1"
           DefaultValue: 0
@@ -2021,7 +2021,7 @@ Resources:
       LogGroupName: !Ref ApiTokenLambdaLogGroup
       FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
           MetricName: ColdStartDuration
           MetricValue: $init_duration_value
           DefaultValue: 0
@@ -2030,7 +2030,7 @@ Resources:
   ApiTokenLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: !Sub "${AWS::StackName}/TokenLambda"
+      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
       Period: 60
@@ -2102,7 +2102,7 @@ Resources:
       LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
       FilterPattern: '{ $.level = "WARN" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: WarnLogCountByContext
           MetricValue: "1"
           Dimensions:
@@ -2117,7 +2117,7 @@ Resources:
       LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: ErrorLogCountByContext
           MetricValue: "1"
           Dimensions:
@@ -2132,7 +2132,7 @@ Resources:
       LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
       FilterPattern: '{ $.level = "CRITICAL" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: CriticalLogCountByContext
           MetricValue: "1"
           Dimensions:
@@ -2147,7 +2147,7 @@ Resources:
       LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: ErrorAndCriticalLogCount
           MetricValue: "1"
           DefaultValue: 0
@@ -2158,7 +2158,7 @@ Resources:
       LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
       FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: ColdStartCount
           MetricValue: "1"
           DefaultValue: 0
@@ -2169,7 +2169,7 @@ Resources:
       LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
       FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: ColdStartDuration
           MetricValue: $init_duration_value
           DefaultValue: 0
@@ -2178,7 +2178,7 @@ Resources:
   ApiJourneyOutcomeLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
       Period: 60
@@ -2908,3 +2908,53 @@ Resources:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/StubsLambda"
       RetentionInDays: 30
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  AuthorizeRequestDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub "${AWS::StackName}-amc"
+      DashboardBody: !Sub |
+        {
+          "variables": [
+            {
+              "type": "property",
+              "property": "client_id",
+              "inputType": "select",
+              "id": "client_id",
+              "label": "Client ID",
+              "search": "{account-components,client_id,scope} MetricName=\"AuthorizeRequestWithContext\"",
+              "populateFrom": "client_id"
+            },
+            {
+              "type": "property",
+              "property": "scope",
+              "inputType": "select",
+              "id": "scope",
+              "label": "scope",
+              "search": "{account-components,client_id,scope} MetricName=\"AuthorizeRequestWithContext\"",
+              "populateFrom": "scope"
+            }
+          ],
+          "widgets": [
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SUM(SEARCH('AuthorizeRequest', 'Sum'))", "id": "authorizeRequest" } ],
+                  [ { "expression": "SUM(SEARCH('{account-components,client_id,scope} AuthorizeRequestWithContext client_id=$client_id scope=$scope', 'Sum'))", "id": "authorizeRequestWithContext" } ],
+                  [ { "expression": "SEARCH('{account-components,client_id,scope} AuthorizeRequestWithContext client_id=$client_id scope=$scope', 'Sum')", "id": "authorizeRequestWithContextByDimension" } ]
+                ],
+                "view": "timeSeries",
+                "stacked": false,
+                "region": "${AWS::Region}",
+                "stat": "Sum",
+                "period": 60,
+                "title": "Authorize Requests"
+              },
+              "width": 24,
+              "height": 6,
+              "x": 0,
+              "y": 0
+            }
+          ]
+        }
