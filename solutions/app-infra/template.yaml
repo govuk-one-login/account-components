@@ -2912,7 +2912,7 @@ Resources:
   AuthorizeRequestDashboard:
     Type: AWS::CloudWatch::Dashboard
     Properties:
-      DashboardName: !Sub "${AWS::StackName}-AuthorizeRequest"
+      DashboardName: !Sub "${AWS::StackName}-amc"
       DashboardBody: !Sub |
         {
           "variables": [
