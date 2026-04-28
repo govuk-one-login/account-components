@@ -49,7 +49,7 @@ describe("buildJar", () => {
     mockInstance.setProtectedHeader.mockReturnValue(mockInstance);
     vi.mocked(CompactEncrypt).mockImplementation(function (this: any) {
       return mockInstance;
-    } as unknown as typeof CompactEncrypt);
+    });
   });
 
   it("should build JAR successfully", async () => {

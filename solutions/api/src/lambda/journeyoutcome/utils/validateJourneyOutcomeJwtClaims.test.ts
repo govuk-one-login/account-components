@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { JourneyOutcomePayload } from "./interfaces.js";
 
 // @ts-expect-error
 vi.doMock(import("./errors.js"), () => ({
@@ -61,10 +60,7 @@ describe("validateJourneyOutcomeJwtClaims", () => {
       const { [missingClaim]: deletedClaim, ...payloadWithMissingClaim } =
         basePayload as Record<string, unknown>;
 
-      validateJourneyOutcomeJwtClaims(
-        payloadWithMissingClaim as JourneyOutcomePayload,
-        mockApiBaseUrl,
-      );
+      validateJourneyOutcomeJwtClaims(payloadWithMissingClaim, mockApiBaseUrl);
 
       expect(mockErrorManager.throwError).toHaveBeenCalledWith(
         "InvalidAccessToken",

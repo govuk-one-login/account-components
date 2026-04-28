@@ -39,7 +39,7 @@ describe("confirm handlers", () => {
     };
     mockReply = {
       render: vi.fn().mockResolvedValue(undefined),
-    } as unknown as FastifyReply;
+    };
   });
 
   describe("confirmGetHandler", () => {

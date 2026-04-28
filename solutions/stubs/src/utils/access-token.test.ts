@@ -57,20 +57,14 @@ describe("generateAccessToken", () => {
     const token = await generateAccessToken();
 
     expect(jose.SignJWT).toHaveBeenCalledExactlyOnceWith({
-      sub: expect.stringMatching(
-        /^urn:fdc:gov.uk:2022:[0-9a-f-]{36}$/,
-      ) as unknown as string,
-      public_sub: expect.stringMatching(/^[0-9a-f-]{36}$/) as unknown as string,
+      sub: expect.stringMatching(/^urn:fdc:gov.uk:2022:[0-9a-f-]{36}$/),
+      public_sub: expect.stringMatching(/^[0-9a-f-]{36}$/),
       iss: "http://localhost:6003",
-      aud: expect.stringMatching(
-        /^[a-f0-9]{10}-[a-f0-9]{10}-[a-f0-9]{10}$/,
-      ) as unknown as string,
-      exp: expect.any(Number) as unknown as number,
-      iat: expect.any(Number) as unknown as number,
-      sid: expect.stringMatching(/^[0-9a-f-]{36}$/) as unknown as string,
-      nonce: expect.stringMatching(
-        /^[a-f0-9]{10}-[a-f0-9]{10}$/,
-      ) as unknown as string,
+      aud: expect.stringMatching(/^[a-f0-9]{10}-[a-f0-9]{10}-[a-f0-9]{10}$/),
+      exp: expect.any(Number),
+      iat: expect.any(Number),
+      sid: expect.stringMatching(/^[0-9a-f-]{36}$/),
+      nonce: expect.stringMatching(/^[a-f0-9]{10}-[a-f0-9]{10}$/),
       vot: "Cl.Cm",
     });
 

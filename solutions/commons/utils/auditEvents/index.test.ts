@@ -119,6 +119,6 @@ describe("sendAuditEvent", () => {
   it("throws when AUDIT_EVENTS_QUEUE_URL is not set", async () => {
     const { sendAuditEvent } = await import("./index.js");
 
-    await expect(sendAuditEvent({} as never)).rejects.toThrow();
+    await expect(sendAuditEvent({})).rejects.toThrow();
   });
 });

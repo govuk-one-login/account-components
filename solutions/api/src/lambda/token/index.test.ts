@@ -101,7 +101,7 @@ describe("token handler", () => {
       jti: "jti",
       iss: "test-client-id",
       redirect_uri: "https://example.com/callback",
-    } as any as Awaited<ReturnType<typeof mockVerifyClientAssertion>>);
+    });
     mockGetAuthRequest.mockResolvedValue({
       redirect_uri: "https://example.com/callback",
     } as any as Awaited<ReturnType<typeof mockGetAuthRequest>>);
@@ -217,7 +217,7 @@ describe("token handler", () => {
     mockVerifyClientAssertion.mockResolvedValue({
       jti: "some_jti",
       iss: "test-client-id",
-    } as any as Awaited<ReturnType<typeof mockVerifyClientAssertion>>);
+    });
 
     mockGetAuthRequest.mockResolvedValue({
       redirect_uri: "https://example.com/callback",
