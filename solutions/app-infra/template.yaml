@@ -2918,66 +2918,24 @@ Resources:
           "variables": [
             {
               "type": "property",
-              "id": "ClientId",
-              "label": "Client ID",
-              "property": "client_id",
-              "namespace": "account-components",
-              "inputType": "select",
-              "defaultValue": "",
-              "values": []
-            },
-            {
-              "type": "property",
-              "id": "Scope",
-              "label": "Scope",
               "property": "scope",
-              "namespace": "account-components",
+              "id": "scope",
+              "label": "Scope",
               "inputType": "select",
-              "defaultValue": "",
-              "values": []
-            },
-            {
-              "type": "property",
-              "id": "ErrorType",
-              "label": "Error type",
-              "property": "error_type",
-              "namespace": "account-components",
-              "inputType": "select",
-              "defaultValue": "",
-              "values": []
-            },
-            {
-              "type": "property",
-              "id": "Method",
-              "label": "Method",
-              "property": "method",
-              "namespace": "account-components",
-              "inputType": "select",
-              "defaultValue": "",
-              "values": []
-            },
-            {
-              "type": "property",
-              "id": "Path",
-              "label": "Path",
-              "property": "path",
-              "namespace": "account-components",
-              "inputType": "select",
-              "defaultValue": "",
-              "values": []
-            } 
+              "search": "{account-components,scope} MetricName=\"AuthorizeRequest\"",
+              "populateFrom": "scope"
+            }
           ],
           "widgets": [
             {         
               "type": "metric",
               "properties": {
-                "title": "Journey requests",
+                "title": "Authorize requests",
                 "view": "timeSeries",
                 "stacked": false,
                 "region": "${AWS::Region}",
                 "metrics": [
-                  [ { "expression": "SUM(SEARCH('Namespace=\"account-components\" MetricName=\"JourneyRequest\" ${!ClientId} ${!Scope} ${!ErrorType} ${!Method} ${!Path}', 'Sum', 60))", "id": "journeyRequests", "label": "JourneyRequest" } ],
-                  [ { "expression": "SUM(SEARCH('Namespace=\"account-components\" MetricName=\"JourneyRequestError\" ${!ClientId} ${!Scope} ${!ErrorType} ${!Method} ${!Path}', 'Sum', 60))", "id": "journeyRequestErrors", "label": "JourneyRequestError" } ]
+                  [ { "expression": "SUM(SEARCH('Namespace=\"account-components\" MetricName=\"AuthorizeRequest\" ${!scope}, 'Sum', 60))", "id": "authorizeRequests", "label": "AuthorizeRequest" } ]
                 ],
                 "stat": "Sum",
                 "period": 60
