@@ -72,7 +72,6 @@ const render = async (
   request: FastifyRequest,
   reply: FastifyReply,
   options?: {
-    stringsSuffix: "_signedIn" | "_signedOut";
     showErrorUi?: boolean;
     [key: string]: unknown;
   },
@@ -106,12 +105,19 @@ const render = async (
     ...options,
     registrationOptions: JSON.stringify(registrationOptions),
     stringsSuffix,
-    formAction: paths.journeys["passkey-create"].NOT_CREATED.createPost.path,
+    formAction:
+      paths.journeys["passkey-create"].NOT_CREATED.cannotSetUpPasskey.path,
   });
 };
 
-export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
-  await render(request, reply);
+export async function getHandler(
+  request: FastifyRequest,
+  reply: FastifyReply,
+  showErrorUi = false,
+) {
+  await render(request, reply, {
+    showErrorUi,
+  });
   return reply;
 }
 
@@ -137,7 +143,6 @@ export async function postHandler(
     addErrorMetric("InvalidRequestBody");
 
     await render(request, reply, {
-      stringsSuffix,
       showErrorUi: true,
     });
     return reply;
@@ -156,7 +161,6 @@ export async function postHandler(
     ]);
 
     await render(request, reply, {
-      stringsSuffix,
       showErrorUi: true,
       errors: formErrors,
       errorList: getFormErrorsList(formErrors),
@@ -184,7 +188,6 @@ export async function postHandler(
     addErrorMetric("ClientError");
 
     await render(request, reply, {
-      stringsSuffix,
       showErrorUi: true,
     });
     return reply;
@@ -215,7 +218,6 @@ export async function postHandler(
     addErrorMetric("VerificationError");
 
     await render(request, reply, {
-      stringsSuffix,
       showErrorUi: true,
     });
     return reply;
@@ -226,7 +228,6 @@ export async function postHandler(
     addErrorMetric("VerificationFailed");
 
     await render(request, reply, {
-      stringsSuffix,
       showErrorUi: true,
     });
     return reply;
@@ -262,7 +263,6 @@ export async function postHandler(
     metrics.addMetric("UserHasMaximumNumberOfPasskeys", MetricUnit.Count, 1);
 
     await render(request, reply, {
-      stringsSuffix,
       showErrorUi: true,
     });
 

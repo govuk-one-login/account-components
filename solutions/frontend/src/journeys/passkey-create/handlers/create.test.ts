@@ -149,7 +149,7 @@ describe("passkey-create handlers", () => {
   });
 
   describe("getHandler", () => {
-    it("should render the create passkey page", async () => {
+    it("should render the create passkey page with showErrorUi false by default", async () => {
       await getHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
@@ -158,6 +158,24 @@ describe("passkey-create handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/passkey-create/templates/create.njk",
         expect.objectContaining({
+          showErrorUi: false,
+          stringsSuffix: "_signedOut",
+          formAction: "/cannot-set-up-passkey",
+        }),
+      );
+    });
+
+    it("should render with showErrorUi true when passed", async () => {
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        true,
+      );
+
+      expect(mockReply.render).toHaveBeenCalledWith(
+        "journeys/passkey-create/templates/create.njk",
+        expect.objectContaining({
+          showErrorUi: true,
           stringsSuffix: "_signedOut",
           formAction: "/cannot-set-up-passkey",
         }),
