@@ -81,7 +81,7 @@
         "client_id": {
           "description": "Unique client_id issued to an AMC client",
           "type": "string",
-          "pattern": "^[A-Fa-f0-9]{32}$"
+          "pattern": "^[A-Za-z0-9]+$"
         },
         "scope": {
           "description": "String containing a space-separated list of scope values that the client can use",
