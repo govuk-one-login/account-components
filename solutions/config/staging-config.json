@@ -1,7 +1,7 @@
 {
   "client_registry": [
     {
-      "client_id": "bb8ba862f42b4e5eb97cc0950f6419ca",
+      "client_id": "auth",
       "scope": "account-delete passkey-create",
       "redirect_uris": [
         "https://signin.staging.account.gov.uk/create-passkey-callback"
@@ -11,7 +11,7 @@
       "consider_user_logged_in": false
     },
     {
-      "client_id": "63385eefbc1649f9bc50eb9fd7c04de0",
+      "client_id": "home",
       "scope": "passkey-create",
       "redirect_uris": ["https://home.staging.account.gov.uk/amc/callback"],
       "client_name": "Home",
