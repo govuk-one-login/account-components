@@ -32,6 +32,7 @@
         "sleep",
         "awk",
         "jsonschema",
+        "import",
       ],
       "ignoreDependencies": [
         "csso-cli",
