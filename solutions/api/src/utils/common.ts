@@ -71,7 +71,7 @@ export class ErrorManager<T extends Record<string, ErrorType>> {
     });
     logger.debug("Error", e);
 
-    metrics.addDimensions({ error_type: error.metric.subType });
+    metrics.addMetadata("error_type", error.metric.subType);
     metrics.addMetric(error.metric.type, MetricUnit.Count, 1);
 
     return {

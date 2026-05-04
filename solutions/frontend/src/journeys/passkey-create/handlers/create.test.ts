@@ -292,9 +292,10 @@ describe("passkey-create handlers", () => {
           }),
           "Register passkey - invalid request body",
         );
-        expect(mockAddDimensions).toHaveBeenCalledWith({
-          error_type: "InvalidRequestBody",
-        });
+        expect(mockAddMetadata).toHaveBeenCalledWith(
+          "error_type",
+          "InvalidRequestBody",
+        );
         expect(mockAddMetric).toHaveBeenCalledWith(
           "PasskeyCreateError",
           "Count",
@@ -477,9 +478,10 @@ describe("passkey-create handlers", () => {
           { error: new Error("Verification error") },
           "Register passkey - verification error",
         );
-        expect(mockAddDimensions).toHaveBeenCalledWith({
-          error_type: "VerificationError",
-        });
+        expect(mockAddMetadata).toHaveBeenCalledWith(
+          "error_type",
+          "VerificationError",
+        );
         expect(mockAddMetric).toHaveBeenCalledWith(
           "PasskeyCreateError",
           "Count",
@@ -506,9 +508,10 @@ describe("passkey-create handlers", () => {
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
           "Register passkey - verification failed",
         );
-        expect(mockAddDimensions).toHaveBeenCalledWith({
-          error_type: "VerificationFailed",
-        });
+        expect(mockAddMetadata).toHaveBeenCalledWith(
+          "error_type",
+          "VerificationFailed",
+        );
         expect(mockAddMetric).toHaveBeenCalledWith(
           "PasskeyCreateError",
           "Count",
@@ -590,9 +593,10 @@ describe("passkey-create handlers", () => {
           "ClientErrorMessage",
           "Client error occurred",
         );
-        expect(mockAddDimensions).toHaveBeenCalledWith({
-          error_type: "ClientError",
-        });
+        expect(mockAddMetadata).toHaveBeenCalledWith(
+          "error_type",
+          "ClientError",
+        );
         expect(mockAddMetric).toHaveBeenCalledWith(
           "PasskeyCreateError",
           "Count",

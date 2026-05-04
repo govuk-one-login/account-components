@@ -20,7 +20,11 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-        metrics.addMetric("JourneyOutcomeRequest", MetricUnit.Count, 1);
+        metrics.addMetric(
+          "JourneyOutcomeRequestWithoutContext",
+          MetricUnit.Count,
+          1,
+        );
 
         const bearerPrefix = "Bearer ";
         const authorisationHeader = getHeader(event.headers, "Authorization");

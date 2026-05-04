@@ -51,6 +51,7 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
   metrics: {
     addMetric: vi.fn(),
     addDimensions: vi.fn(),
+    addMetadata: vi.fn(),
   },
 }));
 
@@ -131,6 +132,7 @@ describe("onRequest", () => {
       i18n: {
         addResourceBundle: vi.fn(),
       } as unknown as FastifyRequest["i18n"],
+      url: "http://localhost/test-path?param=value",
     };
 
     mockReply = {
@@ -161,9 +163,10 @@ describe("onRequest", () => {
       await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
       expect(mockRequest.log?.warn).toHaveBeenCalledWith("NoClaimsInSession");
-      expect(metrics.addDimensions).toHaveBeenCalledWith({
-        error_type: "NoClaimsInSession",
-      });
+      expect(metrics.addMetadata).toHaveBeenCalledWith(
+        "error_type",
+        "NoClaimsInSession",
+      );
       expect(metrics.addMetric).toHaveBeenCalledWith(
         "JourneyRequestError",
         "Count",
@@ -191,9 +194,10 @@ describe("onRequest", () => {
         { client_id: "non-existent-client" },
         "ClientNotFound",
       );
-      expect(metrics.addDimensions).toHaveBeenCalledWith({
-        error_type: "ClientNotFound",
-      });
+      expect(metrics.addMetadata).toHaveBeenCalledWith(
+        "error_type",
+        "ClientNotFound",
+      );
       expect(metrics.addMetric).toHaveBeenCalledWith(
         "JourneyRequestError",
         "Count",
@@ -226,9 +230,10 @@ describe("onRequest", () => {
         { missingRequiredClaims: ["account_management_api_access_token"] },
         "RequiredClaimsMissing",
       );
-      expect(metrics.addDimensions).toHaveBeenCalledWith({
-        error_type: "RequiredClaimsMissing",
-      });
+      expect(metrics.addMetadata).toHaveBeenCalledWith(
+        "error_type",
+        "RequiredClaimsMissing",
+      );
       expect(metrics.addMetric).toHaveBeenCalledWith(
         "JourneyRequestError",
         "Count",
@@ -255,6 +260,7 @@ describe("onRequest", () => {
       expect(metrics.addDimensions).toHaveBeenCalledWith({
         client_id: "test-client-id",
         scope: "test-scope",
+        path: "/test-path",
       });
       expect(logger.appendKeys).toHaveBeenCalledWith({
         client_id: "test-client-id",

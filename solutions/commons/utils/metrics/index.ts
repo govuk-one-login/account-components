@@ -2,7 +2,7 @@ import { Metrics } from "@aws-lambda-powertools/metrics";
 import type { APIGatewayProxyHandler } from "../commonTypes.js";
 
 export const metrics = new Metrics({
-  namespace: "account-components",
+  namespace: "amc",
 });
 
 export const metricsAPIGatewayProxyHandlerWrapper = (
@@ -10,10 +10,6 @@ export const metricsAPIGatewayProxyHandlerWrapper = (
 ): APIGatewayProxyHandler => {
   const wrappedHandler: APIGatewayProxyHandler = async (event, context) => {
     try {
-      metrics.addDimensions({
-        method: event.httpMethod,
-        path: event.path,
-      });
       const res = await handler(event, context);
       metrics.captureColdStartMetric();
       metrics.publishStoredMetrics();

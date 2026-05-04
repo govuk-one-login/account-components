@@ -21,7 +21,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-        metrics.addMetric("TokenRequest", MetricUnit.Count, 1);
+        metrics.addMetric("TokenRequestWithoutContext", MetricUnit.Count, 1);
 
         try {
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions

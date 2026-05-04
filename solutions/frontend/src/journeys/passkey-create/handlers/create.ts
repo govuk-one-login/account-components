@@ -26,7 +26,7 @@ import {
 import { getPasskeyConvenienceMetadataByAaguid } from "../../../../../commons/utils/passkeysConvenienceMetadata/index.js";
 
 const addErrorMetric = (reason: string) => {
-  metrics.addDimensions({ error_type: reason });
+  metrics.addMetadata("error_type", reason);
   metrics.addMetric("PasskeyCreateError", MetricUnit.Count, 1);
 };
 import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";

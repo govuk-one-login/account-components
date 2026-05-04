@@ -11,7 +11,7 @@ import { logger } from "../../../../commons/utils/logger/index.js";
 import type { failedJourneyErrors } from "./failedJourneyErrors.js";
 
 const addErrorMetric = (reason: string) => {
-  metrics.addDimensions({ error_type: reason });
+  metrics.addMetadata("error_type", reason);
   metrics.addMetric("JourneyRequestError", MetricUnit.Count, 1);
 };
 
@@ -19,7 +19,7 @@ export const onRequest = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  metrics.addMetric("JourneyRequest", MetricUnit.Count, 1);
+  metrics.addMetric("JourneyRequestWithoutContext", MetricUnit.Count, 1);
 
   if (!request.session.claims) {
     request.log.warn("NoClaimsInSession");
@@ -29,7 +29,15 @@ export const onRequest = async (
 
   const claims = request.session.claims;
 
-  metrics.addDimensions({ client_id: claims.client_id, scope: claims.scope });
+  const url = new URL(request.url, "http://localhost");
+
+  metrics.addDimensions({
+    client_id: claims.client_id,
+    scope: claims.scope,
+    path: url.pathname,
+  });
+  metrics.addMetric("JourneyRequestWithContext", MetricUnit.Count, 1);
+
   logger.appendKeys({
     client_id: claims.client_id,
     scope: claims.scope,
