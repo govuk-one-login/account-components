@@ -10,7 +10,7 @@ import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
 // @ts-expect-error
 vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
-  metrics: { addDimensions: vi.fn(), addMetric: vi.fn() },
+  metrics: { addMetadata: vi.fn(), addMetric: vi.fn() },
 }));
 
 describe("getRedirectToClientRedirectUriResponse", () => {
@@ -118,9 +118,10 @@ describe("addAuthorizeErrorMetric", () => {
   it("adds a dimension with the error reason and records the metric", () => {
     addAuthorizeErrorMetric("invalid_client");
 
-    expect(metrics.addDimensions).toHaveBeenCalledWith({
-      error_type: "invalid_client",
-    });
+    expect(metrics.addMetadata).toHaveBeenCalledWith(
+      "error_type",
+      "invalid_client",
+    );
     expect(metrics.addMetric).toHaveBeenCalledWith(
       "AuthorizeError",
       MetricUnit.Count,

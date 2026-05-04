@@ -9,7 +9,7 @@ vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
 
 // @ts-expect-error
 vi.mock(import("../../../commons/utils/metrics/index.js"), () => ({
-  metrics: { addMetric: vi.fn(), addDimensions: vi.fn() },
+  metrics: { addMetric: vi.fn(), addMetadata: vi.fn() },
 }));
 
 vi.mock(import("../../../commons/utils/getEnvironment/index.js"), () => ({
@@ -194,9 +194,10 @@ describe("errorManager", () => {
       error.code = "badRequest";
       errorManager.handleError(error);
 
-      expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
-        error_type: "BadRequest",
-      });
+      expect(mockMetrics.addMetadata).toHaveBeenCalledWith(
+        "error_type",
+        "BadRequest",
+      );
       expect(mockMetrics.addMetric).toHaveBeenCalledWith(
         "TestError",
         "Count",
@@ -204,14 +205,15 @@ describe("errorManager", () => {
       );
     });
 
-    it("adds the correct metric dimensions for a known error", () => {
+    it("adds the correct metric metadata for a known error", () => {
       const error = new Error("test") as Error & { code: string };
       error.code = "notFound";
       errorManager.handleError(error);
 
-      expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
-        error_type: "NotFound",
-      });
+      expect(mockMetrics.addMetadata).toHaveBeenCalledWith(
+        "error_type",
+        "NotFound",
+      );
       expect(mockMetrics.addMetric).toHaveBeenCalledWith(
         "TestError",
         "Count",

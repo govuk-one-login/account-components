@@ -17,7 +17,7 @@ import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
 export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
-    metrics.addMetric("AuthorizeRequest", MetricUnit.Count, 1);
+    metrics.addMetric("AuthorizeRequestWithoutContext", MetricUnit.Count, 1);
 
     const queryParams = getQueryParams(reply, request.query);
     if (queryParams instanceof ErrorResponse) {
@@ -26,9 +26,13 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
 
     metrics.addDimensions({
       client_id: queryParams.client_id,
+      scope: queryParams.scope,
     });
+    metrics.addMetric("AuthorizeRequestWithContext", MetricUnit.Count, 1);
+
     logger.appendKeys({
       client_id: queryParams.client_id,
+      scope: queryParams.scope,
     });
 
     const client = await getClient(
@@ -74,13 +78,6 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
     if (claims instanceof ErrorResponse) {
       return await claims.reply;
     }
-
-    metrics.addDimensions({
-      scope: claims.scope,
-    });
-    logger.appendKeys({
-      scope: claims.scope,
-    });
 
     const checkJtiUnusedResult = await checkJtiUnused(
       reply,

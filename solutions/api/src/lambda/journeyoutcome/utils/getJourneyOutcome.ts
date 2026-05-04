@@ -1,3 +1,4 @@
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import type { JourneyOutcome } from "../../../../../commons/utils/commonTypes.js";
 import { logger } from "../../../../../commons/utils/logger/index.js";
@@ -38,6 +39,8 @@ export const getJourneyOutcome = async (
     metrics.addDimensions({
       scope: outcome.scope,
     });
+    metrics.addMetric("JourneyOutcomeRequestWithContext", MetricUnit.Count, 1);
+
     logger.appendKeys({
       scope: outcome.scope,
     });
