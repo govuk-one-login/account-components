@@ -4,30 +4,34 @@ import { randomBytes } from "node:crypto";
 import { getAppConfig } from "../../../../commons/utils/getAppConfig/index.js";
 import type { JourneyOutcome } from "../../../../commons/utils/commonTypes.js";
 import { buildRedirectToClientRedirectUri } from "../../utils/buildRedirectToClientRedirectUri.js";
-import { destroySession } from "../../utils/session.js";
 import assert from "node:assert";
 import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
+import type { TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
 
 const dynamoDbClient = getDynamoDbClient();
+
+export type UnsuccessfulJourneyCompletionDetails = {
+  error: {
+    code: number;
+    description: string;
+  };
+} & JourneyOutcome["journeys"][number]["details"];
+export type SuccessfulJourneyCompletionDetails =
+  JourneyOutcome["journeys"][number]["details"];
 
 export const completeJourney = async (
   ...[request, reply, journeyOutcomeDetails, success]:
     | [
         request: FastifyRequest,
         reply: FastifyReply,
-        journeyOutcomeDetails: {
-          error: {
-            code: number;
-            description: string;
-          };
-        } & JourneyOutcome["journeys"][number]["details"],
+        journeyOutcomeDetails: UnsuccessfulJourneyCompletionDetails,
         success: false,
       ]
     | [
         request: FastifyRequest,
         reply: FastifyReply,
-        journeyOutcomeDetails: JourneyOutcome["journeys"][number]["details"],
+        journeyOutcomeDetails: SuccessfulJourneyCompletionDetails,
         success: true,
       ]
 ) => {
@@ -56,8 +60,26 @@ export const completeJourney = async (
     ],
   };
 
-  await dynamoDbClient.transactWrite({
-    TransactItems: [
+  const journeyAlreadyCompleted = !!request.session.completedJourneyDetails;
+
+  let transactItems: TransactWriteCommandInput["TransactItems"] = [
+    {
+      Put: {
+        TableName: process.env["AUTH_CODE_TABLE_NAME"],
+        Item: {
+          code: authCode,
+          outcome_id: outcomeId,
+          client_id: claims.client_id,
+          sub: claims.sub,
+          redirect_uri: claims.redirect_uri,
+          expires: Math.floor(Date.now() / 1000) + appConfig.auth_code_ttl,
+        },
+      },
+    },
+  ];
+
+  if (!journeyAlreadyCompleted) {
+    transactItems = [
       {
         Put: {
           TableName: process.env["JOURNEY_OUTCOME_TABLE_NAME"],
@@ -68,29 +90,33 @@ export const completeJourney = async (
           },
         },
       },
-      {
-        Put: {
-          TableName: process.env["AUTH_CODE_TABLE_NAME"],
-          Item: {
-            code: authCode,
-            outcome_id: outcomeId,
-            client_id: claims.client_id,
-            sub: claims.sub,
-            redirect_uri: claims.redirect_uri,
-            expires: Math.floor(Date.now() / 1000) + appConfig.auth_code_ttl,
-          },
-        },
-      },
-    ],
+      ...transactItems,
+    ];
+  }
+
+  await dynamoDbClient.transactWrite({
+    TransactItems: transactItems,
   });
 
-  await destroySession(request);
+  if (!journeyAlreadyCompleted) {
+    metrics.addMetric(
+      success
+        ? "JourneyCompletedSuccessfully"
+        : "JourneyCompletedUnsuccessfully",
+      MetricUnit.Count,
+      1,
+    );
+  }
 
-  metrics.addMetric(
-    success ? "JourneyCompletedSuccessfully" : "JourneyCompletedUnsuccessfully",
-    MetricUnit.Count,
-    1,
-  );
+  if (!journeyAlreadyCompleted) {
+    request.session.completedJourneyDetails = success
+      ? {
+          successful: journeyOutcomeDetails,
+        }
+      : {
+          unsuccessful: journeyOutcomeDetails,
+        };
+  }
 
   reply.redirect(
     buildRedirectToClientRedirectUri(

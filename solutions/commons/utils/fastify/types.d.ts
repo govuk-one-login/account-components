@@ -8,6 +8,10 @@ import type { ClientEntry } from "../../../config/schema/types.ts";
 import type { failedJourneyErrors } from "../../../frontend/src/journeys/utils/failedJourneyErrors.ts";
 import type { Scope } from "../commonTypes.ts";
 import type { getClaimsSchema } from "../../../frontend/src/utils/getClaimsSchema.ts";
+import type {
+  SuccessfulJourneyCompletionDetails,
+  UnsuccessfulJourneyCompletionDetails,
+} from "../../../frontend/src/journeys/utils/completeJourney.ts";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -72,5 +76,14 @@ declare module "fastify" {
     _csrf?: string;
     claims?: v.InferOutput<ReturnType<typeof getClaimsSchema>>;
     journeyStateSnapshot?: AnyMachineSnapshot;
+    completedJourneyDetails?:
+      | {
+          unsuccessful: UnsuccessfulJourneyCompletionDetails;
+          successful?: never;
+        }
+      | {
+          successful: SuccessfulJourneyCompletionDetails;
+          unsuccessful?: never;
+        };
   }
 }

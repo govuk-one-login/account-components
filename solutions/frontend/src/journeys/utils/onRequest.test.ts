@@ -8,10 +8,11 @@ import { journeys } from "./config.js";
 import type { Actor, AnyActorLogic, AnyMachineSnapshot } from "xstate";
 import { createActor } from "xstate";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
-import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
 import type { ClientEntry } from "../../../../config/schema/types.js";
 import { logger } from "../../../../commons/utils/logger/index.js";
 import type { Scope } from "../../../../commons/utils/commonTypes.js";
+
+const mockCompleteJourney = vi.hoisted(() => vi.fn());
 
 // @ts-expect-error
 vi.mock(import("../../utils/paths.js"), () => ({
@@ -84,10 +85,6 @@ vi.mock(import("../../../../commons/utils/getClientRegistry/index.js"), () => ({
   getClientRegistry: vi.fn(),
 }));
 
-vi.mock(import("../../utils/redirectToAuthorizeErrorPage.js"), () => ({
-  redirectToAuthorizeErrorPage: vi.fn().mockResolvedValue({}),
-}));
-
 // @ts-expect-error
 vi.mock(import("../../utils/authorizeErrors.js"), () => ({
   authorizeErrors: {
@@ -104,6 +101,10 @@ vi.mock(import("../../utils/authorizeErrors.js"), () => ({
       type: "server_error",
     },
   },
+}));
+
+vi.mock(import("./completeJourney.js"), () => ({
+  completeJourney: mockCompleteJourney,
 }));
 
 describe("onRequest", () => {
@@ -158,6 +159,42 @@ describe("onRequest", () => {
     });
   });
 
+  describe("when session has completedJourneyDetails", () => {
+    it("should call completeJourney with successful details when successful", async () => {
+      const successfulDetails = { result: "done" };
+      mockSession.completedJourneyDetails = {
+        successful: successfulDetails,
+      };
+
+      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockCompleteJourney).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+        successfulDetails,
+        true,
+      );
+    });
+
+    it("should call completeJourney with unsuccessful details when unsuccessful", async () => {
+      const unsuccessfulDetails = {
+        error: { code: 1001, description: "Test error" },
+      };
+      mockSession.completedJourneyDetails = {
+        unsuccessful: unsuccessfulDetails,
+      };
+
+      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+      expect(mockCompleteJourney).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+        unsuccessfulDetails,
+        false,
+      );
+    });
+  });
+
   describe("when session has no claims", () => {
     it("should redirect to error page and log warning", async () => {
       await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
@@ -172,10 +209,7 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      expect(redirectToAuthorizeErrorPage).toHaveBeenCalledWith(
-        mockRequest,
-        mockReply,
-      );
+      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
     });
   });
 
@@ -203,10 +237,7 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      expect(redirectToAuthorizeErrorPage).toHaveBeenCalledWith(
-        mockRequest,
-        mockReply,
-      );
+      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
     });
   });
 
@@ -239,10 +270,7 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      expect(redirectToAuthorizeErrorPage).toHaveBeenCalledWith(
-        mockRequest,
-        mockReply,
-      );
+      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
     });
   });
 
