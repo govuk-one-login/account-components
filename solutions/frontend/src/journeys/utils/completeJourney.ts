@@ -65,7 +65,7 @@ export const completeJourney = async (
   ];
 
   if (!journeyAlreadyCompleted) {
-    assert.ok(typeof success !== "undefined", "success is not set");
+    assert.ok(success !== undefined, "success is not set");
 
     const journeyOutcome: JourneyOutcome = {
       outcome_id: outcomeId,
