@@ -7,8 +7,8 @@ const mockTransactWrite = vi.fn();
 const mockRandomBytes = vi.fn();
 const mockGetAppConfig = vi.fn();
 const mockBuildRedirectToClientRedirectUri = vi.fn();
-const mockDestroySession = vi.fn();
 const mockRedirect = vi.fn();
+const mockAddMetric = vi.fn();
 
 // @ts-expect-error
 vi.mock(
@@ -32,8 +32,11 @@ vi.mock(import("../../utils/buildRedirectToClientRedirectUri.js"), () => ({
   buildRedirectToClientRedirectUri: mockBuildRedirectToClientRedirectUri,
 }));
 
-vi.mock(import("../../utils/session.js"), () => ({
-  destroySession: mockDestroySession,
+// @ts-expect-error
+vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
+  metrics: {
+    addMetric: mockAddMetric,
+  },
 }));
 
 describe("completeJourney", () => {
@@ -67,7 +70,6 @@ describe("completeJourney", () => {
     mockJourneyOutcomeDetails = { result: "success" };
 
     mockRedirect.mockReturnValue(mockReply);
-    mockDestroySession.mockResolvedValue(undefined);
 
     process.env["JOURNEY_OUTCOME_TABLE_NAME"] = "test-outcome-table";
     process.env["AUTH_CODE_TABLE_NAME"] = "test-auth-code-table";
@@ -136,7 +138,12 @@ describe("completeJourney", () => {
         },
       ],
     });
-    expect(mockDestroySession).toHaveBeenCalledWith(mockRequest);
+    expect(mockAddMetric).toHaveBeenCalledWith(
+      "JourneyCompletedSuccessfully",
+      "Count",
+      1,
+    );
+    expect(mockRequest.session.completedJourneyOutcomeId).toBe(mockOutcomeId);
     expect(mockBuildRedirectToClientRedirectUri).toHaveBeenCalledWith(
       mockClaims.redirect_uri,
       undefined,
@@ -213,7 +220,12 @@ describe("completeJourney", () => {
         },
       ],
     });
-    expect(mockDestroySession).toHaveBeenCalledWith(mockRequest);
+    expect(mockAddMetric).toHaveBeenCalledWith(
+      "JourneyCompletedUnsuccessfully",
+      "Count",
+      1,
+    );
+    expect(mockRequest.session.completedJourneyOutcomeId).toBe(mockOutcomeId);
     expect(mockBuildRedirectToClientRedirectUri).toHaveBeenCalledWith(
       mockClaims.redirect_uri,
       undefined,
@@ -264,5 +276,50 @@ describe("completeJourney", () => {
     );
 
     dateNowSpy.mockRestore();
+  });
+
+  it("skips journey outcome write and metrics when journey already completed", async () => {
+    const mockAuthCode = "mock-auth-code-hex";
+    const existingOutcomeId = "existing-outcome-id";
+    const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
+    const mockRedirectUrl =
+      "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
+
+    mockRandomBytes.mockReturnValueOnce({
+      toString: vi.fn(() => mockAuthCode),
+    });
+    mockGetAppConfig.mockResolvedValue(mockAppConfig);
+    mockTransactWrite.mockResolvedValue({});
+    mockBuildRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
+
+    const module = await import("./completeJourney.js");
+    const result = await module.completeJourney(
+      mockRequest,
+      mockReply,
+      existingOutcomeId,
+    );
+
+    expect(mockRandomBytes).toHaveBeenCalledTimes(1);
+    expect(mockTransactWrite).toHaveBeenCalledWith({
+      TransactItems: [
+        {
+          Put: {
+            TableName: "test-auth-code-table",
+            Item: {
+              code: mockAuthCode,
+              outcome_id: existingOutcomeId,
+              client_id: mockClaims.client_id,
+              sub: mockClaims.sub,
+              redirect_uri: mockClaims.redirect_uri,
+              expires: expect.any(Number),
+            },
+          },
+        },
+      ],
+    });
+    expect(mockAddMetric).not.toHaveBeenCalled();
+    expect(mockRequest.session.completedJourneyOutcomeId).toBeUndefined();
+    expect(mockRedirect).toHaveBeenCalledWith(mockRedirectUrl);
+    expect(result).toBe(mockReply);
   });
 });

@@ -72,5 +72,6 @@ declare module "fastify" {
     _csrf?: string;
     claims?: v.InferOutput<ReturnType<typeof getClaimsSchema>>;
     journeyStateSnapshot?: AnyMachineSnapshot;
+    completedJourneyOutcomeId?: string;
   }
 }

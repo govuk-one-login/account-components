@@ -66,9 +66,63 @@ Feature: Journey state
     """    
 
     # Shouldn't be able to access any journey pages after finishing journey
+    Given I click the browser's back button
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'    
+    And the page contains the text:
+    """
+    "scope": "testing-journey",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": true
+    """
+    And the page contains the text:
+    """
+    "details": {},
+    "journey": "testing-journey",
+    "success": true,
+    """    
     Given I go to the "Testing journey - step 1" page   
-    Then the page path is "Authorize error"
-    And I go to the "Testing journey - enter password" page   
-    Then the page path is "Authorize error"
-    And I go to the "Testing journey - confirmation" page   
-    Then the page path is "Authorize error"    
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'    
+    And the page contains the text:
+    """
+    "scope": "testing-journey",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": true
+    """
+    And the page contains the text:
+    """
+    "details": {},
+    "journey": "testing-journey",
+    "success": true,
+    """
+    Given I go to the "Testing journey - enter password" page   
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'    
+    And the page contains the text:
+    """
+    "scope": "testing-journey",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": true
+    """
+    And the page contains the text:
+    """
+    "details": {},
+    "journey": "testing-journey",
+    "success": true,
+    """ 
+    Given I go to the "Testing journey - confirmation" page   
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'    
+    And the page contains the text:
+    """
+    "scope": "testing-journey",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": true
+    """
+    And the page contains the text:
+    """
+    "details": {},
+    "journey": "testing-journey",
+    "success": true,
+    """   

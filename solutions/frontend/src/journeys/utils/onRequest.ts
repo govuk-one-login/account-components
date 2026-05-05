@@ -6,9 +6,9 @@ import { journeys } from "./config.js";
 import { createActor } from "xstate";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
 import assert from "node:assert";
-import { redirectToAuthorizeErrorPage } from "../../utils/redirectToAuthorizeErrorPage.js";
 import { logger } from "../../../../commons/utils/logger/index.js";
 import type { failedJourneyErrors } from "./failedJourneyErrors.js";
+import { completeJourney } from "./completeJourney.js";
 
 const addErrorMetric = (reason: string) => {
   metrics.addMetadata("error_type", reason);
@@ -21,10 +21,19 @@ export const onRequest = async (
 ) => {
   metrics.addMetric("JourneyRequestWithoutContext", MetricUnit.Count, 1);
 
+  if (request.session.completedJourneyOutcomeId) {
+    return await completeJourney(
+      request,
+      reply,
+      request.session.completedJourneyOutcomeId,
+    );
+  }
+
   if (!request.session.claims) {
     request.log.warn("NoClaimsInSession");
     addErrorMetric("NoClaimsInSession");
-    return await redirectToAuthorizeErrorPage(request, reply);
+    reply.redirect(paths.others.authorizeError.path);
+    return reply;
   }
 
   const claims = request.session.claims;
@@ -56,7 +65,9 @@ export const onRequest = async (
       "ClientNotFound",
     );
     addErrorMetric("ClientNotFound");
-    return await redirectToAuthorizeErrorPage(request, reply);
+
+    reply.redirect(paths.others.authorizeError.path);
+    return reply;
   }
 
   reply.client = client;
@@ -88,7 +99,9 @@ export const onRequest = async (
       "RequiredClaimsMissing",
     );
     addErrorMetric("RequiredClaimsMissing");
-    return await redirectToAuthorizeErrorPage(request, reply);
+
+    reply.redirect(paths.others.authorizeError.path);
+    return reply;
   }
 
   Object.entries(journey.translations).forEach(([lang, translations]) => {

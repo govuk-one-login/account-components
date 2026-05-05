@@ -1,5 +1,4 @@
 import { expect, it, describe, vi, beforeEach, afterEach } from "vitest";
-import type { FastifyRequest } from "fastify";
 import { DynamoDbSessionStore } from "./dynamoDbSessionStore.js";
 
 const mockGetEnvironment = vi.fn();
@@ -16,7 +15,7 @@ vi.mock(import("./dynamoDbSessionStore.js"), () => ({
   DynamoDbSessionStore: vi.fn(),
 }));
 
-const { getSessionOptions, destroySession } = await import("./session.js");
+const { getSessionOptions } = await import("./session.js");
 
 describe("session utils", () => {
   const originalEnv = process.env;
@@ -28,21 +27,6 @@ describe("session utils", () => {
   afterEach(() => {
     process.env = originalEnv;
     vi.clearAllMocks();
-  });
-
-  describe("destroySession", () => {
-    it("calls session.regenerate on the request", async () => {
-      const mockRegenerate = vi.fn().mockResolvedValue(undefined);
-      const mockRequest = {
-        session: {
-          regenerate: mockRegenerate,
-        },
-      } as unknown as FastifyRequest;
-
-      await destroySession(mockRequest);
-
-      expect(mockRegenerate).toHaveBeenCalledTimes(1);
-    });
   });
 
   describe("getSessionOptions", () => {
