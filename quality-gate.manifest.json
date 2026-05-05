@@ -14,7 +14,7 @@
           "phase": "pre-merge",
           "config": {
             "file": ".pre-commit-config.yaml",
-            "name": "Run pre-commit"
+            "name": "Pre-commit check"
           }
         },
         {
@@ -49,10 +49,10 @@
         },
         {
           "check-types": ["integration", "accessibility", "regression"],
-          "provider": "GitHub",
+          "provider": "Stack Orchestrator",
           "phase": "build",
           "config": {
-            "file": ".github/workflows/deploy-frontend.yaml",
+            "file": ".github/workflows/deploy.yaml",
             "path": "jobs.publish-integration-tests-image",
             "name": "Integration test"
           }
@@ -69,92 +69,22 @@
         },
         {
           "check-types": ["canary"],
-          "provider": "GitHub",
-          "phase": "staging",
-          "config": {
-            "file": ".github/workflows/deploy-frontend.yaml",
-            "path": "jobs.deploy-frontend",
-            "name": "Deploy Frontend"
-          }
-        },
-        {
-          "check-types": ["canary"],
-          "provider": "GitHub",
-          "phase": "staging",
-          "config": {
-            "file": ".github/workflows/deploy-api.yaml",
-            "path": "jobs.deploy-api",
-            "name": "Deploy API"
-          }
-        },
-        {
-          "check-types": ["canary"],
-          "provider": "GitHub",
-          "phase": "staging",
-          "config": {
-            "file": ".github/workflows/deploy-core.yaml",
-            "path": "jobs.deploy-core",
-            "name": "Deploy Core"
-          }
-        },
-        {
-          "check-types": ["canary"],
-          "provider": "GitHub",
+          "provider": "Stack Orchestrator",
           "phase": "integration",
           "config": {
-            "file": ".github/workflows/deploy-frontend.yaml",
-            "path": "jobs.deploy-frontend",
-            "name": "Deploy Frontend"
+            "file": ".github/workflows/deploy.yaml",
+            "path": "jobs.deploy",
+            "name": "Deploy"
           }
         },
         {
           "check-types": ["canary"],
-          "provider": "GitHub",
-          "phase": "integration",
-          "config": {
-            "file": ".github/workflows/deploy-api.yaml",
-            "path": "jobs.deploy-api",
-            "name": "Deploy API"
-          }
-        },
-        {
-          "check-types": ["canary"],
-          "provider": "GitHub",
-          "phase": "integration",
-          "config": {
-            "file": ".github/workflows/deploy-core.yaml",
-            "path": "jobs.deploy-core",
-            "name": "Deploy Core"
-          }
-        },
-        {
-          "check-types": ["canary"],
-          "provider": "GitHub",
+          "provider": "Stack Orchestrator",
           "phase": "production",
           "config": {
-            "file": ".github/workflows/deploy-frontend.yaml",
-            "path": "jobs.deploy-frontend",
-            "name": "Deploy Frontend"
-          }
-        },
-        {
-          "check-types": ["canary"],
-          "provider": "GitHub",
-          "phase": "production",
-          "config": {
-            "file": ".github/workflows/deploy-api.yaml",
-            "path": "jobs.deploy-api",
-            "name": "Deploy API"
-          }
-        },
-        {
-          "check-types": ["canary"],
-          "provider": "GitHub",
-          "phase": "production",
-          "config": {
-            "file": ".github/workflows/deploy-core.yaml",
-            "path": "jobs.deploy-core",
-            "name": "Deploy Core"
+            "file": ".github/workflows/deploy.yaml",
+            "path": "jobs.deploy",
+            "name": "Deploy"
           }
         }
       ]
