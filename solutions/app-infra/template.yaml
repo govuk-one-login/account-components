@@ -1580,7 +1580,7 @@ Resources:
   ApiHealthcheckLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/HealthcheckLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiHealthcheckLambda"
       RetentionInDays: 30
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
@@ -1621,7 +1621,7 @@ Resources:
   ApiTokenLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/TokenLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiTokenLambda"
       RetentionInDays: 30
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
@@ -1695,7 +1695,7 @@ Resources:
   ApiJourneyOutcomeLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/JourneyOutcomeLambdaLogGroup"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda"
       RetentionInDays: 30
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
@@ -1874,7 +1874,7 @@ Resources:
       LogGroupName: !Ref ApiHealthcheckLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/HealthcheckLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
           MetricName: ErrorAndCriticalLogCount
           MetricValue: "1"
           DefaultValue: 0
@@ -1882,7 +1882,7 @@ Resources:
   ApiHealthcheckLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: !Sub "${AWS::StackName}/HealthcheckLambda"
+      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
       Period: 60
@@ -1954,7 +1954,7 @@ Resources:
       LogGroupName: !Ref ApiTokenLambdaLogGroup
       FilterPattern: '{ $.level = "WARN" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
           MetricName: WarnLogCountByContext
           MetricValue: "1"
           Dimensions:
@@ -1969,7 +1969,7 @@ Resources:
       LogGroupName: !Ref ApiTokenLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
           MetricName: ErrorLogCountByContext
           MetricValue: "1"
           Dimensions:
@@ -1984,7 +1984,7 @@ Resources:
       LogGroupName: !Ref ApiTokenLambdaLogGroup
       FilterPattern: '{ $.level = "CRITICAL" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
           MetricName: CriticalLogCountByContext
           MetricValue: "1"
           Dimensions:
@@ -1999,38 +1999,15 @@ Resources:
       LogGroupName: !Ref ApiTokenLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
           MetricName: ErrorAndCriticalLogCount
           MetricValue: "1"
           DefaultValue: 0
 
-  ApiTokenLambdaColdStartCountMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiTokenLambdaLogGroup
-      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
-          MetricName: ColdStartCount
-          MetricValue: "1"
-          DefaultValue: 0
-
-  ApiTokenLambdaColdStartDurationMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiTokenLambdaLogGroup
-      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/TokenLambda"
-          MetricName: ColdStartDuration
-          MetricValue: $init_duration_value
-          DefaultValue: 0
-          Unit: Milliseconds
-
   ApiTokenLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: !Sub "${AWS::StackName}/TokenLambda"
+      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
       Period: 60
@@ -2102,7 +2079,7 @@ Resources:
       LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
       FilterPattern: '{ $.level = "WARN" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: WarnLogCountByContext
           MetricValue: "1"
           Dimensions:
@@ -2117,7 +2094,7 @@ Resources:
       LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: ErrorLogCountByContext
           MetricValue: "1"
           Dimensions:
@@ -2132,7 +2109,7 @@ Resources:
       LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
       FilterPattern: '{ $.level = "CRITICAL" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: CriticalLogCountByContext
           MetricValue: "1"
           Dimensions:
@@ -2147,38 +2124,15 @@ Resources:
       LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: ErrorAndCriticalLogCount
           MetricValue: "1"
           DefaultValue: 0
 
-  ApiJourneyOutcomeLambdaColdStartCountMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
-      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
-          MetricName: ColdStartCount
-          MetricValue: "1"
-          DefaultValue: 0
-
-  ApiJourneyOutcomeLambdaColdStartDurationMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
-      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
-          MetricName: ColdStartDuration
-          MetricValue: $init_duration_value
-          DefaultValue: 0
-          Unit: Milliseconds
-
   ApiJourneyOutcomeLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: !Sub "${AWS::StackName}/JourneyOutcomeLambda"
+      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
       Period: 60
@@ -2656,29 +2610,6 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  FrontendLambdaColdStartCountMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref FrontendLambdaLogGroup
-      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
-          MetricName: ColdStartCount
-          MetricValue: "1"
-          DefaultValue: 0
-
-  FrontendLambdaColdStartDurationMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref FrontendLambdaLogGroup
-      FilterPattern: '[report_label="REPORT", ..., init_duration_label="Init", duration_label="Duration:", init_duration_value, init_duration_unit="ms"]'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
-          MetricName: ColdStartDuration
-          MetricValue: $init_duration_value
-          DefaultValue: 0
-          Unit: Milliseconds
-
   FrontendLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -2908,3 +2839,566 @@ Resources:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/StubsLambda"
       RetentionInDays: 30
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  Dashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: !Sub "${AWS::StackName}-dashboard"
+      DashboardBody: !Sub |
+        {
+          "widgets": [
+            {
+              "type": "text",
+              "properties": {
+                "markdown": "# General",
+                "background": "transparent"
+              },
+              "width": 24,
+              "height": 2
+            },          
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyStarted\"', 'Sum')),0)", "id": "started_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\"', 'Sum')),0)", "id": "completed_successfully_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedUnsuccessfully\"', 'Sum')),0)", "id": "completed_unsuccessfully_total" } ],
+                  [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"JourneyStarted\"', 'Sum'),0)", "id": "started" } ],
+                  [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\"', 'Sum'),0)", "id": "completed_uccessfully" } ],
+                  [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedUnsuccessfully\"', 'Sum'),0)", "id": "completed_unsuccessfully" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Journeys",
+                "region": "${AWS::Region}"
+              },
+              "width": 14,
+              "height": 4              
+            },
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\"', 'Sum'))", "id": "total" } ]
+                ],
+                "view": "singleValue",
+                "title": "Journeys successfully completed",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 5,
+              "height": 4
+            },            
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=auth', 'Sum'))", "id": "auth" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=home', 'Sum'))", "id": "home" } ]                  
+                ],
+                "view": "pie",
+                "title": "Journeys successfully completed by client",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 5,              
+              "height": 4
+            },
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithoutContext\"', 'Sum')),0)", "id": "without_context_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\"', 'Sum')),0)", "id": "with_context_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeError\"', 'Sum')),0)", "id": "error_total" } ],
+                  [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\"', 'Sum'),0)", "id": "with_context" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Authorize requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 14,
+              "height": 4
+            },
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\"', 'Sum')", "id": "with_context" } ]
+                ],
+                "view": "pie",
+                "title": "Authorize requests",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 10,              
+              "height": 4
+            },
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithoutContext\"', 'Sum')),0)", "id": "without_context_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\"', 'Sum')),0)", "id": "with_context_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestError\"', 'Sum')),0)", "id": "error_total" } ],
+                  [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\"', 'Sum'),0)", "id": "with_context" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Journey requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 14,
+              "height": 4
+            },
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=auth', 'Sum'))", "id": "auth" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=home', 'Sum'))", "id": "home" } ]
+                ],
+                "view": "pie",
+                "title": "Journey requests by client",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 5,
+              "height": 4
+            },   
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\"', 'Sum')", "id": "with_context" } ]
+                ],
+                "view": "pie",
+                "title": "Journey requests",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 5,              
+              "height": 4
+            },                        
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"TokenRequestWithoutContext\"', 'Sum')),0)", "id": "without_context_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"TokenRequestWithContext\"', 'Sum')),0)", "id": "with_context_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"TokenError\"', 'Sum')),0)", "id": "error_total" } ],
+                  [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"TokenRequestWithContext\"', 'Sum'),0)", "id": "with_context" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Token requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 14,
+              "height": 4
+            },
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SEARCH('Namespace=\"amc\" MetricName=\"TokenRequestWithContext\"', 'Sum')", "id": "with_context" } ]
+                ],
+                "view": "pie",
+                "title": "Token requests",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 10,               
+              "height": 4
+            },
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithoutContext\"', 'Sum')),0)", "id": "without_context_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\"', 'Sum')),0)", "id": "with_context_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeError\"', 'Sum')),0)", "id": "error_total" } ],
+                  [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\"', 'Sum'),0)", "id": "with_context" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Journey outcome requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 14,
+              "height": 4
+            },
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\"', 'Sum')", "id": "with_context" } ]
+                ],
+                "view": "pie",
+                "title": "Journey outcome requests",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 10,               
+              "height": 4
+            },
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | fields method, path, total | filter message = 'Request' | stats count(*) as total by method, path | sort total desc",
+                "region": "${AWS::Region}",
+                "title": "Frontend requests"
+              },
+              "width": 12
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | fields method, path, statusCode, total | filter message = 'Response' | stats count(*) as total by method, path, statusCode | sort total desc",
+                "region": "${AWS::Region}",
+                "title": "Frontend responses"
+              },
+              "width": 12
+            },   
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/FrontendLambda\" MetricName=\"CriticalLogCountByContext\"', 'Sum')),0)", "id": "critical_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/FrontendLambda\" MetricName=\"ErrorLogCountByContext\"', 'Sum')),0)", "id": "error_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/FrontendLambda\" MetricName=\"WarnLogCountByContext\"', 'Sum')),0)", "id": "warn_total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Frontend lambda warnings/errors",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4              
+            },
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter @type = \"REPORT\" | fields coalesce(@initDuration, 0) as InitDuration | stats pct(InitDuration + @duration, 90) as P90TotalDuration by bin(5m)",
+                "view": "bar",
+                "title": "Frontend lambda duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter @type = \"REPORT\" | stats (count(@initDuration)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "view": "bar",
+                "title": "Frontend lambda cold start rate (%)",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4
+            },   
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter @type = \"REPORT\" | stats pct(@initDuration, 90) as ColdStartP90Duration by bin(5m)",
+                "view": "bar",
+                "title": "Frontend lambda cold start duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4
+            },             
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiTokenLambda\" MetricName=\"CriticalLogCountByContext\"', 'Sum')),0)", "id": "critical_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiTokenLambda\" MetricName=\"ErrorLogCountByContext\"', 'Sum')),0)", "id": "error_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiTokenLambda\" MetricName=\"WarnLogCountByContext\"', 'Sum')),0)", "id": "warn_total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Token lambda warnings/errors",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4              
+            }, 
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter @type = \"REPORT\" | fields coalesce(@initDuration, 0) as InitDuration | stats pct(InitDuration + @duration, 90) as P90TotalDuration by bin(5m)",
+                "view": "bar",
+                "title": "Token lambda duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4
+            },              
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter @type = \"REPORT\" | stats (count(@initDuration)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "view": "bar",
+                "title": "Token lambda cold start rate (%)",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4
+            },   
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter @type = \"REPORT\" | stats pct(@initDuration, 90) as ColdStartP90Duration by bin(5m)",
+                "view": "bar",
+                "title": "Token lambda cold start duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4
+            },             
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiJourneyOutcomeLambda\" MetricName=\"CriticalLogCountByContext\"', 'Sum')),0)", "id": "critical_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiJourneyOutcomeLambda\" MetricName=\"ErrorLogCountByContext\"', 'Sum')),0)", "id": "error_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiJourneyOutcomeLambda\" MetricName=\"WarnLogCountByContext\"', 'Sum')),0)", "id": "warn_total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Journey outcome lambda warnings/errors",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4              
+            }, 
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter @type = \"REPORT\" | fields coalesce(@initDuration, 0) as InitDuration | stats pct(InitDuration + @duration, 90) as P90TotalDuration by bin(5m)",
+                "view": "bar",
+                "title": "Journey outcome lambda duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter @type = \"REPORT\" | stats (count(@initDuration)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "view": "bar",
+                "title": "Journey outcome lambda cold start rate (%)",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4
+            },   
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter @type = \"REPORT\" | stats pct(@initDuration, 90) as ColdStartP90Duration by bin(5m)",
+                "view": "bar",
+                "title": "Journey outcome lambda cold start duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4
+            },             
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SEARCH('{AWS/Lambda} MetricName=\"ConcurrentExecutions\"', 'Maximum'),0)", "id": "total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Concurrent lambda executions",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4
+            }, 
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SEARCH('{AWS/Lambda} MetricName=\"Invocations\"', 'Sum'),0)", "id": "total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Lambda invocations",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4
+            },                                                                        
+            {
+              "type": "text",
+              "properties": {
+                "markdown": "&nbsp;\n# Passkeys",
+                "background": "transparent"
+              },
+              "width": 24,
+              "height": 3
+            },
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" scope=\"passkey-create\"', 'Sum'))", "id": "total" } ]
+                ],
+                "view": "singleValue",
+                "title": "Passkeys created",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 4,
+              "height": 3
+            },  
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" scope=\"passkey-create\" client_id=auth', 'Sum'))", "id": "auth" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" scope=\"passkey-create\" client_id=home', 'Sum'))", "id": "home" } ]                  
+                ],
+                "view": "pie",
+                "title": "Passkeys created by client",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 4,
+              "height": 3
+            },             
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"PasskeyCreateError\"', 'Sum'))", "id": "total" } ]
+                ],
+                "view": "singleValue",
+                "title": "Passkey creation errors",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 4,
+              "height": 3
+            },    
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"PasskeyCreateError\" client_id=auth', 'Sum'))", "id": "auth" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"PasskeyCreateError\" client_id=home', 'Sum'))", "id": "home" } ]                  
+                ],
+                "view": "pie",
+                "title": "Passkey creation errors by client",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 4,
+              "height": 3
+            },                     
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AaguidNotFoundInPasskeysConvenienceMetadata\"', 'Sum'))", "id": "total" } ]                         
+                ],
+                "view": "singleValue",
+                "title": "AAGUID not found in passkeys convenience metadata",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 4,
+              "height": 3
+            },    
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AaguidNotFoundInPasskeysConvenienceMetadata\" client_id=auth', 'Sum'))", "id": "auth" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AaguidNotFoundInPasskeysConvenienceMetadata\" client_id=home', 'Sum'))", "id": "home" } ]                  
+                ],
+                "view": "pie",
+                "title": "AAGUID not found in passkeys convenience metadata by client",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 4,
+              "height": 3
+            },                        
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" scope=\"passkey-create\"', 'Sum')),0)", "id": "total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Passkeys created",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 5
+            },            
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"PasskeyCreateError\"', 'Sum')),0)", "id": "total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Passkey creation errors",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 5
+            },            
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AaguidNotFoundInPasskeysConvenienceMetadata\"', 'Sum')),0)", "id": "total" } ]                         
+                ],
+                "view": "timeSeries",
+                "title": "AAGUID not found in passkeys convenience metadata",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 5
+            },
+            {
+              "type": "text",
+              "properties": {
+                "markdown": "&nbsp;\n# Notify",
+                "background": "transparent"
+              },
+              "width": 24,
+              "height": 3
+            },          
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"SendNotificationSucceeded\"', 'Sum')),0)", "id": "succeeded_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"SendNotificationFailed\"', 'Sum')),0)", "id": "failed_total" } ],
+                  [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"SendNotificationSucceeded\"', 'Sum'),0)", "id": "succeeded" } ],
+                  [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"SendNotificationFailed\"', 'Sum'),0)", "id": "failed" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Notifications",
+                "region": "${AWS::Region}"
+              },
+              "width": 14,
+              "height": 5          
+            },
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "SEARCH('Namespace=\"amc\" MetricName=\"SendNotificationSucceeded\"', 'Sum')", "id": "total" } ]
+                ],
+                "view": "pie",
+                "title": "Successful notifications",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 10,              
+              "height": 5
+            }
+          ]
+        }

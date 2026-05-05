@@ -3,6 +3,7 @@ import type { JourneyOutcomePayload } from "./interfaces.js";
 
 const mockDynamoDbGet = vi.fn();
 const mockMetricsAddDimensions = vi.fn();
+const mockMetricsAddMetric = vi.fn();
 const mockLoggerAppendKeys = vi.fn();
 
 // @ts-expect-error
@@ -22,7 +23,10 @@ vi.doMock(import("./errors.js"), () => ({
 
 // @ts-expect-error
 vi.doMock(import("../../../../../commons/utils/metrics/index.js"), () => ({
-  metrics: { addDimensions: mockMetricsAddDimensions },
+  metrics: {
+    addDimensions: mockMetricsAddDimensions,
+    addMetric: mockMetricsAddMetric,
+  },
 }));
 
 // @ts-expect-error
@@ -90,6 +94,11 @@ describe("getJourneyOutcome", () => {
     expect(mockMetricsAddDimensions).toHaveBeenCalledWith({
       scope: "test-scope",
     });
+    expect(mockMetricsAddMetric).toHaveBeenCalledWith(
+      "JourneyOutcomeRequestWithContext",
+      "Count",
+      1,
+    );
     expect(mockLoggerAppendKeys).toHaveBeenCalledWith({
       scope: "test-scope",
     });

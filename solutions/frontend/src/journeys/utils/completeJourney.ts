@@ -6,6 +6,8 @@ import type { JourneyOutcome } from "../../../../commons/utils/commonTypes.js";
 import { buildRedirectToClientRedirectUri } from "../../utils/buildRedirectToClientRedirectUri.js";
 import { destroySession } from "../../utils/session.js";
 import assert from "node:assert";
+import { metrics } from "../../../../commons/utils/metrics/index.js";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -83,6 +85,12 @@ export const completeJourney = async (
   });
 
   await destroySession(request);
+
+  metrics.addMetric(
+    success ? "JourneyCompletedSuccessfully" : "JourneyCompletedUnsuccessfully",
+    MetricUnit.Count,
+    1,
+  );
 
   reply.redirect(
     buildRedirectToClientRedirectUri(

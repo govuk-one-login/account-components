@@ -210,6 +210,9 @@ const processNotification = async (
     batchItemFailures.push({ itemIdentifier: record.messageId });
     return;
   }
+
+  logger.resetKeys();
+  metrics.publishStoredMetrics();
 };
 
 export const handler = async (event: SQSEvent): Promise<SQSBatchResponse> => {

@@ -398,14 +398,10 @@ describe("getHandler", () => {
     expect(startSessionAndGoToJourney).toHaveBeenCalledTimes(1);
     expect(metrics.addDimensions).toHaveBeenCalledWith({
       client_id: "test-client",
-    });
-    expect(metrics.addDimensions).toHaveBeenCalledWith({
       scope: "test-scope",
     });
     expect(logger.appendKeys).toHaveBeenCalledWith({
       client_id: "test-client",
-    });
-    expect(logger.appendKeys).toHaveBeenCalledWith({
       scope: "test-scope",
     });
     expect(result).toBe(mockReply);

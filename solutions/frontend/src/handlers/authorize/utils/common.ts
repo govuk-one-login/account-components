@@ -32,6 +32,6 @@ export const getRedirectToClientRedirectUriResponse = (
 };
 
 export const addAuthorizeErrorMetric = (reason: string) => {
-  metrics.addDimensions({ error_type: reason });
+  metrics.addMetadata("error_type", reason);
   metrics.addMetric("AuthorizeError", MetricUnit.Count, 1);
 };

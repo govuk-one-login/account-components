@@ -26,6 +26,8 @@ export const loggerAPIGatewayProxyHandlerWrapper = (
         trace: propsFromEvent.sessionId,
       });
 
+      logger.info("Request");
+
       const res = await handler(event, context);
 
       logger.info("Response", {

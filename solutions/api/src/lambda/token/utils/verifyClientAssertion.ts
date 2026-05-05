@@ -13,6 +13,7 @@ import { getEnvironment } from "../../../../../commons/utils/getEnvironment/inde
 import { logger } from "../../../../../commons/utils/logger/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { jwtVerifyAlgorithms } from "../../../../../commons/utils/constants.js";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
 export const verifyClientAssertion = async (
   clientAssertion: string,
@@ -77,6 +78,8 @@ export const verifyClientAssertion = async (
   metrics.addDimensions({
     client_id: client.client_id,
   });
+  metrics.addMetric("TokenRequestWithContext", MetricUnit.Count, 1);
+
   logger.appendKeys({
     client_id: client.client_id,
   });

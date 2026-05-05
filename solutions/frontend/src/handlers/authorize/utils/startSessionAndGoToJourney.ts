@@ -10,6 +10,8 @@ import { authorizeErrors } from "../../../utils/authorizeErrors.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { decodeJwt } from "jose";
 import { initialJourneyPaths } from "../../../utils/paths.js";
+import { metrics } from "../../../../../commons/utils/metrics/index.js";
+import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
 export const startSessionAndGoToJourney = async (
   reply: FastifyReply,
@@ -48,6 +50,12 @@ export const startSessionAndGoToJourney = async (
 
     request.session.claims = claims;
     request.session.expires = sessionExpiry;
+
+    metrics.addDimensions({
+      client_id: claims.client_id,
+      scope: claims.scope,
+    });
+    metrics.addMetric("JourneyStarted", MetricUnit.Count, 1);
 
     return await reply.redirect(initialJourneyPaths[claims.scope]);
   } catch (error) {
