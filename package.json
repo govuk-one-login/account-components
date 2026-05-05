@@ -52,7 +52,7 @@
     "@eslint/js": "^10.0.1",
     "@govuk-one-login/event-catalogue": "^44.1.0",
     "@govuk-one-login/event-catalogue-schemas": "^44.1.0",
-    "@redocly/cli": "^2.30.0",
+    "@redocly/cli": "^2.30.1",
     "@tsconfig/node24": "^24.0.4",
     "@tsconfig/strictest": "^2.0.8",
     "@types/aws-lambda": "^8.10.161",
@@ -76,7 +76,7 @@
     "sass": "^1.99.0",
     "tsx": "^4.21.0",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.59.0",
+    "typescript-eslint": "^8.59.1",
     "vitest": "^4.0.13"
   },
   "scripts": {
