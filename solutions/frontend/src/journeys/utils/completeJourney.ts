@@ -11,56 +11,42 @@ import type { TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
 
 const dynamoDbClient = getDynamoDbClient();
 
-export type UnsuccessfulJourneyCompletionDetails = {
-  error: {
-    code: number;
-    description: string;
-  };
-} & JourneyOutcome["journeys"][number]["details"];
-export type SuccessfulJourneyCompletionDetails =
-  JourneyOutcome["journeys"][number]["details"];
-
 export const completeJourney = async (
-  ...[request, reply, journeyOutcomeDetails, success]:
+  ...[request, reply, journeyOutcomeDetailsOrExistingOutcomeId, success]:
     | [
         request: FastifyRequest,
         reply: FastifyReply,
-        journeyOutcomeDetails: UnsuccessfulJourneyCompletionDetails,
+        journeyOutcomeDetails: {
+          error: {
+            code: number;
+            description: string;
+          };
+        } & JourneyOutcome["journeys"][number]["details"],
         success: false,
       ]
     | [
         request: FastifyRequest,
         reply: FastifyReply,
-        journeyOutcomeDetails: SuccessfulJourneyCompletionDetails,
+        journeyOutcomeDetails: JourneyOutcome["journeys"][number]["details"],
         success: true,
       ]
+    | [request: FastifyRequest, reply: FastifyReply, existingOutcomeId: string]
 ) => {
   assert.ok(request.session.claims);
 
   const claims = request.session.claims;
 
   const authCode = randomBytes(24).toString("hex");
-  const outcomeId = randomBytes(24).toString("hex");
+
+  const outcomeId =
+    typeof journeyOutcomeDetailsOrExistingOutcomeId === "string"
+      ? journeyOutcomeDetailsOrExistingOutcomeId
+      : randomBytes(24).toString("hex");
 
   const appConfig = await getAppConfig();
 
-  const journeyOutcome: JourneyOutcome = {
-    outcome_id: outcomeId,
-    sub: claims.sub,
-    email: claims.email,
-    scope: claims.scope,
-    success,
-    journeys: [
-      {
-        journey: claims.scope,
-        timestamp: Date.now(),
-        success,
-        details: journeyOutcomeDetails,
-      },
-    ],
-  };
-
-  const journeyAlreadyCompleted = !!request.session.completedJourneyDetails;
+  const journeyAlreadyCompleted =
+    typeof journeyOutcomeDetailsOrExistingOutcomeId === "string";
 
   let transactItems: TransactWriteCommandInput["TransactItems"] = [
     {
@@ -79,6 +65,24 @@ export const completeJourney = async (
   ];
 
   if (!journeyAlreadyCompleted) {
+    assert.ok(typeof success !== "undefined", "success is not set");
+
+    const journeyOutcome: JourneyOutcome = {
+      outcome_id: outcomeId,
+      sub: claims.sub,
+      email: claims.email,
+      scope: claims.scope,
+      success,
+      journeys: [
+        {
+          journey: claims.scope,
+          timestamp: Date.now(),
+          success,
+          details: journeyOutcomeDetailsOrExistingOutcomeId,
+        },
+      ],
+    };
+
     transactItems = [
       {
         Put: {
@@ -106,16 +110,8 @@ export const completeJourney = async (
       MetricUnit.Count,
       1,
     );
-  }
 
-  if (!journeyAlreadyCompleted) {
-    request.session.completedJourneyDetails = success
-      ? {
-          successful: journeyOutcomeDetails,
-        }
-      : {
-          unsuccessful: journeyOutcomeDetails,
-        };
+    request.session.completedJourneyOutcomeId = outcomeId;
   }
 
   reply.redirect(

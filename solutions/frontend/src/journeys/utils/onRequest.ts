@@ -21,20 +21,11 @@ export const onRequest = async (
 ) => {
   metrics.addMetric("JourneyRequestWithoutContext", MetricUnit.Count, 1);
 
-  if (request.session.completedJourneyDetails) {
-    if (request.session.completedJourneyDetails.successful) {
-      return await completeJourney(
-        request,
-        reply,
-        request.session.completedJourneyDetails.successful,
-        true,
-      );
-    }
+  if (request.session.completedJourneyOutcomeId) {
     return await completeJourney(
       request,
       reply,
-      request.session.completedJourneyDetails.unsuccessful,
-      false,
+      request.session.completedJourneyOutcomeId,
     );
   }
 

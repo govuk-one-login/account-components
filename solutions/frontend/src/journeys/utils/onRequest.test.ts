@@ -159,38 +159,16 @@ describe("onRequest", () => {
     });
   });
 
-  describe("when session has completedJourneyDetails", () => {
-    it("should call completeJourney with successful details when successful", async () => {
-      const successfulDetails = { result: "done" };
-      mockSession.completedJourneyDetails = {
-        successful: successfulDetails,
-      };
+  describe("when session has completedJourneyOutcomeId", () => {
+    it("should call completeJourney with existing outcome id", async () => {
+      mockSession.completedJourneyOutcomeId = "existing-outcome-id";
 
       await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
         mockReply,
-        successfulDetails,
-        true,
-      );
-    });
-
-    it("should call completeJourney with unsuccessful details when unsuccessful", async () => {
-      const unsuccessfulDetails = {
-        error: { code: 1001, description: "Test error" },
-      };
-      mockSession.completedJourneyDetails = {
-        unsuccessful: unsuccessfulDetails,
-      };
-
-      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
-
-      expect(mockCompleteJourney).toHaveBeenCalledWith(
-        mockRequest,
-        mockReply,
-        unsuccessfulDetails,
-        false,
+        "existing-outcome-id",
       );
     });
   });

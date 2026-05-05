@@ -143,9 +143,7 @@ describe("completeJourney", () => {
       "Count",
       1,
     );
-    expect(mockRequest.session.completedJourneyDetails).toStrictEqual({
-      successful: mockJourneyOutcomeDetails,
-    });
+    expect(mockRequest.session.completedJourneyOutcomeId).toBe(mockOutcomeId);
     expect(mockBuildRedirectToClientRedirectUri).toHaveBeenCalledWith(
       mockClaims.redirect_uri,
       undefined,
@@ -227,9 +225,7 @@ describe("completeJourney", () => {
       "Count",
       1,
     );
-    expect(mockRequest.session.completedJourneyDetails).toStrictEqual({
-      unsuccessful: mockErrorDetails,
-    });
+    expect(mockRequest.session.completedJourneyOutcomeId).toBe(mockOutcomeId);
     expect(mockBuildRedirectToClientRedirectUri).toHaveBeenCalledWith(
       mockClaims.redirect_uri,
       undefined,
@@ -284,18 +280,14 @@ describe("completeJourney", () => {
 
   it("skips journey outcome write and metrics when journey already completed", async () => {
     const mockAuthCode = "mock-auth-code-hex";
-    const mockOutcomeId = "mock-outcome-id-hex";
+    const existingOutcomeId = "existing-outcome-id";
     const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
     const mockRedirectUrl =
       "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
 
-    mockRequest.session.completedJourneyDetails = {
-      successful: { result: "previous" },
-    };
-
-    mockRandomBytes
-      .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
-      .mockReturnValueOnce({ toString: vi.fn(() => mockOutcomeId) });
+    mockRandomBytes.mockReturnValueOnce({
+      toString: vi.fn(() => mockAuthCode),
+    });
     mockGetAppConfig.mockResolvedValue(mockAppConfig);
     mockTransactWrite.mockResolvedValue({});
     mockBuildRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
@@ -304,10 +296,10 @@ describe("completeJourney", () => {
     const result = await module.completeJourney(
       mockRequest,
       mockReply,
-      mockJourneyOutcomeDetails,
-      true,
+      existingOutcomeId,
     );
 
+    expect(mockRandomBytes).toHaveBeenCalledTimes(1);
     expect(mockTransactWrite).toHaveBeenCalledWith({
       TransactItems: [
         {
@@ -315,7 +307,7 @@ describe("completeJourney", () => {
             TableName: "test-auth-code-table",
             Item: {
               code: mockAuthCode,
-              outcome_id: mockOutcomeId,
+              outcome_id: existingOutcomeId,
               client_id: mockClaims.client_id,
               sub: mockClaims.sub,
               redirect_uri: mockClaims.redirect_uri,
@@ -326,9 +318,7 @@ describe("completeJourney", () => {
       ],
     });
     expect(mockAddMetric).not.toHaveBeenCalled();
-    expect(mockRequest.session.completedJourneyDetails).toStrictEqual({
-      successful: { result: "previous" },
-    });
+    expect(mockRequest.session.completedJourneyOutcomeId).toBeUndefined();
     expect(mockRedirect).toHaveBeenCalledWith(mockRedirectUrl);
     expect(result).toBe(mockReply);
   });
