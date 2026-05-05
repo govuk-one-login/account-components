@@ -3068,9 +3068,20 @@ Resources:
                 "title": "Frontend lambda warnings/errors",
                 "region": "${AWS::Region}"
               },
-              "width": 8,
+              "width": 6,
               "height": 4              
             },
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter @type = "REPORT" | fields coalesce(@initDuration, 0) as InitDuration | stats pct(InitDuration + @duration, 90) as P90TotalDuration by bin(5m)",
+                "view": "bar",
+                "title": "Frontend lambda duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4
+            },             
             {
               "type": "log",
               "properties": {
@@ -3079,7 +3090,7 @@ Resources:
                 "title": "Frontend lambda cold start rate (%)",
                 "region": "${AWS::Region}"
               },
-              "width": 8,
+              "width": 6,
               "height": 4
             },   
             {
@@ -3090,7 +3101,7 @@ Resources:
                 "title": "Frontend lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 8,
+              "width": 6,
               "height": 4
             },             
             {
@@ -3105,9 +3116,20 @@ Resources:
                 "title": "Token lambda warnings/errors",
                 "region": "${AWS::Region}"
               },
-              "width": 8,
+              "width": 6,
               "height": 4              
             }, 
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter @type = "REPORT" | fields coalesce(@initDuration, 0) as InitDuration | stats pct(InitDuration + @duration, 90) as P90TotalDuration by bin(5m)",
+                "view": "bar",
+                "title": "Token lambda duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4
+            },              
             {
               "type": "log",
               "properties": {
@@ -3116,7 +3138,7 @@ Resources:
                 "title": "Token lambda cold start rate (%)",
                 "region": "${AWS::Region}"
               },
-              "width": 8,
+              "width": 6,
               "height": 4
             },   
             {
@@ -3127,7 +3149,7 @@ Resources:
                 "title": "Token lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 8,
+              "width": 6,
               "height": 4
             },             
             {
@@ -3142,9 +3164,20 @@ Resources:
                 "title": "Journey outcome lambda warnings/errors",
                 "region": "${AWS::Region}"
               },
-              "width": 8,
+              "width": 6,
               "height": 4              
             }, 
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter @type = "REPORT" | fields coalesce(@initDuration, 0) as InitDuration | stats pct(InitDuration + @duration, 90) as P90TotalDuration by bin(5m)",
+                "view": "bar",
+                "title": "Journey outcome lambda duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 6,
+              "height": 4
+            },             
             {
               "type": "log",
               "properties": {
@@ -3153,7 +3186,7 @@ Resources:
                 "title": "Journey outcome lambda cold start rate (%)",
                 "region": "${AWS::Region}"
               },
-              "width": 8,
+              "width": 6,
               "height": 4
             },   
             {
@@ -3164,7 +3197,7 @@ Resources:
                 "title": "Journey outcome lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 8,
+              "width": 6,
               "height": 4
             },             
             {
