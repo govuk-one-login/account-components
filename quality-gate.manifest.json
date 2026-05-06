@@ -86,6 +86,16 @@
             "path": "jobs.deploy",
             "name": "Deploy"
           }
+        },
+        {
+          "check-types": ["unit", "new feature", "regression"],
+          "provider": "GitHub",
+          "phase": "pre-upload",
+          "config": {
+            "file": ".github/workflows/test.yaml",
+            "path": "jobs.test",
+            "name": "Test"
+          }
         }
       ]
     }
