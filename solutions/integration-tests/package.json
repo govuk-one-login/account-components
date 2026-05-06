@@ -23,7 +23,7 @@
     "@aws-sdk/client-ssm": "^3.1038.0",
     "@axe-core/playwright": "^4.11.2",
     "@playwright/test": "^1.59.1",
-    "devtools-protocol": "^0.0.1619965",
+    "devtools-protocol": "^0.0.1621552",
     "dotenv": "^17.4.2",
     "nodemon": "^3.1.14",
     "npm-run-all": "^4.1.5",
