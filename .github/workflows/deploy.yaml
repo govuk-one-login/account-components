@@ -97,6 +97,9 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:all
 
+      - name: Test
+        run: npm run test
+
       - name: Deploy
         uses: govuk-one-login/devplatform-upload-action@5879c30205266ad61e8299a4fcea76364530c9c1
         with:
