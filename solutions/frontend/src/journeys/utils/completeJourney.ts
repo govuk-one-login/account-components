@@ -8,6 +8,8 @@ import assert from "node:assert";
 import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import type { TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
+import { failedJourneyErrors } from "./failedJourneyErrors.js";
+import { destroySession } from "../../utils/session.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -38,15 +40,27 @@ export const completeJourney = async (
 
   const authCode = randomBytes(24).toString("hex");
 
-  const outcomeId =
-    typeof journeyOutcomeDetailsOrExistingOutcomeId === "string"
-      ? journeyOutcomeDetailsOrExistingOutcomeId
-      : randomBytes(24).toString("hex");
-
-  const appConfig = await getAppConfig();
-
   const journeyAlreadyCompleted =
     typeof journeyOutcomeDetailsOrExistingOutcomeId === "string";
+
+  let sessionShouldBeDestroyed = false;
+
+  if (!journeyAlreadyCompleted && success === false) {
+    const failedJourneyError = Object.values(failedJourneyErrors).find(
+      (value) =>
+        value.code === journeyOutcomeDetailsOrExistingOutcomeId.error.code &&
+        value.description ===
+          journeyOutcomeDetailsOrExistingOutcomeId.error.description,
+    );
+    assert.ok(failedJourneyError, "error is not a valid failedJourneyError");
+    sessionShouldBeDestroyed = failedJourneyError.destroySession;
+  }
+
+  const outcomeId = journeyAlreadyCompleted
+    ? journeyOutcomeDetailsOrExistingOutcomeId
+    : randomBytes(24).toString("hex");
+
+  const appConfig = await getAppConfig();
 
   let transactItems: TransactWriteCommandInput["TransactItems"] = [
     {
@@ -66,6 +80,7 @@ export const completeJourney = async (
 
   if (!journeyAlreadyCompleted) {
     assert.ok(success !== undefined, "success is not set");
+    const details = journeyOutcomeDetailsOrExistingOutcomeId;
 
     const journeyOutcome: JourneyOutcome = {
       outcome_id: outcomeId,
@@ -78,7 +93,7 @@ export const completeJourney = async (
           journey: claims.scope,
           timestamp: Date.now(),
           success,
-          details: journeyOutcomeDetailsOrExistingOutcomeId,
+          details,
         },
       ],
     };
@@ -112,6 +127,10 @@ export const completeJourney = async (
     );
 
     request.session.completedJourneyOutcomeId = outcomeId;
+  }
+
+  if (sessionShouldBeDestroyed) {
+    await destroySession(request);
   }
 
   reply.redirect(

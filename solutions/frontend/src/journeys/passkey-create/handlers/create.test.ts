@@ -324,6 +324,7 @@ describe("passkey-create handlers", () => {
             error: {
               code: 1002,
               description: "UserAbortedJourney",
+              destroySession: false,
             },
           }),
           false,

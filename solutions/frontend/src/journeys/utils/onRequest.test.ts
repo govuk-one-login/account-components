@@ -322,6 +322,7 @@ describe("onRequest", () => {
       const testError = {
         description: "UserSignedOut",
         code: 1001,
+        destroySession: true,
       } as const;
       const url = mockReply.globals?.buildCompleteFailedJourneyUri?.(testError);
 
