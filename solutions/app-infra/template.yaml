@@ -139,7 +139,7 @@ Mappings:
       analyticsCookieDomain: staging.account.gov.uk
       ga4ContainerId: "GTM-KD86CMZ"
       analyticsEnabled: "1"
-      accountManagementApiUrl: "https://cgh8nx4500.execute-api.eu-west-2.amazonaws.com/staging"
+      accountManagementApiUrl: "https://cgh8nx4500-vpce-04ae8d53b32b38278.execute-api.eu-west-2.amazonaws.com/staging"
       contactUrl: https://home.staging.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: staging.account.gov.uk
       passkeysRpName: "GOV.UK One Login (staging)"
@@ -175,7 +175,7 @@ Mappings:
       analyticsCookieDomain: integration.account.gov.uk
       ga4ContainerId: "TODO"
       analyticsEnabled: "0"
-      accountManagementApiUrl: "https://z7lornzyy5.execute-api.eu-west-2.amazonaws.com/integration"
+      accountManagementApiUrl: "https://0boxndhikk-vpce-0553cfc8fc1aeb970.execute-api.eu-west-2.amazonaws.com/integration"
       contactUrl: https://home.integration.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: integration.account.gov.uk
       passkeysRpName: "GOV.UK One Login (integration)"
@@ -211,7 +211,7 @@ Mappings:
       analyticsCookieDomain: account.gov.uk
       ga4ContainerId: "GTM-K4PBJH3"
       analyticsEnabled: "1"
-      accountManagementApiUrl: "https://63qq2dsjo5.execute-api.eu-west-2.amazonaws.com/production"
+      accountManagementApiUrl: "https://p303w5w1m0-vpce-0d6fa47d5c9ae876d.execute-api.eu-west-2.amazonaws.com/production"
       contactUrl: https://home.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: account.gov.uk
       passkeysRpName: "GOV.UK One Login"
