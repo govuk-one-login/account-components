@@ -191,7 +191,11 @@ describe("completeJourney", () => {
     const mockRedirectUrl =
       "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
     const mockErrorDetails = {
-      error: { code: 1001, description: "UserSignedOut" },
+      error: {
+        code: 1001,
+        description: "UserSignedOut",
+        extraProp: "should-be-stripped",
+      },
     };
 
     mockRandomBytes
@@ -212,6 +216,17 @@ describe("completeJourney", () => {
     expect(mockRandomBytes).toHaveBeenCalledTimes(2);
     expect(mockRandomBytes).toHaveBeenCalledWith(24);
     expect(mockGetAppConfig).toHaveBeenCalledWith();
+
+    const writtenDetails =
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      mockTransactWrite.mock.calls[0]?.[0].TransactItems[0].Put.Item.journeys[0]
+        .details;
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(writtenDetails.error).toStrictEqual({
+      code: 1001,
+      description: "UserSignedOut",
+    });
     expect(mockTransactWrite).toHaveBeenCalledWith({
       TransactItems: [
         {
@@ -274,7 +289,11 @@ describe("completeJourney", () => {
     const mockRedirectUrl =
       "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
     const mockErrorDetails = {
-      error: { code: 1002, description: "UserAbortedJourney" },
+      error: {
+        code: 1002,
+        description: "UserAbortedJourney",
+        extraProp: "should-be-stripped",
+      },
     };
 
     mockRandomBytes
@@ -292,6 +311,16 @@ describe("completeJourney", () => {
       false,
     );
 
+    const writtenDetails =
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      mockTransactWrite.mock.calls[0]?.[0].TransactItems[0].Put.Item.journeys[0]
+        .details;
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    expect(writtenDetails.error).toStrictEqual({
+      code: 1002,
+      description: "UserAbortedJourney",
+    });
     expect(mockDestroySession).not.toHaveBeenCalled();
     expect(mockAddMetric).toHaveBeenCalledWith(
       "JourneyCompletedUnsuccessfully",

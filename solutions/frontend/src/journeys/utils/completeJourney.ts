@@ -53,6 +53,11 @@ export const completeJourney = async (
           journeyOutcomeDetailsOrExistingOutcomeId.error.description,
     );
     assert.ok(failedJourneyError, "error is not a valid failedJourneyError");
+
+    journeyOutcomeDetailsOrExistingOutcomeId.error = {
+      code: failedJourneyError.code,
+      description: failedJourneyError.description,
+    };
     sessionShouldBeDestroyed = failedJourneyError.destroySession;
   }
 
