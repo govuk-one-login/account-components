@@ -254,3 +254,22 @@ Given("I select the {string} channel", async ({ page }, channel: string) => {
     .getByRole("link", { name: "Start AMC Journey", exact: true })
     .click();
 });
+
+Then(
+  "the {string} cookie is set to {string}",
+  async ({ page }, cookieName: string, cookieValue: string) => {
+    const cookies = await page.context().cookies();
+    const cookie = cookies.find((c) => c.name === cookieName);
+    expect(cookie).toBeDefined();
+    expect(cookie?.value).toBe(cookieValue);
+  },
+);
+
+Then(
+  "there is a {string} query string parameter set to {string}",
+  async ({ page }, paramName: string, expectedValue: string) => {
+    const currentUrl = new URL(page.url());
+    const paramValue = currentUrl.searchParams.get(paramName);
+    expect(paramValue).toBe(expectedValue);
+  },
+);
