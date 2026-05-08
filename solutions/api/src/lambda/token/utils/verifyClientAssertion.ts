@@ -1,3 +1,5 @@
+console.time("MHTEST imports");
+
 import type { JWTPayload } from "jose";
 import {
   jwtVerify,
@@ -15,13 +17,27 @@ import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { jwtVerifyAlgorithms } from "../../../../../commons/utils/constants.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
+console.timeEnd("MHTEST imports");
+console.time("MHTEST init");
+
 export const verifyClientAssertion = async (
   clientAssertion: string,
   apiBaseUrl: string,
 ): Promise<JWTPayload> => {
+  console.time("MHTEST getClientRegistry");
   const clientRegistry = await getClientRegistry();
+  console.timeEnd("MHTEST getClientRegistry");
+
+  console.time("MHTEST getAppConfig");
   const appConfig = await getAppConfig();
+  console.timeEnd("MHTEST getAppConfig");
+
+  console.time("MHTEST decodeJwt");
   const decodedJwt = decodeJwt(clientAssertion);
+  console.timeEnd("MHTEST decodeJwt");
+
+  console.time("MHTEST validation");
+
   const { iss, iat, aud } = decodedJwt;
 
   if (!iss) {
@@ -73,6 +89,8 @@ export const verifyClientAssertion = async (
     );
   }
 
+  console.timeEnd("MHTEST validation");
+
   assert.ok(client);
 
   metrics.addDimensions({
@@ -86,7 +104,10 @@ export const verifyClientAssertion = async (
 
   try {
     // Check that kid is present in JWT header
+    console.time("MHTEST decodeProtectedHeader");
     const header = decodeProtectedHeader(clientAssertion);
+    console.timeEnd("MHTEST decodeProtectedHeader");
+
     if (!header.kid) {
       errorManager.throwError(
         "invalidClientAssertion",
@@ -94,6 +115,7 @@ export const verifyClientAssertion = async (
       );
     }
 
+    console.time("MHTEST createRemoteJWKSet");
     const jwks = createRemoteJWKSet(
       new URL(
         getEnvironment() === "local"
@@ -105,9 +127,13 @@ export const verifyClientAssertion = async (
         timeoutDuration: appConfig.jwks_http_timeout,
       },
     );
+    console.timeEnd("MHTEST createRemoteJWKSet");
+
+    console.time("MHTEST jwtVerify");
     const { payload } = await jwtVerify(clientAssertion, jwks, {
       algorithms: jwtVerifyAlgorithms,
     });
+    console.timeEnd("MHTEST jwtVerify");
 
     return payload;
   } catch (e) {
@@ -122,3 +148,5 @@ export const verifyClientAssertion = async (
     "This should be unreachable if errorManager.throwError works as intended",
   );
 };
+
+console.timeEnd("MHTEST init");

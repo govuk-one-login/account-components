@@ -1,5 +1,3 @@
-console.time("MHTEST imports");
-
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import {
   metrics,
@@ -19,14 +17,10 @@ import { getApiBaseUrlWithStage } from "../../utils/common.js";
 import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 
-console.timeEnd("MHTEST imports");
-console.time("MHTEST init");
-
 export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-        console.time("MHTEST run");
         metrics.addMetric("TokenRequestWithoutContext", MetricUnit.Count, 1);
 
         try {
@@ -35,41 +29,25 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
             e.body ?? "{}",
           ) as unknown as TokenRequest;
 
-          console.time("MHTEST assertTokenRequest");
-
           assertTokenRequest(request);
-          console.timeEnd("MHTEST assertTokenRequest");
 
           const apiBaseUrl = getApiBaseUrlWithStage(e);
-
-          console.time("MHTEST verifyClientAssertion");
 
           const assertion = await verifyClientAssertion(
             request.client_assertion,
             apiBaseUrl,
           );
-          console.timeEnd("MHTEST verifyClientAssertion");
-
-          console.time("MHTEST getAuthRequest");
 
           const authRequest = await getAuthRequest(
             request.code,
             request.redirect_uri,
             String(assertion.iss),
           );
-          console.timeEnd("MHTEST getAuthRequest");
-
-          console.time("MHTEST verifyJti");
 
           await verifyJti(assertion.jti);
-          console.timeEnd("MHTEST verifyJti");
-
-          console.time("MHTEST createAccessToken");
 
           const accessToken = await createAccessToken(authRequest, apiBaseUrl);
-          console.timeEnd("MHTEST createAccessToken");
 
-          console.timeEnd("MHTEST run");
           return {
             statusCode: 200,
             headers: {
@@ -82,7 +60,6 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
             }),
           };
         } catch (error) {
-          console.timeEnd("MHTEST run");
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           return errorManager.handleError(error as TokenAppError | Error);
         }
@@ -90,5 +67,3 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
     ),
   ),
 );
-
-console.timeEnd("MHTEST init");
