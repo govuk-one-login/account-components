@@ -297,7 +297,7 @@ Globals:
       SecurityGroupIds:
         - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
     Timeout: 10
-    MemorySize: 1769 # so that we get ~1 VCPU
+    MemorySize: 4000 # so that we get ~1 VCPU
     Architectures:
       - !Ref LambdaArchitecture
     Runtime: nodejs24.x
