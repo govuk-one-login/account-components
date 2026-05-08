@@ -2768,6 +2768,8 @@ Resources:
     Properties:
       CodeUri: solutions/stubs/dist
       Handler: lambda.handler
+      ProvisionedConcurrencyConfig:
+        ProvisionedConcurrentExecutions: 20
       LoggingConfig:
         LogGroup: !Ref StubsLambdaLogGroup
       Events:
