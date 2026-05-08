@@ -1632,8 +1632,6 @@ Resources:
         Alarms:
           - !Ref ApiTokenLambdaErrorsAlarm
           - !Ref ApiTokenLambdaThrottlesAlarm
-      ProvisionedConcurrencyConfig:
-        ProvisionedConcurrentExecutions: 1
       LoggingConfig:
         LogGroup: !Ref ApiTokenLambdaLogGroup
       Handler: index.handler
@@ -1706,8 +1704,6 @@ Resources:
         Alarms:
           - !Ref ApiJourneyOutcomeLambdaErrorsAlarm
           - !Ref ApiJourneyOutcomeLambdaThrottlesAlarm
-      ProvisionedConcurrencyConfig:
-        ProvisionedConcurrentExecutions: 1
       LoggingConfig:
         LogGroup: !Ref ApiJourneyOutcomeLambdaLogGroup
       Handler: index.handler
@@ -2306,8 +2302,6 @@ Resources:
         Alarms:
           - !Ref FrontendLambdaErrorsAlarm
           - !Ref FrontendLambdaThrottlesAlarm
-      ProvisionedConcurrencyConfig:
-        ProvisionedConcurrentExecutions: 1
       LoggingConfig:
         LogGroup: !Ref FrontendLambdaLogGroup
       Events:
