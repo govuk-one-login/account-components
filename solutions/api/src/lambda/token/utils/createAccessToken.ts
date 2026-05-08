@@ -7,7 +7,7 @@ import type { AuthRequestT } from "./getAuthRequest.js";
 import { derToJose } from "ecdsa-sig-formatter";
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import { logger } from "../../../../../commons/utils/logger/index.js";
-//import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
+import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 
 const keyIdCache = new Map<string, string>();
 
@@ -58,7 +58,7 @@ export const createAccessToken = async (
     kid: keyId,
   };
 
-  //const appConfig = await getAppConfig();
+  const appConfig = await getAppConfig();
 
   const claims = {
     outcome_id: authRequest.outcome_id,
@@ -66,7 +66,7 @@ export const createAccessToken = async (
     sub: String(AuthCodeItem["sub"]),
     aud: audience,
     iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 300,
+    exp: Math.floor(Date.now() / 1000) + appConfig.access_token_max_age,
     jti: randomUUID(),
   };
 
