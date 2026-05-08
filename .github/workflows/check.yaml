@@ -31,7 +31,7 @@ jobs:
         uses: terraform-linters/setup-tflint@b480b8fcdaa6f2c577f8e4fa799e89e756bb7c93
 
       - name: Set up SAM CLI
-        uses: aws-actions/setup-sam@f84ec7d548307efafe33230528756de3c5841a17
+        uses: aws-actions/setup-sam@89ddb14d60e682855e3fea4be85b3c56485de310
         with:
           use-installer: true
           token: ${{ secrets.GITHUB_TOKEN }}
