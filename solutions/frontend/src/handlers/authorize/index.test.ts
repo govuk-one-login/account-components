@@ -49,6 +49,10 @@ vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
   logger: { appendKeys: vi.fn(), error: vi.fn() },
 }));
 
+vi.mock(import("../../../../commons/utils/getEnvironment/index.js"), () => ({
+  getEnvironment: vi.fn().mockReturnValue("production"),
+}));
+
 describe("getHandler", () => {
   let mockRequest: FastifyRequest;
   let mockReply: FastifyReply;
@@ -56,7 +60,10 @@ describe("getHandler", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     mockRequest = { query: {} } as FastifyRequest;
-    mockReply = { redirect: vi.fn() } as unknown as FastifyReply;
+    mockReply = {
+      redirect: vi.fn(),
+      setCookie: vi.fn(),
+    } as unknown as FastifyReply;
   });
 
   it("returns error when getQueryParams fails", async () => {
@@ -252,6 +259,7 @@ describe("getHandler", () => {
       sub: "user-123",
       scope: "test-scope",
       jti: "jti-123",
+      channel: "web",
     };
 
     vi.mocked(getQueryParams).mockReturnValue(
@@ -308,6 +316,7 @@ describe("getHandler", () => {
       sub: "user-123",
       scope: "test-scope",
       jti: "jti-123",
+      channel: "web",
     };
 
     vi.mocked(getQueryParams).mockReturnValue(
@@ -333,6 +342,11 @@ describe("getHandler", () => {
     expect(verifyJwt).toHaveBeenCalledTimes(1);
     expect(checkJtiUnused).toHaveBeenCalledTimes(1);
     expect(startSessionAndGoToJourney).toHaveBeenCalledTimes(1);
+    expect(mockReply.setCookie).toHaveBeenCalledWith("channel", "web", {
+      secure: true,
+      httpOnly: true,
+      sameSite: "lax",
+    });
     expect(result).toBe(mockReply);
   });
 
@@ -372,6 +386,7 @@ describe("getHandler", () => {
       sub: "user-123",
       scope: "test-scope",
       jti: "jti-123",
+      channel: "web",
     };
 
     vi.mocked(getQueryParams).mockReturnValue(
@@ -396,6 +411,11 @@ describe("getHandler", () => {
     expect(verifyJwt).toHaveBeenCalledTimes(1);
     expect(checkJtiUnused).toHaveBeenCalledTimes(1);
     expect(startSessionAndGoToJourney).toHaveBeenCalledTimes(1);
+    expect(mockReply.setCookie).toHaveBeenCalledWith("channel", "web", {
+      secure: true,
+      httpOnly: true,
+      sameSite: "lax",
+    });
     expect(metrics.addDimensions).toHaveBeenCalledWith({
       client_id: "test-client",
       scope: "test-scope",
