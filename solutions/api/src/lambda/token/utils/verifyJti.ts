@@ -1,10 +1,10 @@
 import assert from "node:assert";
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import { errorManager } from "./errors.js";
-import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
+//import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 
 export const verifyJti = async (jti: string | undefined) => {
-  const appConfig = await getAppConfig();
+  // const appConfig = await getAppConfig();
   const dynamoDbClient = getDynamoDbClient();
 
   assert.ok(
@@ -23,8 +23,7 @@ export const verifyJti = async (jti: string | undefined) => {
       TableName: tableName,
       Item: {
         nonce: jti,
-        expires:
-          Math.floor(Date.now() / 1000) + appConfig.jti_nonce_ttl_in_seconds,
+        expires: Math.floor(Date.now() / 1000) + 7200,
       },
       ConditionExpression: "attribute_not_exists(nonce)",
     });

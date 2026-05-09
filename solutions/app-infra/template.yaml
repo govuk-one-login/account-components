@@ -271,7 +271,12 @@ Globals:
     Tracing: Active
     AutoPublishAlias: live
     KmsKeyArn: !GetAtt LambdaEnvironmentVariableEncryptionKey.Arn
-
+    Layers:
+      - !If [
+          IsLocal,
+          !Ref AWS::NoValue,
+          "arn:aws:lambda:eu-west-2:216552277552:layer:Dynatrace_OneAgent_1_313_2_20250404-043044_with_collector_nodejs:1",
+        ]
     CodeSigningConfigArn: !If
       - UseCodeSigning
       - !Ref CodeSigningConfigArn
@@ -316,7 +321,8 @@ Globals:
         LOCALSTACK_ACCESS_KEY_ID: !Ref AWS::NoValue
         LOCALSTACK_ACCESS_KEY: !Ref AWS::NoValue
         LOCAL_KMS_ENDPOINT: !Ref AWS::NoValue
-
+        AWS_LAMBDA_EXEC_WRAPPER:
+          !If [IsLocal, !Ref AWS::NoValue, "/opt/dynatrace"]
         DT_CONNECTION_AUTH_TOKEN: !Sub
           - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}" # pragma: allowlist-secret
           - SecretArn:

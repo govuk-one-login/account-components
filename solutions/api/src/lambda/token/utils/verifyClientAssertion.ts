@@ -7,10 +7,10 @@ import {
   createRemoteJWKSet,
   decodeProtectedHeader,
 } from "jose";
-import { getClientRegistry } from "../../../../../commons/utils/getClientRegistry/index.js";
+//import { getClientRegistry } from "../../../../../commons/utils/getClientRegistry/index.js";
 import { errorManager } from "./errors.js";
 import assert from "node:assert";
-import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
+//import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 import { getEnvironment } from "../../../../../commons/utils/getEnvironment/index.js";
 import { logger } from "../../../../../commons/utils/logger/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
@@ -25,11 +25,31 @@ export const verifyClientAssertion = async (
   apiBaseUrl: string,
 ): Promise<JWTPayload> => {
   console.time("MHTEST getClientRegistry");
-  const clientRegistry = await getClientRegistry();
+  const clientRegistry = [
+    {
+      client_id: "auth",
+      scope: "testing-journey account-delete passkey-create",
+      redirect_uris: ["https://stubs.manage.dev.account.gov.uk/auth/callback"],
+      client_name: "Auth",
+      jwks_uri:
+        "https://stubs.manage.dev.account.gov.uk/auth/.well-known/jwks.json",
+      consider_user_logged_in: false,
+    },
+    {
+      client_id: "home",
+      scope: "testing-journey passkey-create",
+      redirect_uris: ["https://stubs.manage.dev.account.gov.uk/home/callback"],
+      client_name: "Home",
+      jwks_uri:
+        "https://stubs.manage.dev.account.gov.uk/home/.well-known/jwks.json",
+      consider_user_logged_in: true,
+      homepage_url: "https://home.dev.account.gov.uk/your-services",
+    },
+  ];
   console.timeEnd("MHTEST getClientRegistry");
 
   console.time("MHTEST getAppConfig");
-  const appConfig = await getAppConfig();
+  //const appConfig = await getAppConfig();
   console.timeEnd("MHTEST getAppConfig");
 
   console.time("MHTEST decodeJwt");
@@ -123,8 +143,8 @@ export const verifyClientAssertion = async (
           : client.jwks_uri,
       ),
       {
-        cacheMaxAge: appConfig.jwks_cache_max_age,
-        timeoutDuration: appConfig.jwks_http_timeout,
+        cacheMaxAge: 60000,
+        timeoutDuration: 2500,
       },
     );
     console.timeEnd("MHTEST createRemoteJWKSet");
