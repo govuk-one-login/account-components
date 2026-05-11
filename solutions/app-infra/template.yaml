@@ -139,7 +139,7 @@ Mappings:
       analyticsCookieDomain: staging.account.gov.uk
       ga4ContainerId: "GTM-KD86CMZ"
       analyticsEnabled: "1"
-      accountManagementApiUrl: "https://cgh8nx4500-vpce-04ae8d53b32b38278.execute-api.eu-west-2.amazonaws.com/staging"
+      accountManagementApiUrl: "https://9ntf0mlypd-vpce-04ae8d53b32b38278.execute-api.eu-west-2.amazonaws.com/staging"
       contactUrl: https://home.staging.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: staging.account.gov.uk
       passkeysRpName: "GOV.UK One Login (staging)"
