@@ -262,11 +262,8 @@ Conditions:
 Globals:
   Function:
     DeploymentPreference:
-      Type: !If
-        - CanariesEnabled
-        - !Ref LambdaDeploymentPreference
-        - AllAtOnce
-      Alarms: []
+      Enabled: !If [CanariesEnabled, true, false]
+      Type: !Ref LambdaDeploymentPreference
       Role: !GetAtt CodeDeployServiceRole.Arn
     Tracing: Active
     AutoPublishAlias: live
@@ -1010,10 +1007,8 @@ Resources:
               notifyStubUrl,
             ]
       DeploymentPreference:
-        Alarms: !If
-          - IsDevEnvironment
-          - []
-          - - !Ref NotificationsServiceFunctionSuccessRate
+        Alarms:
+          - !Ref NotificationsServiceFunctionSuccessRate
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
