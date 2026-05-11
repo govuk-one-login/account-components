@@ -61,6 +61,8 @@ start_floci() {
   return 0
 }
 
+# It is necessary to to use a separate KMS solution rather than relying on Floci's.
+# Floci's KMS solution is buggy and does not work consistently across different machines.
 start_kms_local() {
   echo "Starting KMS Local"
 
@@ -243,4 +245,4 @@ create_dynamodb_tables
 create_sqs_queues
 list_resources
 
-echo "Floci provisioned successfully"
+echo "Local AWS provisioned successfully"
