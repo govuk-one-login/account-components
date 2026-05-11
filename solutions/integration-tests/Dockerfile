@@ -1,9 +1,7 @@
 FROM node:24-bookworm@sha256:050bf2bbe33c1d6754e060bec89378a79ed831f04a7bb1a53fe45e997df7b3bb
 
-RUN curl -o awscliv2.zip https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip && \
-    unzip awscliv2.zip && \
-    ./aws/install && \
-    rm -rf awscliv2.zip aws
+ADD https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip awscliv2.zip
+RUN unzip awscliv2.zip && ./aws/install
 ENV AWS_PAGER=""
 
 COPY package.json package.json

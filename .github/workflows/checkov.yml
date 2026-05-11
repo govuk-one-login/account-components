@@ -7,11 +7,15 @@ on:
 jobs:
   checkov:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0 
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
 
       - name: Checkov GitHub Action
-        uses: bridgecrewio/checkov-action@eec884fd62682f5f2b33e303e160d5e2fe8d89ec # v12.3052.0 
+        uses: bridgecrewio/checkov-action@eec884fd62682f5f2b33e303e160d5e2fe8d89ec # v12.3052.0
         with:
           directory: .
           output_format: cli
@@ -32,4 +36,3 @@ jobs:
           # without write access constraints, created OLH-4093 to implement
           # CKV_AWS_124 Intentionally ommitted as SNS topics do not exist.
           skip_check: CKV_GHA_7,CKV2_GHA_1,CKV_OPENAPI_21,CKV_OPENAPI_4,CKV_OPENAPI_5,CKV_AWS_18,CKV_AWS_111,CKV_AWS_124
-     
