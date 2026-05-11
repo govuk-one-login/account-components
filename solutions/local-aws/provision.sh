@@ -20,13 +20,13 @@ generate_keys() {
 }
 
 configure_cli() {
-  echo "Starting to configure AWS CLI for Floci"
+  echo "Starting to configure AWS CLI"
 
   aws configure set aws_access_key_id test
   aws configure set aws_secret_access_key test
   aws configure set region eu-west-2
 
-  echo "Finished configuring AWS CLI for Floci"
+  echo "Finished configuring AWS CLI"
   return 0
 }
 
