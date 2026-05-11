@@ -16,4 +16,9 @@ jobs:
           directory: .
           output_format: cli
           output_file_path: console
+          # skip_path skips solutions/app-infra/template.yaml due to a checkov bug where Fn::If
+          # inside SAM Globals causes a ValueError crash (invalid literal for int() with base 10: 'Fn::If').
+          # cfn-lint still runs against this template via the cfnlint CI step.
+          # See: https://github.com/bridgecrewio/checkov/issues/6804
+          skip_path: solutions/app-infra/template.yaml
      
