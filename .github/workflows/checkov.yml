@@ -26,5 +26,5 @@ jobs:
           # CKV2_GHA_1 flags missing top-level permissions but all jobs in affected workflows
           # already define their own explicit permissions, making a top-level block redundant.
           # CKV_OPENAPI_21 flags omitting maxItems leaves arrays unbounded, created OLH-4092
-          skip_check: CKV_GHA_7,CKV2_GHA_1, CKV_OPENAPI_21
+          skip_check: CKV_GHA_7,CKV2_GHA_1,CKV_OPENAPI_21
      
