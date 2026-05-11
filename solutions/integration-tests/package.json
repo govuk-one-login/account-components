@@ -16,7 +16,7 @@
     "test:ui": "npm ci && run-p test:ui:*",
     "test:ui:watch": "npm run watch",
     "test:ui:run": "playwright test --ui",
-    "audit": "npm audit --audit-level=moderate && npm audit signatures"
+    "audit": "npm audit --audit-level=moderate --omit=dev && npm audit signatures"
   },
   "devDependencies": {
     "@aws-lambda-powertools/parameters": "^2.33.0",
