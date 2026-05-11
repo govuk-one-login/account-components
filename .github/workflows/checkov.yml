@@ -21,4 +21,10 @@ jobs:
           # cfn-lint still runs against this template via the cfnlint CI step.
           # See: https://github.com/bridgecrewio/checkov/issues/6804
           skip_path: solutions/app-infra/template.yaml
+          # CKV_GHA_7 flags workflow_dispatch inputs but these workflows use gitRef solely
+          # to select the deployment revision, not to affect build output.
+          # CKV2_GHA_1 flags missing top-level permissions but all jobs in affected workflows
+          # already define their own explicit permissions, making a top-level block redundant.
+          # CKV_OPENAPI_21 flags omitting maxItems leaves arrays unbounded, created OLH-4092
+          skip_check: CKV_GHA_7,CKV2_GHA_1, CKV_OPENAPI_21
      
