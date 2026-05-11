@@ -18,6 +18,12 @@ const accountDeleteAnalyticsDefaults: FastifyReply["analytics"] = {
   taxonomyLevel2: "SSAD",
 };
 
+const passkeyAnalyticsDefaults: FastifyReply["analytics"] = {
+  ...analyticsDefaults,
+  taxonomyLevel2: "manage",
+  taxonomyLevel3: "passkey",
+};
+
 export const paths = {
   journeys: {
     [Scope.testingJourney]: {
@@ -39,9 +45,11 @@ export const paths = {
       [PasskeyCreateState.notCreated]: {
         setUpPasskey: {
           path: "/set-up-passkey",
+          analytics: passkeyAnalyticsDefaults,
         },
         cannotSetUpPasskey: {
           path: "/cannot-set-up-passkey",
+          analytics: passkeyAnalyticsDefaults,
         },
       },
     },

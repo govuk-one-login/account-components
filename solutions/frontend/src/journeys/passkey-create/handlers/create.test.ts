@@ -182,6 +182,64 @@ describe("passkey-create handlers", () => {
       );
     });
 
+    it("should show the correct content id based on whether the user is logged in or not", async () => {
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockReply.analytics).toStrictEqual(
+        expect.objectContaining({
+          contentId: "5693e0d5-281e-4ab8-b458-422585f20dfc",
+        }),
+      );
+
+      mockReply.client = {
+        consider_user_logged_in: true,
+      } as unknown as NonNullable<FastifyReply["client"]>;
+
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockReply.analytics).toStrictEqual(
+        expect.objectContaining({
+          contentId: "980afc26-cd94-452a-9624-29ede30e1bf3",
+        }),
+      );
+    });
+
+    it("should show the correct content id when showErrorUi is true", async () => {
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        true,
+      );
+
+      expect(mockReply.analytics).toStrictEqual(
+        expect.objectContaining({
+          contentId: "c1d63d4a-1be0-4098-8feb-3aae27c67b85",
+        }),
+      );
+
+      mockReply.client = {
+        consider_user_logged_in: true,
+      } as unknown as NonNullable<FastifyReply["client"]>;
+
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        true,
+      );
+
+      expect(mockReply.analytics).toStrictEqual(
+        expect.objectContaining({
+          contentId: "e71140bc-bd4d-4ea2-9716-5bbb36c696dd",
+        }),
+      );
+    });
+
     it("should fetch existing passkeys and exclude them", async () => {
       mockGetPasskeys.mockResolvedValue({
         success: true,
