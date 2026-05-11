@@ -101,6 +101,27 @@ const render = async (
 
   assert.ok(reply.render);
 
+  const errorContentIds = {
+    loggedIn: "e71140bc-bd4d-4ea2-9716-5bbb36c696dd",
+    notLoggedIn: "c1d63d4a-1be0-4098-8feb-3aae27c67b85",
+  };
+
+  const nonErrorContentIds = {
+    loggedIn: "980afc26-cd94-452a-9624-29ede30e1bf3",
+    notLoggedIn: "5693e0d5-281e-4ab8-b458-422585f20dfc",
+  };
+
+  const contentIds = options?.showErrorUi
+    ? errorContentIds
+    : nonErrorContentIds;
+
+  reply.analytics = {
+    ...reply.analytics,
+    contentId: reply.client?.consider_user_logged_in
+      ? contentIds.loggedIn
+      : contentIds.notLoggedIn,
+  };
+
   await reply.render("journeys/passkey-create/templates/create.njk", {
     ...options,
     registrationOptions: JSON.stringify(registrationOptions),
