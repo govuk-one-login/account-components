@@ -14,6 +14,8 @@ import { checkJtiUnused } from "./utils/checkJtiUnused.js";
 import { startSessionAndGoToJourney } from "./utils/startSessionAndGoToJourney.js";
 import { checkSameUserAgent } from "./utils/checkSameUserAgent.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
+import { channelCookieName } from "../../../../commons/utils/constants.js";
+import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.js";
 
 export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
   try {
@@ -89,6 +91,12 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
     if (checkJtiUnusedResult instanceof ErrorResponse) {
       return await checkJtiUnusedResult.reply;
     }
+
+    reply.setCookie(channelCookieName, claims.channel, {
+      secure: getEnvironment() !== "local",
+      httpOnly: true,
+      sameSite: "lax",
+    });
 
     const startSessionAndGoToJourneyResult = await startSessionAndGoToJourney(
       reply,

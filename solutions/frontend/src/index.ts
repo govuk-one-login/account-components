@@ -12,7 +12,10 @@ import cy from "./translations/cy.json" with { type: "json" };
 import { getSessionOptions } from "./utils/session.js";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
-import { oneYearInSeconds } from "../../commons/utils/constants.js";
+import {
+  channelCookieName,
+  oneYearInSeconds,
+} from "../../commons/utils/constants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
 import simpleWebAuthNBrowserStaticHash from "./utils/static-hash-simplewebauthn-browser.json" with { type: "json" };
 import staticHashGovUkFrontendAssets from "./utils/static-hash-govuk-frontend-assets.json" with { type: "json" };
@@ -88,6 +91,9 @@ export const initFrontend = async function () {
       securityUrl: process.env["SECURITY_URL"],
       dynatraceRumUrl: process.env["DYNATRACE_RUM_URL"],
       env: getEnvironment(),
+      isAppChannel:
+        request.cookies[channelCookieName] === "strategic_app" ||
+        request.cookies[channelCookieName] === "generic_app",
     };
   });
   fastify.decorateReply("render", render);
