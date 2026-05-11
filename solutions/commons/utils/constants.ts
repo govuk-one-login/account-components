@@ -14,6 +14,8 @@ export const jwtVerifyAlgorithms = ["ES256", "RS256"];
 
 export const checkUserAgentCookieName = "amc";
 
+export const channelCookieName = "channel";
+
 export const passkeyDetailsSchema = v.object({
   credential: v.string(),
   id: v.string(),
