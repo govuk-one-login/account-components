@@ -35,4 +35,5 @@ jobs:
           # CKV_AWS_18 flags missing S3 access logging and CKV_AWS_111 flags IAM policies
           # without write access constraints, created OLH-4093 to implement
           # CKV_AWS_124 Intentionally ommitted as SNS topics do not exist.
+          # CKV_DOCKER_4 flags Dockerfiles using ADD instead of RUN curl, created OLH-4094 to implement.
           skip_check: CKV_GHA_7,CKV2_GHA_1,CKV_OPENAPI_21,CKV_OPENAPI_4,CKV_OPENAPI_5,CKV_AWS_18,CKV_AWS_111,CKV_AWS_124

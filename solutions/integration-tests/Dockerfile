@@ -15,6 +15,4 @@ COPY . .
 
 USER node
 
-HEALTHCHECK NONE
-
 ENTRYPOINT [ "./run-tests.sh" ]
