@@ -13,6 +13,4 @@ RUN npm ci && npm run install-browsers
 
 COPY . .
 
-USER node
-
 ENTRYPOINT [ "./run-tests.sh" ]
