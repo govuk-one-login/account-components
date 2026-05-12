@@ -37,4 +37,5 @@ jobs:
           # CKV_AWS_124 Intentionally ommitted as SNS topics do not exist.
           # CKV_DOCKER_4 flags Dockerfiles using ADD instead of RUN curl and CKV_DOCKER_2
           # flags missing HEALTHCHECK instructions, created OLH-4094 to implement.
-          skip_check: CKV_GHA_7,CKV2_GHA_1,CKV_OPENAPI_21,CKV_OPENAPI_4,CKV_OPENAPI_5,CKV_AWS_18,CKV_AWS_111,CKV_AWS_124,CKV_DOCKER_4,CKV_DOCKER_2
+          # CKV_DOCKER_3: "need a non-user root user" is intentionally omitted as the integration tests container needs root permissions to run AWS CLI commands and install dependencies.
+          skip_check: CKV_GHA_7,CKV2_GHA_1,CKV_OPENAPI_21,CKV_OPENAPI_4,CKV_OPENAPI_5,CKV_AWS_18,CKV_AWS_111,CKV_AWS_124,CKV_DOCKER_2,CKV_DOCKER_3,CKV_DOCKER_4
