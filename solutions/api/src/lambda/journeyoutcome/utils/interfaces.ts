@@ -12,7 +12,7 @@ export interface JourneyOutcome {
   scope: Scope;
   success: boolean;
   actions: {
-    journey: string;
+    action: string;
     timestamp: number;
     success: boolean;
     details: Record<string, unknown>;
