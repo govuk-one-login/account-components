@@ -53,6 +53,7 @@ describe("introduction handlers", () => {
       expect(mockStartJourneyAction).toHaveBeenCalledWith(
         { action: "account-delete" },
         mockRequest,
+        mockReply,
       );
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/introduction.njk",

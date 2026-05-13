@@ -168,6 +168,7 @@ describe("passkey-create handlers", () => {
       expect(mockStartJourneyAction).toHaveBeenCalledWith(
         { action: "passkey-create" },
         mockRequest,
+        mockReply,
       );
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/passkey-create/templates/create.njk",
@@ -404,6 +405,7 @@ describe("passkey-create handlers", () => {
             },
           },
           mockRequest,
+          mockReply,
         );
         expect(mockCompleteJourney).toHaveBeenCalledWith(
           mockRequest,
@@ -494,6 +496,7 @@ describe("passkey-create handlers", () => {
             details: { aaguid: "aaguid-123" },
           },
           mockRequest,
+          mockReply,
         );
         expect(mockCompleteJourney).toHaveBeenCalledWith(
           mockRequest,

@@ -8,6 +8,11 @@ import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import type { TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
 import { destroySession } from "../../utils/session.js";
+import {
+  getCommonAuditEventProps,
+  sendAuditEvent,
+} from "../../../../commons/utils/auditEvents/index.js";
+import { createEvent } from "@govuk-one-login/event-catalogue-utils";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -92,6 +97,46 @@ export const completeJourney = async (
       },
       ...transactItems,
     ];
+
+    if (request.awsLambda?.event) {
+      const commonAuditEventProps = getCommonAuditEventProps(
+        request.awsLambda.event,
+      );
+
+      await sendAuditEvent(
+        // @ts-expect-error - AMC_COMPLETED not in event catalogue types yet
+        createEvent("AMC_COMPLETED", {
+          ...commonAuditEventProps,
+          event_name: "AMC_COMPLETED",
+          client_id: claims.client_id,
+          extensions: {
+            amc_scope: claims.scope,
+            "journey-type": reply.journeyCategory,
+            account_actions: actions.map((action) => action.action),
+            account_actions_errors: actions.reduce<string[]>(
+              (errors, action) => {
+                if ("error" in action) errors.push(action.error.description);
+                return errors;
+              },
+              [],
+            ),
+            account_actions_failed: actions.reduce<string[]>(
+              (errors, action) => {
+                if ("error" in action) errors.push(action.action);
+                return errors;
+              },
+              [],
+            ),
+            account_action_overall_outcome: successOrOutcomeId,
+          },
+          user: {
+            ...commonAuditEventProps.user,
+            email: claims.email,
+            user_id: claims.public_sub,
+          },
+        }),
+      );
+    }
   }
 
   await dynamoDbClient.transactWrite({

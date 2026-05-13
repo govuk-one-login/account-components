@@ -10,6 +10,9 @@ const mockBuildRedirectToClientRedirectUri = vi.fn();
 const mockRedirect = vi.fn();
 const mockAddMetric = vi.fn();
 const mockDestroySession = vi.fn();
+const mockSendAuditEvent = vi.fn();
+const mockGetCommonAuditEventProps = vi.fn();
+const mockCreateEvent = vi.fn();
 
 // @ts-expect-error
 vi.mock(
@@ -42,6 +45,15 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
 
 vi.mock(import("../../utils/session.js"), () => ({
   destroySession: mockDestroySession,
+}));
+
+vi.mock(import("../../../../commons/utils/auditEvents/index.js"), () => ({
+  sendAuditEvent: mockSendAuditEvent,
+  getCommonAuditEventProps: mockGetCommonAuditEventProps,
+}));
+
+vi.mock(import("@govuk-one-login/event-catalogue-utils"), () => ({
+  createEvent: mockCreateEvent,
 }));
 
 const mockNow = 1640995200000;
@@ -393,8 +405,214 @@ describe("completeJourney", () => {
     });
     expect(mockAddMetric).not.toHaveBeenCalled();
     expect(mockDestroySession).not.toHaveBeenCalled();
+    expect(mockSendAuditEvent).not.toHaveBeenCalled();
     expect(mockRequest.session.completedJourneyOutcomeId).toBeUndefined();
     expect(mockRedirect).toHaveBeenCalledWith(mockRedirectUrl);
     expect(result).toBe(mockReply);
+  });
+
+  it("sends AMC_COMPLETED audit event when awsLambda event is present", async () => {
+    const mockAuthCode = "mock-auth-code-hex";
+    const mockOutcomeId = "mock-outcome-id-hex";
+    const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
+    const mockRedirectUrl =
+      "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
+
+    mockRequest.session.journeyActions = [
+      {
+        action: "testing-journey-action",
+        success: true,
+        details: {},
+        timestamp: 1000,
+      },
+    ];
+    (mockRequest as unknown as { awsLambda: unknown }).awsLambda = {
+      event: { requestContext: {} },
+    };
+    (mockReply as unknown as { journeyCategory: string }).journeyCategory =
+      "test-category";
+    (mockClaims as unknown as { public_sub: string }).public_sub =
+      "public-sub-123";
+
+    mockRandomBytes
+      .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
+      .mockReturnValueOnce({ toString: vi.fn(() => mockOutcomeId) });
+    mockGetAppConfig.mockResolvedValue(mockAppConfig);
+    mockTransactWrite.mockResolvedValue({});
+    mockBuildRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
+    mockGetCommonAuditEventProps.mockReturnValue({
+      user: { session_id: "session-123" },
+    });
+    mockCreateEvent.mockReturnValue({ event_name: "AMC_COMPLETED" });
+    mockSendAuditEvent.mockResolvedValue(undefined);
+
+    const module = await import("./completeJourney.js");
+    await module.completeJourney(mockRequest, mockReply, true);
+
+    expect(mockCreateEvent).toHaveBeenCalledWith(
+      "AMC_COMPLETED",
+      expect.objectContaining({
+        event_name: "AMC_COMPLETED",
+        client_id: "test-client-id",
+        extensions: expect.objectContaining({
+          amc_scope: "testing-journey",
+          "journey-type": "test-category",
+          account_actions: ["testing-journey-action"],
+          account_actions_errors: [],
+          account_actions_failed: [],
+          account_action_overall_outcome: true,
+        }),
+      }),
+    );
+    expect(mockSendAuditEvent).toHaveBeenCalledWith(expect.anything());
+  });
+
+  it("includes failed action errors in AMC_COMPLETED audit event", async () => {
+    const mockAuthCode = "mock-auth-code-hex";
+    const mockOutcomeId = "mock-outcome-id-hex";
+    const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
+    const mockRedirectUrl =
+      "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
+
+    mockRequest.session.journeyActions = [
+      {
+        action: "account-delete",
+        success: false,
+        error: {
+          code: 1001,
+          description: "UserSignedOut",
+          destroySession: true,
+        },
+        timestamp: 1000,
+      },
+    ];
+    (mockRequest as unknown as { awsLambda: unknown }).awsLambda = {
+      event: { requestContext: {} },
+    };
+    (mockReply as unknown as { journeyCategory: string }).journeyCategory =
+      "test-category";
+    (mockClaims as unknown as { public_sub: string }).public_sub =
+      "public-sub-123";
+
+    mockRandomBytes
+      .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
+      .mockReturnValueOnce({ toString: vi.fn(() => mockOutcomeId) });
+    mockGetAppConfig.mockResolvedValue(mockAppConfig);
+    mockTransactWrite.mockResolvedValue({});
+    mockBuildRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
+    mockGetCommonAuditEventProps.mockReturnValue({
+      user: { session_id: "session-123" },
+    });
+    mockCreateEvent.mockReturnValue({ event_name: "AMC_COMPLETED" });
+    mockSendAuditEvent.mockResolvedValue(undefined);
+
+    const module = await import("./completeJourney.js");
+    await module.completeJourney(mockRequest, mockReply, false);
+
+    expect(mockCreateEvent).toHaveBeenCalledWith(
+      "AMC_COMPLETED",
+      expect.objectContaining({
+        extensions: expect.objectContaining({
+          account_actions: ["account-delete"],
+          account_actions_errors: ["UserSignedOut"],
+          account_actions_failed: ["account-delete"],
+          account_action_overall_outcome: false,
+        }),
+      }),
+    );
+  });
+
+  it("includes multiple errors and failed actions in AMC_COMPLETED audit event", async () => {
+    const mockAuthCode = "mock-auth-code-hex";
+    const mockOutcomeId = "mock-outcome-id-hex";
+    const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
+    const mockRedirectUrl =
+      "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
+
+    mockRequest.session.journeyActions = [
+      {
+        action: "account-delete",
+        success: false,
+        error: {
+          code: 1001,
+          description: "UserSignedOut",
+          destroySession: true,
+        },
+        timestamp: 1000,
+      },
+      {
+        action: "passkey-create",
+        success: false,
+        error: {
+          code: 1002,
+          description: "UserAbortedJourney",
+          destroySession: false,
+        },
+        timestamp: 2000,
+      },
+    ];
+    (mockRequest as unknown as { awsLambda: unknown }).awsLambda = {
+      event: { requestContext: {} },
+    };
+    (mockReply as unknown as { journeyCategory: string }).journeyCategory =
+      "test-category";
+    (mockClaims as unknown as { public_sub: string }).public_sub =
+      "public-sub-123";
+
+    mockRandomBytes
+      .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
+      .mockReturnValueOnce({ toString: vi.fn(() => mockOutcomeId) });
+    mockGetAppConfig.mockResolvedValue(mockAppConfig);
+    mockTransactWrite.mockResolvedValue({});
+    mockBuildRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
+    mockGetCommonAuditEventProps.mockReturnValue({
+      user: { session_id: "session-123" },
+    });
+    mockCreateEvent.mockReturnValue({ event_name: "AMC_COMPLETED" });
+    mockSendAuditEvent.mockResolvedValue(undefined);
+
+    const module = await import("./completeJourney.js");
+    await module.completeJourney(mockRequest, mockReply, false);
+
+    expect(mockCreateEvent).toHaveBeenCalledWith(
+      "AMC_COMPLETED",
+      expect.objectContaining({
+        extensions: expect.objectContaining({
+          account_actions: ["account-delete", "passkey-create"],
+          account_actions_errors: ["UserSignedOut", "UserAbortedJourney"],
+          account_actions_failed: ["account-delete", "passkey-create"],
+          account_action_overall_outcome: false,
+        }),
+      }),
+    );
+  });
+
+  it("does not send audit event when awsLambda event is not present", async () => {
+    const mockAuthCode = "mock-auth-code-hex";
+    const mockOutcomeId = "mock-outcome-id-hex";
+    const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
+    const mockRedirectUrl =
+      "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
+
+    mockRequest.session.journeyActions = [
+      {
+        action: "testing-journey-action",
+        success: true,
+        details: {},
+        timestamp: 1000,
+      },
+    ];
+
+    mockRandomBytes
+      .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
+      .mockReturnValueOnce({ toString: vi.fn(() => mockOutcomeId) });
+    mockGetAppConfig.mockResolvedValue(mockAppConfig);
+    mockTransactWrite.mockResolvedValue({});
+    mockBuildRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
+
+    const module = await import("./completeJourney.js");
+    await module.completeJourney(mockRequest, mockReply, true);
+
+    expect(mockSendAuditEvent).not.toHaveBeenCalled();
   });
 });

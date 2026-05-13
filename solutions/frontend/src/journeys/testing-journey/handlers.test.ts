@@ -73,6 +73,7 @@ describe("testing-journey handlers", () => {
       expect(mockStartJourneyAction).toHaveBeenCalledWith(
         { action: "testing-journey-action" },
         mockRequest,
+        mockReply,
       );
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/testing-journey/step1.njk",
@@ -220,6 +221,7 @@ describe("testing-journey handlers", () => {
           details: {},
         },
         mockRequest,
+        mockReply,
       );
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,

@@ -53,6 +53,7 @@ describe("completeFailedJourneyHandler", () => {
           },
         },
         mockRequest,
+        mockReply,
       );
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
@@ -84,6 +85,7 @@ describe("completeFailedJourneyHandler", () => {
           },
         },
         mockRequest,
+        mockReply,
       );
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
@@ -225,6 +227,7 @@ describe("completeFailedJourneyHandler", () => {
           },
         },
         mockRequest,
+        mockReply,
       );
     });
 
@@ -260,6 +263,7 @@ describe("completeFailedJourneyHandler", () => {
           },
         },
         mockRequest,
+        mockReply,
       );
       expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledWith(
         {
@@ -271,6 +275,7 @@ describe("completeFailedJourneyHandler", () => {
           },
         },
         mockRequest,
+        mockReply,
       );
     });
   });
@@ -307,6 +312,7 @@ describe("completeFailedJourneyHandler", () => {
           },
         },
         mockRequest,
+        mockReply,
       );
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
