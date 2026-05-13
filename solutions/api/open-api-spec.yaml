@@ -39,9 +39,6 @@ servers:
   - url: request when required
     description: production server
 
-security:
-  - bearerAuth: []
-
 paths:
   /token:
     post:
