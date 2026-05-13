@@ -44,7 +44,6 @@ describe("getCommonAuditEventProps", () => {
         new Date("2024-01-15T12:00:00.000Z").getTime() / 1000,
       ),
       event_timestamp_ms: new Date("2024-01-15T12:00:00.000Z").getTime(),
-      event_timestamp_ms_formatted: "2024-01-15T12:00:00.000Z",
       component_id: "AMC",
       user: {
         session_id: "session-123",
@@ -85,7 +84,6 @@ describe("getCommonAuditEventProps", () => {
         new Date("2024-01-15T12:00:00.000Z").getTime() / 1000,
       ),
       event_timestamp_ms: new Date("2024-01-15T12:00:00.000Z").getTime(),
-      event_timestamp_ms_formatted: "2024-01-15T12:00:00.000Z",
       component_id: "AMC",
       user: {
         session_id: "NO_VALUE",

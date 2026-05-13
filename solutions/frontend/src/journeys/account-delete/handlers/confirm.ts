@@ -36,12 +36,13 @@ export async function confirmPostHandler(
     throw new Error(result.error);
   }
 
-  completeJourneyActionSuccessfully<"accountDelete">(
+  await completeJourneyActionSuccessfully<"accountDelete">(
     {
       action: "account-delete",
       details: {},
     },
     request,
+    reply,
   );
 
   return await completeJourney(request, reply, true);

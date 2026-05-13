@@ -11,9 +11,10 @@ export async function step1GetHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  startJourneyAction<"testingJourneyAction">(
+  await startJourneyAction<"testingJourneyAction">(
     { action: "testing-journey-action" },
     request,
+    reply,
   );
   assert.ok(reply.render);
   await reply.render("journeys/testing-journey/step1.njk");
@@ -71,12 +72,13 @@ export async function confirmPostHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  completeJourneyActionSuccessfully<"testingJourneyAction">(
+  await completeJourneyActionSuccessfully<"testingJourneyAction">(
     {
       action: "testing-journey-action",
       details: {},
     },
     request,
+    reply,
   );
 
   return await completeJourney(request, reply, true);

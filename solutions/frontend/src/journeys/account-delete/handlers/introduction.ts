@@ -16,7 +16,11 @@ export async function introductionGetHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  startJourneyAction<"accountDelete">({ action: "account-delete" }, request);
+  await startJourneyAction<"accountDelete">(
+    { action: "account-delete" },
+    request,
+    reply,
+  );
   await render(reply);
   return reply;
 }

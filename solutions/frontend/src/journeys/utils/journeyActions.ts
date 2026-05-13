@@ -1,4 +1,10 @@
-import type { FastifyRequest } from "fastify";
+import type { FastifyReply, FastifyRequest } from "fastify";
+import {
+  getCommonAuditEventProps,
+  sendAuditEvent,
+} from "../../../../commons/utils/auditEvents/index.js";
+import { createEvent } from "@govuk-one-login/event-catalogue-utils";
+import assert from "node:assert";
 
 export const unsuccessfulJourneyActionErrors = {
   userSignedOut: {
@@ -82,9 +88,12 @@ type FailedAction = Omit<
   "timestamp" | "success"
 >;
 
-export const startJourneyAction = <K extends keyof JourneyActions = never>(
+export const startJourneyAction = async <
+  K extends keyof JourneyActions = never,
+>(
   action: InProgressAction<JourneyActions[K]>,
   request: FastifyRequest,
+  reply: FastifyReply,
 ) => {
   request.session.journeyActions ??= [];
 
@@ -95,6 +104,33 @@ export const startJourneyAction = <K extends keyof JourneyActions = never>(
 
   if (!inProgressAction) {
     request.session.journeyActions.push(action);
+
+    if (request.awsLambda?.event) {
+      assert.ok(request.session.claims);
+
+      const commonAuditEventProps = getCommonAuditEventProps(
+        request.awsLambda.event,
+      );
+
+      await sendAuditEvent(
+        // @ts-expect-error - AMC_ACTION_STARTED not in event catalogue types yet
+        createEvent("AMC_ACTION_STARTED", {
+          ...commonAuditEventProps,
+          event_name: "AMC_ACTION_STARTED",
+          client_id: request.session.claims.client_id,
+          extensions: {
+            account_action: action.action,
+            amc_scope: request.session.claims.scope,
+            "journey-type": reply.journeyCategory,
+          },
+          user: {
+            ...commonAuditEventProps.user,
+            email: request.session.claims.email,
+            user_id: request.session.claims.public_sub,
+          },
+        }),
+      );
+    }
   }
 };
 
@@ -120,18 +156,73 @@ const updateInProgressAction = (
   request.session.journeyActions[index] = { ...action, timestamp: Date.now() };
 };
 
-export const completeJourneyActionSuccessfully = <
+const sendCompletedActionAuditEvent = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+  action:
+    | {
+        name: string;
+        success: true;
+      }
+    | {
+        name: string;
+        success: false;
+        error: string;
+      },
+) => {
+  if (request.awsLambda?.event) {
+    assert.ok(request.session.claims);
+
+    const commonAuditEventProps = getCommonAuditEventProps(
+      request.awsLambda.event,
+    );
+
+    await sendAuditEvent(
+      // @ts-expect-error - AMC_ACTION_COMPLETED not in event catalogue types yet
+      createEvent("AMC_ACTION_COMPLETED", {
+        ...commonAuditEventProps,
+        event_name: "AMC_ACTION_COMPLETED",
+        client_id: request.session.claims.client_id,
+        extensions: {
+          account_action: action.name,
+          account_action_overall_outcome: action.success,
+          account_action_error: !action.success ? action.error : undefined,
+          amc_scope: request.session.claims.scope,
+          "journey-type": reply.journeyCategory,
+        },
+        user: {
+          ...commonAuditEventProps.user,
+          email: request.session.claims.email,
+          user_id: request.session.claims.public_sub,
+        },
+      }),
+    );
+  }
+};
+
+export const completeJourneyActionSuccessfully = async <
   K extends keyof JourneyActions = never,
 >(
   action: SuccessfulAction<JourneyActions[K]>,
   request: FastifyRequest,
+  reply: FastifyReply,
 ) => {
+  await sendCompletedActionAuditEvent(request, reply, {
+    name: action.action,
+    success: true,
+  });
   updateInProgressAction({ ...action, success: true }, request);
 };
 
-export const completeJourneyActionUnsuccessfully = (
+export const completeJourneyActionUnsuccessfully = async (
   action: FailedAction,
   request: FastifyRequest,
+  reply: FastifyReply,
 ) => {
+  await sendCompletedActionAuditEvent(request, reply, {
+    name: action.action,
+    success: false,
+    error: action.error.description,
+  });
   updateInProgressAction({ ...action, success: false }, request);
 };

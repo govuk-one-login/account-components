@@ -142,7 +142,11 @@ export async function getHandler(
   showErrorUi = false,
 ) {
   if (!showErrorUi) {
-    startJourneyAction<"passkeyCreate">({ action: "passkey-create" }, request);
+    await startJourneyAction<"passkeyCreate">(
+      { action: "passkey-create" },
+      request,
+      reply,
+    );
   }
 
   await render(request, reply, {
@@ -199,12 +203,13 @@ export async function postHandler(
   }
 
   if (body.action === "skip") {
-    completeJourneyActionUnsuccessfully(
+    await completeJourneyActionUnsuccessfully(
       {
         action: "passkey-create",
         error: unsuccessfulJourneyActionErrors.userAbortedJourney,
       },
       request,
+      reply,
     );
 
     return await completeJourney(request, reply, false);
@@ -341,12 +346,13 @@ export async function postHandler(
         },
   );
 
-  completeJourneyActionSuccessfully<"passkeyCreate">(
+  await completeJourneyActionSuccessfully<"passkeyCreate">(
     {
       action: "passkey-create",
       details: { aaguid: verification.registrationInfo.aaguid },
     },
     request,
+    reply,
   );
 
   return await completeJourney(request, reply, true);

@@ -49,12 +49,13 @@ export const completeFailedJourneyHandler = async (
 
       assert.ok(journeyActionName, "Action not found");
 
-      completeJourneyActionUnsuccessfully(
+      await completeJourneyActionUnsuccessfully(
         {
           action: journeyActionName,
           error: unsuccessfulActionError,
         },
         request,
+        reply,
       );
     }
   }

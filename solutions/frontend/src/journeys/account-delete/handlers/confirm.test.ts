@@ -97,6 +97,7 @@ describe("confirm handlers", () => {
           details: {},
         },
         mockRequest,
+        mockReply,
       );
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
