@@ -472,7 +472,6 @@ components:
           description: Whether the journey was successful
         actions:
           type: array
-          description: Array of actions
           minItems: 1
           items:
             type: object
