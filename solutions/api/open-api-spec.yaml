@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components API
-  version: 0.0.15
+  version: 0.0.16
   description: |
     OAuth 2.0 provider endpoints, including:
     - POST /token (supports client assertions via private_key_jwt)
@@ -167,8 +167,8 @@ paths:
                     email: user@example.com
                     scope: account-delete
                     success: true
-                    journeys:
-                      - journey: account-delete
+                    actions:
+                      - action: account-delete
                         timestamp: 1760718467000
                         success: true
                         details: {}
@@ -179,8 +179,8 @@ paths:
                     email: user@example.com
                     scope: passkey-create
                     success: true
-                    journeys:
-                      - journey: passkey-create
+                    actions:
+                      - action: passkey-create
                         timestamp: 1760718467000
                         success: true
                         details:
@@ -192,8 +192,8 @@ paths:
                     email: user@example.com
                     scope: passkey-create
                     success: false
-                    journeys:
-                      - journey: passkey-create
+                    actions:
+                      - action: passkey-create
                         timestamp: 1760718467000
                         success: false
                         details:
@@ -207,8 +207,8 @@ paths:
                     email: user@example.com
                     scope: passkey-create
                     success: false
-                    journeys:
-                      - journey: passkey-create
+                    actions:
+                      - action: passkey-create
                         timestamp: 1760718467000
                         success: false
                         details:
@@ -222,8 +222,8 @@ paths:
                     email: user@example.com
                     scope: passkey-create
                     success: false
-                    journeys:
-                      - journey: passkey-create
+                    actions:
+                      - action: passkey-create
                         timestamp: 1760718467000
                         success: false
                         details:
@@ -449,7 +449,7 @@ components:
 
     JourneyOutcome:
       type: object
-      description: Provides the outcomes of the Account Component journeys undertaken by the user.
+      description: Provides the outcome of the Account Component journey undertaken by the user
       properties:
         outcome_id:
           description: The journey outcome's unique ID
@@ -469,29 +469,30 @@ components:
           description: The scope of the journey
         success:
           type: boolean
-          description: Whether the main journey was successful. If any journey has success false, then this will also be false.
-        journeys:
+          description: Whether the journey was successful
+        actions:
           type: array
-          description: Array of journey outcomes. The first item's journey property will always match the top-level scope property.
+          description: Array of actions
           minItems: 1
           items:
             type: object
-            description: The outcomes of the main journey and any sub-journeys
+            description: The actions performed during the journey
             properties:
-              journey:
+              action:
                 type: string
-                enum: ["account-delete", "testing-journey", "passkey-create"]
-                description: The scope of the journey
+                enum:
+                  ["account-delete", "testing-journey-action", "passkey-create"]
+                description: The name of the action
               timestamp:
                 type: integer
-                description: Epoch timestamp in milliseconds representing when the journey was completed
+                description: Epoch timestamp in milliseconds representing when the action was completed
                 example: 1760718467000
               success:
                 type: boolean
-                description: Whether the journey was successful
+                description: Whether the action was successful
               details:
                 type: object
-                description: Additional journey details. Can contain any properties but when success is false it must contain an error property the value of which must be an object with code (number) and description (string) properties.
+                description: Additional action details. Can contain any properties but when success is false it must contain an error property the value of which must be an object with code (number) and description (string) properties.
                 additionalProperties: true
                 properties:
                   error:
@@ -503,8 +504,8 @@ components:
                       description:
                         type: string
                     required: [code, description]
-            required: [journey, timestamp, success, details]
-      required: [outcome_id, sub, email, scope, success, journeys]
+            required: [action, timestamp, success, details]
+      required: [outcome_id, sub, email, scope, success, actions]
 
     JWK:
       type: object

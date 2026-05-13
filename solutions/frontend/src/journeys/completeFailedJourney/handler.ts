@@ -1,6 +1,12 @@
 import * as v from "valibot";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { completeJourney } from "../utils/completeJourney.js";
+import {
+  completeJourneyActionUnsuccessfully,
+  journeyActionNames,
+  unsuccessfulJourneyActionErrors,
+} from "../utils/journeyActions.js";
+import assert from "node:assert";
 
 export const completeFailedJourneyHandler = async (
   request: FastifyRequest,
@@ -20,15 +26,38 @@ export const completeFailedJourneyHandler = async (
     request.method === "GET" ? request.query : request.body,
   );
 
-  return await completeJourney(
-    request,
-    reply,
-    {
-      error: {
-        code: params.error_code,
-        description: params.error_description,
-      },
-    },
-    false,
+  const unsuccessfulActionError = Object.values(
+    unsuccessfulJourneyActionErrors,
+  ).find(
+    (error) =>
+      error.code === params.error_code &&
+      error.description === params.error_description,
   );
+
+  assert.ok(unsuccessfulActionError, "Error not found");
+
+  assert.ok(
+    !!request.session.journeyActions?.length,
+    "There are no journey actions",
+  );
+
+  for (const journeyAction of request.session.journeyActions) {
+    if (!("success" in journeyAction)) {
+      const journeyActionName = Object.values(journeyActionNames).find(
+        (name) => name === journeyAction.action,
+      );
+
+      assert.ok(journeyActionName, "Action not found");
+
+      completeJourneyActionUnsuccessfully(
+        {
+          action: journeyActionName,
+          error: unsuccessfulActionError,
+        },
+        request,
+      );
+    }
+  }
+
+  return await completeJourney(request, reply, false);
 };

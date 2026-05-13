@@ -2,6 +2,7 @@ import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { AccountManagementApiClient } from "../../../utils/accountManagementApiClient.js";
 import { completeJourney } from "../../utils/completeJourney.js";
+import { completeJourneyActionSuccessfully } from "../../utils/journeyActions.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
@@ -35,5 +36,13 @@ export async function confirmPostHandler(
     throw new Error(result.error);
   }
 
-  return await completeJourney(request, reply, {}, true);
+  completeJourneyActionSuccessfully<"accountDelete">(
+    {
+      action: "account-delete",
+      details: {},
+    },
+    request,
+  );
+
+  return await completeJourney(request, reply, true);
 }
