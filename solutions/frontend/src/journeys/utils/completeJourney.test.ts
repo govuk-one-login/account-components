@@ -281,10 +281,13 @@ describe("completeJourney", () => {
       {
         action: "account-delete",
         success: false,
-        error: {
-          code: 1001,
-          description: "UserSignedOut",
+        details: {
+          error: {
+            code: 1001,
+            description: "UserSignedOut",
+          },
         },
+        error: undefined,
         timestamp: 1000,
       },
     ]);

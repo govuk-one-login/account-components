@@ -54,7 +54,7 @@ Feature: Delete account
     """
     And the page contains the text:
     """
+    "action": "account-delete",
     "details": {},
-    "journey": "account-delete",
     "success": true,
     """

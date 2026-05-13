@@ -27,13 +27,13 @@ Feature: Page chrome
     """
     And the page contains the text:
     """
+    "action": "testing-journey-action",
     "details": {
       "error": {
         "code": 1001,
         "description": "UserSignedOut"
       }      
     },
-    "journey": "testing-journey",
     "success": false,
     """ 
 

@@ -74,7 +74,11 @@ export const completeJourney = async (
     const actions = request.session.journeyActions.map((action) => {
       if ("error" in action) {
         const { code, description } = action.error;
-        return { ...action, error: { code, description } };
+        return {
+          ...action,
+          details: { error: { code, description } },
+          error: undefined,
+        };
       }
       return action;
     });
@@ -112,21 +116,21 @@ export const completeJourney = async (
           extensions: {
             amc_scope: claims.scope,
             "journey-type": reply.journeyCategory,
-            account_actions: actions.map((action) => action.action),
-            account_actions_errors: actions.reduce<string[]>(
-              (errors, action) => {
-                if ("error" in action) errors.push(action.error.description);
-                return errors;
-              },
-              [],
+            account_actions: request.session.journeyActions.map(
+              (action) => action.action,
             ),
-            account_actions_failed: actions.reduce<string[]>(
-              (errors, action) => {
-                if ("error" in action) errors.push(action.action);
-                return errors;
-              },
-              [],
-            ),
+            account_actions_errors: request.session.journeyActions.reduce<
+              string[]
+            >((errors, action) => {
+              if ("error" in action) errors.push(action.error.description);
+              return errors;
+            }, []),
+            account_actions_failed: request.session.journeyActions.reduce<
+              string[]
+            >((errors, action) => {
+              if ("error" in action) errors.push(action.action);
+              return errors;
+            }, []),
             account_action_overall_outcome: successOrOutcomeId,
           },
           user: {
