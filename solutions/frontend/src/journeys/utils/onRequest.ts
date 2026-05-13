@@ -106,6 +106,8 @@ export const onRequest = async (
     request.i18n.addResourceBundle(lang, "journey", translations);
   });
 
+  reply.journeyCategory = journey.journeyCategory;
+
   const journeyStateMachine = journey.stateMachine;
 
   const serializedSnapshot = request.session.journeyStateSnapshot;
