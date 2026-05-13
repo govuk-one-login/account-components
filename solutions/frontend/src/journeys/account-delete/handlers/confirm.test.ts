@@ -79,9 +79,7 @@ describe("confirm handlers", () => {
   describe("confirmPostHandler", () => {
     it("should delete account and complete journey when successful", async () => {
       // @ts-expect-error
-      mockRequest.session.journeyActions = [
-        { action: "account-delete" },
-      ];
+      mockRequest.session.journeyActions = [{ action: "account-delete" }];
       mockDeleteAccount.mockResolvedValue({ success: true });
       mockCompleteJourney.mockResolvedValue(mockReply);
 
