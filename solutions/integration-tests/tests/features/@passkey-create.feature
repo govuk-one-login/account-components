@@ -18,13 +18,13 @@ Feature: Passkey create
     """
     And the page contains the text:
     """
+    "action": "passkey-create",
     "details": {
       "error": {
         "code": 1003,
         "description": "UserBackedOutOfJourney"
       }      
     },
-    "journey": "passkey-create",
     "success": false,
     """
 
@@ -49,13 +49,13 @@ Feature: Passkey create
     """
     And the page contains the text:
     """
+    "action": "passkey-create",
     "details": {
       "error": {
         "code": 1002,
         "description": "UserAbortedJourney"
       }      
     },
-    "journey": "passkey-create",
     "success": false,
     """
 
@@ -96,13 +96,13 @@ Feature: Passkey create
     """
     And the page contains the text:
     """
+    "action": "passkey-create",
     "details": {
       "error": {
         "code": 1002,
         "description": "UserAbortedJourney"
       }      
     },
-    "journey": "passkey-create",
     "success": false,
     """
 
@@ -128,13 +128,13 @@ Feature: Passkey create
     """
     And the page contains the text:
     """
+    "action": "passkey-create",
     "details": {
       "error": {
         "code": 1002,
         "description": "UserAbortedJourney"
       }      
     },
-    "journey": "passkey-create",
     "success": false,
     """
 
@@ -176,13 +176,13 @@ Feature: Passkey create
     """
     And the page contains the text:
     """
+    "action": "passkey-create",
     "details": {
       "error": {
         "code": 1002,
         "description": "UserAbortedJourney"
       }      
     },
-    "journey": "passkey-create",
     "success": false,
     """    
     
@@ -205,11 +205,9 @@ Feature: Passkey create
     "success": true
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text:
-    """
-    "journey": "passkey-create",
-    "success": true,
-    """
+    And the page contains the text '"action": "passkey-create",'    
+    And the page contains the text '"success": true,'     
+    And the page does not contain the text '"success": false'  
 
   Scenario: User has maximum number of passkeys
     Given I go to the journey initiator
@@ -254,11 +252,9 @@ Feature: Passkey create
     "success": true
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text:
-    """
-    "journey": "passkey-create",
-    "success": true,
-    """
+    And the page contains the text '"action": "passkey-create",'    
+    And the page contains the text '"success": true,'     
+    And the page does not contain the text '"success": false'  
 
   Scenario: Invalid authenticators
     Given I go to the journey initiator
@@ -345,11 +341,9 @@ Feature: Passkey create
     "success": true
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text:
-    """
-    "journey": "passkey-create",
-    "success": true,
-    """
+    And the page contains the text '"action": "passkey-create",'    
+    And the page contains the text '"success": true,'     
+    And the page does not contain the text '"success": false'  
 
     Given I have no authenticators
     And I go to the journey initiator
@@ -371,11 +365,9 @@ Feature: Passkey create
     "success": true
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text:
-    """
-    "journey": "passkey-create",
-    "success": true,
-    """  
+    And the page contains the text '"action": "passkey-create",'    
+    And the page contains the text '"success": true,'     
+    And the page does not contain the text '"success": false'  
 
     Given I have no authenticators
     And I go to the journey initiator
@@ -397,11 +389,9 @@ Feature: Passkey create
     "success": true
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text:
-    """
-    "journey": "passkey-create",
-    "success": true,
-    """    
+    And the page contains the text '"action": "passkey-create",'    
+    And the page contains the text '"success": true,'       
+    And the page does not contain the text '"success": false'  
 
     Given I have no authenticators
     And I go to the journey initiator
@@ -423,11 +413,9 @@ Feature: Passkey create
     "success": true
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text:
-    """
-    "journey": "passkey-create",
-    "success": true,
-    """
+    And the page contains the text '"action": "passkey-create",'    
+    And the page contains the text '"success": true,'     
+    And the page does not contain the text '"success": false'  
 
     Given I have no authenticators
     And I go to the journey initiator
@@ -450,11 +438,9 @@ Feature: Passkey create
     "success": true
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text:
-    """
-    "journey": "passkey-create",
-    "success": true,
-    """       
+    And the page contains the text '"action": "passkey-create",'    
+    And the page contains the text '"success": true,'     
+    And the page does not contain the text '"success": false'  
 
   @noJs
   Scenario: JavaScript disabled
@@ -485,12 +471,12 @@ Feature: Passkey create
     """
     And the page contains the text:
     """
+    "action": "passkey-create",
     "details": {
       "error": {
         "code": 1002,
         "description": "UserAbortedJourney"
       }      
     },
-    "journey": "passkey-create",
     "success": false,
-    """    
+    """
