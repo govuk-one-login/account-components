@@ -186,7 +186,7 @@ const sendCompletedActionAuditEvent = async (
         extensions: {
           account_action: action.name,
           account_action_overall_outcome: action.success,
-          account_action_error: !action.success ? action.error : undefined,
+          account_action_error: action.success ? undefined : action.error,
           amc_scope: request.session.claims.scope,
           "journey-type": reply.journeyCategory,
         },
