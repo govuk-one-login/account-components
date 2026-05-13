@@ -4,9 +4,17 @@ import type { Claims } from "../../utils/getClaimsSchema.js";
 import type { FastifySessionObject } from "@fastify/session";
 
 const mockCompleteJourney = vi.fn();
+const mockStartJourneyAction = vi.fn();
+const mockCompleteJourneyActionSuccessfully = vi.fn();
 
 vi.mock(import("../utils/completeJourney.js"), () => ({
   completeJourney: mockCompleteJourney,
+}));
+
+vi.mock(import("../utils/journeyActions.js"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  startJourneyAction: mockStartJourneyAction,
+  completeJourneyActionSuccessfully: mockCompleteJourneyActionSuccessfully,
 }));
 
 // @ts-expect-error
@@ -56,11 +64,16 @@ describe("testing-journey handlers", () => {
 
   describe("step1GetHandler", () => {
     it("should render step1 template", async () => {
+      mockRequest.session = {} as any;
       const result = await step1GetHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
 
+      expect(mockStartJourneyAction).toHaveBeenCalledWith(
+        { action: "testing-journey-action" },
+        mockRequest,
+      );
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/testing-journey/step1.njk",
       );
@@ -192,7 +205,8 @@ describe("testing-journey handlers", () => {
       const mockClaims = { sub: "user123", client_id: "test-client" };
       mockRequest.session = {
         claims: mockClaims as Claims,
-      } as FastifySessionObject;
+        journeyActions: [{ action: "testing-journey-action" }],
+      } as unknown as FastifySessionObject;
       mockCompleteJourney.mockResolvedValue(mockReply);
 
       const result = await confirmPostHandler(
@@ -200,10 +214,16 @@ describe("testing-journey handlers", () => {
         mockReply as FastifyReply,
       );
 
+      expect(mockCompleteJourneyActionSuccessfully).toHaveBeenCalledWith(
+        {
+          action: "testing-journey-action",
+          details: {},
+        },
+        mockRequest,
+      );
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
         mockReply,
-        {},
         true,
       );
       expect(result).toBe(mockReply);

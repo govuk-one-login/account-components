@@ -84,7 +84,7 @@ describe("getJourneyOutcome", () => {
         outcome_id: "test-outcome-123",
       },
       ProjectionExpression:
-        "outcome_id, #sub, email, #scope, success, journeys",
+        "outcome_id, #sub, email, #scope, success, actions",
       ExpressionAttributeNames: {
         "#sub": "sub",
         "#scope": "scope",

@@ -16,6 +16,9 @@ const mockAddMetadata = vi.fn();
 const mockAddDimensions = vi.fn();
 const mockSendNotification = vi.fn();
 const mockGetPasskeyConvenienceMetadataByAaguid = vi.fn();
+const mockStartJourneyAction = vi.fn();
+const mockCompleteJourneyActionSuccessfully = vi.fn();
+const mockCompleteJourneyActionUnsuccessfully = vi.fn();
 
 vi.mock(import("@simplewebauthn/server"), () => ({
   generateRegistrationOptions: mockGenerateRegistrationOptions,
@@ -32,6 +35,13 @@ vi.mock(import("@simplewebauthn/server/helpers"), () => ({
 
 vi.mock(import("../../utils/completeJourney.js"), () => ({
   completeJourney: mockCompleteJourney,
+}));
+
+vi.mock(import("../../utils/journeyActions.js"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  startJourneyAction: mockStartJourneyAction,
+  completeJourneyActionSuccessfully: mockCompleteJourneyActionSuccessfully,
+  completeJourneyActionUnsuccessfully: mockCompleteJourneyActionUnsuccessfully,
 }));
 
 // @ts-expect-error
@@ -155,6 +165,10 @@ describe("passkey-create handlers", () => {
         mockReply as FastifyReply,
       );
 
+      expect(mockStartJourneyAction).toHaveBeenCalledWith(
+        { action: "passkey-create" },
+        mockRequest,
+      );
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/passkey-create/templates/create.njk",
         expect.objectContaining({
@@ -172,6 +186,7 @@ describe("passkey-create handlers", () => {
         true,
       );
 
+      expect(mockStartJourneyAction).not.toHaveBeenCalled();
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/passkey-create/templates/create.njk",
         expect.objectContaining({
@@ -368,6 +383,10 @@ describe("passkey-create handlers", () => {
           action: "skip",
           registrationResponse: JSON.stringify({}),
         };
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [
+          { action: "passkey-create" },
+        ];
         mockCompleteJourney.mockResolvedValue(mockReply);
 
         await postHandler(
@@ -375,16 +394,20 @@ describe("passkey-create handlers", () => {
           mockReply as FastifyReply,
         );
 
-        expect(mockCompleteJourney).toHaveBeenCalledWith(
-          mockRequest,
-          mockReply,
-          expect.objectContaining({
+        expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledWith(
+          {
+            action: "passkey-create",
             error: {
               code: 1002,
               description: "UserAbortedJourney",
               destroySession: false,
             },
-          }),
+          },
+          mockRequest,
+        );
+        expect(mockCompleteJourney).toHaveBeenCalledWith(
+          mockRequest,
+          mockReply,
           false,
         );
       });
@@ -435,6 +458,11 @@ describe("passkey-create handlers", () => {
       });
 
       it("should successfully register a passkey", async () => {
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [
+          { action: "passkey-create" },
+        ];
+
         await postHandler(
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
@@ -460,15 +488,25 @@ describe("passkey-create handlers", () => {
           }),
         );
 
+        expect(mockCompleteJourneyActionSuccessfully).toHaveBeenCalledWith(
+          {
+            action: "passkey-create",
+            details: { aaguid: "aaguid-123" },
+          },
+          mockRequest,
+        );
         expect(mockCompleteJourney).toHaveBeenCalledWith(
           mockRequest,
           mockReply,
-          { aaguid: "aaguid-123" },
           true,
         );
       });
 
       it("should handle passkey without attestation signature", async () => {
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [
+          { action: "passkey-create" },
+        ];
         mockDecodeAttestationObject.mockReturnValue(
           new Map([["attStmt", new Map()]]),
         );
@@ -487,6 +525,10 @@ describe("passkey-create handlers", () => {
       });
 
       it("should handle single device credential", async () => {
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [
+          { action: "passkey-create" },
+        ];
         mockVerifyRegistrationResponse.mockResolvedValue({
           verified: true,
           registrationInfo: {
@@ -579,6 +621,10 @@ describe("passkey-create handlers", () => {
       });
 
       it("should send notification with passkey name when aaguid is found", async () => {
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [
+          { action: "passkey-create" },
+        ];
         mockGetPasskeyConvenienceMetadataByAaguid.mockResolvedValue({
           name: "iCloud Keychain",
         });
@@ -599,6 +645,10 @@ describe("passkey-create handlers", () => {
       });
 
       it("should send notification without passkey name when aaguid is not found", async () => {
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [
+          { action: "passkey-create" },
+        ];
         mockGetPasskeyConvenienceMetadataByAaguid.mockResolvedValue(undefined);
 
         await postHandler(
@@ -784,6 +834,11 @@ describe("passkey-create handlers", () => {
             type: "public-key",
           }),
         };
+
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [
+          { action: "passkey-create" },
+        ];
 
         mockGetPasskeys.mockResolvedValue({
           success: true,
