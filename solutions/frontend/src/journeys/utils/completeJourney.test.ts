@@ -44,14 +44,16 @@ vi.mock(import("../../utils/session.js"), () => ({
   destroySession: mockDestroySession,
 }));
 
+const mockNow = 1640995200000;
+
 describe("completeJourney", () => {
   let mockRequest: FastifyRequest;
   let mockReply: FastifyReply;
   let mockClaims: Claims;
-  let mockJourneyOutcomeDetails: Record<string, unknown>;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers({ now: mockNow });
 
     mockRequest = {
       session: { claims: {} },
@@ -72,8 +74,6 @@ describe("completeJourney", () => {
 
     mockRequest.session.claims = mockClaims;
 
-    mockJourneyOutcomeDetails = { result: "success" };
-
     mockRedirect.mockReturnValue(mockReply);
 
     process.env["JOURNEY_OUTCOME_TABLE_NAME"] = "test-outcome-table";
@@ -87,6 +87,15 @@ describe("completeJourney", () => {
     const mockRedirectUrl =
       "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
 
+    mockRequest.session.journeyActions = [
+      {
+        action: "testing-journey-action",
+        success: true,
+        details: {},
+        timestamp: 1000,
+      },
+    ];
+
     mockRandomBytes
       .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
       .mockReturnValueOnce({ toString: vi.fn(() => mockOutcomeId) });
@@ -95,12 +104,7 @@ describe("completeJourney", () => {
     mockBuildRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
 
     const module = await import("./completeJourney.js");
-    const result = await module.completeJourney(
-      mockRequest,
-      mockReply,
-      mockJourneyOutcomeDetails,
-      true,
-    );
+    const result = await module.completeJourney(mockRequest, mockReply, true);
 
     expect(mockRandomBytes).toHaveBeenCalledTimes(2);
     expect(mockRandomBytes).toHaveBeenCalledWith(24);
@@ -116,15 +120,15 @@ describe("completeJourney", () => {
               email: mockClaims.email,
               scope: mockClaims.scope,
               success: true,
-              journeys: [
+              actions: [
                 {
-                  journey: mockClaims.scope,
-                  timestamp: expect.any(Number),
+                  action: "testing-journey-action",
                   success: true,
-                  details: mockJourneyOutcomeDetails,
+                  details: {},
+                  timestamp: 1000,
                 },
               ],
-              expires: expect.any(Number),
+              expires: Math.floor(mockNow / 1000) + 600,
             },
           },
         },
@@ -137,7 +141,7 @@ describe("completeJourney", () => {
               client_id: mockClaims.client_id,
               sub: mockClaims.sub,
               redirect_uri: mockClaims.redirect_uri,
-              expires: expect.any(Number),
+              expires: Math.floor(mockNow / 1000) + 300,
             },
           },
         },
@@ -159,12 +163,21 @@ describe("completeJourney", () => {
     expect(result).toBe(mockReply);
   });
 
-  it("successfully completes journey and does not destroy session", async () => {
+  it("does not destroy session when no action has destroySession true", async () => {
     const mockAuthCode = "mock-auth-code-hex";
     const mockOutcomeId = "mock-outcome-id-hex";
     const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
     const mockRedirectUrl =
       "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
+
+    mockRequest.session.journeyActions = [
+      {
+        action: "testing-journey-action",
+        success: true,
+        details: {},
+        timestamp: 1000,
+      },
+    ];
 
     mockRandomBytes
       .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
@@ -174,29 +187,30 @@ describe("completeJourney", () => {
     mockBuildRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
 
     const module = await import("./completeJourney.js");
-    await module.completeJourney(
-      mockRequest,
-      mockReply,
-      mockJourneyOutcomeDetails,
-      true,
-    );
+    await module.completeJourney(mockRequest, mockReply, true);
 
     expect(mockDestroySession).not.toHaveBeenCalled();
   });
 
-  it("completes journey with failure and destroys session when failedJourneyError.destroySession is true", async () => {
+  it("destroys session when an action has error with destroySession true", async () => {
     const mockAuthCode = "mock-auth-code-hex";
     const mockOutcomeId = "mock-outcome-id-hex";
     const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
     const mockRedirectUrl =
       "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
-    const mockErrorDetails = {
-      error: {
-        code: 1001,
-        description: "UserSignedOut",
-        extraProp: "should-be-stripped",
+
+    mockRequest.session.journeyActions = [
+      {
+        action: "account-delete",
+        success: false,
+        error: {
+          code: 1001,
+          description: "UserSignedOut",
+          destroySession: true,
+        },
+        timestamp: 1000,
       },
-    };
+    ];
 
     mockRandomBytes
       .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
@@ -206,95 +220,36 @@ describe("completeJourney", () => {
     mockBuildRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
 
     const module = await import("./completeJourney.js");
-    const result = await module.completeJourney(
-      mockRequest,
-      mockReply,
-      mockErrorDetails,
-      false,
-    );
+    await module.completeJourney(mockRequest, mockReply, false);
 
-    expect(mockRandomBytes).toHaveBeenCalledTimes(2);
-    expect(mockRandomBytes).toHaveBeenCalledWith(24);
-    expect(mockGetAppConfig).toHaveBeenCalledWith();
-
-    const writtenDetails =
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      mockTransactWrite.mock.calls[0]?.[0].TransactItems[0].Put.Item.journeys[0]
-        .details;
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(writtenDetails.error).toStrictEqual({
-      code: 1001,
-      description: "UserSignedOut",
-    });
-    expect(mockTransactWrite).toHaveBeenCalledWith({
-      TransactItems: [
-        {
-          Put: {
-            TableName: "test-outcome-table",
-            Item: {
-              outcome_id: mockOutcomeId,
-              sub: mockClaims.sub,
-              email: mockClaims.email,
-              scope: mockClaims.scope,
-              success: false,
-              journeys: [
-                {
-                  journey: mockClaims.scope,
-                  timestamp: expect.any(Number),
-                  success: false,
-                  details: mockErrorDetails,
-                },
-              ],
-              expires: expect.any(Number),
-            },
-          },
-        },
-        {
-          Put: {
-            TableName: "test-auth-code-table",
-            Item: {
-              code: mockAuthCode,
-              outcome_id: mockOutcomeId,
-              client_id: mockClaims.client_id,
-              sub: mockClaims.sub,
-              redirect_uri: mockClaims.redirect_uri,
-              expires: expect.any(Number),
-            },
-          },
-        },
-      ],
-    });
-    expect(mockAddMetric).toHaveBeenCalledWith(
-      "JourneyCompletedUnsuccessfully",
-      "Count",
-      1,
-    );
-    expect(mockRequest.session.completedJourneyOutcomeId).toBe(mockOutcomeId);
     expect(mockDestroySession).toHaveBeenCalledWith(mockRequest);
-    expect(mockBuildRedirectToClientRedirectUri).toHaveBeenCalledWith(
-      mockClaims.redirect_uri,
-      undefined,
-      mockClaims.state,
-      mockAuthCode,
+    expect(mockAddMetric).toHaveBeenCalledWith(
+      "JourneyCompletedUnsuccessfully",
+      "Count",
+      1,
     );
-    expect(mockRedirect).toHaveBeenCalledWith(mockRedirectUrl);
-    expect(result).toBe(mockReply);
+    expect(mockRequest.session.completedJourneyOutcomeId).toBe(mockOutcomeId);
   });
 
-  it("completes journey with failure and does not destroy session when failedJourneyError.destroySession is false", async () => {
+  it("strips destroySession from error when writing to DynamoDB", async () => {
     const mockAuthCode = "mock-auth-code-hex";
     const mockOutcomeId = "mock-outcome-id-hex";
     const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
     const mockRedirectUrl =
       "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
-    const mockErrorDetails = {
-      error: {
-        code: 1002,
-        description: "UserAbortedJourney",
-        extraProp: "should-be-stripped",
+
+    mockRequest.session.journeyActions = [
+      {
+        action: "account-delete",
+        success: false,
+        error: {
+          code: 1001,
+          description: "UserSignedOut",
+          destroySession: true,
+        },
+        timestamp: 1000,
       },
-    };
+    ];
 
     mockRandomBytes
       .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
@@ -304,93 +259,97 @@ describe("completeJourney", () => {
     mockBuildRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
 
     const module = await import("./completeJourney.js");
-    const result = await module.completeJourney(
-      mockRequest,
-      mockReply,
-      mockErrorDetails,
-      false,
-    );
-
-    const writtenDetails =
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      mockTransactWrite.mock.calls[0]?.[0].TransactItems[0].Put.Item.journeys[0]
-        .details;
+    await module.completeJourney(mockRequest, mockReply, false);
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    expect(writtenDetails.error).toStrictEqual({
-      code: 1002,
-      description: "UserAbortedJourney",
-    });
+    const writtenActions = mockTransactWrite.mock.calls[0]?.[0].TransactItems[0]
+      .Put.Item.actions as unknown[];
+
+    expect(writtenActions).toStrictEqual([
+      {
+        action: "account-delete",
+        success: false,
+        error: {
+          code: 1001,
+          description: "UserSignedOut",
+        },
+        timestamp: 1000,
+      },
+    ]);
+  });
+
+  it("does not destroy session when action has error with destroySession false", async () => {
+    const mockAuthCode = "mock-auth-code-hex";
+    const mockOutcomeId = "mock-outcome-id-hex";
+    const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
+    const mockRedirectUrl =
+      "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
+
+    mockRequest.session.journeyActions = [
+      {
+        action: "account-delete",
+        success: false,
+        error: {
+          code: 1002,
+          description: "UserAbortedJourney",
+          destroySession: false,
+        },
+        timestamp: 1000,
+      },
+    ];
+
+    mockRandomBytes
+      .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
+      .mockReturnValueOnce({ toString: vi.fn(() => mockOutcomeId) });
+    mockGetAppConfig.mockResolvedValue(mockAppConfig);
+    mockTransactWrite.mockResolvedValue({});
+    mockBuildRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
+
+    const module = await import("./completeJourney.js");
+    await module.completeJourney(mockRequest, mockReply, false);
+
     expect(mockDestroySession).not.toHaveBeenCalled();
     expect(mockAddMetric).toHaveBeenCalledWith(
       "JourneyCompletedUnsuccessfully",
       "Count",
       1,
     );
-    expect(mockRequest.session.completedJourneyOutcomeId).toBe(mockOutcomeId);
-    expect(mockRedirect).toHaveBeenCalledWith(mockRedirectUrl);
-    expect(result).toBe(mockReply);
   });
 
-  it("throws assertion error when error is not a valid failedJourneyError", async () => {
+  it("throws when there are no journey actions", async () => {
     const mockAuthCode = "mock-auth-code-hex";
+    const mockOutcomeId = "mock-outcome-id-hex";
     const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
-    const mockErrorDetails = {
-      error: { code: 9999, description: "InvalidError" },
-    };
 
-    mockRandomBytes.mockReturnValueOnce({
-      toString: vi.fn(() => mockAuthCode),
-    });
+    mockRandomBytes
+      .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
+      .mockReturnValueOnce({ toString: vi.fn(() => mockOutcomeId) });
     mockGetAppConfig.mockResolvedValue(mockAppConfig);
 
     const module = await import("./completeJourney.js");
 
     await expect(
-      module.completeJourney(mockRequest, mockReply, mockErrorDetails, false),
-    ).rejects.toThrow("error is not a valid failedJourneyError");
+      module.completeJourney(mockRequest, mockReply, false),
+    ).rejects.toThrow("There are no journey actions");
   });
 
-  it("calculates correct expiry time for auth code", async () => {
-    const mockAuthCode = "auth-code";
-    const mockOutcomeId = "outcome-id";
-    const mockAppConfig = { auth_code_ttl: 600, journey_outcome_ttl: 1200 };
-    const mockNow = 1640995200000;
-    const mockRedirectUrl =
-      "https://example.com/callback?code=auth-code&state=test-state";
+  it("throws when not all actions are completed", async () => {
+    const mockAuthCode = "mock-auth-code-hex";
+    const mockOutcomeId = "mock-outcome-id-hex";
+    const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
 
-    const dateNowSpy = vi.spyOn(Date, "now");
-    dateNowSpy.mockReturnValue(mockNow);
+    mockRequest.session.journeyActions = [{ action: "account-delete" }];
+
     mockRandomBytes
       .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
       .mockReturnValueOnce({ toString: vi.fn(() => mockOutcomeId) });
     mockGetAppConfig.mockResolvedValue(mockAppConfig);
-    mockTransactWrite.mockResolvedValue({});
-    mockBuildRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
 
     const module = await import("./completeJourney.js");
-    await module.completeJourney(
-      mockRequest,
-      mockReply,
-      mockJourneyOutcomeDetails,
-      true,
-    );
 
-    expect(mockTransactWrite).toHaveBeenCalledWith(
-      expect.objectContaining({
-        TransactItems: expect.arrayContaining([
-          expect.objectContaining({
-            Put: expect.objectContaining({
-              Item: expect.objectContaining({
-                expires: 1640995800,
-              }),
-            }),
-          }),
-        ]),
-      }),
-    );
-
-    dateNowSpy.mockRestore();
+    await expect(
+      module.completeJourney(mockRequest, mockReply, false),
+    ).rejects.toThrow("Not all actions are completed");
   });
 
   it("skips journey outcome write, metrics, and session destroy when journey already completed", async () => {
@@ -426,7 +385,7 @@ describe("completeJourney", () => {
               client_id: mockClaims.client_id,
               sub: mockClaims.sub,
               redirect_uri: mockClaims.redirect_uri,
-              expires: expect.any(Number),
+              expires: Math.floor(mockNow / 1000) + 300,
             },
           },
         },
