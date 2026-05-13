@@ -32,8 +32,6 @@ servers:
   - url: https://manage.account.gov.uk
     description: public production server
 
-security: []
-
 paths:
   /authorize:
     get:
