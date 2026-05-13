@@ -1,10 +1,9 @@
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { getDynamoDbClient } from "../../../../../commons/utils/awsClient/dynamodbClient/index.js";
-import type { JourneyOutcome } from "../../../../../commons/utils/commonTypes.js";
 import { logger } from "../../../../../commons/utils/logger/index.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { errorManager } from "./errors.js";
-import type { JourneyOutcomePayload } from "./interfaces.js";
+import type { JourneyOutcome, JourneyOutcomePayload } from "./interfaces.js";
 
 export const getJourneyOutcome = async (
   payload: JourneyOutcomePayload,
@@ -17,7 +16,7 @@ export const getJourneyOutcome = async (
         outcome_id: payload.outcome_id,
       },
       ProjectionExpression:
-        "outcome_id, #sub, email, #scope, success, journeys",
+        "outcome_id, #sub, email, #scope, success, actions",
       ExpressionAttributeNames: {
         "#sub": "sub",
         "#scope": "scope",

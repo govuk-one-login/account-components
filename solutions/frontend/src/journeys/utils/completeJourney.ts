@@ -2,36 +2,18 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import { randomBytes } from "node:crypto";
 import { getAppConfig } from "../../../../commons/utils/getAppConfig/index.js";
-import type { JourneyOutcome } from "../../../../commons/utils/commonTypes.js";
 import { buildRedirectToClientRedirectUri } from "../../utils/buildRedirectToClientRedirectUri.js";
 import assert from "node:assert";
 import { metrics } from "../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import type { TransactWriteCommandInput } from "@aws-sdk/lib-dynamodb";
-import { failedJourneyErrors } from "./failedJourneyErrors.js";
 import { destroySession } from "../../utils/session.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
 export const completeJourney = async (
-  ...[request, reply, journeyOutcomeDetailsOrExistingOutcomeId, success]:
-    | [
-        request: FastifyRequest,
-        reply: FastifyReply,
-        journeyOutcomeDetails: {
-          error: {
-            code: number;
-            description: string;
-          };
-        } & JourneyOutcome["journeys"][number]["details"],
-        success: false,
-      ]
-    | [
-        request: FastifyRequest,
-        reply: FastifyReply,
-        journeyOutcomeDetails: JourneyOutcome["journeys"][number]["details"],
-        success: true,
-      ]
+  ...[request, reply, successOrOutcomeId]:
+    | [request: FastifyRequest, reply: FastifyReply, success: boolean]
     | [request: FastifyRequest, reply: FastifyReply, existingOutcomeId: string]
 ) => {
   assert.ok(request.session.claims);
@@ -40,29 +22,10 @@ export const completeJourney = async (
 
   const authCode = randomBytes(24).toString("hex");
 
-  const journeyAlreadyCompleted =
-    typeof journeyOutcomeDetailsOrExistingOutcomeId === "string";
-
-  let sessionShouldBeDestroyed = false;
-
-  if (!journeyAlreadyCompleted && success === false) {
-    const failedJourneyError = Object.values(failedJourneyErrors).find(
-      (value) =>
-        value.code === journeyOutcomeDetailsOrExistingOutcomeId.error.code &&
-        value.description ===
-          journeyOutcomeDetailsOrExistingOutcomeId.error.description,
-    );
-    assert.ok(failedJourneyError, "error is not a valid failedJourneyError");
-
-    journeyOutcomeDetailsOrExistingOutcomeId.error = {
-      code: failedJourneyError.code,
-      description: failedJourneyError.description,
-    };
-    sessionShouldBeDestroyed = failedJourneyError.destroySession;
-  }
+  const journeyAlreadyCompleted = typeof successOrOutcomeId === "string";
 
   const outcomeId = journeyAlreadyCompleted
-    ? journeyOutcomeDetailsOrExistingOutcomeId
+    ? successOrOutcomeId
     : randomBytes(24).toString("hex");
 
   const appConfig = await getAppConfig();
@@ -83,32 +46,45 @@ export const completeJourney = async (
     },
   ];
 
-  if (!journeyAlreadyCompleted) {
-    assert.ok(success !== undefined, "success is not set");
-    const details = journeyOutcomeDetailsOrExistingOutcomeId;
+  let killSession = false;
 
-    const journeyOutcome: JourneyOutcome = {
-      outcome_id: outcomeId,
-      sub: claims.sub,
-      email: claims.email,
-      scope: claims.scope,
-      success,
-      journeys: [
-        {
-          journey: claims.scope,
-          timestamp: Date.now(),
-          success,
-          details,
-        },
-      ],
-    };
+  if (!journeyAlreadyCompleted) {
+    assert.ok(
+      !!request.session.journeyActions?.length,
+      "There are no journey actions",
+    );
+
+    assert.ok(
+      !request.session.journeyActions.some(
+        (journeyAction) => !("success" in journeyAction),
+      ),
+      "Not all actions are completed",
+    );
+
+    killSession = request.session.journeyActions.some(
+      (journeyAction) =>
+        "error" in journeyAction && journeyAction.error.destroySession,
+    );
+
+    const actions = request.session.journeyActions.map((action) => {
+      if ("error" in action) {
+        const { code, description } = action.error;
+        return { ...action, error: { code, description } };
+      }
+      return action;
+    });
 
     transactItems = [
       {
         Put: {
           TableName: process.env["JOURNEY_OUTCOME_TABLE_NAME"],
           Item: {
-            ...journeyOutcome,
+            outcome_id: outcomeId,
+            sub: claims.sub,
+            email: claims.email,
+            scope: claims.scope,
+            success: successOrOutcomeId,
+            actions,
             expires:
               Math.floor(Date.now() / 1000) + appConfig.journey_outcome_ttl,
           },
@@ -124,7 +100,7 @@ export const completeJourney = async (
 
   if (!journeyAlreadyCompleted) {
     metrics.addMetric(
-      success
+      successOrOutcomeId
         ? "JourneyCompletedSuccessfully"
         : "JourneyCompletedUnsuccessfully",
       MetricUnit.Count,
@@ -132,10 +108,10 @@ export const completeJourney = async (
     );
 
     request.session.completedJourneyOutcomeId = outcomeId;
-  }
 
-  if (sessionShouldBeDestroyed) {
-    await destroySession(request);
+    if (killSession) {
+      await destroySession(request);
+    }
   }
 
   reply.redirect(

@@ -15,7 +15,6 @@ import {
   getFormErrors,
   getFormErrorsList,
 } from "../../../utils/formErrorsHelpers.js";
-import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { paths } from "../../../utils/paths.js";
@@ -30,6 +29,12 @@ const addErrorMetric = (reason: string) => {
   metrics.addMetric("PasskeyCreateError", MetricUnit.Count, 1);
 };
 import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
+import {
+  completeJourneyActionUnsuccessfully,
+  completeJourneyActionSuccessfully,
+  unsuccessfulJourneyActionErrors,
+  startJourneyAction,
+} from "../../utils/journeyActions.js";
 
 const setRegistrationOptions = async (
   request: FastifyRequest,
@@ -136,6 +141,10 @@ export async function getHandler(
   reply: FastifyReply,
   showErrorUi = false,
 ) {
+  if (!showErrorUi) {
+    startJourneyAction<"passkeyCreate">({ action: "passkey-create" }, request);
+  }
+
   await render(request, reply, {
     showErrorUi,
   });
@@ -190,14 +199,15 @@ export async function postHandler(
   }
 
   if (body.action === "skip") {
-    return await completeJourney(
-      request,
-      reply,
+    completeJourneyActionUnsuccessfully(
       {
-        error: failedJourneyErrors.userAbortedJourney,
+        action: "passkey-create",
+        error: unsuccessfulJourneyActionErrors.userAbortedJourney,
       },
-      false,
+      request,
     );
+
+    return await completeJourney(request, reply, false);
   }
 
   if (body.registrationError !== undefined) {
@@ -331,12 +341,13 @@ export async function postHandler(
         },
   );
 
-  return await completeJourney(
-    request,
-    reply,
+  completeJourneyActionSuccessfully<"passkeyCreate">(
     {
-      aaguid: verification.registrationInfo.aaguid,
+      action: "passkey-create",
+      details: { aaguid: verification.registrationInfo.aaguid },
     },
-    true,
+    request,
   );
+
+  return await completeJourney(request, reply, true);
 }

@@ -5,9 +5,12 @@ import type { accountDeleteStateMachine } from "../../../frontend/src/journeys/u
 import type { testingJourneyStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/testing-journey.ts";
 import type { passkeyCreateStateMachine } from "../../../frontend/src/journeys/utils/stateMachines/passkey-create.ts";
 import type { ClientEntry } from "../../../config/schema/types.ts";
-import type { failedJourneyErrors } from "../../../frontend/src/journeys/utils/failedJourneyErrors.ts";
 import type { Scope } from "../commonTypes.ts";
 import type { getClaimsSchema } from "../../../frontend/src/utils/getClaimsSchema.ts";
+import type {
+  JourneyAction,
+  unsuccessfulJourneyActionErrors,
+} from "../../../frontend/src/journeys/utils/journeyActions.ts";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -35,9 +38,11 @@ declare module "fastify" {
       analyticsCookieDomain?: string | undefined;
       ga4ContainerId?: string | undefined;
       analyticsEnabled?: boolean | undefined;
-      failedJourneyErrors?: typeof failedJourneyErrors | undefined;
+      unsuccessfulJourneyActionErrors?:
+        | typeof unsuccessfulJourneyActionErrors
+        | undefined;
       buildCompleteFailedJourneyUri?: (
-        error: (typeof failedJourneyErrors)[keyof typeof failedJourneyErrors],
+        error: (typeof unsuccessfulJourneyActionErrors)[keyof typeof unsuccessfulJourneyActionErrors],
       ) => string;
       contactUrl?: string | undefined;
       yourServicesUrl?: string | undefined;
@@ -72,6 +77,7 @@ declare module "fastify" {
     _csrf?: string;
     claims?: v.InferOutput<ReturnType<typeof getClaimsSchema>>;
     journeyStateSnapshot?: AnyMachineSnapshot;
+    journeyActions?: JourneyAction<string>[];
     completedJourneyOutcomeId?: string;
   }
 }
