@@ -11,6 +11,7 @@ import type {
   JourneyAction,
   unsuccessfulJourneyActionErrors,
 } from "../../../frontend/src/journeys/utils/journeyActions.ts";
+import type { journeyCategories } from "../../../frontend/src/journeys/utils/config.ts";
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -51,6 +52,7 @@ declare module "fastify" {
       env?: string;
       fingerprintHash?: string;
     };
+    journeyCategory?: (typeof journeyCategories)[keyof typeof journeyCategories];
     journeyStates?: {
       [Scope.testingJourney]?: Actor<typeof testingJourneyStateMachine>;
       [Scope.accountDelete]?: Actor<typeof accountDeleteStateMachine>;
