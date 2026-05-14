@@ -126,7 +126,7 @@ export const startJourneyAction = async <
           user: {
             ...commonAuditEventProps.user,
             email: request.session.claims.email,
-            user_id: request.session.claims.public_sub,
+            user_id: request.session.claims.sub,
           },
         }),
       );
@@ -193,7 +193,7 @@ const sendCompletedActionAuditEvent = async (
         user: {
           ...commonAuditEventProps.user,
           email: request.session.claims.email,
-          user_id: request.session.claims.public_sub,
+          user_id: request.session.claims.sub,
         },
       }),
     );

@@ -136,7 +136,7 @@ export const completeJourney = async (
           user: {
             ...commonAuditEventProps.user,
             email: claims.email,
-            user_id: claims.public_sub,
+            user_id: claims.sub,
           },
         }),
       );
