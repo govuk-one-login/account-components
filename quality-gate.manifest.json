@@ -28,7 +28,7 @@
           }
         },
         {
-          "check-types": ["code style and linting", "vulnerability detection"],
+          "check-types": ["code style and linting", "vulnerability detection", "code quality"],
           "provider": "GitHub",
           "phase": "pre-merge",
           "config": {
