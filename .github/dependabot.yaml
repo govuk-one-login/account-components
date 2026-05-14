@@ -1,7 +1,8 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/"
+    directories:
+      - "/**"
     registries:
       - github-npm-registry
     schedule:
@@ -59,33 +60,11 @@ updates:
     commit-message:
       prefix: BAU
 
-  - package-ecosystem: "npm"
-    directory: "/solutions/integration-tests"
-    schedule:
-      interval: daily
-      time: "03:00"
-      timezone: "Europe/London"
-    cooldown:
-      default-days: 7
-    labels:
-      - dependabot
-      - dependencies
-    commit-message:
-      prefix: BAU
-    groups:
-      production-dependencies:
-        dependency-type: "production"
-        update-types:
-          - "minor"
-          - "patch"
-      dev-dependencies:
-        dependency-type: "development"
-        update-types:
-          - "minor"
-          - "patch"
-
   - package-ecosystem: docker
-    directory: "/solutions/integration-tests"
+    directories:
+      - "/**"
+    exclude-paths:
+      - "/solutions/localstack/localstack/Dockerfile" # Can't be updated past the current version due to localstack changing the licence
     schedule:
       interval: daily
       time: "03:00"
