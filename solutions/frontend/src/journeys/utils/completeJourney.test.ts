@@ -432,8 +432,9 @@ describe("completeJourney", () => {
     (mockRequest as unknown as { awsLambda: unknown }).awsLambda = {
       event: { requestContext: {} },
     };
-    (mockReply as unknown as { journeyCategory: string }).journeyCategory =
-      "test-category";
+    (mockReply as unknown as { client: unknown }).client = {
+      journey_types_by_scope: { "testing-journey": "test-category" },
+    };
     (mockClaims as unknown as { public_sub: string }).public_sub =
       "public-sub-123";
 
@@ -492,8 +493,9 @@ describe("completeJourney", () => {
     (mockRequest as unknown as { awsLambda: unknown }).awsLambda = {
       event: { requestContext: {} },
     };
-    (mockReply as unknown as { journeyCategory: string }).journeyCategory =
-      "test-category";
+    (mockReply as unknown as { client: unknown }).client = {
+      journey_types_by_scope: { "testing-journey": "test-category" },
+    };
     (mockClaims as unknown as { public_sub: string }).public_sub =
       "public-sub-123";
 
@@ -557,8 +559,9 @@ describe("completeJourney", () => {
     (mockRequest as unknown as { awsLambda: unknown }).awsLambda = {
       event: { requestContext: {} },
     };
-    (mockReply as unknown as { journeyCategory: string }).journeyCategory =
-      "test-category";
+    (mockReply as unknown as { client: unknown }).client = {
+      journey_types_by_scope: { "testing-journey": "test-category" },
+    };
     (mockClaims as unknown as { public_sub: string }).public_sub =
       "public-sub-123";
 

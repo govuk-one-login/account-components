@@ -121,7 +121,10 @@ export const startJourneyAction = async <
           extensions: {
             account_action: action.action,
             amc_scope: request.session.claims.scope,
-            "journey-type": reply.journeyCategory,
+            "journey-type":
+              reply.client?.journey_types_by_scope?.[
+                request.session.claims.scope
+              ],
           },
           user: {
             ...commonAuditEventProps.user,
@@ -188,7 +191,10 @@ const sendCompletedActionAuditEvent = async (
           account_action_overall_outcome: action.success,
           account_action_error: action.success ? undefined : action.error,
           amc_scope: request.session.claims.scope,
-          "journey-type": reply.journeyCategory,
+          "journey-type":
+            reply.client?.journey_types_by_scope?.[
+              request.session.claims.scope
+            ],
         },
         user: {
           ...commonAuditEventProps.user,

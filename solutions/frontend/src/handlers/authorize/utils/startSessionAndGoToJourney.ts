@@ -17,7 +17,7 @@ import {
   sendAuditEvent,
 } from "../../../../../commons/utils/auditEvents/index.js";
 import { createEvent } from "@govuk-one-login/event-catalogue-utils";
-import { journeys } from "../../../journeys/utils/config.js";
+import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 
 export const startSessionAndGoToJourney = async (
   reply: FastifyReply,
@@ -68,7 +68,7 @@ export const startSessionAndGoToJourney = async (
         request.awsLambda.event,
       );
 
-      const journey = await journeys[claims.scope]();
+      const appConfig = await getAppConfig();
 
       await sendAuditEvent(
         // @ts-expect-error - AMC_STARTED not in event catalogue types yet
@@ -78,7 +78,9 @@ export const startSessionAndGoToJourney = async (
           client_id: claims.client_id,
           extensions: {
             amc_scope: claims.scope,
-            "journey-type": journey.journeyCategory,
+            "journey-type": appConfig.client_registry.find(
+              (client) => client.client_id === claims.client_id,
+            )?.journey_types_by_scope?.[claims.scope],
           },
           user: {
             ...commonAuditEventProps.user,

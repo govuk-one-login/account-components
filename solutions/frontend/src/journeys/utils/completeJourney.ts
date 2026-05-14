@@ -115,7 +115,8 @@ export const completeJourney = async (
           client_id: claims.client_id,
           extensions: {
             amc_scope: claims.scope,
-            "journey-type": reply.journeyCategory,
+            "journey-type":
+              reply.client?.journey_types_by_scope?.[claims.scope],
             account_actions: request.session.journeyActions.map(
               (action) => action.action,
             ),

@@ -5,12 +5,17 @@ import { Scope } from "../../../../../commons/utils/commonTypes.js";
 import * as jose from "jose";
 import type { Claims } from "../../../utils/getClaimsSchema.js";
 
-const { mockSendAuditEvent, mockGetCommonAuditEventProps, mockCreateEvent } =
-  vi.hoisted(() => ({
-    mockSendAuditEvent: vi.fn(),
-    mockGetCommonAuditEventProps: vi.fn(),
-    mockCreateEvent: vi.fn(),
-  }));
+const {
+  mockSendAuditEvent,
+  mockGetCommonAuditEventProps,
+  mockCreateEvent,
+  mockGetAppConfig,
+} = vi.hoisted(() => ({
+  mockSendAuditEvent: vi.fn(),
+  mockGetCommonAuditEventProps: vi.fn(),
+  mockCreateEvent: vi.fn(),
+  mockGetAppConfig: vi.fn(),
+}));
 
 // @ts-expect-error
 vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
@@ -38,16 +43,8 @@ vi.mock(import("@govuk-one-login/event-catalogue-utils"), () => ({
   createEvent: mockCreateEvent,
 }));
 
-// @ts-expect-error
-vi.mock(import("../../../journeys/utils/config.js"), () => ({
-  journeys: {
-    "testing-journey": () =>
-      Promise.resolve({ journeyCategory: "test-category" }),
-    "account-delete": () =>
-      Promise.resolve({ journeyCategory: "delete-category" }),
-    "passkey-create": () =>
-      Promise.resolve({ journeyCategory: "passkey-category" }),
-  },
+vi.mock(import("../../../../../commons/utils/getAppConfig/index.js"), () => ({
+  getAppConfig: mockGetAppConfig,
 }));
 
 describe("startSessionAndGoToJourney", () => {
@@ -282,6 +279,16 @@ describe("startSessionAndGoToJourney", () => {
       public_sub: "public-sub-123",
     } as Claims;
 
+    mockGetAppConfig.mockResolvedValue({
+      client_registry: [
+        {
+          client_id: "client-123",
+          journey_types_by_scope: {
+            [Scope.testingJourney]: "test-category",
+          },
+        },
+      ],
+    });
     mockGetCommonAuditEventProps.mockReturnValue({
       user: { session_id: "session-123" },
     });

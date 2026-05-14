@@ -4,11 +4,6 @@ import type { AnyStateMachine } from "xstate";
 import type * as v from "valibot";
 import { Scope } from "../../../../commons/utils/commonTypes.js";
 
-export const journeyCategories = {
-  testing: "TESTING",
-  accountManagement: "ACCOUNT_MANAGEMENT",
-} as const;
-
 export const journeys = {
   [Scope.testingJourney]: async () => {
     const [stateMachineModule, en, cy] = await Promise.all([
@@ -24,7 +19,6 @@ export const journeys = {
         [Lang.Welsh]: cy,
       },
       requiredClaims: [],
-      journeyCategory: journeyCategories.testing,
     };
   },
   [Scope.passkeyCreate]: async () => {
@@ -41,7 +35,6 @@ export const journeys = {
         [Lang.Welsh]: cy,
       },
       requiredClaims: ["account_data_api_access_token"],
-      journeyCategory: journeyCategories.accountManagement,
     };
   },
   [Scope.accountDelete]: async () => {
@@ -58,7 +51,6 @@ export const journeys = {
         [Lang.Welsh]: cy,
       },
       requiredClaims: ["account_management_api_access_token"],
-      journeyCategory: journeyCategories.accountManagement,
     };
   },
 } satisfies Record<
@@ -67,6 +59,5 @@ export const journeys = {
     stateMachine: AnyStateMachine;
     translations: Record<Lang, object>;
     requiredClaims: (keyof v.InferOutput<ReturnType<typeof getClaimsSchema>>)[];
-    journeyCategory: (typeof journeyCategories)[keyof typeof journeyCategories];
   }>
 >;
