@@ -1,1 +1,1 @@
-FROM localstack/localstack:4.12.0@sha256:0df3a97da57de03a588c05d9b8f390f15c7033fc7c4512f94619d344bc3cd317 # pragma: allowlist secret
+FROM localstack/localstack@sha256:0df3a97da57de03a588c05d9b8f390f15c7033fc7c4512f94619d344bc3cd317 # pragma: allowlist secret
