@@ -22,7 +22,7 @@ resource "aws_cloudformation_stack" "amc_pipeline_stack" {
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
-    SlackNotificationType                   = var.environment == "dev" ? "None" : "All"
+    SlackNotificationType                   = var.environment == "dev" ? "None" : "Failures"
     ProgrammaticPermissionsBoundary         = "True"
     AllowedServiceOne                       = "AppConfig"
     AllowedServiceTwo                       = "EC2" # Required to attach lambdas to VPC
