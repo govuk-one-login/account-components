@@ -631,7 +631,7 @@ describe("passkey-create handlers", () => {
           "aaguid-123",
         );
         expect(mockSendNotification).toHaveBeenCalledWith({
-          notificationType: "CREATE_PASSKEY_WITH_PASSKEY_NAME",
+          notificationType: "CREATE_PASSKEY_WITH_DISPLAY_NAME",
           emailAddress: "test@example.com",
           passkeyName: "iCloud Keychain",
         });
@@ -651,7 +651,7 @@ describe("passkey-create handlers", () => {
           "aaguid-123",
         );
         expect(mockSendNotification).toHaveBeenCalledWith({
-          notificationType: "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME",
+          notificationType: "CREATE_PASSKEY_WITHOUT_DISPLAY_NAME",
           emailAddress: "test@example.com",
         });
       });
