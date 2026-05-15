@@ -48,7 +48,7 @@
     "xstate": "^5.31.0"
   },
   "devDependencies": {
-    "@eslint/compat": "^2.0.5",
+    "@eslint/compat": "^2.1.0",
     "@eslint/js": "^10.0.1",
     "@govuk-one-login/event-catalogue": "^44.1.2",
     "@govuk-one-login/event-catalogue-schemas": "^44.1.2",
