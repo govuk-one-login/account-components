@@ -14,7 +14,7 @@ export const getPropsFromAPIGatewayEvent = (event: APIGatewayProxyEvent) => {
     clientSessionId: event.headers["client-session-id"] ?? gsCookieParts[1],
     userLanguage: event.headers["user-language"] ?? cookies["lng"],
     sourceIp:
-      event.headers["x-forwarded-for"] ??
+      event.headers["x-forwarded-for"]?.split(",")[0]?.trim() ??
       event.requestContext.identity.sourceIp,
     txmaAuditEncoded: event.headers["txma-audit-encoded"],
   };
