@@ -7,7 +7,11 @@
       "client_name": "Auth",
       "jwks_uri": "http://localhost:6003/auth/.well-known/jwks.json",
       "jwks_uri_from_container": "http://host.docker.internal:6003/auth/.well-known/jwks.json",
-      "consider_user_logged_in": false
+      "consider_user_logged_in": false,
+      "journey_types_by_scope": {
+        "passkey-create": "SIGN_IN",
+        "account-delete": "SIGN_IN"
+      }
     },
     {
       "client_id": "home",
@@ -17,7 +21,10 @@
       "jwks_uri": "http://localhost:6003/home/.well-known/jwks.json",
       "jwks_uri_from_container": "http://host.docker.internal:6003/home/.well-known/jwks.json",
       "consider_user_logged_in": true,
-      "homepage_url": "https://home.dev.account.gov.uk/your-services"
+      "homepage_url": "https://home.dev.account.gov.uk/your-services",
+      "journey_types_by_scope": {
+        "passkey-create": "ACCOUNT_MANAGEMENT"
+      }
     }
   ],
   "jti_nonce_ttl_in_seconds": 7200,

@@ -144,6 +144,10 @@
             "passkeyCreateError": { "$ref": "#/$defs/analytics" }
           },
           "additionalProperties": false
+        },
+        "journey_types_by_scope": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
         }
       },
       "required": [

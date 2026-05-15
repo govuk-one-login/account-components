@@ -12,7 +12,7 @@ export async function getAppConfig(): Promise<AppConfigSchema> {
 
   let config: unknown;
 
-  // localstack does not support appconfig in free edition hence reading in config directly
+  // floci's app config implementation doesn't seem to work at the time of writing hence reading in config directly
   if (getEnvironment() === "local") {
     config = await import("../../../config/local-config.json");
   } else {

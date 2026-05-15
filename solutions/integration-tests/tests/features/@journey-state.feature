@@ -60,8 +60,8 @@ Feature: Journey state
     """
     And the page contains the text:
     """
+    "action": "testing-journey-action",
     "details": {},
-    "journey": "testing-journey",
     "success": true,
     """    
 
@@ -77,8 +77,8 @@ Feature: Journey state
     """
     And the page contains the text:
     """
+    "action": "testing-journey-action",
     "details": {},
-    "journey": "testing-journey",
     "success": true,
     """    
     Given I go to the "Testing journey - step 1" page   
@@ -92,8 +92,8 @@ Feature: Journey state
     """
     And the page contains the text:
     """
+    "action": "testing-journey-action",
     "details": {},
-    "journey": "testing-journey",
     "success": true,
     """
     Given I go to the "Testing journey - enter password" page   
@@ -107,8 +107,8 @@ Feature: Journey state
     """
     And the page contains the text:
     """
+    "action": "testing-journey-action",
     "details": {},
-    "journey": "testing-journey",
     "success": true,
     """ 
     Given I go to the "Testing journey - confirmation" page   
@@ -122,7 +122,7 @@ Feature: Journey state
     """
     And the page contains the text:
     """
+    "action": "testing-journey-action",
     "details": {},
-    "journey": "testing-journey",
     "success": true,
     """   

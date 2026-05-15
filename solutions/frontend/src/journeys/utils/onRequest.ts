@@ -7,7 +7,7 @@ import { createActor } from "xstate";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
 import assert from "node:assert";
 import { logger } from "../../../../commons/utils/logger/index.js";
-import type { failedJourneyErrors } from "./failedJourneyErrors.js";
+import type { unsuccessfulJourneyActionErrors } from "./journeyActions.js";
 import { completeJourney } from "./completeJourney.js";
 
 const addErrorMetric = (reason: string) => {
@@ -72,7 +72,7 @@ export const onRequest = async (
 
   reply.client = client;
   reply.globals.buildCompleteFailedJourneyUri = (
-    error: (typeof failedJourneyErrors)[keyof typeof failedJourneyErrors],
+    error: (typeof unsuccessfulJourneyActionErrors)[keyof typeof unsuccessfulJourneyActionErrors],
   ) => {
     const url = new URL(
       paths.journeys.others.completeFailedJourney.path,

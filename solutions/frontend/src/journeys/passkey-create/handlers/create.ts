@@ -15,7 +15,6 @@ import {
   getFormErrors,
   getFormErrorsList,
 } from "../../../utils/formErrorsHelpers.js";
-import { failedJourneyErrors } from "../../utils/failedJourneyErrors.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { paths } from "../../../utils/paths.js";
@@ -30,6 +29,12 @@ const addErrorMetric = (reason: string) => {
   metrics.addMetric("PasskeyCreateError", MetricUnit.Count, 1);
 };
 import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
+import {
+  completeJourneyActionUnsuccessfully,
+  completeJourneyActionSuccessfully,
+  unsuccessfulJourneyActionErrors,
+  startJourneyAction,
+} from "../../utils/journeyActions.js";
 
 const setRegistrationOptions = async (
   request: FastifyRequest,
@@ -136,6 +141,14 @@ export async function getHandler(
   reply: FastifyReply,
   showErrorUi = false,
 ) {
+  if (!showErrorUi) {
+    await startJourneyAction<"passkeyCreate">(
+      { action: "passkey-create" },
+      request,
+      reply,
+    );
+  }
+
   await render(request, reply, {
     showErrorUi,
   });
@@ -190,14 +203,16 @@ export async function postHandler(
   }
 
   if (body.action === "skip") {
-    return await completeJourney(
+    await completeJourneyActionUnsuccessfully(
+      {
+        action: "passkey-create",
+        error: unsuccessfulJourneyActionErrors.userAbortedJourney,
+      },
       request,
       reply,
-      {
-        error: failedJourneyErrors.userAbortedJourney,
-      },
-      false,
     );
+
+    return await completeJourney(request, reply, false);
   }
 
   if (body.registrationError !== undefined) {
@@ -331,12 +346,14 @@ export async function postHandler(
         },
   );
 
-  return await completeJourney(
+  await completeJourneyActionSuccessfully<"passkeyCreate">(
+    {
+      action: "passkey-create",
+      details: { aaguid: verification.registrationInfo.aaguid },
+    },
     request,
     reply,
-    {
-      aaguid: verification.registrationInfo.aaguid,
-    },
-    true,
   );
+
+  return await completeJourney(request, reply, true);
 }

@@ -79,6 +79,23 @@ describe("getPropsFromAPIGatewayEvent", () => {
     });
   });
 
+  it("extracts the first IP from x-forwarded-for when multiple IPs are present", () => {
+    const event = createMockEvent({
+      "x-forwarded-for": "192.168.1.1, 10.0.0.1, 172.16.0.1",
+    });
+
+    const result = getPropsFromAPIGatewayEvent(event);
+
+    expect(result).toStrictEqual({
+      persistentSessionId: undefined,
+      sessionId: undefined,
+      clientSessionId: undefined,
+      userLanguage: undefined,
+      sourceIp: "192.168.1.1",
+      txmaAuditEncoded: undefined,
+    });
+  });
+
   it("falls back to requestContext sourceIp when x-forwarded-for not available", () => {
     const event = createMockEvent({}, "10.0.0.1");
 

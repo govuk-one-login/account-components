@@ -12,6 +12,12 @@ import { decodeJwt } from "jose";
 import { initialJourneyPaths } from "../../../utils/paths.js";
 import { metrics } from "../../../../../commons/utils/metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
+import {
+  getCommonAuditEventProps,
+  sendAuditEvent,
+} from "../../../../../commons/utils/auditEvents/index.js";
+import { createEvent } from "@govuk-one-login/event-catalogue-utils";
+import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 
 export const startSessionAndGoToJourney = async (
   reply: FastifyReply,
@@ -56,6 +62,34 @@ export const startSessionAndGoToJourney = async (
       scope: claims.scope,
     });
     metrics.addMetric("JourneyStarted", MetricUnit.Count, 1);
+
+    if (request.awsLambda?.event) {
+      const commonAuditEventProps = getCommonAuditEventProps(
+        request.awsLambda.event,
+      );
+
+      const appConfig = await getAppConfig();
+
+      await sendAuditEvent(
+        // @ts-expect-error - AMC_STARTED not in event catalogue types yet
+        createEvent("AMC_STARTED", {
+          ...commonAuditEventProps,
+          event_name: "AMC_STARTED",
+          client_id: claims.client_id,
+          extensions: {
+            amc_scope: claims.scope,
+            "journey-type": appConfig.client_registry.find(
+              (client) => client.client_id === claims.client_id,
+            )?.journey_types_by_scope?.[claims.scope],
+          },
+          user: {
+            ...commonAuditEventProps.user,
+            email: claims.email,
+            user_id: claims.sub,
+          },
+        }),
+      );
+    }
 
     return await reply.redirect(initialJourneyPaths[claims.scope]);
   } catch (error) {

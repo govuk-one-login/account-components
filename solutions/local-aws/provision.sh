@@ -19,23 +19,23 @@ generate_keys() {
   return 0
 }
 
-configure_cli() {
-  echo "Starting to configure AWS CLI"
-
-  aws configure set aws_access_key_id test
-  aws configure set aws_secret_access_key test
-  aws configure set region eu-west-2
-
-  echo "Finished configuring AWS CLI"
-  return 0
-}
-
 create_docker_network() {
   echo "Creating Docker network"
 
   docker network create account-components-network || true
 
   echo "Docker network created"
+  return 0
+}
+
+build_images() {
+  echo "Building Docker images"
+
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  docker build -t account-components-floci -f "$SCRIPT_DIR/floci/Dockerfile" "$SCRIPT_DIR"
+  docker build -t account-components-local-kms -f "$SCRIPT_DIR/local-kms/Dockerfile" "$SCRIPT_DIR"
+
+  echo "Finished building Docker images"
   return 0
 }
 
@@ -50,7 +50,7 @@ start_floci() {
     -u root \
     --network account-components-network \
     --name account-components-floci \
-    floci/floci:latest
+    account-components-floci
 
   until aws --endpoint-url="$FLOCI_ENDPOINT" s3 ls > /dev/null 2>&1; do
     echo "⌛ Floci not ready yet, retrying in 2s"
@@ -67,7 +67,7 @@ start_kms_local() {
   echo "Starting KMS Local"
 
   docker stop account-components-local-kms || true && docker rm account-components-local-kms || true
-  docker run -d -p 4567:8080 --network account-components-network --name account-components-local-kms nsmithuk/local-kms
+  docker run -d -p 4567:8080 --network account-components-network --name account-components-local-kms account-components-local-kms
 
   until aws --endpoint-url="$KMS_ENDPOINT" kms list-keys > /dev/null 2>&1; do
     echo "⌛ KMS Local not ready yet, retrying in 2s"
@@ -235,8 +235,8 @@ list_resources() {
 }
 
 generate_keys
-configure_cli
 create_docker_network
+build_images
 start_floci
 start_kms_local
 create_ssm_parameters
