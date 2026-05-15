@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock(import("../../../../commons/utils/logger/index.js"));
 
 const mockTemplateIds = {
-  CREATE_PASSKEY_WITH_PASSKEY_NAME: "template-id-1",
-  CREATE_PASSKEY_WITHOUT_PASSKEY_NAME: "template-id-2",
+  CREATE_PASSKEY_WITH_DISPLAY_NAME: "template-id-1",
+  CREATE_PASSKEY_WITHOUT_DISPLAY_NAME: "template-id-2",
 };
 
 describe("sendEmailPostHandler", () => {
@@ -47,7 +47,7 @@ describe("sendEmailPostHandler", () => {
     expect(logger.info).toHaveBeenCalledWith("NotifySendEmailCalled", {
       reference: "test-reference",
       templateId: "template-id-1",
-      template: "CREATE_PASSKEY_WITH_PASSKEY_NAME",
+      template: "CREATE_PASSKEY_WITH_DISPLAY_NAME",
     });
     expect(mockReply.send).toHaveBeenCalledWith({
       data: {
@@ -68,7 +68,7 @@ describe("sendEmailPostHandler", () => {
     expect(logger.info).toHaveBeenCalledWith("NotifySendEmailCalled", {
       reference: undefined,
       templateId: "template-id-2",
-      template: "CREATE_PASSKEY_WITHOUT_PASSKEY_NAME",
+      template: "CREATE_PASSKEY_WITHOUT_DISPLAY_NAME",
     });
     expect(mockReply.send).toHaveBeenCalledWith({
       data: {
