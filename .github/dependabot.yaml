@@ -1,7 +1,8 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/"
+    directories:
+      - "/**"
     registries:
       - github-npm-registry
     schedule:
@@ -73,33 +74,9 @@ updates:
     commit-message:
       prefix: BAU
 
-  - package-ecosystem: "npm"
-    directory: "/solutions/integration-tests"
-    schedule:
-      interval: daily
-      time: "03:00"
-      timezone: "Europe/London"
-    cooldown:
-      default-days: 7
-    labels:
-      - dependabot
-      - dependencies
-    commit-message:
-      prefix: BAU
-    groups:
-      production-dependencies:
-        dependency-type: "production"
-        update-types:
-          - "minor"
-          - "patch"
-      dev-dependencies:
-        dependency-type: "development"
-        update-types:
-          - "minor"
-          - "patch"
-
   - package-ecosystem: docker
-    directory: "/solutions/integration-tests"
+    directories:
+      - "/**"
     schedule:
       interval: daily
       time: "03:00"
@@ -115,6 +92,9 @@ updates:
       - dependency-name: "node"
         update-types:
           - "version-update:semver-major"
+      - dependency-name: "localstack/localstack"
+        versions:
+          - "> 4.12.0" # Can't be updated past the 4.12.0 due to localstack changing the licence
 
   - package-ecosystem: "gitsubmodule"
     directory: "/"

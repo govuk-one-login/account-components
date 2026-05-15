@@ -47,11 +47,28 @@ create_docker_network() {
   return 0
 }
 
+build_images() {
+  echo "Building Docker images"
+
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  docker build -t account-components-localstack -f "$SCRIPT_DIR/localstack/Dockerfile" "$SCRIPT_DIR"
+  docker build -t account-components-local-kms -f "$SCRIPT_DIR/local-kms/Dockerfile" "$SCRIPT_DIR"
+
+  echo "Finished building Docker images"
+  return 0
+}
+
 start_localstack() {
   echo "Starting Localstack"
 
   docker stop account-components-localstack || true && docker rm account-components-localstack || true
-  IMAGE_NAME="localstack/localstack:4.12.0" LOCALSTACK_DYNAMODB_REMOVE_EXPIRED_ITEMS=1 DOCKER_FLAGS="--network account-components-network --name account-components-localstack" localstack start -d
+  docker run -d \
+    --network account-components-network \
+    --name account-components-localstack \
+    -p 4566:4566 \
+    -e DYNAMODB_REMOVE_EXPIRED_ITEMS=1 \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    account-components-localstack
 
   until aws --endpoint-url=http://localhost:4566 s3 ls > /dev/null 2>&1; do
     echo "⌛ Localstack not ready yet, retrying in 2s"
@@ -68,7 +85,7 @@ start_kms_local() {
   echo "Starting KMS Local"
 
   docker stop account-components-local-kms || true && docker rm account-components-local-kms || true
-  docker run -d -p 4567:8080 --network account-components-network --name account-components-local-kms nsmithuk/local-kms
+  docker run -d -p 4567:8080 --network account-components-network --name account-components-local-kms account-components-local-kms
 
   until aws --endpoint-url=http://localhost:4567 kms list-keys > /dev/null 2>&1; do
     echo "⌛ KMS Local not ready yet, retrying in 2s"
@@ -245,6 +262,7 @@ list_resources() {
 generate_keys
 configure_cli_for_localstack
 create_docker_network
+build_images
 start_localstack
 start_kms_local
 create_ssm_parameters
