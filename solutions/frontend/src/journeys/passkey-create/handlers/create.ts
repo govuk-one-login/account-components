@@ -335,13 +335,13 @@ export async function postHandler(
   await sendNotification(
     passkeyConvenienceMetadata
       ? {
-          notificationType: NotificationType.CREATE_PASSKEY_WITH_PASSKEY_NAME,
+          notificationType: NotificationType.CREATE_PASSKEY_WITH_DISPLAY_NAME,
           emailAddress: request.session.claims.email,
           passkeyName: passkeyConvenienceMetadata.name,
         }
       : {
           notificationType:
-            NotificationType.CREATE_PASSKEY_WITHOUT_PASSKEY_NAME,
+            NotificationType.CREATE_PASSKEY_WITHOUT_DISPLAY_NAME,
           emailAddress: request.session.claims.email,
         },
   );
