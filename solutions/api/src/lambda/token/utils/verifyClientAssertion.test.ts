@@ -97,7 +97,7 @@ describe("verifyClientAssertion", () => {
     expect(mockJwtVerify).toHaveBeenCalledWith(
       mockClientAssertion,
       expect.any(Function),
-      { algorithms: ["ES256", "RS256"] },
+      { algorithms: ["ES256", "RS256", "RS512"] },
     );
   });
 
@@ -111,7 +111,7 @@ describe("verifyClientAssertion", () => {
     expect(mockJwtVerify).toHaveBeenCalledWith(
       mockClientAssertion,
       expect.any(Function),
-      { algorithms: ["ES256", "RS256"] },
+      { algorithms: ["ES256", "RS256", "RS512"] },
     );
   });
 
