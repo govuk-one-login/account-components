@@ -152,11 +152,12 @@ describe("onRequest", () => {
     vi.mocked(getClientRegistry).mockResolvedValue([
       { client_id: "test-client-id" } as ClientEntry,
     ]);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     vi.mocked(journeys["test-scope" as Scope]).mockResolvedValue({
-      translations: { en: { key: "value" } } as any,
-      stateMachine: { resolveState: vi.fn().mockReturnValue({}) } as any,
+      translations: { en: { key: "value" } },
+      stateMachine: { resolveState: vi.fn().mockReturnValue({}) },
       requiredClaims: [],
-    });
+    } as any);
   });
 
   describe("when session has completedJourneyOutcomeId", () => {
@@ -225,11 +226,12 @@ describe("onRequest", () => {
         client_id: "test-client-id",
         scope: "test-scope",
       } as unknown as Claims;
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       vi.mocked(journeys["test-scope" as Scope]).mockResolvedValue({
-        translations: { en: { key: "value" } } as any,
-        stateMachine: { resolveState: vi.fn().mockReturnValue({}) } as any,
-        requiredClaims: ["account_management_api_access_token"] as any,
-      });
+        translations: { en: { key: "value" } },
+        stateMachine: { resolveState: vi.fn().mockReturnValue({}) },
+        requiredClaims: ["account_management_api_access_token"],
+      } as any);
     });
 
     it("should redirect to error page and log warning", async () => {

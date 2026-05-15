@@ -16,7 +16,6 @@ export const getCommonAuditEventProps = (
   return {
     timestamp: Math.floor(now.getTime() / 1000),
     event_timestamp_ms: now.getTime(),
-    event_timestamp_ms_formatted: now.toISOString(),
     component_id: "AMC" as const,
     user: {
       session_id: propsFromEvent?.sessionId ?? noValue,

@@ -3,6 +3,7 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockDeleteAccount = vi.fn();
 const mockCompleteJourney = vi.fn();
+const mockCompleteJourneyActionSuccessfully = vi.fn();
 
 // @ts-expect-error
 vi.mock(import("../../../utils/accountManagementApiClient.js"), () => ({
@@ -15,6 +16,11 @@ vi.mock(import("../../../utils/accountManagementApiClient.js"), () => ({
 
 vi.mock(import("../../utils/completeJourney.js"), () => ({
   completeJourney: mockCompleteJourney,
+}));
+
+vi.mock(import("../../utils/journeyActions.js"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  completeJourneyActionSuccessfully: mockCompleteJourneyActionSuccessfully,
 }));
 
 const { confirmGetHandler, confirmPostHandler } = await import("./confirm.js");
@@ -72,6 +78,8 @@ describe("confirm handlers", () => {
 
   describe("confirmPostHandler", () => {
     it("should delete account and complete journey when successful", async () => {
+      // @ts-expect-error
+      mockRequest.session.journeyActions = [{ action: "account-delete" }];
       mockDeleteAccount.mockResolvedValue({ success: true });
       mockCompleteJourney.mockResolvedValue(mockReply);
 
@@ -81,10 +89,17 @@ describe("confirm handlers", () => {
       );
 
       expect(mockDeleteAccount).toHaveBeenCalledWith("test@example.com");
+      expect(mockCompleteJourneyActionSuccessfully).toHaveBeenCalledWith(
+        {
+          action: "account-delete",
+          details: {},
+        },
+        mockRequest,
+        mockReply,
+      );
       expect(mockCompleteJourney).toHaveBeenCalledWith(
         mockRequest,
         mockReply,
-        {},
         true,
       );
       expect(result).toBe(mockReply);

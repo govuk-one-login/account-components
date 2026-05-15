@@ -15,7 +15,7 @@
 {% endif %}
 
 {% if not showErrorUi and not reply.client.consider_user_logged_in %} 
-  {% set backLink = globals.buildCompleteFailedJourneyUri(globals.failedJourneyErrors.userBackedOutOfJourney) %}
+  {% set backLink = globals.buildCompleteFailedJourneyUri(globals.unsuccessfulJourneyActionErrors.userBackedOutOfJourney) %}
 {% endif %} 
 
 {% block pageContent %}
@@ -86,7 +86,7 @@
   </form>
 
   {% if not showErrorUi %} 
-    {% set skipUrl = globals.buildCompleteFailedJourneyUri(globals.failedJourneyErrors.userAbortedJourney) %}
+    {% set skipUrl = globals.buildCompleteFailedJourneyUri(globals.unsuccessfulJourneyActionErrors.userAbortedJourney) %}
     <p class="govuk-body"><a href="{{ skipUrl }}" class="govuk-link govuk-link--no-visited-state">{{ ['journey:create.skipLinkText', stringsSuffix] | join | translate }}</a></p>  
   {% endif %} 
 {% endblock %}

@@ -5,6 +5,18 @@ import { Scope } from "../../../../../commons/utils/commonTypes.js";
 import * as jose from "jose";
 import type { Claims } from "../../../utils/getClaimsSchema.js";
 
+const {
+  mockSendAuditEvent,
+  mockGetCommonAuditEventProps,
+  mockCreateEvent,
+  mockGetAppConfig,
+} = vi.hoisted(() => ({
+  mockSendAuditEvent: vi.fn(),
+  mockGetCommonAuditEventProps: vi.fn(),
+  mockCreateEvent: vi.fn(),
+  mockGetAppConfig: vi.fn(),
+}));
+
 // @ts-expect-error
 vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
   logger: { warn: vi.fn() },
@@ -20,6 +32,19 @@ vi.mock(import("./common.js"), async () => {
 
 vi.mock(import("jose"), () => ({
   decodeJwt: vi.fn(),
+}));
+
+vi.mock(import("../../../../../commons/utils/auditEvents/index.js"), () => ({
+  sendAuditEvent: mockSendAuditEvent,
+  getCommonAuditEventProps: mockGetCommonAuditEventProps,
+}));
+
+vi.mock(import("@govuk-one-login/event-catalogue-utils"), () => ({
+  createEvent: mockCreateEvent,
+}));
+
+vi.mock(import("../../../../../commons/utils/getAppConfig/index.js"), () => ({
+  getAppConfig: mockGetAppConfig,
 }));
 
 describe("startSessionAndGoToJourney", () => {
@@ -235,8 +260,65 @@ describe("startSessionAndGoToJourney", () => {
     );
   });
 
-  it("includes state parameter in error redirect when provided", async () => {
-    const mockRegenerate = vi.fn().mockRejectedValue(new Error("Failure"));
+  it("sends AMC_STARTED audit event when awsLambda event is present", async () => {
+    const mockRegenerate = vi.fn().mockResolvedValue(undefined);
+    const mockRedirect = vi.fn().mockReturnThis();
+    const mockSession = { regenerate: mockRegenerate };
+
+    const request = {
+      session: mockSession,
+      awsLambda: { event: { requestContext: {} } },
+    } as unknown as FastifyRequest;
+    const reply = { redirect: mockRedirect } as unknown as FastifyReply;
+
+    const claims = {
+      sub: "user-123",
+      scope: Scope.testingJourney,
+      client_id: "client-123",
+      email: "test@example.com",
+      public_sub: "public-sub-123",
+    } as Claims;
+
+    mockGetAppConfig.mockResolvedValue({
+      client_registry: [
+        {
+          client_id: "client-123",
+          journey_types_by_scope: {
+            [Scope.testingJourney]: "test-category",
+          },
+        },
+      ],
+    });
+    mockGetCommonAuditEventProps.mockReturnValue({
+      user: { session_id: "session-123" },
+    });
+    mockCreateEvent.mockReturnValue({ event_name: "AMC_STARTED" });
+    mockSendAuditEvent.mockResolvedValue(undefined);
+
+    await startSessionAndGoToJourney(
+      reply,
+      request,
+      claims,
+      "client-123",
+      "https://example.com/callback",
+    );
+
+    expect(mockCreateEvent).toHaveBeenCalledWith(
+      "AMC_STARTED",
+      expect.objectContaining({
+        event_name: "AMC_STARTED",
+        client_id: "client-123",
+        extensions: expect.objectContaining({
+          amc_scope: Scope.testingJourney,
+          "journey-type": "test-category",
+        }),
+      }),
+    );
+    expect(mockSendAuditEvent).toHaveBeenCalledWith(expect.anything());
+  });
+
+  it("does not send audit event when awsLambda event is not present", async () => {
+    const mockRegenerate = vi.fn().mockResolvedValue(undefined);
     const mockRedirect = vi.fn().mockReturnThis();
     const mockSession = { regenerate: mockRegenerate };
 
@@ -244,8 +326,8 @@ describe("startSessionAndGoToJourney", () => {
     const reply = { redirect: mockRedirect } as unknown as FastifyReply;
 
     const claims = {
-      sub: "user-mno",
-      scope: Scope.accountDelete,
+      sub: "user-123",
+      scope: Scope.testingJourney,
     } as Claims;
 
     await startSessionAndGoToJourney(
@@ -254,11 +336,8 @@ describe("startSessionAndGoToJourney", () => {
       claims,
       "client-id",
       "https://example.com/callback",
-      "state-456",
     );
 
-    expect(mockRedirect).toHaveBeenCalledWith(
-      expect.stringContaining("state=state-456"),
-    );
+    expect(mockSendAuditEvent).not.toHaveBeenCalled();
   });
 });

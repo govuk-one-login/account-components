@@ -2449,7 +2449,9 @@ Resources:
             - Effect: Allow
               Action:
                 - kms:GenerateDataKey
-              Resource: !GetAtt SqsKmsKey.Arn
+              Resource:
+                - !GetAtt SqsKmsKey.Arn
+                - !GetAtt TxMASQSProducerAuditEventQueueEncryptionKey.Arn
 
   FrontendLambdaLogGroup:
     Type: AWS::Logs::LogGroup

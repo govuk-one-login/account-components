@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockSendOtpChallenge = vi.fn();
+const mockStartJourneyAction = vi.fn();
 
 // @ts-expect-error
 vi.mock(import("../../../utils/accountManagementApiClient.js"), () => ({
@@ -10,6 +11,11 @@ vi.mock(import("../../../utils/accountManagementApiClient.js"), () => ({
       sendOtpChallenge: mockSendOtpChallenge,
     };
   }),
+}));
+
+vi.mock(import("../../utils/journeyActions.js"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  startJourneyAction: mockStartJourneyAction,
 }));
 
 const { introductionGetHandler, introductionPostHandler } =
@@ -44,6 +50,11 @@ describe("introduction handlers", () => {
         mockReply as FastifyReply,
       );
 
+      expect(mockStartJourneyAction).toHaveBeenCalledWith(
+        { action: "account-delete" },
+        mockRequest,
+        mockReply,
+      );
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/introduction.njk",
         undefined,

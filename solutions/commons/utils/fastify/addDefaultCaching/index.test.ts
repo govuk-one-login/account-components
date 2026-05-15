@@ -12,12 +12,12 @@ describe("addDefaultCaching", () => {
     };
   });
 
-  it("should add no-cache header when cache-control is undefined", async () => {
+  it("should add no-store header when cache-control is undefined", async () => {
     vi.mocked(reply.getHeader!).mockReturnValue(undefined);
 
     await addDefaultCaching(reply as FastifyReply);
 
-    expect(reply.header).toHaveBeenCalledWith("cache-control", "no-cache");
+    expect(reply.header).toHaveBeenCalledWith("cache-control", "no-store");
   });
 
   it("should not add header when cache-control already exists", async () => {

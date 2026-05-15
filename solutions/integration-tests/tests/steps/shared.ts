@@ -87,6 +87,13 @@ Then("the page contains the text {string}", async ({ page }, text: string) => {
   await expect(page.getByText(new RegExp(text))).toBeVisible();
 });
 
+Then(
+  "the page does not contain the text {string}",
+  async ({ page }, text: string) => {
+    await expect(page.getByText(new RegExp(text))).toBeHidden();
+  },
+);
+
 Then("the page contains the text:", async ({ page }, text: string) => {
   await expect(page.getByText(text)).toBeVisible();
 });
