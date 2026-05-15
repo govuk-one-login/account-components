@@ -32,15 +32,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run install-all
 
-      - name: Install LocalStack CLI
-        run: |
-          curl --output localstack-cli-4.12.0-linux-amd64-onefile.tar.gz \
-            --location https://github.com/localstack/localstack-cli/releases/download/v4.12.0/localstack-cli-4.12.0-linux-amd64-onefile.tar.gz        
-
-          sudo tar xvzf localstack-cli-4.12.0-linux-*-onefile.tar.gz -C /usr/local/bin
-
-          localstack --version
-
       - name: Configure frontend environment
         run: |
           cd solutions/frontend
