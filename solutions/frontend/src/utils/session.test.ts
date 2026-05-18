@@ -8,8 +8,8 @@ vi.mock(import("../../../commons/utils/getEnvironment/index.js"), () => ({
   getEnvironment: mockGetEnvironment,
 }));
 
-vi.mock(import("./constants.js"), () => ({
-  rootCookieDomain: "test.com",
+vi.mock(import("../../../commons/utils/constants.js"), () => ({
+  rootDomainWithEnv: "test.com",
 }));
 
 vi.mock(import("./dynamoDbSessionStore.js"), () => ({

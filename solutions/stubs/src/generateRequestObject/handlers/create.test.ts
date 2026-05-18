@@ -114,7 +114,6 @@ describe("createRequestObjectPost", () => {
   it("should process request and render page with the correct data", async () => {
     const { createRequestObjectPost } = await import("./create.js");
     process.env["AUTHORIZE_URL"] = "http://localhost:6002/authorize";
-    process.env["ROOT_DOMAIN"] = "example.com";
     process.env["ENVIRONMENT"] = "production";
     const handler = createRequestObjectPost(mockFastify as FastifyInstance);
 
@@ -126,7 +125,7 @@ describe("createRequestObjectPost", () => {
       expect.objectContaining({
         secure: true,
         httpOnly: true,
-        domain: "example.com",
+        domain: "account.gov.uk",
         sameSite: "strict",
       }),
     );
@@ -146,7 +145,6 @@ describe("createRequestObjectPost", () => {
   it("should set secure to false when environment is local", async () => {
     const { createRequestObjectPost } = await import("./create.js");
     process.env["AUTHORIZE_URL"] = "http://localhost:6002/authorize";
-    process.env["ROOT_DOMAIN"] = "example.com";
     process.env["ENVIRONMENT"] = "local";
     const handler = createRequestObjectPost(mockFastify as FastifyInstance);
 
@@ -158,7 +156,7 @@ describe("createRequestObjectPost", () => {
       expect.objectContaining({
         secure: false,
         httpOnly: true,
-        domain: "example.com",
+        domain: "account.gov.uk",
         sameSite: "strict",
       }),
     );

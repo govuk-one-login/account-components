@@ -88,7 +88,7 @@ Mappings:
       notificationsMaxReceiveCount: 5
       txmaAccountArn: ""
       stubsDomain: stubs.manage.dev.account.gov.uk
-      rootDomain: dev.account.gov.uk
+      rootDomainWithEnv: dev.account.gov.uk
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       authorizeEndpointUrl: https://manage.build.account.gov.uk/authorize
@@ -122,7 +122,7 @@ Mappings:
       notificationsMaxReceiveCount: 5
       txmaAccountArn: ""
       stubsDomain: stubs.manage.build.account.gov.uk
-      rootDomain: build.account.gov.uk
+      rootDomainWithEnv: build.account.gov.uk
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       authorizeEndpointUrl: https://manage.staging.account.gov.uk/authorize
@@ -158,7 +158,7 @@ Mappings:
       notificationsMaxReceiveCount: 5
       txmaAccountArn: "arn:aws:iam::178023842775:root"
       stubsDomain: ""
-      rootDomain: staging.account.gov.uk
+      rootDomainWithEnv: staging.account.gov.uk
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist-secret
       authorizeEndpointUrl: https://manage.integration.account.gov.uk/authorize
@@ -194,7 +194,7 @@ Mappings:
       notificationsMaxReceiveCount: 36
       txmaAccountArn: "arn:aws:iam::729485541398:root"
       stubsDomain: ""
-      rootDomain: integration.account.gov.uk
+      rootDomainWithEnv: integration.account.gov.uk
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist-secret
       authorizeEndpointUrl: https://manage.account.gov.uk/authorize
@@ -230,7 +230,7 @@ Mappings:
       notificationsMaxReceiveCount: 36
       txmaAccountArn: "arn:aws:iam::451773080033:root"
       stubsDomain: ""
-      rootDomain: account.gov.uk
+      rootDomainWithEnv: account.gov.uk
 
 Conditions:
   UseCodeSigning:
@@ -2332,8 +2332,12 @@ Resources:
         Variables:
           SESSIONS_SIGNER: !Sub "{{resolve:secretsmanager:${SessionSecret}:SecretString}}"
           SESSIONS_TABLE_NAME: !Sub ${AWS::StackName}-SessionStore
-          ROOT_DOMAIN:
-            !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
+          ROOT_DOMAIN_WITH_ENV:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              rootDomainWithEnv,
+            ]
           NOTIFICATIONS_QUEUE_URL: !GetAtt NotificationsQueue.QueueUrl
           AUTH_CODE_TABLE_NAME: !Ref AuthCodeTable
           JOURNEY_OUTCOME_TABLE_NAME: !Ref JourneyOutcomeTable
@@ -2807,8 +2811,6 @@ Resources:
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
           AUTHORIZE_URL: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
           API_BASE_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
-          ROOT_DOMAIN:
-            !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
           NOTIFY_TEMPLATE_IDS:
             !FindInMap [
               EnvironmentConfiguration,

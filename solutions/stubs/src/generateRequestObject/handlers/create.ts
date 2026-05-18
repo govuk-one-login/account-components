@@ -21,6 +21,7 @@ import { createHash } from "node:crypto";
 import {
   checkUserAgentCookieName,
   mockEmailAddress,
+  rootDomain,
 } from "../../../../commons/utils/constants.js";
 
 export const requestBodySchema = v.object({
@@ -119,15 +120,13 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
       url.searchParams.append("state", result.jwtPayload["state"]);
     }
 
-    assert.ok(process.env["ROOT_DOMAIN"]);
-
     reply.setCookie(
       checkUserAgentCookieName,
       createHash("sha256").update(result.token).digest("hex"),
       {
         secure: getEnvironment() !== "local",
         httpOnly: true,
-        domain: process.env["ROOT_DOMAIN"],
+        domain: rootDomain,
         sameSite: "strict",
       },
     );

@@ -27,3 +27,6 @@ export const passkeyDetailsSchema = v.object({
   isBackedUp: v.boolean(),
   isResidentKey: v.boolean(),
 });
+
+export const rootDomain = "account.gov.uk";
+export const rootDomainWithEnv = process.env["ROOT_DOMAIN_WITH_ENV"];
