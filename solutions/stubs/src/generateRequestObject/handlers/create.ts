@@ -120,6 +120,8 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
       url.searchParams.append("state", result.jwtPayload["state"]);
     }
 
+    assert.ok(rootDomain);
+
     reply.setCookie(
       checkUserAgentCookieName,
       createHash("sha256").update(result.token).digest("hex"),

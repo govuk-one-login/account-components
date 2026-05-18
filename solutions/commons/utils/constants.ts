@@ -28,5 +28,5 @@ export const passkeyDetailsSchema = v.object({
   isResidentKey: v.boolean(),
 });
 
-export const rootDomain = "account.gov.uk";
+export const rootDomain = process.env["ROOT_DOMAIN"];
 export const rootDomainWithEnv = process.env["ROOT_DOMAIN_WITH_ENV"];
