@@ -147,7 +147,7 @@
         },
         "journey_types_by_scope": {
           "type": "object",
-          "additionalProperties": { "type": "string" }
+          "additionalProperties": { "enum": ["SIGN_IN", "ACCOUNT_MANAGEMENT"] }
         }
       },
       "required": [
