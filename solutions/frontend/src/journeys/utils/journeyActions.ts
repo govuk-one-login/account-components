@@ -113,13 +113,14 @@ export const startJourneyAction = async <
       );
 
       await sendAuditEvent(
-        // @ts-expect-error - AMC_ACTION_STARTED not in event catalogue types yet
         createEvent("AMC_ACTION_STARTED", {
           ...commonAuditEventProps,
           event_name: "AMC_ACTION_STARTED",
           client_id: request.session.claims.client_id,
           extensions: {
+            // @ts-expect-error - type in event catalogue seems to be incorrect
             account_action: action.action,
+            // @ts-expect-error - scope in event catalogue does not accommodate testing-journey scope
             amc_scope: request.session.claims.scope,
             "journey-type":
               reply.client?.journey_types_by_scope?.[
@@ -181,15 +182,16 @@ const sendCompletedActionAuditEvent = async (
     );
 
     await sendAuditEvent(
-      // @ts-expect-error - AMC_ACTION_COMPLETED not in event catalogue types yet
       createEvent("AMC_ACTION_COMPLETED", {
         ...commonAuditEventProps,
         event_name: "AMC_ACTION_COMPLETED",
         client_id: request.session.claims.client_id,
         extensions: {
+          // @ts-expect-error - type in event catalogue seems to be incorrect
           account_action: action.name,
           account_action_overall_outcome: action.success,
           account_action_error: action.success ? undefined : action.error,
+          // @ts-expect-error - scope in event catalogue does not accommodate testing-journey scope
           amc_scope: request.session.claims.scope,
           "journey-type":
             reply.client?.journey_types_by_scope?.[
