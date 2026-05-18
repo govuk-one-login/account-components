@@ -121,11 +121,6 @@ export abstract class JsonApiClient {
 
       const body = v.safeParse(successResponseBodySchema, responseJson);
       if (!body.success) {
-        logger.debug("response status debug", { status: response.status });
-        logger.debug("responseJson debug", {
-          responseJson: JSON.stringify(responseJson, null, 2),
-        });
-
         return {
           success: false,
           error: "ErrorValidatingResponseBody",

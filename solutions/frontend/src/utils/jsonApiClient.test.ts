@@ -5,7 +5,6 @@ import type { APIGatewayProxyEvent } from "aws-lambda";
 
 const mockLogger = vi.hoisted(() => ({
   error: vi.fn(),
-  debug: vi.fn(),
 }));
 
 const mockGetPropsFromAPIGatewayEvent = vi.hoisted(() => vi.fn());
