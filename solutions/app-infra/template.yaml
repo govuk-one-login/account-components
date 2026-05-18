@@ -1623,6 +1623,11 @@ Resources:
   ApiTokenLambda:
     Type: AWS::Serverless::Function
     Properties:
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
       DeploymentPreference:
         Alarms:
           - !Ref ApiTokenLambdaErrorsAlarm
