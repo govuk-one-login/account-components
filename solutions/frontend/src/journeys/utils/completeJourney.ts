@@ -108,12 +108,12 @@ export const completeJourney = async (
       );
 
       await sendAuditEvent(
-        // @ts-expect-error - AMC_COMPLETED not in event catalogue types yet
         createEvent("AMC_COMPLETED", {
           ...commonAuditEventProps,
           event_name: "AMC_COMPLETED",
           client_id: claims.client_id,
           extensions: {
+            // @ts-expect-error - scope in event catalogue does not accommodate testing-journey scope
             amc_scope: claims.scope,
             "journey-type":
               reply.client?.journey_types_by_scope?.[claims.scope],

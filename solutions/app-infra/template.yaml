@@ -2297,6 +2297,11 @@ Resources:
     Properties:
       CodeUri: solutions/frontend/dist
       Handler: lambda.handler
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
       DeploymentPreference:
         Alarms:
           - !Ref FrontendLambdaErrorsAlarm

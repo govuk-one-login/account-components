@@ -3,15 +3,12 @@ import { AcountDeleteJourneyState } from "../journeys/utils/stateMachines/accoun
 import { PasskeyCreateState } from "../journeys/utils/stateMachines/passkey-create.js";
 import { TestingJourneyState } from "../journeys/utils/stateMachines/testing-journey.js";
 import { Scope } from "../../../commons/utils/commonTypes.js";
+import { analyticsDefaults } from "./constants.js";
 
 type PathsMap = Record<
   string,
   { path: `/${string}`; analytics?: FastifyReply["analytics"] }
 >;
-
-const analyticsDefaults: FastifyReply["analytics"] = {
-  taxonomyLevel1: "accounts",
-};
 
 const accountDeleteAnalyticsDefaults: FastifyReply["analytics"] = {
   ...analyticsDefaults,

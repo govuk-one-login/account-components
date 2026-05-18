@@ -119,7 +119,7 @@ describe("verifyJwt", () => {
 
     expect(result).toStrictEqual(payload);
     expect(mockJwtVerify).toHaveBeenCalledWith(signedJwt, "mock-jwks", {
-      algorithms: ["ES256", "RS256"],
+      algorithms: ["ES256", "RS256", "RS512"],
     });
   });
 
