@@ -21,6 +21,7 @@ import { createHash } from "node:crypto";
 import {
   checkUserAgentCookieName,
   mockEmailAddress,
+  rootDomain,
 } from "../../../../commons/utils/constants.js";
 
 export const requestBodySchema = v.object({
@@ -119,7 +120,7 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
       url.searchParams.append("state", result.jwtPayload["state"]);
     }
 
-    assert.ok(process.env["ROOT_DOMAIN"]);
+    assert.ok(rootDomain);
 
     reply.setCookie(
       checkUserAgentCookieName,
@@ -127,7 +128,7 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
       {
         secure: getEnvironment() !== "local",
         httpOnly: true,
-        domain: process.env["ROOT_DOMAIN"],
+        domain: rootDomain,
         sameSite: "strict",
       },
     );
