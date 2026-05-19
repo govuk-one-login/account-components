@@ -23,11 +23,6 @@ import {
   sendNotification,
 } from "../../../../../commons/utils/notifications/index.js";
 import { getPasskeyConvenienceMetadataByAaguid } from "../../../../../commons/utils/passkeysConvenienceMetadata/index.js";
-
-const addErrorMetric = (reason: string) => {
-  metrics.addMetadata("error_type", reason);
-  metrics.addMetric("PasskeyCreateError", MetricUnit.Count, 1);
-};
 import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 import {
   completeJourneyActionUnsuccessfully,
@@ -35,6 +30,23 @@ import {
   unsuccessfulJourneyActionErrors,
   startJourneyAction,
 } from "../../utils/journeyActions.js";
+import {
+  sendPasskeyRegistrationGeneratedAuditEvent,
+  sendPasskeyRegistrationFailedAuditEvent,
+  sendPasskeyRegistrationSuccessfulAuditEvent,
+} from "../utils/auditEvents/index.js";
+
+export const postBodySchema = v.object({
+  action: v.optional(v.picklist(["register", "skip"])),
+  registrationError: v.optional(v.string()),
+  registrationResponse: v.pipe(v.string(), v.parseJson()),
+});
+
+export const supportedAlgorithmIDs = [
+  -7, // ES256
+  -8, // EdDSA
+  -257, // RS256
+];
 
 const setRegistrationOptions = async (
   request: FastifyRequest,
@@ -56,6 +68,7 @@ const setRegistrationOptions = async (
       residentKey: "required",
       userVerification: "required",
     },
+    supportedAlgorithmIDs,
     excludeCredentials: idsOfCredentialsToExclude.map((id) => ({
       id,
     })),
@@ -65,6 +78,12 @@ const setRegistrationOptions = async (
     type: "updateRegistrationOptions",
     registrationOptions,
   });
+
+  await sendPasskeyRegistrationGeneratedAuditEvent(
+    request,
+    reply,
+    registrationOptions,
+  );
 
   return registrationOptions;
 };
@@ -136,6 +155,11 @@ const render = async (
   });
 };
 
+const addErrorMetric = (reason: string) => {
+  metrics.addMetadata("error_type", reason);
+  metrics.addMetric("PasskeyCreateError", MetricUnit.Count, 1);
+};
+
 export async function getHandler(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -161,20 +185,21 @@ export async function postHandler(
 ) {
   const stringsSuffix = getStringsSuffix(reply);
 
-  const bodySchema = v.object({
-    action: v.optional(v.picklist(["register", "skip"])),
-    registrationError: v.optional(v.string()),
-    registrationResponse: v.pipe(v.string(), v.parseJson()),
-  });
-
-  const bodyParseResult = v.safeParse(bodySchema, request.body);
+  const bodyParseResult = v.safeParse(postBodySchema, request.body);
 
   if (!bodyParseResult.success) {
     request.log.warn(
       { issues: bodyParseResult.issues },
       "Register passkey - invalid request body",
     );
-    addErrorMetric("InvalidRequestBody");
+    const invalidRequestBodyErrorReason = "InvalidRequestBody";
+    addErrorMetric(invalidRequestBodyErrorReason);
+
+    await sendPasskeyRegistrationFailedAuditEvent(
+      request,
+      reply,
+      invalidRequestBodyErrorReason,
+    );
 
     await render(request, reply, {
       showErrorUi: true,
@@ -223,6 +248,12 @@ export async function postHandler(
     metrics.addMetadata("ClientErrorMessage", body.registrationError);
     addErrorMetric("ClientError");
 
+    await sendPasskeyRegistrationFailedAuditEvent(
+      request,
+      reply,
+      body.registrationError,
+    );
+
     await render(request, reply, {
       showErrorUi: true,
     });
@@ -237,6 +268,12 @@ export async function postHandler(
     reply.journeyStates["passkey-create"].getSnapshot().context
       .registrationOptions;
   assert.ok(registrationOptions);
+
+  await sendPasskeyRegistrationSuccessfulAuditEvent(
+    request,
+    reply,
+    body.registrationResponse,
+  );
 
   let verification: Awaited<ReturnType<typeof verifyRegistrationResponse>>;
   try {
