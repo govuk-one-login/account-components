@@ -151,8 +151,8 @@ Mappings:
       notifyStubUrl: ""
       notifyTemplateIds: |
         {
-          "CREATE_PASSKEY_WITH_DISPLAY_NAME": "fb385d74-ac28-466d-8695-3d8a732a4cf8",
-          "CREATE_PASSKEY_WITHOUT_DISPLAY_NAME": "d20ccbec-3eac-4669-993c-d3f892ecc0f6"
+          "CREATE_PASSKEY_WITH_DISPLAY_NAME": "aa8697b6-23e6-4317-9aff-5a274142e7f2",
+          "CREATE_PASSKEY_WITHOUT_DISPLAY_NAME": "369a29fd-1e7b-4c1f-bd92-a08a51c99b2e"
         }
       notificationsVisibilityTimeout: 120
       notificationsMaxReceiveCount: 5
