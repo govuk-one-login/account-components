@@ -48,7 +48,7 @@ export class AccountDataApiClient extends JsonApiClient {
                   v.string(),
                   v.transform((input) => new Date(input)),
                 ),
-                lastUsedAt: v.optional(
+                lastUsedAt: v.nullish(
                   v.pipe(
                     v.string(),
                     v.transform((input) => new Date(input)),
