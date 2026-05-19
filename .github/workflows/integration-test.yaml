@@ -42,6 +42,7 @@ jobs:
           SESSIONS_SIGNER=localsessionsignerwhichmustbeatleast32chars  
           SESSIONS_TABLE_NAME=amc-SessionStore
           ROOT_DOMAIN=localhost
+          ROOT_DOMAIN_WITH_ENV=localhost
           AWS_REGION=eu-west-2
           LOCALSTACK_ENDPOINT=http://localhost:4566
           LOCAL_KMS_ENDPOINT=http://localhost:4567
@@ -88,8 +89,8 @@ jobs:
           LOCALSTACK_ENDPOINT=http://localhost:4566
           LOCAL_KMS_ENDPOINT=http://localhost:4567
           LOCALSTACK_ACCESS_KEY_ID=test
-          LOCALSTACK_ACCESS_KEY=test      
-          ROOT_DOMAIN=localhost          
+          LOCALSTACK_ACCESS_KEY=test   
+          ROOT_DOMAIN=localhost             
           EOF
 
       - name: Configure API environment
