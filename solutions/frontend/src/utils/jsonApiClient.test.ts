@@ -419,6 +419,13 @@ describe("jsonApiClient", () => {
           error: "UnknownErrorResponse",
           rawResponse: response,
         });
+        expect(mockLogger.error).toHaveBeenCalledWith({
+          message: "UnknownErrorResponse",
+          error: {
+            code: 500,
+            message: "Internal Server Error",
+          },
+        });
       });
 
       it("should handle invalid error response body", async () => {
@@ -506,6 +513,13 @@ describe("jsonApiClient", () => {
           success: false,
           error: "UnknownErrorResponse",
           rawResponse: response,
+        });
+        expect(mockLogger.error).toHaveBeenCalledWith({
+          message: "UnknownErrorResponse",
+          error: {
+            code: 400,
+            message: "Bad Request",
+          },
         });
       });
 

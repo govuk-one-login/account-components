@@ -174,6 +174,13 @@ export abstract class JsonApiClient {
     }
 
     if (!Object.keys(errorCodesMap).includes(body.output.code.toString())) {
+      logger.error({
+        message: "UnknownErrorResponse",
+        error: {
+          code: body.output.code,
+          message: body.output.message,
+        },
+      });
       return {
         success: false,
         error: "UnknownErrorResponse",
