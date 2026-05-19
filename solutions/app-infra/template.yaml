@@ -393,6 +393,8 @@ Resources:
 
   DynamoDbSSEKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Description: AWS KMS key for encrypting the data stored within DynamoDB tables
       EnableKeyRotation: true
@@ -441,6 +443,8 @@ Resources:
 
   CloudWatchEncryptionKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Description: AWS KMS key for encrypting CloudWatch logs
       EnableKeyRotation: true
@@ -477,6 +481,8 @@ Resources:
 
   LambdaEnvironmentVariableEncryptionKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Description: "KMS key used to encrypt lambda environment variables"
       EnableKeyRotation: true
@@ -561,6 +567,8 @@ Resources:
 
   JWTSigningKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Description: "JWT Signing Key"
       KeySpec: ECC_NIST_P256
@@ -600,6 +608,8 @@ Resources:
 
   S3SSEKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Description: KMS key for encrypting JWKSStore bucket
       KeyUsage: ENCRYPT_DECRYPT
@@ -644,6 +654,8 @@ Resources:
 
   JWKSStoreBucket:
     Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     DependsOn: AccessLogsBucket
     Properties:
       BucketName: !Sub "${AWS::StackName}-${Environment}-jwks-store"
@@ -695,6 +707,8 @@ Resources:
 
   AccessLogsBucket:
     Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       BucketName: !Sub "${AWS::StackName}-${Environment}-access-logs"
       PublicAccessBlockConfiguration:
@@ -817,8 +831,8 @@ Resources:
 
   AuthCodeTable:
     Type: AWS::DynamoDB::Table
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${AWS::StackName}-AuthCode
       AttributeDefinitions:
@@ -846,8 +860,8 @@ Resources:
 
   JourneyOutcomeTable:
     Type: AWS::DynamoDB::Table
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${AWS::StackName}-JourneyOutcome
       AttributeDefinitions:
@@ -875,8 +889,8 @@ Resources:
 
   ReplayAttackTable:
     Type: AWS::DynamoDB::Table
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${AWS::StackName}-ReplayAttack
       AttributeDefinitions:
@@ -904,6 +918,8 @@ Resources:
 
   SecretsKmsKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       EnableKeyRotation: true
       KeyPolicy:
@@ -922,12 +938,16 @@ Resources:
 
   NotifyAPIKeySecret:
     Type: AWS::SecretsManager::Secret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       KmsKeyId: !Ref SecretsKmsKey
       SecretString: set-me # pragma: allowlist secret
 
   SqsKmsKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       EnableKeyRotation: true
       KeyPolicy:
@@ -948,6 +968,8 @@ Resources:
 
   NotificationsQueue:
     Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       MessageRetentionPeriod: 1209600
       VisibilityTimeout:
@@ -970,6 +992,8 @@ Resources:
 
   NotificationsDLQ:
     Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       KmsMasterKeyId: !GetAtt SqsKmsKey.Arn
       MessageRetentionPeriod: 1209600
@@ -1214,6 +1238,8 @@ Resources:
 
   TxMASQSProducerAuditEventQueue:
     Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       MessageRetentionPeriod: !If [IsDevOrBuild, 3600, 1209600]
       KmsMasterKeyId: !Ref TxMASQSProducerAuditEventQueueEncryptionKeyAlias
@@ -1257,6 +1283,8 @@ Resources:
 
   TxMAAuditEventDeadLetterQueue:
     Type: AWS::SQS::Queue
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       MessageRetentionPeriod: 1209600
       KmsMasterKeyId: !Ref TxMASQSProducerAuditEventQueueEncryptionKeyAlias
@@ -1270,6 +1298,8 @@ Resources:
 
   TxMASQSProducerAuditEventQueueEncryptionKey:
     Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       Description: Symmetric key used to encrypt TxMA audit messages at rest in SQS
       EnableKeyRotation: true
@@ -2151,6 +2181,8 @@ Resources:
 
   SessionSecret:
     Type: AWS::SecretsManager::Secret
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       GenerateSecretString:
         PasswordLength: 64
@@ -2158,8 +2190,8 @@ Resources:
 
   SessionsTable:
     Type: AWS::DynamoDB::Table
-    DeletionPolicy: Delete
-    UpdateReplacePolicy: Delete
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
     Properties:
       TableName: !Sub ${AWS::StackName}-SessionStore
       AttributeDefinitions:
