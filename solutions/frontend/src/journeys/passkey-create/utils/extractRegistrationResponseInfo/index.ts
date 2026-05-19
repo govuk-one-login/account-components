@@ -1,8 +1,11 @@
-import { decodeAttestationObject } from "@simplewebauthn/server/helpers";
-import { parseAuthenticatorData } from "@simplewebauthn/server/helpers";
-import { convertAAGUIDToString } from "@simplewebauthn/server/helpers";
-import { isoBase64URL, cose } from "@simplewebauthn/server/helpers";
-import { decodeCredentialPublicKey } from "@simplewebauthn/server/helpers";
+import {
+  isoBase64URL,
+  decodeCredentialPublicKey,
+  cose,
+  decodeAttestationObject,
+  parseAuthenticatorData,
+  convertAAGUIDToString,
+} from "@simplewebauthn/server/helpers";
 import type {
   AuthenticatorTransportFuture,
   RegistrationResponseJSON,
