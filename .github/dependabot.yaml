@@ -76,7 +76,9 @@ updates:
 
   - package-ecosystem: docker
     directories:
-      - "/**"
+      - "/solutions/integration-tests"
+      - "/solutions/localstack/local-kms"
+      - "/solutions/localstack/localstack"
     schedule:
       interval: daily
       time: "03:00"
