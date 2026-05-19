@@ -8,6 +8,7 @@ export abstract class JsonApiClient {
   protected static readonly unknownError = {
     success: false,
     error: "UnknownError",
+    rawResponse: undefined,
   } as const;
   protected static readonly undefinedSchema = v.undefined();
   protected fetch: typeof fetch;
@@ -121,8 +122,9 @@ export abstract class JsonApiClient {
 
       const body = v.safeParse(successResponseBodySchema, responseJson);
       if (!body.success) {
-        logger.debug("response status debug", { status: response.status });
-        logger.debug("responseJson debug", {
+        logger.info("MHTEST");
+        logger.info("response status debug", { status: response.status });
+        logger.info("responseJson debug", {
           responseJson: JSON.stringify(responseJson, null, 2),
         });
 
