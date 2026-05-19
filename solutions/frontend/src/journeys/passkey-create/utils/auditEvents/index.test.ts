@@ -32,6 +32,8 @@ const {
   sendPasskeyRegistrationGeneratedAuditEvent,
   sendPasskeyRegistrationFailedAuditEvent,
   sendPasskeyRegistrationSuccessfulAuditEvent,
+  sendPasskeyEnrolmentFailedAuditEvent,
+  sendPasskeyEnrolmentSuccessfulAuditEvent,
 } = await import("./index.js");
 
 describe("passkey-create audit events", () => {
@@ -358,6 +360,334 @@ describe("passkey-create audit events", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
           registrationResponse,
+        ),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe("sendPasskeyEnrolmentFailedAuditEvent", () => {
+    const registrationOptions = {
+      challenge: "test-challenge",
+      authenticatorSelection: {
+        residentKey: "required" as const,
+        userVerification: "required" as const,
+        requireResidentKey: true,
+        authenticatorAttachment: "platform",
+      },
+      excludeCredentials: [
+        { id: "cred-1", transports: ["internal" as const] },
+        { id: "cred-2", transports: ["hybrid" as const, "internal" as const] },
+      ],
+    };
+
+    const registrationResponse = {
+      id: "credential-id",
+      rawId: "credential-id",
+      response: {
+        clientDataJSON: "client-data",
+        attestationObject: "attestation-object",
+      },
+      type: "public-key",
+    };
+
+    beforeEach(() => {
+      mockExtractRegistrationResponseInfo.mockReturnValue({
+        credentialId: "credential-id-base64url",
+        aaguid: "00000000-0000-0000-0000-000000000000",
+        counter: 0,
+        credentialBackedUp: true,
+        userVerified: true,
+        publicKeyAlgorithm: -7,
+        credentialDeviceType: "multi-device",
+        credentialTransports: ["hybrid", "internal"],
+        fmt: "packed",
+      });
+    });
+
+    it("sends audit event with correct properties", async () => {
+      await sendPasskeyEnrolmentFailedAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        registrationOptions as PublicKeyCredentialCreationOptionsJSON,
+        registrationResponse,
+        "EnrolmentError",
+      );
+
+      expect(mockExtractRegistrationResponseInfo).toHaveBeenCalledWith(
+        registrationResponse,
+      );
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        "AMC_PASSKEY_ENROLMENT_FAILED",
+        expect.objectContaining({
+          event_name: "AMC_PASSKEY_ENROLMENT_FAILED",
+          client_id: "client-123",
+          extensions: {
+            "journey-type": "registration",
+            passkey: {
+              passkey_aaguid: "00000000-0000-0000-0000-000000000000",
+              passkey_counter: 0,
+              passkey_credential_backed_up: true,
+              passkey_credential_device_type: "multi-device",
+              passkey_credential_transports: ["hybrid", "internal"],
+              passkey_fmt: "packed",
+              passkey_public_key_algorithm: -7,
+              passkey_user_verified: true,
+              passkey_registration_request: {
+                passkey_authenticator_attachment: "platform",
+                passkey_request_resident_key: "required",
+                passkey_request_supported_algorithms: [-7, -8, -25],
+                passkey_request_user_verification: "required",
+                passkey_require_resident_key: true,
+              },
+              passkey_enrolment_failure_reason: "EnrolmentError",
+            },
+          },
+          restricted: {
+            device_information: { encoded: "encoded-data" },
+            passkey: {
+              passkey_credential_id: "credential-id-base64url",
+              passkey_excluded_credentials: [
+                {
+                  passkey_credential_id: "cred-1",
+                  passkey_credential_transports: ["internal"],
+                },
+                {
+                  passkey_credential_id: "cred-2",
+                  passkey_credential_transports: ["hybrid", "internal"],
+                },
+              ],
+            },
+          },
+          user: {
+            session_id: "session-123",
+            persistent_session_id: "persistent-456",
+            ip_address: "192.168.1.1",
+            govuk_signin_journey_id: "client-789",
+            email: "test@example.com",
+            user_id: "user-123",
+          },
+        }),
+      );
+      expect(mockSendAuditEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          event_name: "AMC_PASSKEY_ENROLMENT_FAILED",
+        }),
+      );
+    });
+
+    it("maps empty excludeCredentials to empty array", async () => {
+      await sendPasskeyEnrolmentFailedAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        {
+          ...registrationOptions,
+          excludeCredentials: undefined,
+        } as unknown as PublicKeyCredentialCreationOptionsJSON,
+        registrationResponse,
+        "EnrolmentError",
+      );
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        "AMC_PASSKEY_ENROLMENT_FAILED",
+        expect.objectContaining({
+          restricted: expect.objectContaining({
+            passkey: expect.objectContaining({
+              passkey_excluded_credentials: [],
+            }),
+          }),
+        }),
+      );
+    });
+
+    it("returns early when awsLambda event is not present", async () => {
+      // @ts-expect-error
+      mockRequest.awsLambda = undefined;
+
+      await sendPasskeyEnrolmentFailedAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        registrationOptions as PublicKeyCredentialCreationOptionsJSON,
+        registrationResponse,
+        "EnrolmentError",
+      );
+
+      expect(mockSendAuditEvent).not.toHaveBeenCalled();
+    });
+
+    it("throws when session claims are missing", async () => {
+      mockRequest.session = {} as FastifySessionObject;
+
+      await expect(
+        sendPasskeyEnrolmentFailedAuditEvent(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+          registrationOptions as PublicKeyCredentialCreationOptionsJSON,
+          registrationResponse,
+          "EnrolmentError",
+        ),
+      ).rejects.toThrow();
+    });
+  });
+
+  describe("sendPasskeyEnrolmentSuccessfulAuditEvent", () => {
+    const registrationOptions = {
+      challenge: "test-challenge",
+      authenticatorSelection: {
+        residentKey: "required" as const,
+        userVerification: "required" as const,
+        requireResidentKey: true,
+        authenticatorAttachment: "platform",
+      },
+      excludeCredentials: [
+        { id: "cred-1", transports: ["internal" as const] },
+        { id: "cred-2", transports: ["hybrid" as const, "internal" as const] },
+      ],
+    };
+
+    const registrationResponse = {
+      id: "credential-id",
+      rawId: "credential-id",
+      response: {
+        clientDataJSON: "client-data",
+        attestationObject: "attestation-object",
+      },
+      type: "public-key",
+    };
+
+    beforeEach(() => {
+      mockExtractRegistrationResponseInfo.mockReturnValue({
+        credentialId: "credential-id-base64url",
+        aaguid: "00000000-0000-0000-0000-000000000000",
+        counter: 0,
+        credentialBackedUp: true,
+        userVerified: true,
+        publicKeyAlgorithm: -7,
+        credentialDeviceType: "multi-device",
+        credentialTransports: ["hybrid", "internal"],
+        fmt: "packed",
+      });
+    });
+
+    it("sends audit event with correct properties", async () => {
+      await sendPasskeyEnrolmentSuccessfulAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        registrationOptions as PublicKeyCredentialCreationOptionsJSON,
+        registrationResponse,
+        3,
+      );
+
+      expect(mockExtractRegistrationResponseInfo).toHaveBeenCalledWith(
+        registrationResponse,
+      );
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        "AMC_PASSKEY_ENROLMENT_SUCCESSFUL",
+        expect.objectContaining({
+          event_name: "AMC_PASSKEY_ENROLMENT_SUCCESSFUL",
+          client_id: "client-123",
+          extensions: {
+            "journey-type": "registration",
+            passkey: {
+              passkey_aaguid: "00000000-0000-0000-0000-000000000000",
+              passkey_counter: 0,
+              passkey_credential_backed_up: true,
+              passkey_credential_device_type: "multi-device",
+              passkey_credential_transports: ["hybrid", "internal"],
+              passkey_fmt: "packed",
+              passkey_public_key_algorithm: -7,
+              passkey_user_verified: true,
+              passkey_registration_request: {
+                passkey_authenticator_attachment: "platform",
+                passkey_request_resident_key: "required",
+                passkey_request_supported_algorithms: [-7, -8, -25],
+                passkey_request_user_verification: "required",
+                passkey_require_resident_key: true,
+              },
+            },
+          },
+          restricted: {
+            device_information: { encoded: "encoded-data" },
+            passkey: {
+              passkey_credential_id: "credential-id-base64url",
+              passkey_excluded_credentials: [
+                {
+                  passkey_credential_id: "cred-1",
+                  passkey_credential_transports: ["internal"],
+                },
+                {
+                  passkey_credential_id: "cred-2",
+                  passkey_credential_transports: ["hybrid", "internal"],
+                },
+              ],
+            },
+          },
+          user: {
+            session_id: "session-123",
+            persistent_session_id: "persistent-456",
+            ip_address: "192.168.1.1",
+            govuk_signin_journey_id: "client-789",
+            email: "test@example.com",
+            user_id: "user-123",
+            passkey_count: 3,
+          },
+        }),
+      );
+      expect(mockSendAuditEvent).toHaveBeenCalledWith(
+        expect.objectContaining({
+          event_name: "AMC_PASSKEY_ENROLMENT_SUCCESSFUL",
+        }),
+      );
+    });
+
+    it("maps empty excludeCredentials to empty array", async () => {
+      await sendPasskeyEnrolmentSuccessfulAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        {
+          ...registrationOptions,
+          excludeCredentials: undefined,
+        } as unknown as PublicKeyCredentialCreationOptionsJSON,
+        registrationResponse,
+        1,
+      );
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        "AMC_PASSKEY_ENROLMENT_SUCCESSFUL",
+        expect.objectContaining({
+          restricted: expect.objectContaining({
+            passkey: expect.objectContaining({
+              passkey_excluded_credentials: [],
+            }),
+          }),
+        }),
+      );
+    });
+
+    it("returns early when awsLambda event is not present", async () => {
+      // @ts-expect-error
+      mockRequest.awsLambda = undefined;
+
+      await sendPasskeyEnrolmentSuccessfulAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        registrationOptions as PublicKeyCredentialCreationOptionsJSON,
+        registrationResponse,
+        3,
+      );
+
+      expect(mockSendAuditEvent).not.toHaveBeenCalled();
+    });
+
+    it("throws when session claims are missing", async () => {
+      mockRequest.session = {} as FastifySessionObject;
+
+      await expect(
+        sendPasskeyEnrolmentSuccessfulAuditEvent(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+          registrationOptions as PublicKeyCredentialCreationOptionsJSON,
+          registrationResponse,
+          3,
         ),
       ).rejects.toThrow();
     });
