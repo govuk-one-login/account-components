@@ -12,34 +12,34 @@ export const getAwsClientConfig = (kms = false) => {
     region: process.env["AWS_REGION"],
     maxAttempts: getNumberFromEnvVar("AWS_MAX_ATTEMPTS", 3),
     ...(() => {
-      if (!resolveEnvVarToBool("USE_LOCALSTACK")) {
+      if (!resolveEnvVarToBool("USE_LOCAL_AWS")) {
         return {};
       }
 
       assert.ok(
-        process.env["LOCALSTACK_ENDPOINT"],
-        "LOCALSTACK_ENDPOINT is not set",
+        process.env["LOCAL_AWS_ENDPOINT"],
+        "LOCAL_AWS_ENDPOINT is not set",
       );
       assert.ok(
-        process.env["LOCALSTACK_ACCESS_KEY_ID"],
-        "LOCALSTACK_ACCESS_KEY_ID is not set",
+        process.env["LOCAL_AWS_ACCESS_KEY_ID"],
+        "LOCAL_AWS_ACCESS_KEY_ID is not set",
       );
       assert.ok(
-        process.env["LOCALSTACK_ACCESS_KEY"],
-        "LOCALSTACK_ACCESS_KEY is not set",
+        process.env["LOCAL_AWS_ACCESS_KEY"],
+        "LOCAL_AWS_ACCESS_KEY is not set",
       );
       assert.ok(
-        process.env["LOCAL_KMS_ENDPOINT"],
-        "LOCAL_KMS_ENDPOINT is not set",
+        process.env["LOCAL_AWS_KMS_ENDPOINT"],
+        "LOCAL_AWS_KMS_ENDPOINT is not set",
       );
 
       return {
         endpoint: kms
-          ? process.env["LOCAL_KMS_ENDPOINT"]
-          : process.env["LOCALSTACK_ENDPOINT"],
+          ? process.env["LOCAL_AWS_KMS_ENDPOINT"]
+          : process.env["LOCAL_AWS_ENDPOINT"],
         credentials: {
-          accessKeyId: process.env["LOCALSTACK_ACCESS_KEY_ID"],
-          secretAccessKey: process.env["LOCALSTACK_ACCESS_KEY"],
+          accessKeyId: process.env["LOCAL_AWS_ACCESS_KEY_ID"],
+          secretAccessKey: process.env["LOCAL_AWS_ACCESS_KEY"],
         },
       };
     })(),

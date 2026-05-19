@@ -94,9 +94,6 @@ updates:
       - dependency-name: "node"
         update-types:
           - "version-update:semver-major"
-      - dependency-name: "localstack/localstack"
-        versions:
-          - "> 4.12.0" # Can't be updated past the 4.12.0 due to localstack changing the licence
 
   - package-ecosystem: "gitsubmodule"
     directory: "/"
