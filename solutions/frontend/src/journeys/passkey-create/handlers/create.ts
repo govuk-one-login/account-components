@@ -45,7 +45,7 @@ export const postBodySchema = v.object({
 export const supportedAlgorithmIDs = [
   -7, // ES256
   -8, // EdDSA
-  -25, // RS256
+  -257, // RS256
 ];
 
 const setRegistrationOptions = async (
