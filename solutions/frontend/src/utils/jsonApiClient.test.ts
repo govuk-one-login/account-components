@@ -327,6 +327,28 @@ describe("jsonApiClient", () => {
         });
       });
 
+      it("should handle non-Error thrown during successful response JSON parsing", async () => {
+        const response = {
+          ok: true,
+          json: vi.fn().mockRejectedValue("not an error"),
+        } as unknown as Response;
+        const schema = v.string();
+        const errorMap = {};
+
+        const result = await TestJsonApiClient.testProcessResponse(
+          response,
+          schema,
+          errorMap,
+        );
+
+        expect(result).toStrictEqual({
+          success: false,
+          error: "ErrorParsingResponseBodyJson",
+          rawResponse: response,
+          errorDetails: undefined,
+        });
+      });
+
       it("should return error when response body doesn't match schema", async () => {
         const responseData = {
           id: "invalid",
@@ -456,6 +478,28 @@ describe("jsonApiClient", () => {
           error: "ErrorParsingErrorResponseBodyJson",
           rawResponse: response,
           errorDetails: "Invalid JSON",
+        });
+      });
+
+      it("should handle non-Error thrown during error response JSON parsing", async () => {
+        const response = {
+          ok: false,
+          json: vi.fn().mockRejectedValue(42),
+        } as unknown as Response;
+        const schema = v.string();
+        const errorMap = { "400": "BadRequest" };
+
+        const result = await TestJsonApiClient.testProcessResponse(
+          response,
+          schema,
+          errorMap,
+        );
+
+        expect(result).toStrictEqual({
+          success: false,
+          error: "ErrorParsingErrorResponseBodyJson",
+          rawResponse: response,
+          errorDetails: undefined,
         });
       });
 
