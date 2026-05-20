@@ -5,7 +5,6 @@ import type { APIGatewayProxyEvent } from "aws-lambda";
 
 const mockLogger = vi.hoisted(() => ({
   error: vi.fn(),
-  info: vi.fn(),
 }));
 
 const mockGetPropsFromAPIGatewayEvent = vi.hoisted(() => vi.fn());
@@ -320,7 +319,12 @@ describe("jsonApiClient", () => {
       });
 
       it("should return error when response body doesn't match schema", async () => {
-        const responseData = { id: "invalid", name: "test" };
+        const responseData = {
+          id: "invalid",
+          name: "test",
+          nested: {},
+          list: [1, 2, "3"],
+        };
         const response = {
           ok: true,
           json: vi.fn().mockResolvedValue(responseData),
@@ -328,6 +332,10 @@ describe("jsonApiClient", () => {
         const schema = v.object({
           id: v.number(),
           name: v.string(),
+          nested: v.object({
+            prop: v.string(),
+          }),
+          list: v.array(v.number()),
         });
         const errorMap = {};
 
@@ -341,6 +349,29 @@ describe("jsonApiClient", () => {
           success: false,
           error: "ErrorValidatingResponseBody",
           rawResponse: response,
+        });
+        expect(mockLogger.error).toHaveBeenCalledWith({
+          message: "ErrorValidatingResponseBody",
+          issues: [
+            {
+              kind: "schema",
+              type: "number",
+              expected: "number",
+              path: "id",
+            },
+            {
+              expected: '"prop"',
+              kind: "schema",
+              path: "nested.prop",
+              type: "object",
+            },
+            {
+              expected: "number",
+              kind: "schema",
+              path: "list.2",
+              type: "number",
+            },
+          ],
         });
       });
     });
