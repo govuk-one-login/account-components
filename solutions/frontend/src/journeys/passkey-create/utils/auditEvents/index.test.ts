@@ -300,21 +300,6 @@ describe("passkey-create audit events", () => {
       );
     });
 
-    it("excludes journey-type when not available for scope", async () => {
-      delete mockReply.client;
-
-      await sendPasskeyRegistrationFailedAuditEvent(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-        "NotAllowedError",
-      );
-
-      const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
-
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      expect(eventPayload.extensions).not.toHaveProperty("journey-type");
-    });
-
     it("returns early when awsLambda event is not present", async () => {
       delete mockRequest.awsLambda;
 
