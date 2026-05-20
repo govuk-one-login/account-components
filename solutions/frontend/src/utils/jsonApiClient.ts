@@ -122,10 +122,16 @@ export abstract class JsonApiClient {
 
       const body = v.safeParse(successResponseBodySchema, responseJson);
       if (!body.success) {
-        logger.info("MHTEST");
-        logger.info("response status debug", { status: response.status });
-        logger.info("responseJson debug", {
-          responseJson: JSON.stringify(responseJson, null, 2),
+        logger.error({
+          message: "ErrorValidatingResponseBody",
+          issues: body.issues.map((issue) => ({
+            kind: issue.kind,
+            type: issue.type,
+            expected: issue.expected,
+            path: issue.path
+              ?.map((item) => ("key" in item ? item.key : undefined))
+              .join("."),
+          })),
         });
 
         return {

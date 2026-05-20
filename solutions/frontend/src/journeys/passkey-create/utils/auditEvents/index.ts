@@ -12,19 +12,31 @@ import {
   type postBodySchema,
 } from "../../handlers/create.js";
 import type { InferOutput } from "valibot";
+import * as v from "valibot";
 
 const buildRegistrationRequest = (
   registrationOptions: PublicKeyCredentialCreationOptionsJSON,
 ) => ({
-  passkey_authenticator_attachment:
-    registrationOptions.authenticatorSelection?.authenticatorAttachment,
-  passkey_request_resident_key:
-    registrationOptions.authenticatorSelection?.residentKey,
+  ...(registrationOptions.authenticatorSelection?.authenticatorAttachment !==
+    undefined && {
+    passkey_authenticator_attachment:
+      registrationOptions.authenticatorSelection.authenticatorAttachment,
+  }),
+  ...(registrationOptions.authenticatorSelection?.residentKey !== undefined && {
+    passkey_request_resident_key:
+      registrationOptions.authenticatorSelection.residentKey,
+  }),
   passkey_request_supported_algorithms: supportedAlgorithmIDs,
-  passkey_request_user_verification:
-    registrationOptions.authenticatorSelection?.userVerification,
-  passkey_require_resident_key:
-    registrationOptions.authenticatorSelection?.requireResidentKey,
+  ...(registrationOptions.authenticatorSelection?.userVerification !==
+    undefined && {
+    passkey_request_user_verification:
+      registrationOptions.authenticatorSelection.userVerification,
+  }),
+  ...(registrationOptions.authenticatorSelection?.requireResidentKey !==
+    undefined && {
+    passkey_require_resident_key:
+      registrationOptions.authenticatorSelection.requireResidentKey,
+  }),
 });
 
 const buildExcludedCredentials = (
@@ -32,20 +44,38 @@ const buildExcludedCredentials = (
 ) =>
   registrationOptions.excludeCredentials?.map((cred) => ({
     passkey_credential_id: cred.id,
-    passkey_credential_transports: cred.transports,
+    ...(cred.transports !== undefined && {
+      passkey_credential_transports: cred.transports,
+    }),
   })) ?? [];
 
 const buildResponseInfoPasskeyFields = (
   responseInfo: ReturnType<typeof extractRegistrationResponseInfo>,
 ) => ({
-  passkey_aaguid: responseInfo.aaguid,
-  passkey_counter: responseInfo.counter,
-  passkey_credential_backed_up: responseInfo.credentialBackedUp,
-  passkey_credential_device_type: responseInfo.credentialDeviceType,
-  passkey_credential_transports: responseInfo.credentialTransports,
-  passkey_fmt: responseInfo.fmt,
-  passkey_public_key_algorithm: responseInfo.publicKeyAlgorithm,
-  passkey_user_verified: responseInfo.userVerified,
+  ...(responseInfo.aaguid !== undefined && {
+    passkey_aaguid: responseInfo.aaguid,
+  }),
+  ...(responseInfo.counter !== undefined && {
+    passkey_counter: responseInfo.counter,
+  }),
+  ...(responseInfo.credentialBackedUp !== undefined && {
+    passkey_credential_backed_up: responseInfo.credentialBackedUp,
+  }),
+  ...(responseInfo.credentialDeviceType !== undefined && {
+    passkey_credential_device_type: responseInfo.credentialDeviceType,
+  }),
+  ...(responseInfo.credentialTransports !== undefined && {
+    passkey_credential_transports: responseInfo.credentialTransports,
+  }),
+  ...(responseInfo.fmt !== undefined && {
+    passkey_fmt: responseInfo.fmt,
+  }),
+  ...(responseInfo.publicKeyAlgorithm !== undefined && {
+    passkey_public_key_algorithm: responseInfo.publicKeyAlgorithm,
+  }),
+  ...(responseInfo.userVerified !== undefined && {
+    passkey_user_verified: responseInfo.userVerified,
+  }),
 });
 
 export const sendPasskeyRegistrationGeneratedAuditEvent = async (
@@ -62,14 +92,17 @@ export const sendPasskeyRegistrationGeneratedAuditEvent = async (
   );
 
   await sendAuditEvent(
-    // @ts-expect-error - AMC_PASSKEY_REGISTRATION_GENERATED not in event catalogue types yet
     createEvent("AMC_PASSKEY_REGISTRATION_GENERATED", {
       ...commonAuditEventProps,
       event_name: "AMC_PASSKEY_REGISTRATION_GENERATED",
       client_id: request.session.claims.client_id,
       extensions: {
-        "journey-type":
-          reply.client?.journey_types_by_scope?.[request.session.claims.scope],
+        ...(reply.client?.journey_types_by_scope?.[
+          request.session.claims.scope
+        ] !== undefined && {
+          "journey-type":
+            reply.client.journey_types_by_scope[request.session.claims.scope],
+        }),
         passkey: {
           passkey_registration_request:
             buildRegistrationRequest(registrationOptions),
@@ -78,6 +111,7 @@ export const sendPasskeyRegistrationGeneratedAuditEvent = async (
       restricted: {
         ...commonAuditEventProps.restricted,
         passkey: {
+          // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
           passkey_excluded_credentials:
             buildExcludedCredentials(registrationOptions),
         },
@@ -104,17 +138,36 @@ export const sendPasskeyRegistrationFailedAuditEvent = async (
     request.awsLambda.event,
   );
 
+  const parsedReason = v.safeParse(
+    v.picklist([
+      "AbortError",
+      "ConstraintError",
+      "InvalidStateError",
+      "NotAllowedError",
+      "NotSupportedError",
+      "SecurityError",
+      "TypeError",
+      "UnknownError",
+    ]),
+    reason,
+  );
+
   await sendAuditEvent(
-    // @ts-expect-error - AMC_PASSKEY_REGISTRATION_FAILED not in event catalogue types yet
     createEvent("AMC_PASSKEY_REGISTRATION_FAILED", {
       ...commonAuditEventProps,
       event_name: "AMC_PASSKEY_REGISTRATION_FAILED",
       client_id: request.session.claims.client_id,
       extensions: {
-        "journey-type":
-          reply.client?.journey_types_by_scope?.[request.session.claims.scope],
+        ...(reply.client?.journey_types_by_scope?.[
+          request.session.claims.scope
+        ] !== undefined && {
+          "journey-type":
+            reply.client.journey_types_by_scope[request.session.claims.scope],
+        }),
         passkey: {
-          passkey_registration_failure_reason: reason,
+          ...(parsedReason.success && {
+            passkey_registration_failure_reason: parsedReason.output,
+          }),
         },
       },
       user: {
@@ -144,7 +197,6 @@ export const sendPasskeyRegistrationSuccessfulAuditEvent = async (
   const responseInfo = extractRegistrationResponseInfo(registrationResponse);
 
   await sendAuditEvent(
-    // @ts-expect-error - AMC_PASSKEY_REGISTRATION_SUCCESSFUL not in event catalogue types yet
     createEvent("AMC_PASSKEY_REGISTRATION_SUCCESSFUL", {
       ...commonAuditEventProps,
       event_name: "AMC_PASSKEY_REGISTRATION_SUCCESSFUL",
@@ -152,12 +204,15 @@ export const sendPasskeyRegistrationSuccessfulAuditEvent = async (
       extensions: {
         "journey-type":
           reply.client?.journey_types_by_scope?.[request.session.claims.scope],
+        // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
         passkey: buildResponseInfoPasskeyFields(responseInfo),
       },
       restricted: {
         ...commonAuditEventProps.restricted,
         passkey: {
-          passkey_credential_id: responseInfo.credentialId,
+          ...(responseInfo.credentialId !== undefined && {
+            passkey_credential_id: responseInfo.credentialId,
+          }),
         },
       },
       user: {
@@ -188,8 +243,16 @@ export const sendPasskeyEnrolmentFailedAuditEvent = async (
 
   const responseInfo = extractRegistrationResponseInfo(registrationResponse);
 
+  const parsedReason = v.safeParse(
+    v.picklist([
+      "UserVerificationError",
+      "InsecurePublicKeyAlgorithmError",
+      "UnsupportedAuthenticatorError",
+    ]),
+    reason,
+  );
+
   await sendAuditEvent(
-    // @ts-expect-error - AMC_PASSKEY_ENROLMENT_FAILED not in event catalogue types yet
     createEvent("AMC_PASSKEY_ENROLMENT_FAILED", {
       ...commonAuditEventProps,
       event_name: "AMC_PASSKEY_ENROLMENT_FAILED",
@@ -197,17 +260,21 @@ export const sendPasskeyEnrolmentFailedAuditEvent = async (
       extensions: {
         "journey-type":
           reply.client?.journey_types_by_scope?.[request.session.claims.scope],
+        // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
         passkey: {
           ...buildResponseInfoPasskeyFields(responseInfo),
           passkey_registration_request:
             buildRegistrationRequest(registrationOptions),
-          passkey_enrolment_failure_reason: reason,
+          ...(parsedReason.success && {
+            passkey_enrolment_failure_reason: parsedReason.output,
+          }),
         },
       },
       restricted: {
         ...commonAuditEventProps.restricted,
         passkey: {
           passkey_credential_id: responseInfo.credentialId,
+          // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
           passkey_excluded_credentials:
             buildExcludedCredentials(registrationOptions),
         },
@@ -241,7 +308,6 @@ export const sendPasskeyEnrolmentSuccessfulAuditEvent = async (
   const responseInfo = extractRegistrationResponseInfo(registrationResponse);
 
   await sendAuditEvent(
-    // @ts-expect-error - AMC_PASSKEY_ENROLMENT_SUCCESSFUL not in event catalogue types yet
     createEvent("AMC_PASSKEY_ENROLMENT_SUCCESSFUL", {
       ...commonAuditEventProps,
       event_name: "AMC_PASSKEY_ENROLMENT_SUCCESSFUL",
@@ -249,6 +315,7 @@ export const sendPasskeyEnrolmentSuccessfulAuditEvent = async (
       extensions: {
         "journey-type":
           reply.client?.journey_types_by_scope?.[request.session.claims.scope],
+        // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
         passkey: {
           ...buildResponseInfoPasskeyFields(responseInfo),
           passkey_registration_request:
@@ -259,6 +326,7 @@ export const sendPasskeyEnrolmentSuccessfulAuditEvent = async (
         ...commonAuditEventProps.restricted,
         passkey: {
           passkey_credential_id: responseInfo.credentialId,
+          // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
           passkey_excluded_credentials:
             buildExcludedCredentials(registrationOptions),
         },

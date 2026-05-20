@@ -41,6 +41,7 @@ import {
 export const postBodySchema = v.object({
   action: v.optional(v.picklist(["register", "skip"])),
   registrationError: v.optional(v.string()),
+  registrationErrorDetails: v.optional(v.string()),
   registrationResponse: v.pipe(v.string(), v.parseJson()),
 });
 
@@ -244,10 +245,15 @@ export async function postHandler(
 
   if (body.registrationError !== undefined) {
     request.log.warn(
-      { error: body.registrationError },
+      {
+        error: {
+          name: body.registrationError,
+          message: body.registrationErrorDetails,
+        },
+      },
       "Register passkey - client error",
     );
-    metrics.addMetadata("ClientErrorMessage", body.registrationError);
+    metrics.addMetadata("ClientErrorName", body.registrationError);
     addErrorMetric("ClientError");
 
     await sendPasskeyRegistrationFailedAuditEvent(
