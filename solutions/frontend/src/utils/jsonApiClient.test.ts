@@ -220,30 +220,38 @@ describe("jsonApiClient", () => {
     });
 
     it("should log error when function returns failure", async () => {
-      const errorFn = vi
-        .fn()
-        .mockResolvedValue({ success: false, error: "TestError" });
+      const errorFn = vi.fn().mockResolvedValue({
+        success: false,
+        error: "TestError",
+        errorDetails: { foo: "bar" },
+      });
 
       const result = await client.testLogOnError("testMethod", errorFn);
 
-      expect(result).toStrictEqual({ success: false, error: "TestError" });
+      expect(result).toStrictEqual({
+        success: false,
+        error: "TestError",
+        errorDetails: { foo: "bar" },
+      });
       expect(mockLogger.error).toHaveBeenCalledWith({
+        method: "testMethod",
         message: "TestService",
         error: "TestError",
-        method: "testMethod",
+        errorDetails: { foo: "bar" },
       });
     });
 
-    it("should log error when function returns failure without error message", async () => {
+    it("should log error when function returns failure without error message and details", async () => {
       const errorFn = vi.fn().mockResolvedValue({ success: false });
 
       const result = await client.testLogOnError("testMethod", errorFn);
 
       expect(result).toStrictEqual({ success: false });
       expect(mockLogger.error).toHaveBeenCalledWith({
+        method: "testMethod",
         message: "TestService",
         error: undefined,
-        method: "testMethod",
+        errorDetails: undefined,
       });
     });
   });
@@ -315,6 +323,7 @@ describe("jsonApiClient", () => {
           success: false,
           error: "ErrorParsingResponseBodyJson",
           rawResponse: response,
+          errorDetails: "Invalid JSON",
         });
       });
 
@@ -349,29 +358,28 @@ describe("jsonApiClient", () => {
           success: false,
           error: "ErrorValidatingResponseBody",
           rawResponse: response,
-        });
-        expect(mockLogger.error).toHaveBeenCalledWith({
-          message: "ErrorValidatingResponseBody",
-          issues: [
-            {
-              kind: "schema",
-              type: "number",
-              expected: "number",
-              path: "id",
-            },
-            {
-              expected: '"prop"',
-              kind: "schema",
-              path: "nested.prop",
-              type: "object",
-            },
-            {
-              expected: "number",
-              kind: "schema",
-              path: "list.2",
-              type: "number",
-            },
-          ],
+          errorDetails: {
+            issues: [
+              {
+                kind: "schema",
+                type: "number",
+                expected: "number",
+                path: "id",
+              },
+              {
+                expected: '"prop"',
+                kind: "schema",
+                path: "nested.prop",
+                type: "object",
+              },
+              {
+                expected: "number",
+                kind: "schema",
+                path: "list.2",
+                type: "number",
+              },
+            ],
+          },
         });
       });
     });
@@ -396,6 +404,10 @@ describe("jsonApiClient", () => {
           success: false,
           error: "BadRequest",
           rawResponse: response,
+          errorDetails: {
+            code: 400,
+            message: "Bad Request",
+          },
         });
       });
 
@@ -418,10 +430,7 @@ describe("jsonApiClient", () => {
           success: false,
           error: "UnknownErrorResponse",
           rawResponse: response,
-        });
-        expect(mockLogger.error).toHaveBeenCalledWith({
-          message: "UnknownErrorResponse",
-          error: {
+          errorDetails: {
             code: 500,
             message: "Internal Server Error",
           },
@@ -446,6 +455,7 @@ describe("jsonApiClient", () => {
           success: false,
           error: "ErrorParsingErrorResponseBodyJson",
           rawResponse: response,
+          errorDetails: "Invalid JSON",
         });
       });
 
@@ -468,6 +478,16 @@ describe("jsonApiClient", () => {
           success: false,
           error: "ErrorValidatingErrorResponseBody",
           rawResponse: response,
+          errorDetails: {
+            issues: [
+              {
+                kind: "schema",
+                type: "object",
+                expected: '"message"',
+                path: "message",
+              },
+            ],
+          },
         });
       });
 
@@ -490,6 +510,22 @@ describe("jsonApiClient", () => {
           success: false,
           error: "ErrorValidatingErrorResponseBody",
           rawResponse: response,
+          errorDetails: {
+            issues: [
+              {
+                kind: "schema",
+                type: "number",
+                expected: "number",
+                path: "code",
+              },
+              {
+                kind: "schema",
+                type: "string",
+                expected: "string",
+                path: "message",
+              },
+            ],
+          },
         });
       });
     });
@@ -513,10 +549,7 @@ describe("jsonApiClient", () => {
           success: false,
           error: "UnknownErrorResponse",
           rawResponse: response,
-        });
-        expect(mockLogger.error).toHaveBeenCalledWith({
-          message: "UnknownErrorResponse",
-          error: {
+          errorDetails: {
             code: 400,
             message: "Bad Request",
           },
@@ -541,6 +574,10 @@ describe("jsonApiClient", () => {
           success: false,
           error: "NotFound",
           rawResponse: response,
+          errorDetails: {
+            code: 404,
+            message: "Not Found",
+          },
         });
       });
 
