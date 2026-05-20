@@ -33,20 +33,36 @@ export const sendPasskeyRegistrationGeneratedAuditEvent = async (
       event_name: "AMC_PASSKEY_REGISTRATION_GENERATED",
       client_id: request.session.claims.client_id,
       extensions: {
-        "journey-type":
-          reply.client?.journey_types_by_scope?.[request.session.claims.scope],
+        ...(reply.client?.journey_types_by_scope?.[
+          request.session.claims.scope
+        ] !== undefined && {
+          "journey-type":
+            reply.client.journey_types_by_scope[request.session.claims.scope],
+        }),
         passkey: {
           passkey_registration_request: {
-            passkey_authenticator_attachment:
-              registrationOptions.authenticatorSelection
-                ?.authenticatorAttachment,
-            passkey_request_resident_key:
-              registrationOptions.authenticatorSelection?.residentKey,
+            ...(registrationOptions.authenticatorSelection
+              ?.authenticatorAttachment !== undefined && {
+              passkey_authenticator_attachment:
+                registrationOptions.authenticatorSelection
+                  .authenticatorAttachment,
+            }),
+            ...(registrationOptions.authenticatorSelection?.residentKey !==
+              undefined && {
+              passkey_request_resident_key:
+                registrationOptions.authenticatorSelection.residentKey,
+            }),
             passkey_request_supported_algorithms: supportedAlgorithmIDs,
-            passkey_request_user_verification:
-              registrationOptions.authenticatorSelection?.userVerification,
-            passkey_require_resident_key:
-              registrationOptions.authenticatorSelection?.requireResidentKey,
+            ...(registrationOptions.authenticatorSelection?.userVerification !==
+              undefined && {
+              passkey_request_user_verification:
+                registrationOptions.authenticatorSelection.userVerification,
+            }),
+            ...(registrationOptions.authenticatorSelection
+              ?.requireResidentKey !== undefined && {
+              passkey_require_resident_key:
+                registrationOptions.authenticatorSelection.requireResidentKey,
+            }),
           },
         },
       },
@@ -103,12 +119,16 @@ export const sendPasskeyRegistrationFailedAuditEvent = async (
       event_name: "AMC_PASSKEY_REGISTRATION_FAILED",
       client_id: request.session.claims.client_id,
       extensions: {
-        "journey-type":
-          reply.client?.journey_types_by_scope?.[request.session.claims.scope],
+        ...(reply.client?.journey_types_by_scope?.[
+          request.session.claims.scope
+        ] !== undefined && {
+          "journey-type":
+            reply.client.journey_types_by_scope[request.session.claims.scope],
+        }),
         passkey: {
-          passkey_registration_failure_reason: parsedReason.success
-            ? parsedReason.output
-            : undefined,
+          ...(parsedReason.success && {
+            passkey_registration_failure_reason: parsedReason.output,
+          }),
         },
       },
       user: {
@@ -160,7 +180,9 @@ export const sendPasskeyRegistrationSuccessfulAuditEvent = async (
       restricted: {
         ...commonAuditEventProps.restricted,
         passkey: {
-          passkey_credential_id: responseInfo.credentialId,
+          ...(responseInfo.credentialId !== undefined && {
+            passkey_credential_id: responseInfo.credentialId,
+          }),
         },
       },
       user: {

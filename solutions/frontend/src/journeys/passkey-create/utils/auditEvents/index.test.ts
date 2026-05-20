@@ -173,8 +173,56 @@ describe("passkey-create audit events", () => {
       );
     });
 
+    it("excludes journey-type when not available for scope", async () => {
+      delete mockReply.client;
+
+      await sendPasskeyRegistrationGeneratedAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        registrationOptions as PublicKeyCredentialCreationOptionsJSON,
+      );
+
+      const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(eventPayload.extensions).not.toHaveProperty("journey-type");
+    });
+
+    it("excludes optional authenticatorSelection properties when not present", async () => {
+      await sendPasskeyRegistrationGeneratedAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        {
+          ...registrationOptions,
+          authenticatorSelection: {},
+        } as unknown as PublicKeyCredentialCreationOptionsJSON,
+      );
+
+      const passkey_registration_request =
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        mockCreateEvent.mock.calls[0]?.[1].extensions.passkey
+          .passkey_registration_request;
+
+      expect(passkey_registration_request).not.toHaveProperty(
+        "passkey_authenticator_attachment",
+      );
+      expect(passkey_registration_request).not.toHaveProperty(
+        "passkey_request_resident_key",
+      );
+      expect(passkey_registration_request).not.toHaveProperty(
+        "passkey_request_user_verification",
+      );
+      expect(passkey_registration_request).not.toHaveProperty(
+        "passkey_require_resident_key",
+      );
+      expect(passkey_registration_request).toHaveProperty(
+        "passkey_request_supported_algorithms",
+        [-7, -8, -25],
+      );
+    });
+
     it("returns early when awsLambda event is not present", async () => {
-      mockRequest.awsLambda = undefined;
+      delete mockRequest.awsLambda;
 
       await sendPasskeyRegistrationGeneratedAuditEvent(
         mockRequest as FastifyRequest,
@@ -234,28 +282,38 @@ describe("passkey-create audit events", () => {
       );
     });
 
-    it("sends audit event with undefined failure reason when reason is not a known error", async () => {
+    it("excludes failure reason when reason is not a known error", async () => {
       await sendPasskeyRegistrationFailedAuditEvent(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
         "ClientError",
       );
 
-      expect(mockCreateEvent).toHaveBeenCalledWith(
-        "AMC_PASSKEY_REGISTRATION_FAILED",
-        expect.objectContaining({
-          extensions: {
-            "journey-type": "registration",
-            passkey: {
-              passkey_registration_failure_reason: undefined,
-            },
-          },
-        }),
+      const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(eventPayload.extensions.passkey).not.toHaveProperty(
+        "passkey_registration_failure_reason",
       );
     });
 
+    it("excludes journey-type when not available for scope", async () => {
+      delete mockReply.client;
+
+      await sendPasskeyRegistrationFailedAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        "NotAllowedError",
+      );
+
+      const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(eventPayload.extensions).not.toHaveProperty("journey-type");
+    });
+
     it("returns early when awsLambda event is not present", async () => {
-      mockRequest.awsLambda = undefined;
+      delete mockRequest.awsLambda;
 
       await sendPasskeyRegistrationFailedAuditEvent(
         mockRequest as FastifyRequest,
@@ -355,8 +413,35 @@ describe("passkey-create audit events", () => {
       );
     });
 
+    it("excludes passkey_credential_id when credentialId is undefined", async () => {
+      mockExtractRegistrationResponseInfo.mockReturnValue({
+        credentialId: undefined,
+        aaguid: "00000000-0000-0000-0000-000000000000",
+        counter: 0,
+        credentialBackedUp: true,
+        userVerified: true,
+        publicKeyAlgorithm: -7,
+        credentialDeviceType: "multi-device",
+        credentialTransports: ["hybrid", "internal"],
+        fmt: "packed",
+      });
+
+      await sendPasskeyRegistrationSuccessfulAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        registrationResponse,
+      );
+
+      const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(eventPayload.restricted.passkey).not.toHaveProperty(
+        "passkey_credential_id",
+      );
+    });
+
     it("returns early when awsLambda event is not present", async () => {
-      mockRequest.awsLambda = undefined;
+      delete mockRequest.awsLambda;
 
       await sendPasskeyRegistrationSuccessfulAuditEvent(
         mockRequest as FastifyRequest,

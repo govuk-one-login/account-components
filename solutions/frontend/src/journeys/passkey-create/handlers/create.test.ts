@@ -820,8 +820,8 @@ describe("passkey-create handlers", () => {
       });
 
       it("should throw when registration options are missing", async () => {
-        // @ts-expect-error
         mockReply.journeyStates = {
+          // @ts-expect-error
           "passkey-create": {
             send: vi.fn(),
             getSnapshot: vi.fn().mockReturnValue({
