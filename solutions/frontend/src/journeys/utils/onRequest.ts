@@ -32,7 +32,7 @@ export const onRequest = async (
   if (!request.session.claims) {
     request.log.warn("NoClaimsInSession");
     addErrorMetric("NoClaimsInSession");
-    reply.redirect(paths.others.authorizeError.path);
+    reply.redirect(paths.others.pageExpired.path);
     return reply;
   }
 
