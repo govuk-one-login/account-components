@@ -138,17 +138,22 @@ export const sendPasskeyRegistrationFailedAuditEvent = async (
     request.awsLambda.event,
   );
 
-  const parsedReason = v.safeParse(
-    v.picklist([
-      "AbortError",
-      "ConstraintError",
-      "InvalidStateError",
-      "NotAllowedError",
-      "NotSupportedError",
-      "SecurityError",
-      "TypeError",
+  const parsedReason = v.parse(
+    v.fallback(
+      v.picklist([
+        "JavaScriptNotEnabled",
+        "BrowserDoesNotSupportWebAuthn",
+        "AbortError",
+        "ConstraintError",
+        "InvalidStateError",
+        "NotAllowedError",
+        "NotSupportedError",
+        "SecurityError",
+        "TypeError",
+        "UnknownError",
+      ]),
       "UnknownError",
-    ]),
+    ),
     reason,
   );
 
@@ -165,9 +170,8 @@ export const sendPasskeyRegistrationFailedAuditEvent = async (
             reply.client.journey_types_by_scope[request.session.claims.scope],
         }),
         passkey: {
-          ...(parsedReason.success && {
-            passkey_registration_failure_reason: parsedReason.output,
-          }),
+          // @ts-expect-error - will error until "JavaScriptNotEnabled" and "BrowserDoesNotSupportWebAuthn" are added to the failure reasons type. Once they have been added then this comment can be removed.
+          passkey_registration_failure_reason: parsedReason,
         },
       },
       user: {
@@ -243,15 +247,6 @@ export const sendPasskeyEnrolmentFailedAuditEvent = async (
 
   const responseInfo = extractRegistrationResponseInfo(registrationResponse);
 
-  const parsedReason = v.safeParse(
-    v.picklist([
-      "UserVerificationError",
-      "InsecurePublicKeyAlgorithmError",
-      "UnsupportedAuthenticatorError",
-    ]),
-    reason,
-  );
-
   await sendAuditEvent(
     createEvent("AMC_PASSKEY_ENROLMENT_FAILED", {
       ...commonAuditEventProps,
@@ -260,14 +255,12 @@ export const sendPasskeyEnrolmentFailedAuditEvent = async (
       extensions: {
         "journey-type":
           reply.client?.journey_types_by_scope?.[request.session.claims.scope],
-        // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
         passkey: {
           ...buildResponseInfoPasskeyFields(responseInfo),
           passkey_registration_request:
             buildRegistrationRequest(registrationOptions),
-          ...(parsedReason.success && {
-            passkey_enrolment_failure_reason: parsedReason.output,
-          }),
+          // @ts-expect-error - will error until passkey_enrolment_failure_reason os updated to be a string rather than an enum. Once it has been updated then this comment can be removed.
+          passkey_enrolment_failure_reason: reason,
         },
       },
       restricted: {

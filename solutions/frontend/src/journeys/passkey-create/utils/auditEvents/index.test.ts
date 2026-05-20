@@ -284,7 +284,7 @@ describe("passkey-create audit events", () => {
       );
     });
 
-    it("excludes failure reason when reason is not a known error", async () => {
+    it("falls back to UnknownError when reason is not a known error", async () => {
       await sendPasskeyRegistrationFailedAuditEvent(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
@@ -294,8 +294,9 @@ describe("passkey-create audit events", () => {
       const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      expect(eventPayload.extensions.passkey).not.toHaveProperty(
+      expect(eventPayload.extensions.passkey).toHaveProperty(
         "passkey_registration_failure_reason",
+        "UnknownError",
       );
     });
 
@@ -574,23 +575,6 @@ describe("passkey-create audit events", () => {
         expect.objectContaining({
           event_name: "AMC_PASSKEY_ENROLMENT_FAILED",
         }),
-      );
-    });
-
-    it("excludes enrolment failure reason when reason is not a known error", async () => {
-      await sendPasskeyEnrolmentFailedAuditEvent(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-        registrationOptions as PublicKeyCredentialCreationOptionsJSON,
-        registrationResponse,
-        "SomeUnknownError",
-      );
-
-      const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
-
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      expect(eventPayload.extensions.passkey).not.toHaveProperty(
-        "passkey_enrolment_failure_reason",
       );
     });
 

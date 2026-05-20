@@ -303,7 +303,7 @@ export async function postHandler(
       reply,
       registrationOptions,
       body.registrationResponse,
-      "VerificationError",
+      `VerificationError${error instanceof Error ? " - " + error.message : ""}`,
     );
 
     await render(request, reply, {
@@ -353,7 +353,7 @@ export async function postHandler(
       reply,
       registrationOptions,
       body.registrationResponse,
-      "ErrorGetExistingPasskeysForUser",
+      "ErrorGettingExistingPasskeysForUser",
     );
 
     throw new Error(getPasskeysResult.error);

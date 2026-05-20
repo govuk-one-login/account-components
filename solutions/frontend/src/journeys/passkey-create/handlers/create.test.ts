@@ -420,7 +420,7 @@ describe("passkey-create handlers", () => {
           },
           type: "public-key",
         },
-        "ErrorGetExistingPasskeysForUser",
+        "ErrorGettingExistingPasskeysForUser",
       );
     });
 
@@ -745,7 +745,7 @@ describe("passkey-create handlers", () => {
             },
             type: "public-key",
           },
-          "VerificationError",
+          "VerificationError - Verification error",
         );
         expect(mockReply.render).toHaveBeenCalledWith(
           "journeys/passkey-create/templates/create.njk",
