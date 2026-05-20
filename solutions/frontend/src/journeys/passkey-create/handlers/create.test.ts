@@ -19,6 +19,9 @@ const mockGetPasskeyConvenienceMetadataByAaguid = vi.fn();
 const mockStartJourneyAction = vi.fn();
 const mockCompleteJourneyActionSuccessfully = vi.fn();
 const mockCompleteJourneyActionUnsuccessfully = vi.fn();
+const mockSendPasskeyRegistrationGeneratedAuditEvent = vi.fn();
+const mockSendPasskeyRegistrationFailedAuditEvent = vi.fn();
+const mockSendPasskeyRegistrationSuccessfulAuditEvent = vi.fn();
 
 vi.mock(import("@simplewebauthn/server"), () => ({
   generateRegistrationOptions: mockGenerateRegistrationOptions,
@@ -42,6 +45,15 @@ vi.mock(import("../../utils/journeyActions.js"), async (importOriginal) => ({
   startJourneyAction: mockStartJourneyAction,
   completeJourneyActionSuccessfully: mockCompleteJourneyActionSuccessfully,
   completeJourneyActionUnsuccessfully: mockCompleteJourneyActionUnsuccessfully,
+}));
+
+vi.mock(import("../utils/auditEvents/index.js"), () => ({
+  sendPasskeyRegistrationGeneratedAuditEvent:
+    mockSendPasskeyRegistrationGeneratedAuditEvent,
+  sendPasskeyRegistrationFailedAuditEvent:
+    mockSendPasskeyRegistrationFailedAuditEvent,
+  sendPasskeyRegistrationSuccessfulAuditEvent:
+    mockSendPasskeyRegistrationSuccessfulAuditEvent,
 }));
 
 // @ts-expect-error
@@ -180,6 +192,45 @@ describe("passkey-create handlers", () => {
       );
     });
 
+    it("should send passkey registration generated audit event with the registration options", async () => {
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(
+        mockSendPasskeyRegistrationGeneratedAuditEvent,
+      ).toHaveBeenCalledWith(mockRequest, mockReply, {
+        challenge: "test-challenge",
+        rp: { name: "Example Service", id: "example.com" },
+        user: {
+          id: "user-123",
+          name: "test@example.com",
+          displayName: "test@example.com",
+        },
+      });
+    });
+
+    it("should send passkey registration generated audit event on every render including error renders", async () => {
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        true,
+      );
+
+      expect(
+        mockSendPasskeyRegistrationGeneratedAuditEvent,
+      ).toHaveBeenCalledWith(mockRequest, mockReply, {
+        challenge: "test-challenge",
+        rp: { name: "Example Service", id: "example.com" },
+        user: {
+          id: "user-123",
+          name: "test@example.com",
+          displayName: "test@example.com",
+        },
+      });
+    });
+
     it("should render with showErrorUi true when passed", async () => {
       await getHandler(
         mockRequest as FastifyRequest,
@@ -272,6 +323,7 @@ describe("passkey-create handlers", () => {
       expect(mockGenerateRegistrationOptions).toHaveBeenCalledWith(
         expect.objectContaining({
           excludeCredentials: [{ id: "passkey-1" }, { id: "passkey-2" }],
+          supportedAlgorithmIDs: [-7, -8, -257],
         }),
       );
     });
@@ -375,6 +427,12 @@ describe("passkey-create handlers", () => {
           "Count",
           1,
         );
+        expect(
+          mockSendPasskeyRegistrationFailedAuditEvent,
+        ).toHaveBeenCalledWith(mockRequest, mockReply, "InvalidRequestBody");
+        expect(
+          mockSendPasskeyRegistrationFailedAuditEvent,
+        ).toHaveBeenCalledTimes(1);
       });
     });
 
@@ -465,6 +523,21 @@ describe("passkey-create handlers", () => {
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         );
+
+        expect(
+          mockSendPasskeyRegistrationSuccessfulAuditEvent,
+        ).toHaveBeenCalledWith(mockRequest, mockReply, {
+          id: "credential-id",
+          rawId: "credential-id",
+          response: {
+            clientDataJSON: "client-data",
+            attestationObject: "attestation-object",
+          },
+          type: "public-key",
+        });
+        expect(
+          mockSendPasskeyRegistrationSuccessfulAuditEvent,
+        ).toHaveBeenCalledTimes(1);
 
         expect(mockVerifyRegistrationResponse).toHaveBeenCalledWith({
           response: expect.any(Object),
@@ -564,6 +637,17 @@ describe("passkey-create handlers", () => {
           mockReply as FastifyReply,
         );
 
+        expect(
+          mockSendPasskeyRegistrationSuccessfulAuditEvent,
+        ).toHaveBeenCalledWith(mockRequest, mockReply, {
+          id: "credential-id",
+          rawId: "credential-id",
+          response: {
+            clientDataJSON: "client-data",
+            attestationObject: "attestation-object",
+          },
+          type: "public-key",
+        });
         expect(mockReply.render).toHaveBeenCalledWith(
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
@@ -595,6 +679,17 @@ describe("passkey-create handlers", () => {
           mockReply as FastifyReply,
         );
 
+        expect(
+          mockSendPasskeyRegistrationSuccessfulAuditEvent,
+        ).toHaveBeenCalledWith(mockRequest, mockReply, {
+          id: "credential-id",
+          rawId: "credential-id",
+          response: {
+            clientDataJSON: "client-data",
+            attestationObject: "attestation-object",
+          },
+          type: "public-key",
+        });
         expect(mockReply.render).toHaveBeenCalledWith(
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
@@ -671,6 +766,7 @@ describe("passkey-create handlers", () => {
         mockRequest.body = {
           action: "register",
           registrationError: "Client error occurred",
+          registrationErrorDetails: "Something went wrong",
           registrationResponse: JSON.stringify({}),
         };
 
@@ -686,11 +782,16 @@ describe("passkey-create handlers", () => {
           }),
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
-          { error: "Client error occurred" },
+          {
+            error: {
+              name: "Client error occurred",
+              message: "Something went wrong",
+            },
+          },
           "Register passkey - client error",
         );
         expect(mockAddMetadata).toHaveBeenCalledWith(
-          "ClientErrorMessage",
+          "ClientErrorName",
           "Client error occurred",
         );
         expect(mockAddMetadata).toHaveBeenCalledWith(
@@ -702,6 +803,12 @@ describe("passkey-create handlers", () => {
           "Count",
           1,
         );
+        expect(
+          mockSendPasskeyRegistrationFailedAuditEvent,
+        ).toHaveBeenCalledWith(mockRequest, mockReply, "Client error occurred");
+        expect(
+          mockSendPasskeyRegistrationFailedAuditEvent,
+        ).toHaveBeenCalledTimes(1);
       });
 
       it("should throw when journey state is missing", async () => {
