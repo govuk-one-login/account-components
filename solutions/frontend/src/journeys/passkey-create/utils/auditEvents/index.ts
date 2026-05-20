@@ -12,6 +12,7 @@ import {
   type postBodySchema,
 } from "../../handlers/create.js";
 import type { InferOutput } from "valibot";
+import * as v from "valibot";
 
 export const sendPasskeyRegistrationGeneratedAuditEvent = async (
   request: FastifyRequest,
@@ -27,7 +28,6 @@ export const sendPasskeyRegistrationGeneratedAuditEvent = async (
   );
 
   await sendAuditEvent(
-    // @ts-expect-error - AMC_PASSKEY_REGISTRATION_GENERATED not in event catalogue types yet
     createEvent("AMC_PASSKEY_REGISTRATION_GENERATED", {
       ...commonAuditEventProps,
       event_name: "AMC_PASSKEY_REGISTRATION_GENERATED",
@@ -53,6 +53,7 @@ export const sendPasskeyRegistrationGeneratedAuditEvent = async (
       restricted: {
         ...commonAuditEventProps.restricted,
         passkey: {
+          // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
           passkey_excluded_credentials:
             registrationOptions.excludeCredentials?.map((cred) => ({
               passkey_credential_id: cred.id,
@@ -82,8 +83,21 @@ export const sendPasskeyRegistrationFailedAuditEvent = async (
     request.awsLambda.event,
   );
 
+  const parsedReason = v.safeParse(
+    v.picklist([
+      "AbortError",
+      "ConstraintError",
+      "InvalidStateError",
+      "NotAllowedError",
+      "NotSupportedError",
+      "SecurityError",
+      "TypeError",
+      "UnknownError",
+    ]),
+    reason,
+  );
+
   await sendAuditEvent(
-    // @ts-expect-error - AMC_PASSKEY_REGISTRATION_FAILED not in event catalogue types yet
     createEvent("AMC_PASSKEY_REGISTRATION_FAILED", {
       ...commonAuditEventProps,
       event_name: "AMC_PASSKEY_REGISTRATION_FAILED",
@@ -92,7 +106,9 @@ export const sendPasskeyRegistrationFailedAuditEvent = async (
         "journey-type":
           reply.client?.journey_types_by_scope?.[request.session.claims.scope],
         passkey: {
-          passkey_registration_failure_reason: reason,
+          passkey_registration_failure_reason: parsedReason.success
+            ? parsedReason.output
+            : undefined,
         },
       },
       user: {
@@ -122,7 +138,6 @@ export const sendPasskeyRegistrationSuccessfulAuditEvent = async (
   const responseInfo = extractRegistrationResponseInfo(registrationResponse);
 
   await sendAuditEvent(
-    // @ts-expect-error - AMC_PASSKEY_REGISTRATION_SUCCESSFUL not in event catalogue types yet
     createEvent("AMC_PASSKEY_REGISTRATION_SUCCESSFUL", {
       ...commonAuditEventProps,
       event_name: "AMC_PASSKEY_REGISTRATION_SUCCESSFUL",
@@ -135,6 +150,7 @@ export const sendPasskeyRegistrationSuccessfulAuditEvent = async (
           passkey_counter: responseInfo.counter,
           passkey_credential_backed_up: responseInfo.credentialBackedUp,
           passkey_credential_device_type: responseInfo.credentialDeviceType,
+          // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
           passkey_credential_transports: responseInfo.credentialTransports,
           passkey_fmt: responseInfo.fmt,
           passkey_public_key_algorithm: responseInfo.publicKeyAlgorithm,

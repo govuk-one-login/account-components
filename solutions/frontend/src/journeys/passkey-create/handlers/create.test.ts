@@ -766,6 +766,7 @@ describe("passkey-create handlers", () => {
         mockRequest.body = {
           action: "register",
           registrationError: "Client error occurred",
+          registrationErrorDetails: "Something went wrong",
           registrationResponse: JSON.stringify({}),
         };
 
@@ -781,11 +782,16 @@ describe("passkey-create handlers", () => {
           }),
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
-          { error: "Client error occurred" },
+          {
+            error: {
+              name: "Client error occurred",
+              message: "Something went wrong",
+            },
+          },
           "Register passkey - client error",
         );
         expect(mockAddMetadata).toHaveBeenCalledWith(
-          "ClientErrorMessage",
+          "ClientErrorName",
           "Client error occurred",
         );
         expect(mockAddMetadata).toHaveBeenCalledWith(
@@ -814,8 +820,8 @@ describe("passkey-create handlers", () => {
       });
 
       it("should throw when registration options are missing", async () => {
+        // @ts-expect-error
         mockReply.journeyStates = {
-          // @ts-expect-error
           "passkey-create": {
             send: vi.fn(),
             getSnapshot: vi.fn().mockReturnValue({

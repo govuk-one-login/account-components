@@ -174,7 +174,6 @@ describe("passkey-create audit events", () => {
     });
 
     it("returns early when awsLambda event is not present", async () => {
-      // @ts-expect-error
       mockRequest.awsLambda = undefined;
 
       await sendPasskeyRegistrationGeneratedAuditEvent(
@@ -200,11 +199,11 @@ describe("passkey-create audit events", () => {
   });
 
   describe("sendPasskeyRegistrationFailedAuditEvent", () => {
-    it("sends audit event with failure reason", async () => {
+    it("sends audit event with failure reason when reason is a known error", async () => {
       await sendPasskeyRegistrationFailedAuditEvent(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
-        "ClientError",
+        "NotAllowedError",
       );
 
       expect(mockCreateEvent).toHaveBeenCalledWith(
@@ -215,7 +214,7 @@ describe("passkey-create audit events", () => {
           extensions: {
             "journey-type": "registration",
             passkey: {
-              passkey_registration_failure_reason: "ClientError",
+              passkey_registration_failure_reason: "NotAllowedError",
             },
           },
           user: {
@@ -235,8 +234,27 @@ describe("passkey-create audit events", () => {
       );
     });
 
+    it("sends audit event with undefined failure reason when reason is not a known error", async () => {
+      await sendPasskeyRegistrationFailedAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        "ClientError",
+      );
+
+      expect(mockCreateEvent).toHaveBeenCalledWith(
+        "AMC_PASSKEY_REGISTRATION_FAILED",
+        expect.objectContaining({
+          extensions: {
+            "journey-type": "registration",
+            passkey: {
+              passkey_registration_failure_reason: undefined,
+            },
+          },
+        }),
+      );
+    });
+
     it("returns early when awsLambda event is not present", async () => {
-      // @ts-expect-error
       mockRequest.awsLambda = undefined;
 
       await sendPasskeyRegistrationFailedAuditEvent(
@@ -338,7 +356,6 @@ describe("passkey-create audit events", () => {
     });
 
     it("returns early when awsLambda event is not present", async () => {
-      // @ts-expect-error
       mockRequest.awsLambda = undefined;
 
       await sendPasskeyRegistrationSuccessfulAuditEvent(

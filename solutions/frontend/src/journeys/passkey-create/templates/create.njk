@@ -78,6 +78,7 @@
     <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
     <input type="hidden" name="registrationResponse" value='""'>
     <input type="hidden" name="registrationError" value="JavaScriptNotEnabled">   
+    <input type="hidden" name="registrationErrorDetails" value="">   
 
     {{ govukButton({
       text: submitButtonLabel,
@@ -111,13 +112,16 @@
 
           verifyPasskeyForm.querySelector('input[name="registrationResponse"]').value = JSON.stringify(registrationResponse);
           const registrationErrorField = verifyPasskeyForm.querySelector('input[name="registrationError"]');
+          const registrationErrorDetailsField = verifyPasskeyForm.querySelector('input[name="registrationErrorDetails"]');
           registrationErrorField.parentNode.removeChild(registrationErrorField);
+          registrationErrorDetailsField.parentNode.removeChild(registrationErrorDetailsField);
         } else {
           throw new Error("BrowserDoesNotSupportWebAuthn");
         }
       } catch (error) {
         console.error(error);
-        verifyPasskeyForm.querySelector('input[name="registrationError"]').value = `${error.name} - ${error.message}`;
+        verifyPasskeyForm.querySelector('input[name="registrationError"]').value = error.name;
+        verifyPasskeyForm.querySelector('input[name="registrationErrorDetails"]').value = error.message;
       }
     }
 

@@ -1,3 +1,4 @@
+import type { AttestationFormat } from "@simplewebauthn/server/helpers";
 import {
   isoBase64URL,
   decodeCredentialPublicKey,
@@ -23,7 +24,7 @@ interface RegistrationResponseInfo {
   publicKeyAlgorithm: number | undefined;
   credentialDeviceType: HyphenatedCredentialDeviceType | undefined;
   credentialTransports: AuthenticatorTransportFuture[] | undefined;
-  fmt: string | undefined;
+  fmt: AttestationFormat | undefined;
 }
 
 /*
