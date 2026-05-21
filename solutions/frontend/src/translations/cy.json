@@ -40,6 +40,14 @@
       "content": {
         "paragraph1": "Rhowch gynnig arall yn nes ymlaen."
       }
+    },
+    "timeoutError": {
+      "title": "Mae'n ddrwg gennym, mae'r dudalen wedi dod i ben",
+      "header": "Mae'n ddrwg gennym, mae'r dudalen wedi dod i ben",
+      "paragraph1": "Mae hyn oherwydd nad ydych wedi defnyddio eich GOV.UK One Login am fwy nag 30 munud.",
+      "subheading": "Beth allwch chi ei wneud",
+      "paragraph2": "Canslo'r dudalen hon a rhoi cynnig arall.",
+      "buttonText": "Ewch i hafan GOV.UK"
     }
   }
 }

@@ -43,6 +43,7 @@ vi.mock(import("../../utils/paths.js"), () => ({
     },
     others: {
       authorizeError: { path: "/error" },
+      pageExpired: { path: "/page-expired" },
     },
   },
 }));
@@ -188,7 +189,7 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith("/error");
+      expect(mockReply.redirect).toHaveBeenCalledWith("/page-expired");
     });
   });
 

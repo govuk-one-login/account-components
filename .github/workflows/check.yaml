@@ -20,7 +20,7 @@ jobs:
           persist-credentials: false
 
       - name: Check GitHub Actions
-        uses: zizmorcore/zizmor-action@b1d7e1fb5de872772f31590499237e7cce841e8e
+        uses: zizmorcore/zizmor-action@a16621b09c6db4281f81a93cb393b05dcd7b7165
 
       - name: Set up Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e

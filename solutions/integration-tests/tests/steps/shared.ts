@@ -18,6 +18,7 @@ export const pageNameToPath: Record<string, string> = {
   "Testing journey - step 1": "/testing-journey/step-1",
   "Testing journey - enter password": "/testing-journey/enter-password",
   "Testing journey - confirmation": "/testing-journey/confirm",
+  "Page expired": "/page-expired",
 };
 
 Then("the page meets our accessibility standards", async ({ page }) => {

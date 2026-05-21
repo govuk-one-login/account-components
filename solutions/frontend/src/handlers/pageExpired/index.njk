@@ -1,0 +1,17 @@
+{% extends "templates/layout/base-page.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% set pageTitleName = 'error.timeoutError.title' | translate %}
+
+{% block pageContent %}
+  <h1 class="govuk-heading-l">{{ 'error.timeoutError.header' | translate }}</h1>
+  <p class="govuk-body">{{ 'error.timeoutError.paragraph1' | translate }}</p>
+  {% if globals.isAppChannel%}
+  <h2 class="govuk-heading-m">{{ 'error.timeoutError.subheading' | translate }}</h2>
+  <p class="govuk-body">{{ 'error.timeoutError.paragraph2' | translate }}</p>
+  {% else %}
+  {{ govukButton({
+    text: 'error.timeoutError.buttonText' | translate,
+    href: 'https://www.gov.uk'
+  })}}
+  {% endif %}
+{% endblock %}

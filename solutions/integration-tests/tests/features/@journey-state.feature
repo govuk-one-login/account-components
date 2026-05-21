@@ -4,11 +4,11 @@ Feature: Journey state
   Scenario: Journey state navigation behaves as expected
     # Shouldn't be able to access any journey pages before starting journey
     Given I go to the "Testing journey - step 1" page   
-    Then the page path is "Authorize error"
+    Then the page path is "Page expired"
     And I go to the "Testing journey - enter password" page   
-    Then the page path is "Authorize error"
+    Then the page path is "Page expired"
     And I go to the "Testing journey - confirmation" page   
-    Then the page path is "Authorize error"
+    Then the page path is "Page expired"
   
     Given I go to the journey initiator
     And I begin a "testing-journey" journey
