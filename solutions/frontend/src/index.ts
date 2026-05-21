@@ -202,6 +202,13 @@ export const initFrontend = async function () {
     },
   );
 
+  fastify.get(paths.others.pageExpired.path, async function (request, reply) {
+    return (await import("./handlers/pageExpired/index.js")).handler(
+      request,
+      reply,
+    );
+  });
+
   fastify.register(fastifyFormbody);
   fastify.register(fastifyHelmet, {
     enableCSPNonces: true,

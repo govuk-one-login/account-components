@@ -108,6 +108,13 @@ export const paths = {
         contentId: "a1a3dddd-9e65-40dc-9256-12ed597ec40e",
       },
     },
+    pageExpired: {
+      path: "/page-expired",
+      analytics: {
+        ...analyticsDefaults,
+        contentId: "aac61239-99f2-4b93-b947-cf5bd4385f79",
+      },
+    },
   },
 } as const satisfies {
   journeys: {
