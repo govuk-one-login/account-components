@@ -35,8 +35,8 @@
       "buttonText": "Go to the GOV.UK homepage"
     },
     "error500": {
-      "title": "Sorry, there is a problem with the service",
-      "header": "Sorry, there is a problem with the service",
+      "title": "Sorry, there is a problem",
+      "header": "Sorry, there is a problem",
       "content": {
         "paragraph1": "Try again later."
       }

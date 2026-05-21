@@ -42,7 +42,7 @@ vi.mock(import("../../utils/paths.js"), () => ({
       },
     },
     others: {
-      authorizeError: { path: "/authorize-error" },
+      authorizeError: { path: "/error" },
     },
   },
 }));
@@ -188,7 +188,7 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockReply.redirect).toHaveBeenCalledWith("/error");
     });
   });
 
@@ -216,7 +216,7 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockReply.redirect).toHaveBeenCalledWith("/error");
     });
   });
 
@@ -250,7 +250,7 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockReply.redirect).toHaveBeenCalledWith("/error");
     });
   });
 
@@ -305,7 +305,7 @@ describe("onRequest", () => {
       // Test with a path that has no analytics in the mock
       mockReply.globals = {
         currentUrl: {
-          pathname: "/authorize-error",
+          pathname: "/error",
         } as URL,
       };
 
