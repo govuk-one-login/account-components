@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "type": "module",
   "engines": {
-    "node": ">=24.11.1 <25"
+    "node": ">=24.15.0 <25"
   },
   "dependencies": {
     "@aws-lambda-powertools/logger": "^2.33.0",

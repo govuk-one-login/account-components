@@ -6,7 +6,7 @@ updates:
     registries:
       - github-npm-registry
     schedule:
-      interval: daily
+      interval: "0 3 1-7,15-21 * 3"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -35,7 +35,7 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: daily
+      interval: "0 3 1-7,15-21 * 3"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -49,7 +49,7 @@ updates:
   - package-ecosystem: "pre-commit"
     directory: "/"
     schedule:
-      interval: daily
+      interval: "0 3 1-7,15-21 * 3"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -63,7 +63,7 @@ updates:
   - package-ecosystem: "terraform"
     directory: "/solutions/infra"
     schedule:
-      interval: daily
+      interval: "0 3 1-7,15-21 * 3"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -80,7 +80,7 @@ updates:
       - "/solutions/localstack/local-kms"
       - "/solutions/localstack/localstack"
     schedule:
-      interval: daily
+      interval: "0 3 1-7,15-21 * 3"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -94,18 +94,32 @@ updates:
       - dependency-name: "node"
         update-types:
           - "version-update:semver-major"
+      # Can't be updated past the current major & minor version due to localstack changing the licence
       - dependency-name: "localstack/localstack"
-        versions:
-          - "> 4.12.0" # Can't be updated past the 4.12.0 due to localstack changing the licence
+        update-types:
+          - "version-update:semver-major"
+          - "version-update:semver-minor"
 
   - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:
-      interval: daily
+      interval: "0 3 1-7,15-21 * 3"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
       default-days: 7
+    labels:
+      - dependabot
+      - dependencies
+    commit-message:
+      prefix: BAU
+
+  - package-ecosystem: "gitsubmodule"
+    directory: "/submodules/passkey-authenticator-aaguids"
+    schedule:
+      interval: daily
+      time: "03:00"
+      timezone: "Europe/London"
     labels:
       - dependabot
       - dependencies
