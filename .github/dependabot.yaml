@@ -1,5 +1,39 @@
 version: 2
+
 updates:
+  - package-ecosystem: "npm"
+    directories:
+      - "/**"
+    schedule:
+      interval: "cron"
+      cronjob: "0 3 1-7,15-21 * 3"
+      time: "03:00"
+      timezone: "Europe/London"
+    cooldown:
+      default-days: 7
+    labels:
+      - dependabot
+      - dependencies
+    ignore:
+      - dependency-name: "@types/node"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "@govuk-one-login/event-catalogue"
+      - dependency-name: "@govuk-one-login/event-catalogue-schemas"
+    commit-message:
+      prefix: BAU
+    groups:
+      production-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+
   - package-ecosystem: "npm"
     directories:
       - "/**"
@@ -15,23 +49,11 @@ updates:
     labels:
       - dependabot
       - dependencies
-    ignore:
-      - dependency-name: "@types/node"
-        update-types:
-          - "version-update:semver-major"
+    allow:
+      - dependency-name: "@govuk-one-login/event-catalogue"
+      - dependency-name: "@govuk-one-login/event-catalogue-schemas"
     commit-message:
       prefix: BAU
-    groups:
-      production-dependencies:
-        dependency-type: "production"
-        update-types:
-          - "minor"
-          - "patch"
-      dev-dependencies:
-        dependency-type: "development"
-        update-types:
-          - "minor"
-          - "patch"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -117,11 +139,13 @@ updates:
     labels:
       - dependabot
       - dependencies
+    ignore:
+      - dependency-name: "submodules/passkey-authenticator-aaguids"
     commit-message:
       prefix: BAU
 
   - package-ecosystem: "gitsubmodule"
-    directory: "/submodules/passkey-authenticator-aaguids"
+    directory: "/"
     schedule:
       interval: daily
       time: "03:00"
@@ -129,6 +153,8 @@ updates:
     labels:
       - dependabot
       - dependencies
+    allow:
+      - dependency-name: "submodules/passkey-authenticator-aaguids"
     commit-message:
       prefix: BAU
 
@@ -137,3 +163,4 @@ registries:
     type: npm-registry
     url: https://npm.pkg.github.com
     token: ${{ secrets.NODE_AUTH_TOKEN }}
+    replaces-base: true
