@@ -14,74 +14,148 @@ import {
 import type { InferOutput } from "valibot";
 import * as v from "valibot";
 
-export const sendPasskeyRegistrationGeneratedAuditEvent = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
+const buildRegistrationRequest = (
   registrationOptions: PublicKeyCredentialCreationOptionsJSON,
-) => {
+) => ({
+  ...(registrationOptions.authenticatorSelection?.authenticatorAttachment !==
+    undefined && {
+    passkey_authenticator_attachment:
+      registrationOptions.authenticatorSelection.authenticatorAttachment,
+  }),
+  ...(registrationOptions.authenticatorSelection?.residentKey !== undefined && {
+    passkey_request_resident_key:
+      registrationOptions.authenticatorSelection.residentKey,
+  }),
+  passkey_request_supported_algorithms: supportedAlgorithmIDs,
+  ...(registrationOptions.authenticatorSelection?.userVerification !==
+    undefined && {
+    passkey_request_user_verification:
+      registrationOptions.authenticatorSelection.userVerification,
+  }),
+  ...(registrationOptions.authenticatorSelection?.requireResidentKey !==
+    undefined && {
+    passkey_require_resident_key:
+      registrationOptions.authenticatorSelection.requireResidentKey,
+  }),
+});
+
+const buildExcludedCredentials = (
+  registrationOptions: PublicKeyCredentialCreationOptionsJSON,
+) =>
+  registrationOptions.excludeCredentials?.map((cred) => ({
+    passkey_credential_id: cred.id,
+    ...(cred.transports !== undefined && {
+      passkey_credential_transports: cred.transports,
+    }),
+  })) ?? [];
+
+const buildResponseInfoPasskeyFields = (
+  responseInfo: ReturnType<typeof extractRegistrationResponseInfo>,
+) => ({
+  ...(responseInfo.aaguid !== undefined && {
+    passkey_aaguid: responseInfo.aaguid,
+  }),
+  ...(responseInfo.counter !== undefined && {
+    passkey_counter: responseInfo.counter,
+  }),
+  ...(responseInfo.credentialBackedUp !== undefined && {
+    passkey_credential_backed_up: responseInfo.credentialBackedUp,
+  }),
+  ...(responseInfo.credentialDeviceType !== undefined && {
+    passkey_credential_device_type: responseInfo.credentialDeviceType,
+  }),
+  ...(responseInfo.credentialTransports !== undefined && {
+    passkey_credential_transports: responseInfo.credentialTransports,
+  }),
+  ...(responseInfo.fmt !== undefined && {
+    passkey_fmt: responseInfo.fmt,
+  }),
+  ...(responseInfo.publicKeyAlgorithm !== undefined && {
+    passkey_public_key_algorithm: responseInfo.publicKeyAlgorithm,
+  }),
+  ...(responseInfo.userVerified !== undefined && {
+    passkey_user_verified: responseInfo.userVerified,
+  }),
+});
+
+const getBaseEventProps = (request: FastifyRequest, reply: FastifyReply) => {
   assert.ok(request.session.claims);
 
-  if (!request.awsLambda?.event) return;
+  if (!request.awsLambda?.event) return undefined;
 
   const commonAuditEventProps = getCommonAuditEventProps(
     request.awsLambda.event,
   );
 
+  return {
+    commonAuditEventProps,
+    claims: request.session.claims,
+    journeyType:
+      reply.client?.journey_types_by_scope?.[request.session.claims.scope],
+    user: {
+      ...commonAuditEventProps.user,
+      email: request.session.claims.email,
+      user_id: request.session.claims.sub,
+    },
+  };
+};
+
+const buildEnrolmentEventPayload = (
+  registrationOptions: PublicKeyCredentialCreationOptionsJSON,
+  registrationResponse: InferOutput<
+    typeof postBodySchema
+  >["registrationResponse"],
+) => {
+  const responseInfo = extractRegistrationResponseInfo(registrationResponse);
+
+  return {
+    responseInfo,
+    extensions: {
+      ...buildResponseInfoPasskeyFields(responseInfo),
+      passkey_registration_request:
+        buildRegistrationRequest(registrationOptions),
+    },
+    restricted: {
+      ...(responseInfo.credentialId !== undefined && {
+        passkey_credential_id: responseInfo.credentialId,
+      }),
+      passkey_excluded_credentials:
+        buildExcludedCredentials(registrationOptions),
+    },
+  };
+};
+
+export const sendPasskeyRegistrationGeneratedAuditEvent = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+  registrationOptions: PublicKeyCredentialCreationOptionsJSON,
+) => {
+  const base = getBaseEventProps(request, reply);
+  if (!base) return;
+
   await sendAuditEvent(
     createEvent("AMC_PASSKEY_REGISTRATION_GENERATED", {
-      ...commonAuditEventProps,
+      ...base.commonAuditEventProps,
       event_name: "AMC_PASSKEY_REGISTRATION_GENERATED",
-      client_id: request.session.claims.client_id,
+      client_id: base.claims.client_id,
       extensions: {
-        ...(reply.client?.journey_types_by_scope?.[
-          request.session.claims.scope
-        ] !== undefined && {
-          "journey-type":
-            reply.client.journey_types_by_scope[request.session.claims.scope],
+        ...(base.journeyType !== undefined && {
+          "journey-type": base.journeyType,
         }),
         passkey: {
-          passkey_registration_request: {
-            ...(registrationOptions.authenticatorSelection
-              ?.authenticatorAttachment !== undefined && {
-              passkey_authenticator_attachment:
-                registrationOptions.authenticatorSelection
-                  .authenticatorAttachment,
-            }),
-            ...(registrationOptions.authenticatorSelection?.residentKey !==
-              undefined && {
-              passkey_request_resident_key:
-                registrationOptions.authenticatorSelection.residentKey,
-            }),
-            passkey_request_supported_algorithms: supportedAlgorithmIDs,
-            ...(registrationOptions.authenticatorSelection?.userVerification !==
-              undefined && {
-              passkey_request_user_verification:
-                registrationOptions.authenticatorSelection.userVerification,
-            }),
-            ...(registrationOptions.authenticatorSelection
-              ?.requireResidentKey !== undefined && {
-              passkey_require_resident_key:
-                registrationOptions.authenticatorSelection.requireResidentKey,
-            }),
-          },
+          passkey_registration_request:
+            buildRegistrationRequest(registrationOptions),
         },
       },
       restricted: {
-        ...commonAuditEventProps.restricted,
+        ...base.commonAuditEventProps.restricted,
         passkey: {
           // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
           passkey_excluded_credentials:
-            registrationOptions.excludeCredentials?.map((cred) => ({
-              passkey_credential_id: cred.id,
-              passkey_credential_transports: cred.transports,
-            })) ?? [],
+            buildExcludedCredentials(registrationOptions),
         },
       },
-      user: {
-        ...commonAuditEventProps.user,
-        email: request.session.claims.email,
-        user_id: request.session.claims.sub,
-      },
+      user: base.user,
     }),
   );
 };
@@ -91,51 +165,41 @@ export const sendPasskeyRegistrationFailedAuditEvent = async (
   reply: FastifyReply,
   reason: string,
 ) => {
-  assert.ok(request.session.claims);
+  const base = getBaseEventProps(request, reply);
+  if (!base) return;
 
-  if (!request.awsLambda?.event) return;
-
-  const commonAuditEventProps = getCommonAuditEventProps(
-    request.awsLambda.event,
-  );
-
-  const parsedReason = v.safeParse(
-    v.picklist([
-      "AbortError",
-      "ConstraintError",
-      "InvalidStateError",
-      "NotAllowedError",
-      "NotSupportedError",
-      "SecurityError",
-      "TypeError",
+  const parsedReason = v.parse(
+    v.fallback(
+      v.picklist([
+        "JavaScriptNotEnabled",
+        "BrowserDoesNotSupportWebAuthn",
+        "AbortError",
+        "ConstraintError",
+        "InvalidStateError",
+        "NotAllowedError",
+        "NotSupportedError",
+        "SecurityError",
+        "TypeError",
+        "UnknownError",
+      ]),
       "UnknownError",
-    ]),
+    ),
     reason,
   );
 
   await sendAuditEvent(
     createEvent("AMC_PASSKEY_REGISTRATION_FAILED", {
-      ...commonAuditEventProps,
+      ...base.commonAuditEventProps,
       event_name: "AMC_PASSKEY_REGISTRATION_FAILED",
-      client_id: request.session.claims.client_id,
+      client_id: base.claims.client_id,
       extensions: {
-        ...(reply.client?.journey_types_by_scope?.[
-          request.session.claims.scope
-        ] !== undefined && {
-          "journey-type":
-            reply.client.journey_types_by_scope[request.session.claims.scope],
-        }),
+        "journey-type": base.journeyType,
         passkey: {
-          ...(parsedReason.success && {
-            passkey_registration_failure_reason: parsedReason.output,
-          }),
+          // @ts-expect-error - will error until "JavaScriptNotEnabled" and "BrowserDoesNotSupportWebAuthn" are added to the failure reasons type. Once they have been added then this comment can be removed.
+          passkey_registration_failure_reason: parsedReason,
         },
       },
-      user: {
-        ...commonAuditEventProps.user,
-        email: request.session.claims.email,
-        user_id: request.session.claims.sub,
-      },
+      user: base.user,
     }),
   );
 };
@@ -147,48 +211,109 @@ export const sendPasskeyRegistrationSuccessfulAuditEvent = async (
     typeof postBodySchema
   >["registrationResponse"],
 ) => {
-  assert.ok(request.session.claims);
-
-  if (!request.awsLambda?.event) return;
-
-  const commonAuditEventProps = getCommonAuditEventProps(
-    request.awsLambda.event,
-  );
+  const base = getBaseEventProps(request, reply);
+  if (!base) return;
 
   const responseInfo = extractRegistrationResponseInfo(registrationResponse);
 
   await sendAuditEvent(
     createEvent("AMC_PASSKEY_REGISTRATION_SUCCESSFUL", {
-      ...commonAuditEventProps,
+      ...base.commonAuditEventProps,
       event_name: "AMC_PASSKEY_REGISTRATION_SUCCESSFUL",
-      client_id: request.session.claims.client_id,
+      client_id: base.claims.client_id,
       extensions: {
-        "journey-type":
-          reply.client?.journey_types_by_scope?.[request.session.claims.scope],
-        passkey: {
-          passkey_aaguid: responseInfo.aaguid,
-          passkey_counter: responseInfo.counter,
-          passkey_credential_backed_up: responseInfo.credentialBackedUp,
-          passkey_credential_device_type: responseInfo.credentialDeviceType,
-          // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
-          passkey_credential_transports: responseInfo.credentialTransports,
-          passkey_fmt: responseInfo.fmt,
-          passkey_public_key_algorithm: responseInfo.publicKeyAlgorithm,
-          passkey_user_verified: responseInfo.userVerified,
-        },
+        "journey-type": base.journeyType,
+        // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
+        passkey: buildResponseInfoPasskeyFields(responseInfo),
       },
       restricted: {
-        ...commonAuditEventProps.restricted,
+        ...base.commonAuditEventProps.restricted,
         passkey: {
           ...(responseInfo.credentialId !== undefined && {
             passkey_credential_id: responseInfo.credentialId,
           }),
         },
       },
+      user: base.user,
+    }),
+  );
+};
+
+export const sendPasskeyEnrolmentFailedAuditEvent = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+  registrationOptions: PublicKeyCredentialCreationOptionsJSON,
+  registrationResponse: InferOutput<
+    typeof postBodySchema
+  >["registrationResponse"],
+  reason: string,
+) => {
+  const base = getBaseEventProps(request, reply);
+  if (!base) return;
+
+  const enrolment = buildEnrolmentEventPayload(
+    registrationOptions,
+    registrationResponse,
+  );
+
+  await sendAuditEvent(
+    createEvent("AMC_PASSKEY_ENROLMENT_FAILED", {
+      ...base.commonAuditEventProps,
+      event_name: "AMC_PASSKEY_ENROLMENT_FAILED",
+      client_id: base.claims.client_id,
+      extensions: {
+        "journey-type": base.journeyType,
+        passkey: {
+          ...enrolment.extensions,
+          // @ts-expect-error - will error until passkey_enrolment_failure_reason os updated to be a string rather than an enum. Once it has been updated then this comment can be removed.
+          passkey_enrolment_failure_reason: reason,
+        },
+      },
+      restricted: {
+        ...base.commonAuditEventProps.restricted,
+        // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
+        passkey: enrolment.restricted,
+      },
+      user: base.user,
+    }),
+  );
+};
+
+export const sendPasskeyEnrolmentSuccessfulAuditEvent = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+  registrationOptions: PublicKeyCredentialCreationOptionsJSON,
+  registrationResponse: InferOutput<
+    typeof postBodySchema
+  >["registrationResponse"],
+  passkeyCount: number,
+) => {
+  const base = getBaseEventProps(request, reply);
+  if (!base) return;
+
+  const enrolment = buildEnrolmentEventPayload(
+    registrationOptions,
+    registrationResponse,
+  );
+
+  await sendAuditEvent(
+    createEvent("AMC_PASSKEY_ENROLMENT_SUCCESSFUL", {
+      ...base.commonAuditEventProps,
+      event_name: "AMC_PASSKEY_ENROLMENT_SUCCESSFUL",
+      client_id: base.claims.client_id,
+      extensions: {
+        "journey-type": base.journeyType,
+        // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
+        passkey: enrolment.extensions,
+      },
+      restricted: {
+        ...base.commonAuditEventProps.restricted,
+        // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
+        passkey: enrolment.restricted,
+      },
       user: {
-        ...commonAuditEventProps.user,
-        email: request.session.claims.email,
-        user_id: request.session.claims.sub,
+        ...base.user,
+        passkey_count: passkeyCount,
       },
     }),
   );

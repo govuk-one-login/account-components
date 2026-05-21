@@ -34,6 +34,8 @@ import {
   sendPasskeyRegistrationGeneratedAuditEvent,
   sendPasskeyRegistrationFailedAuditEvent,
   sendPasskeyRegistrationSuccessfulAuditEvent,
+  sendPasskeyEnrolmentFailedAuditEvent,
+  sendPasskeyEnrolmentSuccessfulAuditEvent,
 } from "../utils/auditEvents/index.js";
 
 export const postBodySchema = v.object({
@@ -296,6 +298,14 @@ export async function postHandler(
     request.log.warn({ error }, "Register passkey - verification error");
     addErrorMetric("VerificationError");
 
+    await sendPasskeyEnrolmentFailedAuditEvent(
+      request,
+      reply,
+      registrationOptions,
+      body.registrationResponse,
+      `VerificationError${error instanceof Error ? " - " + error.message : ""}`,
+    );
+
     await render(request, reply, {
       showErrorUi: true,
     });
@@ -305,6 +315,14 @@ export async function postHandler(
   if (!verification.verified) {
     request.log.warn("Register passkey - verification failed");
     addErrorMetric("VerificationFailed");
+
+    await sendPasskeyEnrolmentFailedAuditEvent(
+      request,
+      reply,
+      registrationOptions,
+      body.registrationResponse,
+      "VerificationFailed",
+    );
 
     await render(request, reply, {
       showErrorUi: true,
@@ -330,6 +348,14 @@ export async function postHandler(
   );
 
   if (!getPasskeysResult.success) {
+    await sendPasskeyEnrolmentFailedAuditEvent(
+      request,
+      reply,
+      registrationOptions,
+      body.registrationResponse,
+      "ErrorGettingExistingPasskeysForUser",
+    );
+
     throw new Error(getPasskeysResult.error);
   }
 
@@ -340,6 +366,14 @@ export async function postHandler(
   ) {
     request.log.warn("Register passkey - user has maximum number of passkeys");
     metrics.addMetric("UserHasMaximumNumberOfPasskeys", MetricUnit.Count, 1);
+
+    await sendPasskeyEnrolmentFailedAuditEvent(
+      request,
+      reply,
+      registrationOptions,
+      body.registrationResponse,
+      "UserHasMaximumNumberOfPasskeys",
+    );
 
     await render(request, reply, {
       showErrorUi: true,
@@ -367,6 +401,14 @@ export async function postHandler(
   );
 
   if (!savePasskeyResult.success) {
+    await sendPasskeyEnrolmentFailedAuditEvent(
+      request,
+      reply,
+      registrationOptions,
+      body.registrationResponse,
+      "ErrorSavingPasskey",
+    );
+
     throw new Error(savePasskeyResult.error);
   }
 
@@ -387,6 +429,14 @@ export async function postHandler(
             NotificationType.CREATE_PASSKEY_WITHOUT_DISPLAY_NAME,
           emailAddress: request.session.claims.email,
         },
+  );
+
+  await sendPasskeyEnrolmentSuccessfulAuditEvent(
+    request,
+    reply,
+    registrationOptions,
+    body.registrationResponse,
+    getPasskeysResult.result.passkeys.length + 1,
   );
 
   await completeJourneyActionSuccessfully<"passkeyCreate">(

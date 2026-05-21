@@ -116,7 +116,9 @@
           registrationErrorField.parentNode.removeChild(registrationErrorField);
           registrationErrorDetailsField.parentNode.removeChild(registrationErrorDetailsField);
         } else {
-          throw new Error("BrowserDoesNotSupportWebAuthn");
+          const error = new Error();
+          error.name = "BrowserDoesNotSupportWebAuthn";
+          throw error;
         }
       } catch (error) {
         console.error(error);
