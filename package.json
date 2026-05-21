@@ -41,7 +41,7 @@
     "i18next": "^26.1.0",
     "i18next-http-middleware": "^3.9.6",
     "jose": "^6.2.3",
-    "notifications-node-client": "^8.3.2",
+    "notifications-node-client": "^8.4.0",
     "nunjucks": "^3.2.4",
     "obscenity": "^0.4.6",
     "valibot": "^1.4.0",
