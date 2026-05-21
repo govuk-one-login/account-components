@@ -35,6 +35,7 @@ export class AccountDataApiClient extends JsonApiClient {
         );
 
         const errorsCodesMap = {
+          "4010": "unauthorized_request",
           "5000": "invalid_request_body",
         } as const;
 
