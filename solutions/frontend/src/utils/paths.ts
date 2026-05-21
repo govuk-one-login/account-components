@@ -101,7 +101,13 @@ export const paths = {
   },
   others: {
     authorize: { path: "/authorize" },
-    authorizeError: { path: "/authorize-error" },
+    authorizeError: {
+      path: "/error",
+      analytics: {
+        ...analyticsDefaults,
+        contentId: "a1a3dddd-9e65-40dc-9256-12ed597ec40e",
+      },
+    },
   },
 } as const satisfies {
   journeys: {

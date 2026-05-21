@@ -35,8 +35,8 @@
       "buttonText": "Ewch i hafan GOV.UK"
     },
     "error500": {
-      "title": "Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth",
-      "header": "Mae’n ddrwg gennym, mae problem gyda’r gwasanaeth",
+      "title": "Mae'n ddrwg gennym, mae problem",
+      "header": "Mae'n ddrwg gennym, mae problem",
       "content": {
         "paragraph1": "Rhowch gynnig arall yn nes ymlaen."
       }
