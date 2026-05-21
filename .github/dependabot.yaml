@@ -6,7 +6,8 @@ updates:
     registries:
       - github-npm-registry
     schedule:
-      interval: "0 3 1-7,15-21 * 3"
+      interval: "cron"
+      cronjob: "0 3 1-7,15-21 * 3"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -35,7 +36,8 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "0 3 1-7,15-21 * 3"
+      interval: "cron"
+      cronjob: "0 3 1-7,15-21 * 3"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -49,7 +51,8 @@ updates:
   - package-ecosystem: "pre-commit"
     directory: "/"
     schedule:
-      interval: "0 3 1-7,15-21 * 3"
+      interval: "cron"
+      cronjob: "0 3 1-7,15-21 * 3"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -63,7 +66,8 @@ updates:
   - package-ecosystem: "terraform"
     directory: "/solutions/infra"
     schedule:
-      interval: "0 3 1-7,15-21 * 3"
+      interval: "cron"
+      cronjob: "0 3 1-7,15-21 * 3"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -80,7 +84,8 @@ updates:
       - "/solutions/localstack/local-kms"
       - "/solutions/localstack/localstack"
     schedule:
-      interval: "0 3 1-7,15-21 * 3"
+      interval: "cron"
+      cronjob: "0 3 1-7,15-21 * 3"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -103,7 +108,8 @@ updates:
   - package-ecosystem: "gitsubmodule"
     directory: "/"
     schedule:
-      interval: "0 3 1-7,15-21 * 3"
+      interval: "cron"
+      cronjob: "0 3 1-7,15-21 * 3"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
