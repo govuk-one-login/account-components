@@ -493,6 +493,11 @@ describe("passkey-create handlers", () => {
           "Count",
           1,
         );
+        expect(mockReply.analytics).toStrictEqual(
+          expect.objectContaining({
+            reason: "InvalidRequestBody",
+          }),
+        );
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
         ).toHaveBeenCalledWith(mockRequest, mockReply, "InvalidRequestBody");
@@ -932,6 +937,11 @@ describe("passkey-create handlers", () => {
           "PasskeyCreateError",
           "Count",
           1,
+        );
+        expect(mockReply.analytics).toStrictEqual(
+          expect.objectContaining({
+            reason: "Client error occurred",
+          }),
         );
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
