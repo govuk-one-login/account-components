@@ -36,6 +36,7 @@ import {
   sendPasskeyRegistrationSuccessfulAuditEvent,
   sendPasskeyEnrolmentFailedAuditEvent,
   sendPasskeyEnrolmentSuccessfulAuditEvent,
+  passkeyRegistrationFailureReason,
 } from "../utils/auditEvents/index.js";
 
 export const postBodySchema = v.object({
@@ -261,16 +262,17 @@ export async function postHandler(
     metrics.addMetadata("ClientErrorName", body.registrationError);
     addErrorMetric("ClientError");
 
-    reply.analytics = {
-      ...reply.analytics,
-      reason: body.registrationError,
-    };
-
-    await sendPasskeyRegistrationFailedAuditEvent(
-      request,
-      reply,
+    const reason = v.parse(
+      v.fallback(v.picklist(passkeyRegistrationFailureReason), "UnknownError"),
       body.registrationError,
     );
+
+    reply.analytics = {
+      ...reply.analytics,
+      reason,
+    };
+
+    await sendPasskeyRegistrationFailedAuditEvent(request, reply, reason);
 
     await render(request, reply, {
       showErrorUi: true,

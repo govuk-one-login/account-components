@@ -49,7 +49,8 @@ vi.mock(import("../../utils/journeyActions.js"), async (importOriginal) => ({
   completeJourneyActionUnsuccessfully: mockCompleteJourneyActionUnsuccessfully,
 }));
 
-vi.mock(import("../utils/auditEvents/index.js"), () => ({
+vi.mock(import("../utils/auditEvents/index.js"), async (importOriginal) => ({
+  ...(await importOriginal()),
   sendPasskeyRegistrationGeneratedAuditEvent:
     mockSendPasskeyRegistrationGeneratedAuditEvent,
   sendPasskeyRegistrationFailedAuditEvent:
@@ -940,12 +941,12 @@ describe("passkey-create handlers", () => {
         );
         expect(mockReply.analytics).toStrictEqual(
           expect.objectContaining({
-            reason: "Client error occurred",
+            reason: "UnknownError",
           }),
         );
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
-        ).toHaveBeenCalledWith(mockRequest, mockReply, "Client error occurred");
+        ).toHaveBeenCalledWith(mockRequest, mockReply, "UnknownError");
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
         ).toHaveBeenCalledTimes(1);

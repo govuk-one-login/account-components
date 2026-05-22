@@ -12,7 +12,20 @@ import {
   type postBodySchema,
 } from "../../handlers/create.js";
 import type { InferOutput } from "valibot";
-import * as v from "valibot";
+
+export const passkeyRegistrationFailureReason = [
+  "InvalidRequestBody",
+  "JavaScriptNotEnabled",
+  "BrowserDoesNotSupportWebAuthn",
+  "AbortError",
+  "ConstraintError",
+  "InvalidStateError",
+  "NotAllowedError",
+  "NotSupportedError",
+  "SecurityError",
+  "TypeError",
+  "UnknownError",
+] as const;
 
 const buildRegistrationRequest = (
   registrationOptions: PublicKeyCredentialCreationOptionsJSON,
@@ -163,30 +176,10 @@ export const sendPasskeyRegistrationGeneratedAuditEvent = async (
 export const sendPasskeyRegistrationFailedAuditEvent = async (
   request: FastifyRequest,
   reply: FastifyReply,
-  reason: string,
+  reason: (typeof passkeyRegistrationFailureReason)[number],
 ) => {
   const base = getBaseEventProps(request, reply);
   if (!base) return;
-
-  const parsedReason = v.parse(
-    v.fallback(
-      v.picklist([
-        "InvalidRequestBody",
-        "JavaScriptNotEnabled",
-        "BrowserDoesNotSupportWebAuthn",
-        "AbortError",
-        "ConstraintError",
-        "InvalidStateError",
-        "NotAllowedError",
-        "NotSupportedError",
-        "SecurityError",
-        "TypeError",
-        "UnknownError",
-      ]),
-      "UnknownError",
-    ),
-    reason,
-  );
 
   await sendAuditEvent(
     createEvent("AMC_PASSKEY_REGISTRATION_FAILED", {
@@ -196,8 +189,8 @@ export const sendPasskeyRegistrationFailedAuditEvent = async (
       extensions: {
         "journey-type": base.journeyType,
         passkey: {
-          // @ts-expect-error - will error until "JavaScriptNotEnabled" and "BrowserDoesNotSupportWebAuthn" are added to the failure reasons type. Once they have been added then this comment can be removed.
-          passkey_registration_failure_reason: parsedReason,
+          // @ts-expect-error - will error until "InvalidRequestBody", "JavaScriptNotEnabled" and "BrowserDoesNotSupportWebAuthn" are added to the failure reasons type. Once they have been added then this comment can be removed.
+          passkey_registration_failure_reason: reason,
         },
       },
       user: base.user,
