@@ -128,6 +128,7 @@
                 content_id: "{{ reply.analytics.contentId }}",
                 logged_in_status: {% if reply.client.consider_user_logged_in === true %}true{% else %}false{% endif %},
                 dynamic: {% if reply.analytics.dynamic === false %}false{% else %}true{% endif %},
+                reason: "{{ reply.analytics.reason }}",
             });
         }
       });

@@ -2369,8 +2369,6 @@ Resources:
         Variables:
           SESSIONS_SIGNER: !Sub "{{resolve:secretsmanager:${SessionSecret}:SecretString}}"
           SESSIONS_TABLE_NAME: !Sub ${AWS::StackName}-SessionStore
-          ROOT_DOMAIN:
-            !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
           ROOT_DOMAIN_WITH_ENV:
             !FindInMap [
               EnvironmentConfiguration,

@@ -66,6 +66,7 @@ declare module "fastify" {
           taxonomyLevel3?: string;
           dynamic?: boolean;
           isSelectContentTrackingEnabled?: boolean;
+          reason?: string;
         }>
       | undefined;
   }
