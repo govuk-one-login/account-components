@@ -3,30 +3,28 @@ import type { PathsMap } from "../paths.js";
 import { paths } from "../paths.js";
 import { Scope } from "../../../../commons/utils/commonTypes.js";
 
+const findAnalytics = (pathsMap: PathsMap, pathname: string) =>
+  Object.values(pathsMap).find(
+    (path) => path.path === pathname && path.analytics,
+  )?.analytics;
+
 export const setAnalyticsForPath = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const url = new URL(request.url, "http://localhost");
-  const scopes = Object.values(Scope);
 
-  for (const scope of scopes) {
-    const states = paths.journeys[scope];
+  const analytics = findAnalytics(paths.others, url.pathname);
+  if (analytics) {
+    reply.analytics = analytics;
+  }
 
-    for (const state of Object.values(states)) {
+  for (const scope of Object.values(Scope)) {
+    for (const state of Object.values(paths.journeys[scope])) {
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      for (const path of Object.values(state as PathsMap)) {
-        if (path.path === url.pathname && path.analytics) {
-          reply.analytics = path.analytics;
-          return;
-        }
-      }
-    }
-
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-    for (const path of Object.values(paths.others as PathsMap)) {
-      if (path.path === url.pathname && path.analytics) {
-        reply.analytics = path.analytics;
+      const analytics = findAnalytics(state as PathsMap, url.pathname);
+      if (analytics) {
+        reply.analytics = analytics;
         return;
       }
     }
