@@ -64,6 +64,18 @@ vi.mock(import("../../../utils/getClaimsSchema.js"), () => ({
   getClaimsSchema: mockGetClaimsSchema,
 }));
 
+const mockJourneys = vi.fn();
+
+// @ts-expect-error
+vi.mock(import("../../../journeys/utils/config.js"), () => ({
+  journeys: new Proxy(
+    {},
+    {
+      get: () => mockJourneys,
+    },
+  ),
+}));
+
 let verifyJwt: typeof verifyJwtForType;
 
 describe("verifyJwt", () => {
@@ -102,11 +114,16 @@ describe("verifyJwt", () => {
   });
 
   it("verifies JWT with ES256 algorithm", async () => {
-    const payload = { sub: "user123", aud: "test-client" };
-    const claimsSchema = v.object({ sub: v.string(), aud: v.string() });
+    const payload = { sub: "user123", aud: "test-client", scope: "openid" };
+    const claimsSchema = v.object({
+      sub: v.string(),
+      aud: v.string(),
+      scope: v.string(),
+    });
 
     mockJwtVerify.mockResolvedValue({ payload });
     mockGetClaimsSchema.mockReturnValue(claimsSchema);
+    mockJourneys.mockResolvedValue({ requiredClaims: [] });
 
     const result = await verifyJwt(
       reply,
@@ -441,12 +458,55 @@ describe("verifyJwt", () => {
     );
   });
 
-  it("works without state parameter", async () => {
-    const payload = { sub: "user123", aud: "test-client" };
-    const claimsSchema = v.object({ sub: v.string(), aud: v.string() });
+  it("returns ErrorResponse when required claims are missing", async () => {
+    const payload = { sub: "user123", aud: "test-client", scope: "openid" };
+    const claimsSchema = v.object({
+      sub: v.string(),
+      aud: v.string(),
+      scope: v.string(),
+    });
 
     mockJwtVerify.mockResolvedValue({ payload });
     mockGetClaimsSchema.mockReturnValue(claimsSchema);
+    mockJourneys.mockResolvedValue({
+      requiredClaims: ["account_management_api_access_token"],
+    });
+
+    const result = await verifyJwt(
+      reply,
+      signedJwt,
+      client,
+      redirectUri,
+      scope,
+      state,
+    );
+
+    expect(result).toBeInstanceOf(ErrorResponse);
+
+    assert.ok(result instanceof ErrorResponse);
+
+    expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
+      "error=invalid_request",
+    );
+    expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
+      "error_description=E1013",
+    );
+    expect(addAuthorizeErrorMetric).toHaveBeenCalledWith(
+      "RequiredClaimsMissing",
+    );
+  });
+
+  it("works without state parameter", async () => {
+    const payload = { sub: "user123", aud: "test-client", scope: "openid" };
+    const claimsSchema = v.object({
+      sub: v.string(),
+      aud: v.string(),
+      scope: v.string(),
+    });
+
+    mockJwtVerify.mockResolvedValue({ payload });
+    mockGetClaimsSchema.mockReturnValue(claimsSchema);
+    mockJourneys.mockResolvedValue({ requiredClaims: [] });
 
     const result = await verifyJwt(
       reply,
