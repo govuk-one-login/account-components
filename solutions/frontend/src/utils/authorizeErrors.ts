@@ -60,6 +60,10 @@ export const authorizeErrors = {
     description: "E1012",
     type: "invalid_request",
   },
+  requiredClaimsMissing: {
+    description: "E1013",
+    type: "invalid_request",
+  },
   jwksTimeout: {
     description: "E2001",
     type: "unauthorized_client",

@@ -63,7 +63,6 @@ vi.mock(import("./config.js"), () => ({
       stateMachine: {
         resolveState: vi.fn().mockReturnValue({}),
       },
-      requiredClaims: [],
     }),
   },
 }));
@@ -147,7 +146,6 @@ describe("onRequest", () => {
     vi.mocked(journeys["test-scope" as Scope]).mockResolvedValue({
       translations: { en: { key: "value" } },
       stateMachine: { resolveState: vi.fn().mockReturnValue({}) },
-      requiredClaims: [],
     } as any);
   });
 
@@ -201,40 +199,6 @@ describe("onRequest", () => {
       expect(metrics.addMetadata).toHaveBeenCalledWith(
         "error_type",
         "ClientNotFound",
-      );
-      expect(metrics.addMetric).toHaveBeenCalledWith(
-        "JourneyRequestError",
-        "Count",
-        1,
-      );
-      expect(mockReply.redirect).toHaveBeenCalledWith("/error");
-    });
-  });
-
-  describe("when required claims are missing", () => {
-    beforeEach(() => {
-      mockSession.claims = {
-        client_id: "test-client-id",
-        scope: "test-scope",
-      } as unknown as Claims;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      vi.mocked(journeys["test-scope" as Scope]).mockResolvedValue({
-        translations: { en: { key: "value" } },
-        stateMachine: { resolveState: vi.fn().mockReturnValue({}) },
-        requiredClaims: ["account_management_api_access_token"],
-      } as any);
-    });
-
-    it("should redirect to error page and log warning", async () => {
-      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
-
-      expect(mockRequest.log?.warn).toHaveBeenCalledWith(
-        { missingRequiredClaims: ["account_management_api_access_token"] },
-        "RequiredClaimsMissing",
-      );
-      expect(metrics.addMetadata).toHaveBeenCalledWith(
-        "error_type",
-        "RequiredClaimsMissing",
       );
       expect(metrics.addMetric).toHaveBeenCalledWith(
         "JourneyRequestError",

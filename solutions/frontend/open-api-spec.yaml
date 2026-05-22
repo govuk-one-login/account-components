@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components OAuth Provider Public API
-  version: 0.0.14
+  version: 0.0.15
   description: |
     OAuth 2.0 provider endpoints, including:
     - GET /authorize
@@ -96,6 +96,8 @@ paths:
                   value: https://signin.account.gov.uk/callback?error=invalid_request&error_description=E1011&state=aRandomString
                 user_agent_mismatch:
                   value: https://signin.account.gov.uk/callback?error=invalid_request&error_description=E1012&state=aRandomString
+                required_claims_missing:
+                  value: https://signin.account.gov.uk/callback?error=invalid_request&error_description=E1013&state=aRandomString
                 jwks_timeout:
                   value: https://signin.account.gov.uk/callback?error=unauthorized_client&error_description=E2001&state=aRandomString
                 jwks_invalid:
