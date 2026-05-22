@@ -85,23 +85,6 @@ export const onRequest = async (
 
   const journey = await journeys[claims.scope]();
 
-  const missingRequiredClaims = journey.requiredClaims.filter((claim) => {
-    return claims[claim] === undefined;
-  });
-
-  if (missingRequiredClaims.length) {
-    request.log.warn(
-      {
-        missingRequiredClaims,
-      },
-      "RequiredClaimsMissing",
-    );
-    addErrorMetric("RequiredClaimsMissing");
-
-    reply.redirect(paths.others.authorizeError.path);
-    return reply;
-  }
-
   Object.entries(journey.translations).forEach(([lang, translations]) => {
     request.i18n.addResourceBundle(lang, "journey", translations);
   });

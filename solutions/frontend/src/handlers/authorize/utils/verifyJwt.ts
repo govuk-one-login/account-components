@@ -17,6 +17,7 @@ import assert from "node:assert";
 import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 import type { FastifyReply } from "fastify";
 import { jwtVerifyAlgorithms } from "../../../../../commons/utils/constants.js";
+import { journeys } from "../../../journeys/utils/config.js";
 
 const handleJwtError = (
   reply: FastifyReply,
@@ -286,6 +287,29 @@ const checkClaims = async (
         reply,
         redirectUri,
         authorizeErrors.invalidClaims,
+        state,
+      ),
+    );
+  }
+
+  const journey = await journeys[claimsResult.output.scope]();
+
+  const missingRequiredClaims = journey.requiredClaims.filter((claim) => {
+    return claimsResult.output[claim] === undefined;
+  });
+
+  if (missingRequiredClaims.length) {
+    logger.warn("RequiredClaimsMissing", {
+      client_id: client.client_id,
+      missing_required_claims: missingRequiredClaims,
+    });
+    addAuthorizeErrorMetric("RequiredClaimsMissing");
+
+    return new ErrorResponse(
+      getRedirectToClientRedirectUriResponse(
+        reply,
+        redirectUri,
+        authorizeErrors.requiredClaimsMissing,
         state,
       ),
     );
