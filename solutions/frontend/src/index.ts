@@ -40,6 +40,7 @@ import { getEnvironment } from "../../commons/utils/getEnvironment/index.js";
 import { FastifyPowertoolsLogger } from "../../commons/utils/fastify/powertoolsLogger/index.js";
 import { resolveEnvVarToBool } from "../../commons/utils/resolveEnvVarToBool/index.js";
 import { unsuccessfulJourneyActionErrors } from "./journeys/utils/journeyActions.js";
+import { setAnalyticsForPath } from "./utils/setAnalyticsForPath/index.js";
 
 await configureI18n({
   [Lang.English]: {
@@ -96,6 +97,7 @@ export const initFrontend = async function () {
         request.cookies[channelCookieName] === "generic_app",
     };
   });
+  fastify.addHook("onRequest", setAnalyticsForPath);
   fastify.decorateReply("render", render);
 
   fastify.setNotFoundHandler(async function (request, reply) {
