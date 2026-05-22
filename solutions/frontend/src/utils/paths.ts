@@ -5,7 +5,7 @@ import { TestingJourneyState } from "../journeys/utils/stateMachines/testing-jou
 import { Scope } from "../../../commons/utils/commonTypes.js";
 import { analyticsDefaults } from "./constants.js";
 
-type PathsMap = Record<
+export type PathsMap = Record<
   string,
   { path: `/${string}`; analytics?: FastifyReply["analytics"] }
 >;
