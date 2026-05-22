@@ -284,29 +284,13 @@ describe("passkey-create audit events", () => {
       );
     });
 
-    it("falls back to UnknownError when reason is not a known error", async () => {
-      await sendPasskeyRegistrationFailedAuditEvent(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-        "ClientError",
-      );
-
-      const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
-
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      expect(eventPayload.extensions.passkey).toHaveProperty(
-        "passkey_registration_failure_reason",
-        "UnknownError",
-      );
-    });
-
     it("returns early when awsLambda event is not present", async () => {
       delete mockRequest.awsLambda;
 
       await sendPasskeyRegistrationFailedAuditEvent(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
-        "ClientError",
+        "UnknownError",
       );
 
       expect(mockSendAuditEvent).not.toHaveBeenCalled();
@@ -319,7 +303,7 @@ describe("passkey-create audit events", () => {
         sendPasskeyRegistrationFailedAuditEvent(
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
-          "ClientError",
+          "UnknownError",
         ),
       ).rejects.toThrow();
     });
