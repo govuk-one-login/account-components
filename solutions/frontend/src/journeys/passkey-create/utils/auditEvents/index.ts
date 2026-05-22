@@ -171,6 +171,7 @@ export const sendPasskeyRegistrationFailedAuditEvent = async (
   const parsedReason = v.parse(
     v.fallback(
       v.picklist([
+        "InvalidRequestBody",
         "JavaScriptNotEnabled",
         "BrowserDoesNotSupportWebAuthn",
         "AbortError",
