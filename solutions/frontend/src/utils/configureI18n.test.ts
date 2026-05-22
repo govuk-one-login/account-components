@@ -9,7 +9,7 @@ vi.mock(import("../../../commons/utils/getEnvironment/index.js"), () => ({
 }));
 
 vi.mock(import("../../../commons/utils/constants.js"), () => ({
-  rootDomain: "account.gov.uk",
+  rootDomainWithEnv: "account.gov.uk",
 }));
 
 // @ts-expect-error
