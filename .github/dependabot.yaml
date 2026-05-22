@@ -6,7 +6,7 @@ updates:
       - "/**"
     schedule:
       interval: "cron"
-      cronjob: "0 3 1-7,15-21 * 3"
+      cronjob: "0 3 1,15 * *"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -18,6 +18,24 @@ updates:
       - dependency-name: "@types/node"
         update-types:
           - "version-update:semver-major"
+      # We have to ignore those two packages and update them manually.
+      # This is because they are hosted on a private registry, but configuring
+      # dependabot to use the private registry and fallback to NPM when a
+      # package isn't found on the private registry doesn't work for pacakges
+      # prefixed with @govuk-one-login/ which are on NPM and not the private
+      # registry (e.g. @govuk-one-login/frontend-ui). Because @govuk-one-login/
+      # is also the GitHub org name dependabot seems to assume that all
+      # @govuk-one-login/ prefixed packages are on the private registry
+      # and when it can't find one there it doesn't check NPM it just errors.
+      # This occurs even when replaces-base is set to false in the dependabot
+      # registry config. This leaves us with two options: leave the private registry
+      # configured which means that packages on the private registry will receive
+      # updates and packages on NPM will receive updates as long as they aren't
+      # prefixed with @govuk-one-login/, or don't configure the private registry
+      # which means that all packages on NPM will receive updates but packages on
+      # the private registry won't. I've gone for option 2 because we really only
+      # need to update the event-catalogue private packages when adding new events
+      # and we can do that at the same time as implementing the events in code.
       - dependency-name: "@govuk-one-login/event-catalogue"
       - dependency-name: "@govuk-one-login/event-catalogue-schemas"
     commit-message:
@@ -34,32 +52,11 @@ updates:
           - "minor"
           - "patch"
 
-  - package-ecosystem: "npm"
-    directories:
-      - "/**"
-    registries:
-      - github-npm-registry
-    schedule:
-      interval: "cron"
-      cronjob: "0 3 1-7,15-21 * 3"
-      time: "03:00"
-      timezone: "Europe/London"
-    cooldown:
-      default-days: 7
-    labels:
-      - dependabot
-      - dependencies
-    allow:
-      - dependency-name: "@govuk-one-login/event-catalogue"
-      - dependency-name: "@govuk-one-login/event-catalogue-schemas"
-    commit-message:
-      prefix: BAU
-
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "cron"
-      cronjob: "0 3 1-7,15-21 * 3"
+      cronjob: "0 3 1,15 * *"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -74,7 +71,7 @@ updates:
     directory: "/"
     schedule:
       interval: "cron"
-      cronjob: "0 3 1-7,15-21 * 3"
+      cronjob: "0 3 1,15 * *"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -89,7 +86,7 @@ updates:
     directory: "/solutions/infra"
     schedule:
       interval: "cron"
-      cronjob: "0 3 1-7,15-21 * 3"
+      cronjob: "0 3 1,15 * *"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -107,7 +104,7 @@ updates:
       - "/solutions/localstack/localstack"
     schedule:
       interval: "cron"
-      cronjob: "0 3 1-7,15-21 * 3"
+      cronjob: "0 3 1,15 * *"
       time: "03:00"
       timezone: "Europe/London"
     cooldown:
@@ -121,28 +118,12 @@ updates:
       - dependency-name: "node"
         update-types:
           - "version-update:semver-major"
-      # Can't be updated past the current major & minor version due to localstack changing the licence
+      # Can't be updated past the current major & minor version due
+      # to localstack changing the licence
       - dependency-name: "localstack/localstack"
         update-types:
           - "version-update:semver-major"
           - "version-update:semver-minor"
-
-  - package-ecosystem: "gitsubmodule"
-    directory: "/"
-    schedule:
-      interval: "cron"
-      cronjob: "0 3 1-7,15-21 * 3"
-      time: "03:00"
-      timezone: "Europe/London"
-    cooldown:
-      default-days: 7
-    labels:
-      - dependabot
-      - dependencies
-    ignore:
-      - dependency-name: "submodules/passkey-authenticator-aaguids"
-    commit-message:
-      prefix: BAU
 
   - package-ecosystem: "gitsubmodule"
     directory: "/"
@@ -153,14 +134,5 @@ updates:
     labels:
       - dependabot
       - dependencies
-    allow:
-      - dependency-name: "submodules/passkey-authenticator-aaguids"
     commit-message:
       prefix: BAU
-
-registries:
-  github-npm-registry:
-    type: npm-registry
-    url: https://npm.pkg.github.com
-    token: ${{ secrets.NODE_AUTH_TOKEN }}
-    replaces-base: true
