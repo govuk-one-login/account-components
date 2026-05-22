@@ -262,17 +262,17 @@ export async function postHandler(
     metrics.addMetadata("ClientErrorName", body.registrationError);
     addErrorMetric("ClientError");
 
-    const knownError = v.parse(
+    const reason = v.parse(
       v.fallback(v.picklist(passkeyRegistrationFailureReason), "UnknownError"),
       body.registrationError,
     );
 
     reply.analytics = {
       ...reply.analytics,
-      reason: knownError,
+      reason,
     };
 
-    await sendPasskeyRegistrationFailedAuditEvent(request, reply, knownError);
+    await sendPasskeyRegistrationFailedAuditEvent(request, reply, reason);
 
     await render(request, reply, {
       showErrorUi: true,
