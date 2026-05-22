@@ -198,6 +198,11 @@ export async function postHandler(
     const invalidRequestBodyErrorReason = "InvalidRequestBody";
     addErrorMetric(invalidRequestBodyErrorReason);
 
+    reply.analytics = {
+      ...reply.analytics,
+      reason: invalidRequestBodyErrorReason,
+    };
+
     await sendPasskeyRegistrationFailedAuditEvent(
       request,
       reply,
@@ -255,6 +260,11 @@ export async function postHandler(
     );
     metrics.addMetadata("ClientErrorName", body.registrationError);
     addErrorMetric("ClientError");
+
+    reply.analytics = {
+      ...reply.analytics,
+      reason: body.registrationError,
+    };
 
     await sendPasskeyRegistrationFailedAuditEvent(
       request,

@@ -167,16 +167,6 @@ export const onRequest = async (
     return await reply;
   }
 
-  if (pathObjectForCurrentState) {
-    // @ts-expect-error
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    reply.analytics = pathObjectForCurrentState.analytics;
-  } else if (otherJourneyPathObject) {
-    // @ts-expect-error
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    reply.analytics = otherJourneyPathObject.analytics;
-  }
-
   reply.journeyStates = {
     ...reply.journeyStates,
     [claims.scope]: actor,

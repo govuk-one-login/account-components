@@ -41,7 +41,6 @@ jobs:
           USE_LOCALSTACK=1
           SESSIONS_SIGNER=localsessionsignerwhichmustbeatleast32chars  
           SESSIONS_TABLE_NAME=amc-SessionStore
-          ROOT_DOMAIN=localhost
           ROOT_DOMAIN_WITH_ENV=localhost
           AWS_REGION=eu-west-2
           LOCALSTACK_ENDPOINT=http://localhost:4566
