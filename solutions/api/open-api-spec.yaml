@@ -28,11 +28,11 @@ tags:
 
       **Note:** This functionality is intended to be used by systems solely belonging internally to GDS DI.
 servers:
-  - url: https://mskou5m13j.execute-api.eu-west-2.amazonaws.com/v1
+  - url: https://771yjwzya0.execute-api.eu-west-2.amazonaws.com/v1
     description: development server
-  - url: https://352fmtx9f8.execute-api.eu-west-2.amazonaws.com/v1
+  - url: https://mx9lnul8tb.execute-api.eu-west-2.amazonaws.com/v1
     description: build server
-  - url: https://kvys7gq7h4.execute-api.eu-west-2.amazonaws.com/v1
+  - url: https://2hdyiuvtug.execute-api.eu-west-2.amazonaws.com/v1
     description: staging server
   - url: request when required
     description: integration server
