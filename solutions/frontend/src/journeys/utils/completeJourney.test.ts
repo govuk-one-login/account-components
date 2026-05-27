@@ -464,7 +464,7 @@ describe("completeJourney", () => {
           account_actions: ["testing-journey-action"],
           account_actions_errors: [],
           account_actions_failed: [],
-          account_action_overall_outcome: true,
+          account_action_overall_success: true,
         }),
       }),
     );
@@ -521,7 +521,7 @@ describe("completeJourney", () => {
           account_actions: ["account-delete"],
           account_actions_errors: ["UserSignedOut"],
           account_actions_failed: ["account-delete"],
-          account_action_overall_outcome: false,
+          account_action_overall_success: false,
         }),
       }),
     );
@@ -587,7 +587,7 @@ describe("completeJourney", () => {
           account_actions: ["account-delete", "passkey-create"],
           account_actions_errors: ["UserSignedOut", "UserAbortedJourney"],
           account_actions_failed: ["account-delete", "passkey-create"],
-          account_action_overall_outcome: false,
+          account_action_overall_success: false,
         }),
       }),
     );

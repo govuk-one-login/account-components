@@ -222,7 +222,7 @@ describe("journeyActions", () => {
           event_name: "AMC_ACTION_COMPLETED",
           extensions: expect.objectContaining({
             account_action: "account-delete",
-            account_action_overall_outcome: true,
+            account_action_overall_success: true,
           }),
         }),
       );
@@ -343,7 +343,7 @@ describe("journeyActions", () => {
           event_name: "AMC_ACTION_COMPLETED",
           extensions: expect.objectContaining({
             account_action: "account-delete",
-            account_action_overall_outcome: false,
+            account_action_overall_success: false,
             account_action_error: "UserSignedOut",
           }),
         }),
