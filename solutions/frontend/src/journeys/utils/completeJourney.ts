@@ -132,7 +132,7 @@ export const completeJourney = async (
               if ("error" in action) errors.push(action.action);
               return errors;
             }, []),
-            account_action_overall_outcome: successOrOutcomeId,
+            account_action_overall_success: successOrOutcomeId,
           },
           user: {
             ...commonAuditEventProps.user,
