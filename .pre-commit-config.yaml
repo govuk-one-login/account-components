@@ -3,13 +3,13 @@ fail_fast: true
 
 repos:
   - repo: https://github.com/jorisroovers/gitlint
-    rev: acc9d9de6369b76d22cb4167029d2035e8730b98 # pragma: allowlist-secret
+    rev: acc9d9de6369b76d22cb4167029d2035e8730b98 # pragma: allowlist secret
     hooks:
       - id: gitlint
         stages: [commit-msg]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b # pragma: allowlist-secret
+    rev: cef0300fd0fc4d2a87a85fa2093c6b283ea36f4b # pragma: allowlist secret
     hooks:
       - id: detect-private-key
         stages: [pre-commit]
@@ -19,7 +19,7 @@ repos:
         stages: [pre-commit]
 
   - repo: https://github.com/Yelp/detect-secrets
-    rev: 5e141933554a0b74e7341841f318be21e895339c # pragma: allowlist-secret
+    rev: 5e141933554a0b74e7341841f318be21e895339c # pragma: allowlist secret
     hooks:
       - id: detect-secrets
         args: ["--baseline", ".secrets.baseline"]

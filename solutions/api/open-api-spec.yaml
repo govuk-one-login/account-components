@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components API
-  version: 0.0.16
+  version: 0.0.17
   description: |
     OAuth 2.0 provider endpoints, including:
     - POST /token (supports client assertions via private_key_jwt)
@@ -28,11 +28,11 @@ tags:
 
       **Note:** This functionality is intended to be used by systems solely belonging internally to GDS DI.
 servers:
-  - url: https://mskou5m13j.execute-api.eu-west-2.amazonaws.com/v1
+  - url: https://771yjwzya0.execute-api.eu-west-2.amazonaws.com/v1
     description: development server
-  - url: https://352fmtx9f8.execute-api.eu-west-2.amazonaws.com/v1
+  - url: https://mx9lnul8tb.execute-api.eu-west-2.amazonaws.com/v1
     description: build server
-  - url: https://kvys7gq7h4.execute-api.eu-west-2.amazonaws.com/v1
+  - url: https://2hdyiuvtug.execute-api.eu-west-2.amazonaws.com/v1
     description: staging server
   - url: request when required
     description: integration server
@@ -454,7 +454,7 @@ components:
         outcome_id:
           description: The journey outcome's unique ID
           type: string
-          example: 9cd4c45f8f33cced99cfaa48394e1acf5e90f6e2616bba40 # pragma: allowlist-secret
+          example: 9cd4c45f8f33cced99cfaa48394e1acf5e90f6e2616bba40 # pragma: allowlist secret
         sub:
           description: The internal pairwise identifier of the user
           type: string
