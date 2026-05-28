@@ -31,7 +31,8 @@
           "check-types": [
             "code style and linting",
             "vulnerability detection",
-            "code quality"
+            "code quality",
+            "secret scanning"
           ],
           "provider": "GitHub",
           "phase": "pre-merge",
