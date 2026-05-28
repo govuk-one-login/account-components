@@ -5,7 +5,7 @@ updates:
     directories:
       - "/**"
     exclude-paths:
-      - "/submodules/**"
+      - "submodules/**"
     schedule:
       interval: "cron"
       cronjob: "0 3 1,15 * *"
@@ -147,7 +147,7 @@ updates:
     directories:
       - "/**"
     exclude-paths:
-      - "/submodules/**"
+      - "submodules/**"
     schedule:
       interval: "cron"
       cronjob: "0 3 1,15 * *"
