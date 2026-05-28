@@ -4,7 +4,7 @@ updates:
   - package-ecosystem: "npm"
     directories:
       - "/**"
-    exclude:
+    exclude-paths:
       - "/submodules/**"
     schedule:
       interval: "cron"
@@ -146,7 +146,7 @@ updates:
   - package-ecosystem: pip
     directories:
       - "/**"
-    exclude:
+    exclude-paths:
       - "/submodules/**"
     schedule:
       interval: "cron"
