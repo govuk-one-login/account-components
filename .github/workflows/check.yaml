@@ -45,10 +45,10 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@c8813ba1bc76ebf779b911ad8ffccbf2e449cb48
         with:
-          python-version: "3.13"
+          python-version: "3.14"
 
-      - name: Install detect-secrets
-        run: pip install detect-secrets
+      - name: Install Python dependencies
+        run: pip install --require-hashes -r .github/workflows/requirements.txt
 
       - name: Install dependencies
         env:
