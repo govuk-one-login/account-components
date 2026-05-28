@@ -23,7 +23,7 @@ resource "aws_cloudformation_stack" "spoke_vpc_stack" {
     CloudWatchApiEnabled             = "Yes"
     CloudFormationEndpointEnabled    = contains(["dev", "build"], var.environment) ? "Yes" : "No" # Required for integration tests to run when inside the VPC
     CloudWatchLogsApiEnabled         = contains(["dev", "build"], var.environment) ? "Yes" : "No" # Required for integration tests to run when inside the VPC
-    SecretsManagerApiEnabled         = "Yes"
+    SecretsManagerApiEnabled         = "Yes"                                                      # pragma: allowlist secret
     DynatraceApiEnabled              = "Yes"
     KMSApiEnabled                    = "Yes"
     SSMApiEnabled                    = "Yes"

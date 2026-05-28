@@ -88,7 +88,7 @@ jobs:
         run: npm run api-specs:validate
 
       - name: Detect secrets
-        run: git ls-files -z | xargs -0 python -m detect_secrets.pre_commit_hook --verbose --baseline .secrets.baseline
+        run: npm run detect-secrets-ci
 
       - name: Validate passkeys convenience metadata
         run: |

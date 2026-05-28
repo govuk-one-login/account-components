@@ -100,6 +100,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "detect-secrets": "git ls-files -z | xargs -0 detect-secrets-hook --verbose --baseline .secrets.baseline # pragma: allowlist secret",
+    "detect-secrets-ci": "git ls-files -z | xargs -0 python -m detect_secrets.pre_commit_hook --verbose --baseline .secrets.baseline",
     "check-gh-actions": "zizmor .github/",
     "check-gh-actions:fix": "zizmor .github/ --fix",
     "sam-validate": "sam validate --region eu-west-2 --lint -t solutions/app-infra/template.yaml",
