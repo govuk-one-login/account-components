@@ -4,6 +4,8 @@ updates:
   - package-ecosystem: "npm"
     directories:
       - "/**"
+    exclude-paths:
+      - "submodules/**"
     schedule:
       interval: "cron"
       cronjob: "0 3 1,15 * *"
@@ -53,7 +55,8 @@ updates:
           - "patch"
 
   - package-ecosystem: "github-actions"
-    directory: "/"
+    directories:
+      - "/"
     schedule:
       interval: "cron"
       cronjob: "0 3 1,15 * *"
@@ -68,7 +71,8 @@ updates:
       prefix: BAU
 
   - package-ecosystem: "pre-commit"
-    directory: "/"
+    directories:
+      - "/"
     schedule:
       interval: "cron"
       cronjob: "0 3 1,15 * *"
@@ -83,7 +87,8 @@ updates:
       prefix: BAU
 
   - package-ecosystem: "terraform"
-    directory: "/solutions/infra"
+    directories:
+      - "/solutions/infra"
     schedule:
       interval: "cron"
       cronjob: "0 3 1,15 * *"
@@ -126,7 +131,8 @@ updates:
           - "version-update:semver-minor"
 
   - package-ecosystem: "gitsubmodule"
-    directory: "/"
+    directories:
+      - "/"
     schedule:
       interval: daily
       time: "03:00"
@@ -140,6 +146,8 @@ updates:
   - package-ecosystem: pip
     directories:
       - "/**"
+    exclude-paths:
+      - "submodules/**"
     schedule:
       interval: "cron"
       cronjob: "0 3 1,15 * *"
