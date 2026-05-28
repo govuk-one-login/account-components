@@ -454,7 +454,7 @@ components:
         outcome_id:
           description: The journey outcome's unique ID
           type: string
-          example: 9cd4c45f8f33cced99cfaa48394e1acf5e90f6e2616bba40 # pragma: allowlist-secret
+          example: 9cd4c45f8f33cced99cfaa48394e1acf5e90f6e2616bba40 # pragma: allowlist secret
         sub:
           description: The internal pairwise identifier of the user
           type: string

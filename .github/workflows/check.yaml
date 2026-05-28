@@ -79,6 +79,9 @@ jobs:
       - name: Validate API Specs
         run: npm run api-specs:validate
 
+      - name: Detect secrets
+        run: npm run detect-secrets
+
       - name: Validate passkeys convenience metadata
         run: |
           npx tsx -e '
