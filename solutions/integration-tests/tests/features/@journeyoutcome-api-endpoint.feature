@@ -14,7 +14,7 @@ Feature: Journey outcome API endpoint
         error_description: E4006
       """
 
-  Scenario: Invalid request (temp public)
+  Scenario: Invalid request (temp public API)
     Given I make a temp public API request with the config:
       """
         method: GET

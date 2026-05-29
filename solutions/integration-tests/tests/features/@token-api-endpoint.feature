@@ -14,7 +14,7 @@ Feature: Token API endpoint
         error_description: E4001
       """
 
-  Scenario: Invalid request
+  Scenario: Invalid request (temp public API)
     Given I make a temp public API request with the config:
       """
         method: POST
