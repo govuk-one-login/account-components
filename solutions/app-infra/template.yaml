@@ -1428,9 +1428,7 @@ Resources:
       DisableExecuteApiEndpoint: false
       TracingEnabled: true
       EndpointConfiguration:
-        Type: PRIVATE
-        VpcEndpointIds:
-          - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+        Type: REGIONAL
       AccessLogSetting:
         Format: >-
           {
@@ -1469,14 +1467,20 @@ Resources:
             Action: execute-api:Invoke
             Resource: "*"
             Condition:
-              StringEquals:
-                aws:sourceVpce: !If
-                  - IsDevOrBuild
-                  - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
-                  - !FindInMap
-                    - EnvironmentConfiguration
-                    - !Ref Environment
-                    - apiAllowedVpceIds
+              IpAddress:
+                aws:SourceIp:
+                  - "85.119.84.27/32" # Prism
+                  - "217.196.229.74/32" # GovWifi (White Chapel Building)
+                  - "217.196.229.79/32" # Brattain (currently unavailable)
+                  - "217.196.229.80/32" # GDS Bring your own device (BYOD) VPN
+                  - "217.196.229.81/32" # GDS VPN
+                  - "51.149.8.0/25" # GDS VPN
+                  - "51.149.8.128/29" # GDS Bring your own device (BYOD) VPN
+                  - "159.254.101.107/32" # ICS managed developer laptops
+                  - "159.254.101.75/32" # ICS managed developer laptops
+                  - "164.137.3.121/32" # ICS managed developer laptops
+                  - "164.137.3.89/32" # ICS managed developer laptops
+                  - "3.9.56.99/32" # ICS managed core user laptops
       Variables:
         ApiDomain: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
         AuthorizeEndpointUrl:
@@ -1599,248 +1603,6 @@ Resources:
       Type: String
       Value: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
       Description: URL of the AMC Private API
-
-  # Temporary public API Gateway to facilitate testing
-  PublicApiApiGateway:
-    Type: AWS::Serverless::Api
-    Condition: IsDevEnvironment
-    Properties:
-      Description: Account Components API (Public - Testing Only)
-      StageName: !Ref ApiStageName
-      AlwaysDeploy: true
-      DisableExecuteApiEndpoint: false
-      TracingEnabled: true
-      EndpointConfiguration:
-        Type: REGIONAL
-      AccessLogSetting:
-        Format: >-
-          {
-          "requestId": "$context.requestId",
-          "requestTime": "$context.requestTime",
-          "requestTimeEpoch": "$context.requestTimeEpoch",
-          "httpMethod": "$context.httpMethod",
-          "domainName": "$context.domainName",
-          "path": "$context.path",
-          "routeKey": "$context.routeKey",
-          "protocol": "$context.protocol",
-          "status": "$context.status",
-          "responseLength": "$context.responseLength",
-          "responseLatency": "$context.responseLatency",
-          "authorizerLatency": "$context.authorizer.latency",
-          "integrationStatus": "$context.integrationStatus",
-          "integrationLatency": "$context.integrationLatency",
-          "integrationErrorMessage": "$context.integrationErrorMessage",
-          "errorMessage": "$context.error.message",
-          "errorResponseType": "$context.error.responseType",
-          "validationErrorString": "$context.error.validationErrorString",
-          "xrayTraceId": "$context.xrayTraceId",
-          "tlsVersion": "$context.tlsVersion",
-          "cipherSuite": "$context.cipherSuite"
-          }
-        DestinationArn: !GetAtt PublicApiApiGatewayAccessLogGroup.Arn
-      MethodSettings:
-        - MetricsEnabled: true
-          ResourcePath: /*
-          HttpMethod: "*"
-      Variables:
-        ApiDomain: !Sub "https://${PublicApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
-        AuthorizeEndpointUrl:
-          !FindInMap [
-            EnvironmentConfiguration,
-            !Ref Environment,
-            authorizeEndpointUrl,
-          ]
-        IssuerUrl:
-          !FindInMap [EnvironmentConfiguration, !Ref Environment, issuerUrl]
-      # Auth:
-      #   ApiKeyRequired: true
-      DefinitionBody:
-        openapi: 3.0.3
-        info:
-          title: Account Components API (Public)
-          version: 1.0.0
-        # securityDefinitions:
-        #   ApiKeyAuth:
-        #     type: apiKey
-        #     name: x-api-key
-        #     in: header
-        paths:
-          /healthcheck:
-            get:
-              # security:
-              #   - ApiKeyAuth: []
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiHealthcheckLambda.Alias}/invocations"
-          /token:
-            post:
-              # security:
-              #   - ApiKeyAuth: []
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiTokenLambda.Alias}/invocations"
-          /journeyoutcome:
-            get:
-              # security:
-              #   - ApiKeyAuth: []
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiJourneyOutcomeLambda.Alias}/invocations"
-          /.well-known/jwks.json:
-            get:
-              # security:
-              #   - ApiKeyAuth: []
-              responses:
-                "200":
-                  description: JWKS response
-                  headers:
-                    Content-Type:
-                      schema:
-                        type: string
-                        example: "application/json"
-                    Cache-Control:
-                      schema:
-                        type: string
-                        example: "max-age=60"
-              x-amazon-apigateway-integration:
-                type: aws
-                httpMethod: GET
-                uri: !Sub
-                  - "arn:aws:apigateway:${AWS::Region}:s3:path/${BucketName}/jwks.json"
-                  - BucketName: !Ref JWKSStoreBucket
-                credentials: !GetAtt ApiApiGatewayS3Role.Arn
-                responses:
-                  default:
-                    statusCode: 200
-                    responseParameters:
-                      method.response.header.Content-Type: "'application/json'"
-                      method.response.header.Cache-Control: !Sub
-                        - "'max-age=${headerMaxAge}'"
-                        - headerMaxAge:
-                            !FindInMap [
-                              EnvironmentConfiguration,
-                              !Ref Environment,
-                              cacheHeaderMaxAge,
-                            ]
-          /.well-known/oauth-authorization-server:
-            get:
-              # security:
-              #   - ApiKeyAuth: []
-              responses:
-                "200":
-                  description: OAuth Discovery
-                  headers:
-                    Content-Type:
-                      schema:
-                        type: string
-                        example: "application/json"
-                    Cache-Control:
-                      schema:
-                        type: string
-                        example: "max-age=60"
-              x-amazon-apigateway-integration:
-                responses:
-                  default:
-                    statusCode: 200
-                    responseParameters:
-                      method.response.header.Content-Type: "'application/json'"
-                      method.response.header.Cache-Control: !Sub
-                        - "'max-age=${headerMaxAge}'"
-                        - headerMaxAge:
-                            !FindInMap [
-                              EnvironmentConfiguration,
-                              !Ref Environment,
-                              cacheHeaderMaxAge,
-                            ]
-                    responseTemplates:
-                      application/json: !Sub >-
-                        {
-                            "issuer": "$stageVariables.IssuerUrl",
-                            "authorization_endpoint": "$stageVariables.AuthorizeEndpointUrl",
-                            "token_endpoint": "$stageVariables.ApiDomain/token",
-                            "jwks_uri": "$stageVariables.ApiDomain/.well-known/jwks.json",
-                            "response_types_supported": ["code"],
-                            "token_endpoint_auth_methods_supported": ["private_key_jwt"],
-                            "token_endpoint_auth_signing_alg_values_supported": ["ES256"],
-                            "scopes_supported": ["testing-journey", "account-delete", "passkey-create"],
-                            "grant_types_supported": ["authorization_code"]
-                        }
-                passthroughBehavior: when_no_match
-                requestTemplates:
-                  application/json: '{"statusCode": 200}'
-                type: mock
-
-  PublicApiApiGatewayAccessLogGroup:
-    Type: AWS::Logs::LogGroup
-    Condition: IsDevEnvironment
-    Properties:
-      LogGroupName: !Sub "/aws/apigateway/${PublicApiApiGateway}/${ApiStageName}"
-      RetentionInDays: 30
-      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
-
-  PublicApiHealthcheckLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Condition: IsDevEnvironment
-    Properties:
-      FunctionName: !Ref ApiHealthcheckLambda.Alias
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PublicApiApiGateway}/*/*"
-
-  PublicApiTokenLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Condition: IsDevEnvironment
-    Properties:
-      FunctionName: !Ref ApiTokenLambda.Alias
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PublicApiApiGateway}/*/*"
-
-  PublicApiJourneyOutcomeLambdaPermission:
-    Type: AWS::Lambda::Permission
-    Condition: IsDevEnvironment
-    Properties:
-      FunctionName: !Ref ApiJourneyOutcomeLambda.Alias
-      Action: lambda:InvokeFunction
-      Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PublicApiApiGateway}/*/*"
-
-  PublicApiApiKey:
-    Type: AWS::ApiGateway::ApiKey
-    Condition: IsDevEnvironment
-    Properties:
-      Enabled: true
-      StageKeys:
-        - RestApiId: !Ref PublicApiApiGateway
-          StageName: !Ref ApiStageName
-
-  PublicApiUsagePlan:
-    Type: AWS::ApiGateway::UsagePlan
-    Condition: IsDevEnvironment
-    Properties:
-      ApiStages:
-        - ApiId: !Ref PublicApiApiGateway
-          Stage: !Ref ApiStageName
-
-  PublicApiUsagePlanKey:
-    Type: AWS::ApiGateway::UsagePlanKey
-    Condition: IsDevEnvironment
-    Properties:
-      KeyId: !Ref PublicApiApiKey
-      KeyType: API_KEY
-      UsagePlanId: !Ref PublicApiUsagePlan
-
-  PublicApiApiKeyValueParameter:
-    Type: AWS::SSM::Parameter
-    Condition: IsDevEnvironment
-    Properties:
-      Name: !Sub "/tests/PublicApiGatewayApiKeyId"
-      Type: String
-      Value: !Ref PublicApiApiKey
-      Description: API Key ID for the Public API Gateway (Testing Only)
 
   ApiApiGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup
@@ -3089,7 +2851,7 @@ Resources:
           DEFAULT_AUDIENCE: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
           AUTHORIZE_URL: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
-          API_BASE_URL: !Sub "https://${PublicApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+          API_BASE_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
           ROOT_DOMAIN:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
           NOTIFY_TEMPLATE_IDS:
