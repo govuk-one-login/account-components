@@ -1652,47 +1652,47 @@ Resources:
           ]
         IssuerUrl:
           !FindInMap [EnvironmentConfiguration, !Ref Environment, issuerUrl]
-      Auth:
-        ApiKeyRequired: true
+      # Auth:
+      #   ApiKeyRequired: true
       DefinitionBody:
         openapi: 3.0.3
         info:
           title: Account Components API (Public)
           version: 1.0.0
-        securityDefinitions:
-          ApiKeyAuth:
-            type: apiKey
-            name: x-api-key
-            in: header
+        # securityDefinitions:
+        #   ApiKeyAuth:
+        #     type: apiKey
+        #     name: x-api-key
+        #     in: header
         paths:
           /healthcheck:
             get:
-              security:
-                - ApiKeyAuth: []
+              # security:
+              #   - ApiKeyAuth: []
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiHealthcheckLambda.Alias}/invocations"
           /token:
             post:
-              security:
-                - ApiKeyAuth: []
+              # security:
+              #   - ApiKeyAuth: []
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiTokenLambda.Alias}/invocations"
           /journeyoutcome:
             get:
-              security:
-                - ApiKeyAuth: []
+              # security:
+              #   - ApiKeyAuth: []
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiJourneyOutcomeLambda.Alias}/invocations"
           /.well-known/jwks.json:
             get:
-              security:
-                - ApiKeyAuth: []
+              # security:
+              #   - ApiKeyAuth: []
               responses:
                 "200":
                   description: JWKS response
@@ -1727,8 +1727,8 @@ Resources:
                             ]
           /.well-known/oauth-authorization-server:
             get:
-              security:
-                - ApiKeyAuth: []
+              # security:
+              #   - ApiKeyAuth: []
               responses:
                 "200":
                   description: OAuth Discovery
@@ -1807,15 +1807,6 @@ Resources:
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${PublicApiApiGateway}/*/*"
-
-  PublicApiApiGatewayUrlParameter: # for use by Integration Tests only
-    Type: AWS::SSM::Parameter
-    Condition: IsDevEnvironment
-    Properties:
-      Name: !Sub "/tests/PublicApiGatewayUrl"
-      Type: String
-      Value: !Sub "https://${PublicApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
-      Description: URL of the AMC Public API (Testing Only)
 
   PublicApiApiKey:
     Type: AWS::ApiGateway::ApiKey

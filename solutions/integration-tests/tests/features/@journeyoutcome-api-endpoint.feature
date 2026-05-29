@@ -13,16 +13,3 @@ Feature: Journey outcome API endpoint
         error: invalid_request
         error_description: E4006
       """
-
-  Scenario: Invalid request (temp public API)
-    Given I make a temp public API request with the config:
-      """
-        method: GET
-        path: "/journeyoutcome"
-      """
-    Then the response status code should be "400"
-    And the response body should be:
-      """
-        error: invalid_request
-        error_description: E4006
-      """      

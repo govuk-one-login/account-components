@@ -18,23 +18,3 @@ export const getApiBaseUrl = async () => {
     throw new Error(`Failed to get API base URL from SSM`, { cause: error });
   }
 };
-
-export const getTempPublicApiBaseUrl = async () => {
-  if (env.TEST_TARGET === "local") {
-    return "http://localhost:6004";
-  }
-
-  try {
-    const apiBaseUrl = await getParameter("/tests/PublicApiGatewayUrl", {
-      maxAge: 300,
-    });
-    if (!apiBaseUrl || apiBaseUrl.trim().length <= 0) {
-      throw new Error("Temp public API base URL from SSM is empty");
-    }
-    return apiBaseUrl;
-  } catch (error) {
-    throw new Error(`Failed to get temp public API base URL from SSM`, {
-      cause: error,
-    });
-  }
-};
