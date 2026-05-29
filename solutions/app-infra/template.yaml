@@ -1652,32 +1652,47 @@ Resources:
           ]
         IssuerUrl:
           !FindInMap [EnvironmentConfiguration, !Ref Environment, issuerUrl]
+      Auth:
+        ApiKeyRequired: true
       DefinitionBody:
         openapi: 3.0.3
         info:
           title: Account Components API (Public)
           version: 1.0.0
+        securityDefinitions:
+          ApiKeyAuth:
+            type: apiKey
+            name: x-api-key
+            in: header
         paths:
           /healthcheck:
             get:
+              security:
+                - ApiKeyAuth: []
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiHealthcheckLambda.Alias}/invocations"
           /token:
             post:
+              security:
+                - ApiKeyAuth: []
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiTokenLambda.Alias}/invocations"
           /journeyoutcome:
             get:
+              security:
+                - ApiKeyAuth: []
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiJourneyOutcomeLambda.Alias}/invocations"
           /.well-known/jwks.json:
             get:
+              security:
+                - ApiKeyAuth: []
               responses:
                 "200":
                   description: JWKS response
@@ -1712,6 +1727,8 @@ Resources:
                             ]
           /.well-known/oauth-authorization-server:
             get:
+              security:
+                - ApiKeyAuth: []
               responses:
                 "200":
                   description: OAuth Discovery
@@ -1799,6 +1816,40 @@ Resources:
       Type: String
       Value: !Sub "https://${PublicApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
       Description: URL of the AMC Public API (Testing Only)
+
+  PublicApiApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Condition: IsDevEnvironment
+    Properties:
+      Enabled: true
+      StageKeys:
+        - RestApiId: !Ref PublicApiApiGateway
+          StageName: !Ref ApiStageName
+
+  PublicApiUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    Condition: IsDevEnvironment
+    Properties:
+      ApiStages:
+        - ApiId: !Ref PublicApiApiGateway
+          Stage: !Ref ApiStageName
+
+  PublicApiUsagePlanKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Condition: IsDevEnvironment
+    Properties:
+      KeyId: !Ref PublicApiApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref PublicApiUsagePlan
+
+  PublicApiApiKeyValueParameter:
+    Type: AWS::SSM::Parameter
+    Condition: IsDevEnvironment
+    Properties:
+      Name: !Sub "/tests/PublicApiGatewayApiKeyId"
+      Type: String
+      Value: !Ref PublicApiApiKey
+      Description: API Key ID for the Public API Gateway (Testing Only)
 
   ApiApiGatewayAccessLogGroup:
     Type: AWS::Logs::LogGroup
@@ -3047,7 +3098,7 @@ Resources:
           DEFAULT_AUDIENCE: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
           AUTHORIZE_URL: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
-          API_BASE_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+          API_BASE_URL: !Sub "https://${PublicApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
           ROOT_DOMAIN:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
           NOTIFY_TEMPLATE_IDS:
