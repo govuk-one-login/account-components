@@ -1,7 +1,4 @@
 {
-  "sonarlint.connectedMode.project": {
-    "connectionId": "govuk-one-login",
-    "projectKey": "account-components"
-  },
-  "typescript.tsdk": "node_modules/typescript/lib"
+  "js/ts.tsdk.promptToUseWorkspaceVersion": true,
+  "js/ts.tsdk.path": "node_modules/typescript/lib"
 }

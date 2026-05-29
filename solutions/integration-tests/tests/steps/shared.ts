@@ -14,10 +14,11 @@ const stubsUrl = getStubsUrl();
 export const pageNameToPath: Record<string, string> = {
   "Non-existent page": "/non-existent-page",
   Healthcheck: "/healthcheck",
-  "Authorize error": "/authorize-error",
+  "Authorize error": "/error",
   "Testing journey - step 1": "/testing-journey/step-1",
   "Testing journey - enter password": "/testing-journey/enter-password",
   "Testing journey - confirmation": "/testing-journey/confirm",
+  "Page expired": "/page-expired",
 };
 
 Then("the page meets our accessibility standards", async ({ page }) => {

@@ -5,7 +5,7 @@ import { TestingJourneyState } from "../journeys/utils/stateMachines/testing-jou
 import { Scope } from "../../../commons/utils/commonTypes.js";
 import { analyticsDefaults } from "./constants.js";
 
-type PathsMap = Record<
+export type PathsMap = Record<
   string,
   { path: `/${string}`; analytics?: FastifyReply["analytics"] }
 >;
@@ -101,7 +101,20 @@ export const paths = {
   },
   others: {
     authorize: { path: "/authorize" },
-    authorizeError: { path: "/authorize-error" },
+    authorizeError: {
+      path: "/error",
+      analytics: {
+        ...analyticsDefaults,
+        contentId: "a1a3dddd-9e65-40dc-9256-12ed597ec40e",
+      },
+    },
+    pageExpired: {
+      path: "/page-expired",
+      analytics: {
+        ...analyticsDefaults,
+        contentId: "aac61239-99f2-4b93-b947-cf5bd4385f79",
+      },
+    },
   },
 } as const satisfies {
   journeys: {

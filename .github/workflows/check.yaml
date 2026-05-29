@@ -20,7 +20,7 @@ jobs:
           persist-credentials: false
 
       - name: Check GitHub Actions
-        uses: zizmorcore/zizmor-action@b1d7e1fb5de872772f31590499237e7cce841e8e
+        uses: zizmorcore/zizmor-action@5f14fd08f7cf1cb1609c1e344975f152c7ee938d
 
       - name: Set up Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
@@ -37,10 +37,18 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up JSON Schema CLI
-        uses: sourcemeta/jsonschema@ac8293b728fd9fc9d7db832252812504f152e84b
+        uses: sourcemeta/jsonschema@cb9ec0145533126399065ffa13d3638842c65e25
 
       - name: Set up cfn-lint
         uses: scottbrenner/cfn-lint-action@ed184e91f5085a2932501da8314e899e5e0ef5be
+
+      - name: Set up Python
+        uses: actions/setup-python@c8813ba1bc76ebf779b911ad8ffccbf2e449cb48
+        with:
+          python-version: "3.14"
+
+      - name: Install Python dependencies
+        run: pip install --require-hashes -r .github/workflows/requirements.txt
 
       - name: Install dependencies
         env:
@@ -79,6 +87,9 @@ jobs:
       - name: Validate API Specs
         run: npm run api-specs:validate
 
+      - name: Detect secrets
+        run: npm run detect-secrets-ci
+
       - name: Validate passkeys convenience metadata
         run: |
           npx tsx -e '
@@ -92,7 +103,7 @@ jobs:
           '
 
       - name: Checkov
-        uses: bridgecrewio/checkov-action@4048c972aae68d0b983a48bb3479aab2d877b898 # v12.3102.0
+        uses: bridgecrewio/checkov-action@4048c972aae68d0b983a48bb3479aab2d877b898
         with:
           directory: .
           output_format: cli

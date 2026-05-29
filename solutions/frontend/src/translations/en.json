@@ -35,11 +35,19 @@
       "buttonText": "Go to the GOV.UK homepage"
     },
     "error500": {
-      "title": "Sorry, there is a problem with the service",
-      "header": "Sorry, there is a problem with the service",
+      "title": "Sorry, there is a problem",
+      "header": "Sorry, there is a problem",
       "content": {
         "paragraph1": "Try again later."
       }
+    },
+    "timeoutError": {
+      "title": "Sorry, the page has expired",
+      "header": "Sorry, the page has expired",
+      "paragraph1": "This is because you have not used GOV.UK One Login for more than 30 minutes.",
+      "subheading": "What you can do",
+      "paragraph2": "Cancel this page and try again.",
+      "buttonText": "Go to the GOV.UK homepage"
     }
   }
 }

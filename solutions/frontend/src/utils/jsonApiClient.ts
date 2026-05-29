@@ -57,16 +57,16 @@ export abstract class JsonApiClient {
     };
   }
 
-  protected async logOnError<T extends { success: boolean; error?: string }>(
-    methodName: string,
-    fn: () => Promise<T>,
-  ): Promise<T> {
+  protected async logOnError<
+    T extends { success: boolean; error?: string; errorDetails?: unknown },
+  >(methodName: string, fn: () => Promise<T>): Promise<T> {
     const result = await fn();
     if (!result.success) {
       logger.error({
+        method: methodName,
         message: this.errorScope,
         error: result.error,
-        method: methodName,
+        errorDetails: result.errorDetails,
       });
     }
     return result;
@@ -83,7 +83,7 @@ export abstract class JsonApiClient {
     | {
         readonly success: true;
         readonly result: TSuccess;
-        rawResponse: Response;
+        readonly rawResponse: Response;
       }
     | {
         readonly success: false;
@@ -94,7 +94,8 @@ export abstract class JsonApiClient {
           | "ErrorParsingErrorResponseBodyJson"
           | "ErrorValidatingErrorResponseBody"
           | "UnknownErrorResponse";
-        rawResponse: Response;
+        readonly errorDetails: unknown;
+        readonly rawResponse: Response;
       }
   > {
     if (response.ok) {
@@ -112,26 +113,31 @@ export abstract class JsonApiClient {
       let responseJson: unknown;
       try {
         responseJson = await response.json();
-      } catch {
+      } catch (error) {
         return {
           success: false,
           error: "ErrorParsingResponseBodyJson",
           rawResponse: response,
+          errorDetails: error instanceof Error ? error.message : undefined,
         };
       }
 
       const body = v.safeParse(successResponseBodySchema, responseJson);
       if (!body.success) {
-        logger.info("MHTEST");
-        logger.info("response status debug", { status: response.status });
-        logger.info("responseJson debug", {
-          responseJson: JSON.stringify(responseJson, null, 2),
-        });
-
         return {
           success: false,
           error: "ErrorValidatingResponseBody",
           rawResponse: response,
+          errorDetails: {
+            issues: body.issues.map((issue) => ({
+              kind: issue.kind,
+              type: issue.type,
+              expected: issue.expected,
+              path: issue.path
+                ?.map((item) => ("key" in item ? item.key : undefined))
+                .join("."),
+            })),
+          },
         };
       }
       return {
@@ -149,11 +155,12 @@ export abstract class JsonApiClient {
     let responseJson: unknown;
     try {
       responseJson = await response.json();
-    } catch {
+    } catch (error) {
       return {
         success: false,
         error: "ErrorParsingErrorResponseBodyJson",
         rawResponse: response,
+        errorDetails: error instanceof Error ? error.message : undefined,
       };
     }
 
@@ -164,6 +171,16 @@ export abstract class JsonApiClient {
         success: false,
         error: "ErrorValidatingErrorResponseBody",
         rawResponse: response,
+        errorDetails: {
+          issues: body.issues.map((issue) => ({
+            kind: issue.kind,
+            type: issue.type,
+            expected: issue.expected,
+            path: issue.path
+              ?.map((item) => ("key" in item ? item.key : undefined))
+              .join("."),
+          })),
+        },
       };
     }
 
@@ -172,6 +189,10 @@ export abstract class JsonApiClient {
         success: false,
         error: "UnknownErrorResponse",
         rawResponse: response,
+        errorDetails: {
+          code: body.output.code,
+          message: body.output.message,
+        },
       };
     }
 
@@ -183,6 +204,10 @@ export abstract class JsonApiClient {
           body.output.code as unknown as keyof TErrorMap
         ],
       rawResponse: response,
+      errorDetails: {
+        code: body.output.code,
+        message: body.output.message,
+      },
     };
   }
 }

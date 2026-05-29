@@ -21,28 +21,19 @@ vi.mock(import("../../utils/paths.js"), () => ({
       others: {
         completeFailedJourney: {
           path: "/complete-failed-journey",
-          analytics: {
-            taxonomyLevel1: "others",
-            taxonomyLevel2: "callback",
-            contentId: "callback-page",
-          },
         },
       },
       "test-scope": {
         "test-state": {
           page: {
             path: "/test-path",
-            analytics: {
-              taxonomyLevel1: "test",
-              taxonomyLevel2: "scope",
-              contentId: "test-page",
-            },
           },
         },
       },
     },
     others: {
-      authorizeError: { path: "/authorize-error" },
+      authorizeError: { path: "/error" },
+      pageExpired: { path: "/page-expired" },
     },
   },
 }));
@@ -72,7 +63,6 @@ vi.mock(import("./config.js"), () => ({
       stateMachine: {
         resolveState: vi.fn().mockReturnValue({}),
       },
-      requiredClaims: [],
     }),
   },
 }));
@@ -156,7 +146,6 @@ describe("onRequest", () => {
     vi.mocked(journeys["test-scope" as Scope]).mockResolvedValue({
       translations: { en: { key: "value" } },
       stateMachine: { resolveState: vi.fn().mockReturnValue({}) },
-      requiredClaims: [],
     } as any);
   });
 
@@ -188,7 +177,7 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockReply.redirect).toHaveBeenCalledWith("/page-expired");
     });
   });
 
@@ -216,41 +205,7 @@ describe("onRequest", () => {
         "Count",
         1,
       );
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
-    });
-  });
-
-  describe("when required claims are missing", () => {
-    beforeEach(() => {
-      mockSession.claims = {
-        client_id: "test-client-id",
-        scope: "test-scope",
-      } as unknown as Claims;
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-      vi.mocked(journeys["test-scope" as Scope]).mockResolvedValue({
-        translations: { en: { key: "value" } },
-        stateMachine: { resolveState: vi.fn().mockReturnValue({}) },
-        requiredClaims: ["account_management_api_access_token"],
-      } as any);
-    });
-
-    it("should redirect to error page and log warning", async () => {
-      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
-
-      expect(mockRequest.log?.warn).toHaveBeenCalledWith(
-        { missingRequiredClaims: ["account_management_api_access_token"] },
-        "RequiredClaimsMissing",
-      );
-      expect(metrics.addMetadata).toHaveBeenCalledWith(
-        "error_type",
-        "RequiredClaimsMissing",
-      );
-      expect(metrics.addMetric).toHaveBeenCalledWith(
-        "JourneyRequestError",
-        "Count",
-        1,
-      );
-      expect(mockReply.redirect).toHaveBeenCalledWith("/authorize-error");
+      expect(mockReply.redirect).toHaveBeenCalledWith("/error");
     });
   });
 
@@ -289,29 +244,6 @@ describe("onRequest", () => {
       expect(mockReply.journeyStates).toStrictEqual({
         "test-scope": mockActor,
       });
-    });
-
-    it("should set analytics from path configuration for journey paths", async () => {
-      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
-
-      expect(mockReply.analytics).toStrictEqual({
-        taxonomyLevel1: "test",
-        taxonomyLevel2: "scope",
-        contentId: "test-page",
-      });
-    });
-
-    it("should not set analytics when path has no analytics configuration", async () => {
-      // Test with a path that has no analytics in the mock
-      mockReply.globals = {
-        currentUrl: {
-          pathname: "/authorize-error",
-        } as URL,
-      };
-
-      await onRequest(mockRequest as FastifyRequest, mockReply as FastifyReply);
-
-      expect(mockReply.analytics).toBeUndefined();
     });
 
     it("should set buildCompleteFailedJourneyUri function on globals", async () => {

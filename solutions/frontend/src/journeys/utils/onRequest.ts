@@ -32,7 +32,7 @@ export const onRequest = async (
   if (!request.session.claims) {
     request.log.warn("NoClaimsInSession");
     addErrorMetric("NoClaimsInSession");
-    reply.redirect(paths.others.authorizeError.path);
+    reply.redirect(paths.others.pageExpired.path);
     return reply;
   }
 
@@ -84,23 +84,6 @@ export const onRequest = async (
   };
 
   const journey = await journeys[claims.scope]();
-
-  const missingRequiredClaims = journey.requiredClaims.filter((claim) => {
-    return claims[claim] === undefined;
-  });
-
-  if (missingRequiredClaims.length) {
-    request.log.warn(
-      {
-        missingRequiredClaims,
-      },
-      "RequiredClaimsMissing",
-    );
-    addErrorMetric("RequiredClaimsMissing");
-
-    reply.redirect(paths.others.authorizeError.path);
-    return reply;
-  }
 
   Object.entries(journey.translations).forEach(([lang, translations]) => {
     request.i18n.addResourceBundle(lang, "journey", translations);
@@ -165,16 +148,6 @@ export const onRequest = async (
   if (!pathObjectForCurrentState && !otherJourneyPathObject) {
     reply.redirect(pathsForCurrentState[0]);
     return await reply;
-  }
-
-  if (pathObjectForCurrentState) {
-    // @ts-expect-error
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    reply.analytics = pathObjectForCurrentState.analytics;
-  } else if (otherJourneyPathObject) {
-    // @ts-expect-error
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    reply.analytics = otherJourneyPathObject.analytics;
   }
 
   reply.journeyStates = {
