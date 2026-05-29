@@ -5,7 +5,10 @@ import assert from "node:assert";
 import { getStubsUrl } from "../../utils/getStubsUrl.js";
 import * as v from "valibot";
 import * as yaml from "yaml";
-import { getApiBaseUrl } from "../../utils/getApiBaseUrl.js";
+import {
+  getApiBaseUrl,
+  getTempPublicApiBaseUrl,
+} from "../../utils/getApiBaseUrl.js";
 
 const { Then, Given } = bdd;
 
@@ -216,6 +219,47 @@ Given(
     if (config.success) {
       const response = await fetch(
         `${await getApiBaseUrl()}${config.output.path}`,
+        {
+          body: JSON.stringify(config.output.body),
+          method: config.output.method,
+          ...(config.output.headers ? { headers: config.output.headers } : {}),
+        },
+      );
+
+      scenarioData["httpResponse"] = response;
+    }
+  },
+);
+
+Given(
+  "I make a temp public API request with the config:",
+  async ({ scenarioData }, configString: string) => {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const unsafeConfig = yaml.parse(configString);
+
+    const configSchema = v.object({
+      method: v.picklist([
+        "GET",
+        "PUT",
+        "POST",
+        "PATCH",
+        "DELETE",
+        "OPTIONS",
+        "HEAD",
+        "CONNECT",
+        "TRACE",
+      ]),
+      path: v.string(),
+      headers: v.optional(v.record(v.string(), v.string())),
+      body: v.optional(v.record(v.string(), v.any())),
+    });
+
+    const config = v.safeParse(configSchema, unsafeConfig);
+
+    expect(config.success, JSON.stringify(config.issues, null, 2)).toBe(true);
+    if (config.success) {
+      const response = await fetch(
+        `${await getTempPublicApiBaseUrl()}${config.output.path}`,
         {
           body: JSON.stringify(config.output.body),
           method: config.output.method,
