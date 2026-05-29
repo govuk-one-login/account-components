@@ -130,7 +130,7 @@ updates:
           - "version-update:semver-major"
           - "version-update:semver-minor"
 
-  - package-ecosystem: "gitsubmodule"
+  - package-ecosystem: "gitsubmodule" # zizmor: ignore[dependabot-cooldown]
     directories:
       - "/"
     schedule:
