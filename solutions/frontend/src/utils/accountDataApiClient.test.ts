@@ -35,6 +35,7 @@ vi.mock(import("../../../commons/utils/constants.js"), async () => {
       isBackUpEligible: v.boolean(),
       isBackedUp: v.boolean(),
       isResidentKey: v.boolean(),
+      algorithm: v.pipe(v.number(), v.integer()),
     }),
   };
 });
@@ -115,6 +116,7 @@ describe("accountDataApiClient", () => {
         isBackUpEligible: true,
         isBackedUp: false,
         isResidentKey: true,
+        algorithm: -7,
       };
 
       mockThisFetch.mockResolvedValueOnce(new Response());
@@ -149,6 +151,7 @@ describe("accountDataApiClient", () => {
         isBackUpEligible: true,
         isBackedUp: false,
         isResidentKey: true,
+        algorithm: -7,
       });
 
       expect(result).toStrictEqual({ success: false, error: "UnknownError" });

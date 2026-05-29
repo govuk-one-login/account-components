@@ -26,6 +26,7 @@ export const passkeyDetailsSchema = v.object({
   isBackUpEligible: v.boolean(),
   isBackedUp: v.boolean(),
   isResidentKey: v.boolean(),
+  algorithm: v.pipe(v.number(), v.integer()),
 });
 
 export const rootDomain = process.env["ROOT_DOMAIN"];
