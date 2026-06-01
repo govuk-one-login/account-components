@@ -37,7 +37,7 @@ export const getAuthRequest = async (
     throw new Error("AUTH_TABLE_NAME is not configured");
   }
 
-  console.log("MHTEST5");
+  console.log("MHTEST5", { code, tableName });
 
   const { Item } = await dynamoDbClient.get({
     TableName: tableName,
