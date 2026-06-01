@@ -39,11 +39,15 @@ export const getAuthRequest = async (
 
   console.log("MHTEST5", { code, tableName });
 
-  const { Item } = await dynamoDbClient.get({
-    TableName: tableName,
-    Key: { code },
-    ConsistentRead: true,
-  });
+  try {
+    const { Item } = await dynamoDbClient.get({
+      TableName: tableName,
+      Key: { code },
+      ConsistentRead: true,
+    });
+  } catch (err) {
+    console.log("MHTEST10", { err });
+  }
 
   console.log("MHTEST6", { code, tableName });
 
