@@ -16,12 +16,44 @@ import { createAccessToken } from "./utils/createAccessToken.js";
 import { getApiBaseUrlWithStage } from "../../utils/common.js";
 import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
+import assert from "node:assert";
+import { getKmsClient } from "../../../../commons/utils/awsClient/kmsClient/index.js";
+
+const keyIdCache = new Map<string, string>();
 
 export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
         metrics.addMetric("TokenRequestWithoutContext", MetricUnit.Count, 1);
+
+        assert(
+          process.env["JWT_SIGNING_KEY_ALIAS"],
+          "JWT_SIGNING_KEY_ALIAS is not configured",
+        );
+
+        const keyAlias = process.env["JWT_SIGNING_KEY_ALIAS"];
+
+        console.log("MHTEST1", keyAlias);
+
+        const kmsClient = getKmsClient();
+
+        let keyId = keyIdCache.get(keyAlias);
+        console.log("MHTEST2", keyId);
+
+        if (!keyId) {
+          keyId = (
+            await kmsClient.describeKey({
+              KeyId: keyAlias,
+            })
+          ).KeyMetadata?.KeyId;
+          console.log("MHTEST3", keyId);
+
+          if (keyId) {
+            keyIdCache.set(keyAlias, keyId);
+            console.log("MHTEST4", keyId);
+          }
+        }
 
         try {
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
