@@ -124,7 +124,7 @@ updates:
         update-types:
           - "version-update:semver-major"
 
-  - package-ecosystem: "gitsubmodule"
+  - package-ecosystem: "gitsubmodule" # zizmor: ignore[dependabot-cooldown]
     directories:
       - "/"
     schedule:
