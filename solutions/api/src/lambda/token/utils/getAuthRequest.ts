@@ -52,6 +52,7 @@ export const getAuthRequest = async (
 
   try {
     const parsedItem = v.parse(AuthRequestSchema, Item);
+    console.log("MHTEST5", parsedItem);
     return parsedItem;
   } catch (e) {
     const errorMessage = e instanceof Error ? e.message : String(e);
