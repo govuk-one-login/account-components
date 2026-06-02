@@ -30,10 +30,10 @@
     }
   ],
   "jti_nonce_ttl_in_seconds": 7200,
-  "auth_code_ttl": 30000,
+  "auth_code_ttl": 30000000,
   "jwks_cache_max_age": 60000,
   "jwks_http_timeout": 2500,
-  "access_token_max_age": 30000,
-  "journey_outcome_ttl": 36000,
+  "access_token_max_age": 30000000,
+  "journey_outcome_ttl": 36000000,
   "max_number_of_passkeys": 5
 }
