@@ -3,7 +3,7 @@ import * as v from "valibot";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
 import assert from "node:assert";
 import crypto from "node:crypto";
-import { SignJWT, importPKCS8 } from "jose";
+import { SignJWT, UnsecuredJWT, importPKCS8 } from "jose";
 import type { ClientEntry } from "../../../../config/schema/types.js";
 import { getParametersProvider } from "../../../../commons/utils/awsClient/ssmClient/index.js";
 import deterministicJsonStringify from "fast-json-stable-stringify";
@@ -37,6 +37,7 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         v.object({
           code: v.string(),
           state: v.optional(v.string()),
+          test_scenario: v.optional(v.string()),
         }),
         v.object({
           error: v.string(),
@@ -57,9 +58,15 @@ export async function handler(request: FastifyRequest, reply: FastifyReply) {
         client,
         authCode: parsedRequestQueryParams.code,
         currentUrl: currentUrl.toString(),
+        testScenario: parsedRequestQueryParams.test_scenario,
       });
 
       assert.ok(process.env["API_BASE_URL"], "API_BASE_URL is not set");
+
+      console.log(
+        `MHTEST ${parsedRequestQueryParams.test_scenario ?? "none"}`,
+        tokenRequestBody.toString(),
+      );
 
       const tokenResponse = await fetch(
         `${process.env["API_BASE_URL"]}/token`,
@@ -123,10 +130,12 @@ const getTokenRequestBody = async ({
   client,
   authCode,
   currentUrl,
+  testScenario,
 }: {
   client: ClientEntry;
   authCode: string;
   currentUrl: string;
+  testScenario?: string | undefined;
 }) => {
   assert.ok(
     process.env["MOCK_CLIENT_RSA_PRIVATE_KEY_SSM_NAME"],
@@ -145,22 +154,69 @@ const getTokenRequestBody = async ({
   const algorithm = useRSA ? "RS256" : "ES256";
   const kid = useRSA ? Kids.RSA : Kids.EC;
 
-  const privateKeyPem = await getParametersProvider().get(ssmName, {
-    maxAge: 900,
-  });
+  let signingKey: string;
 
-  assert.ok(privateKeyPem, "privateKeyPem is not set");
+  if (testScenario === "2") {
+    const { privateKey } = useRSA
+      ? await new Promise<crypto.KeyPairKeyObjectResult>((resolve, reject) => {
+          crypto.generateKeyPair(
+            "rsa",
+            { modulusLength: 2048 },
+            (err, publicKey, privateKey) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve({ publicKey, privateKey });
+              }
+            },
+          );
+        })
+      : await new Promise<crypto.KeyPairKeyObjectResult>((resolve, reject) => {
+          crypto.generateKeyPair(
+            "ec",
+            { namedCurve: "P-256" },
+            (err, publicKey, privateKey) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve({ publicKey, privateKey });
+              }
+            },
+          );
+        });
+    signingKey = privateKey.export({ type: "pkcs8", format: "pem" }).toString();
+  } else {
+    const privateKeyPem = await getParametersProvider().get(ssmName, {
+      maxAge: 900,
+    });
+    assert.ok(privateKeyPem, "privateKeyPem is not set");
+    signingKey = privateKeyPem;
+  }
+
   assert.ok(process.env["API_BASE_URL"], "API_BASE_URL is not set");
 
-  const clientAssertion = await new SignJWT({
-    iss: client.client_id,
-    aud: `${process.env["API_BASE_URL"]}/token`,
-    jti: crypto.randomUUID(),
-  })
-    .setProtectedHeader({ alg: algorithm, kid })
-    .setIssuedAt()
-    .setExpirationTime("5m")
-    .sign(await importPKCS8(privateKeyPem, algorithm));
+  const jwtPayload = {
+    iss: testScenario === "3" ? "home" : client.client_id,
+    aud:
+      testScenario === "4"
+        ? "invalid_audience"
+        : `${process.env["API_BASE_URL"]}/token`,
+    ...(testScenario === "5" ? {} : { jti: crypto.randomUUID() }),
+  };
+
+  const futureIat = Math.floor(Date.now() / 1000) + 365 * 24 * 60 * 60;
+
+  const clientAssertion =
+    testScenario === "6"
+      ? new UnsecuredJWT(jwtPayload)
+          .setIssuedAt()
+          .setExpirationTime("2 weeks")
+          .encode()
+      : await new SignJWT(jwtPayload)
+          .setProtectedHeader({ alg: algorithm, kid })
+          .setIssuedAt(testScenario === "7" ? futureIat : undefined)
+          .setExpirationTime(testScenario === "8" ? "1 sec" : "2 weeks")
+          .sign(await importPKCS8(signingKey, algorithm));
 
   const params = new URLSearchParams({
     grant_type: "authorization_code",
