@@ -26,7 +26,7 @@ export const verifyJti = async (jti: string | undefined) => {
         expires:
           Math.floor(Date.now() / 1000) + appConfig.jti_nonce_ttl_in_seconds,
       },
-      ConditionExpression: "attribute_not_exists(nonce)",
+      //ConditionExpression: "attribute_not_exists(nonce)",
     });
   } catch (error) {
     if (
