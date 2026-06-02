@@ -29,7 +29,7 @@
       }
     }
   ],
-  "jti_nonce_ttl_in_seconds": 31536000,
+  "jti_nonce_ttl_in_seconds": 1,
   "auth_code_ttl": 31536000,
   "jwks_cache_max_age": 60000,
   "jwks_http_timeout": 2500,
