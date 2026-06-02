@@ -129,6 +129,7 @@ describe("passkey-create handlers", () => {
         claims: mockClaims,
       } as FastifySessionObject,
       body: {},
+      cookies: {},
       log: {
         warn: vi.fn(),
       } as unknown as FastifyRequest["log"],
@@ -827,6 +828,64 @@ describe("passkey-create handlers", () => {
           "PasskeyCreateError",
           "Count",
           1,
+        );
+      });
+
+      it("should use temp_aaguid_override cookie when present", async () => {
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [{ action: "passkey-create" }];
+        mockRequest.cookies = { temp_aaguid_override: "override-aaguid" };
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockCreatePasskey).toHaveBeenCalledWith(
+          "user-123",
+          expect.objectContaining({
+            aaguid: "override-aaguid",
+          }),
+        );
+        expect(mockGetPasskeyConvenienceMetadataByAaguid).toHaveBeenCalledWith(
+          "override-aaguid",
+        );
+        expect(mockCompleteJourneyActionSuccessfully).toHaveBeenCalledWith(
+          {
+            action: "passkey-create",
+            details: { aaguid: "override-aaguid" },
+          },
+          mockRequest,
+          mockReply,
+        );
+      });
+
+      it("should fall back to registrationInfo aaguid when temp_aaguid_override cookie is empty", async () => {
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [{ action: "passkey-create" }];
+        mockRequest.cookies = { temp_aaguid_override: "" };
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockCreatePasskey).toHaveBeenCalledWith(
+          "user-123",
+          expect.objectContaining({
+            aaguid: "aaguid-123",
+          }),
+        );
+        expect(mockGetPasskeyConvenienceMetadataByAaguid).toHaveBeenCalledWith(
+          "aaguid-123",
+        );
+        expect(mockCompleteJourneyActionSuccessfully).toHaveBeenCalledWith(
+          {
+            action: "passkey-create",
+            details: { aaguid: "aaguid-123" },
+          },
+          mockRequest,
+          mockReply,
         );
       });
 
