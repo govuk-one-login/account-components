@@ -14,6 +14,7 @@ import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
 import {
   channelCookieName,
+  Lang,
   oneYearInSeconds,
 } from "../../commons/utils/constants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
@@ -30,7 +31,7 @@ import {
   handle as i18nextMiddlewareHandle,
 } from "i18next-http-middleware";
 import { getCurrentUrl } from "../../commons/utils/fastify/getCurrentUrl/index.js";
-import { configureI18n, Lang } from "./utils/configureI18n.js";
+import { configureI18n } from "./utils/configureI18n.js";
 import {
   frontendUiTranslationCy,
   frontendUiTranslationEn,

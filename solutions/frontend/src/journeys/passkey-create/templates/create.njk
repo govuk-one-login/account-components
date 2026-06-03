@@ -6,10 +6,12 @@
 
 {% if showErrorUi %}        
   {% set pageTitleName = ['journey:create.error.pageTitle', stringsSuffix] | join | translate %}
+  {% set englishPageTitleName = ['journey:create.error.pageTitle', stringsSuffix] | join | getFixedT_en %}
   {% set heading = ['journey:create.error.heading', stringsSuffix] | join | translate %}
   {% set submitButtonLabel = ['journey:create.error.buttonLabel', stringsSuffix] | join | translate %}      
 {% else %}  
   {% set pageTitleName = ['journey:create.pageTitle', stringsSuffix] | join | translate %}
+  {% set englishPageTitleName = ['journey:create.pageTitle', stringsSuffix] | join | getFixedT_en %}
   {% set heading = ['journey:create.heading', stringsSuffix] | join | translate %}  
   {% set submitButtonLabel = ['journey:create.buttonLabel', stringsSuffix] | join | translate %}    
 {% endif %}

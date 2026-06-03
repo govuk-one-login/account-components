@@ -1,8 +1,8 @@
 import { type getClaimsSchema } from "../../utils/getClaimsSchema.js";
-import { Lang } from "../../utils/configureI18n.js";
 import type { AnyStateMachine } from "xstate";
 import type * as v from "valibot";
 import { Scope } from "../../../../commons/utils/commonTypes.js";
+import { Lang } from "../../../../commons/utils/constants.js";
 
 export const journeys = {
   [Scope.testingJourney]: async () => {

@@ -27,6 +27,15 @@
   {% endif -%}
   {{ 'general.serviceNameTitle' | translate if not hideTitleProductName}}
 {%- endblock %}
+{%- set englishPageTitleFull -%}
+  {%- if error or errors %} {{ 'general.errorTitlePrefix' | getFixedT_en }} - {% endif -%}
+  {%- if englishPageTitleName -%}
+      {{ englishPageTitleName }}
+      {%- if not hideTitleProductName %} - {% endif -%}
+  {% endif -%}
+  {{ 'general.serviceNameTitle' | getFixedT_en if not hideTitleProductName}}
+{%- endset -%}
+
 {% block bodyStart %}
   {% include 'templates/layout/cookieBanner.njk' %}
 {% endblock %}
@@ -121,6 +130,7 @@
       window.addEventListener('load', function () {
         if (window.DI && window.DI.analyticsGa4) {
             window.DI.analyticsGa4.pageViewTracker.trackOnPageLoad({
+                englishPageTitle: "{{ englishPageTitleFull }}",
                 statusCode: {% if reply.statusCode %}{{ reply.statusCode }}{% else %}200{% endif %},
                 logged_in_status: {% if reply.client.consider_user_logged_in === true %}true{% else %}false{% endif %},
                 dynamic: {% if reply.analytics.dynamic === false %}false{% else %}true{% endif %},

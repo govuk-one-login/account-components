@@ -1,12 +1,7 @@
 import i18next from "i18next";
 import { LanguageDetector } from "i18next-http-middleware";
 import { getEnvironment } from "../../../commons/utils/getEnvironment/index.js";
-import { rootDomainWithEnv } from "../../../commons/utils/constants.js";
-
-export enum Lang {
-  English = "en",
-  Welsh = "cy",
-}
+import { Lang, rootDomainWithEnv } from "../../../commons/utils/constants.js";
 
 export const configureI18n = async (translations: Record<Lang, object>) => {
   await i18next.use(LanguageDetector).init({
