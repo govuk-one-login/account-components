@@ -112,7 +112,7 @@ jobs:
           # inside SAM Globals causes a ValueError crash (invalid literal for int() with base 10: 'Fn::If').
           # cfn-lint still runs against this template via the cfnlint CI step.
           # See: https://github.com/bridgecrewio/checkov/issues/6804
-          skip_path: solutions/app-infra/template.yaml
+          skip_path: solutions/app-infra/template.yaml,submodules/.+
           # to select the deployment revision, not to affect build output.
           # CKV2_GHA_1 flags missing top-level permissions but all jobs in affected workflows
           # already define their own explicit permissions, making a top-level block redundant.
