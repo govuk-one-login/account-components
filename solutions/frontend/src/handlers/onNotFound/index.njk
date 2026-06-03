@@ -1,6 +1,7 @@
 {% extends "templates/layout/base-page.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% set pageTitleName = 'error.error404.title' | translate %}
+{% set englishPageTitleName = 'error.error404.title' | getFixedT_en %}
 
 {% block pageContent %}
   <h1 class="govuk-heading-l">{{ 'error.error404.heading1' | translate }}</h1>

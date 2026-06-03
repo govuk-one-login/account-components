@@ -1,6 +1,7 @@
 {% extends "templates/layout/base-page.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% set pageTitleName = 'error.timeoutError.title' | translate %}
+{% set englishPageTitleName = 'error.timeoutError.title' | getFixedT_en %}
 
 {% block pageContent %}
   <h1 class="govuk-heading-l">{{ 'error.timeoutError.header' | translate }}</h1>
