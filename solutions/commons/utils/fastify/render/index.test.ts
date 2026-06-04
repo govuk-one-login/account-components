@@ -42,6 +42,7 @@ describe("render", () => {
       request: {
         i18n: {
           t: vi.fn(),
+          getFixedT: vi.fn().mockReturnValue(vi.fn()),
         } as unknown as typeof i18next,
       } as FastifyRequest,
       cspNonce: {
@@ -105,6 +106,11 @@ describe("render", () => {
     expect(mockEnv.addFilter).toHaveBeenCalledWith(
       "translate",
       reply.request?.i18n.t,
+    );
+    expect(mockEnv.addFilter).toHaveBeenCalledWith(
+      "getFixedT_en",
+      (reply.request!.i18n.getFixedT as unknown as ReturnType<typeof vi.fn>)
+        .mock.results[0]?.value,
     );
     expect(mockEnv.addGlobal).toHaveBeenCalledWith("reply", reply);
     expect(mockEnv.addFilter).toHaveBeenCalledWith(

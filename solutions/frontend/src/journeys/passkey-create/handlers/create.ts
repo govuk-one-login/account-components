@@ -399,6 +399,10 @@ export async function postHandler(
     body.registrationResponse,
   );
 
+  const tempAaguidToUse = request.cookies["temp_aaguid_override"]?.length
+    ? request.cookies["temp_aaguid_override"]
+    : verification.registrationInfo.aaguid;
+
   const savePasskeyResult = await accountDataApiClient.createPasskey(
     request.session.claims.public_sub,
     {
@@ -406,7 +410,7 @@ export async function postHandler(
         verification.registrationInfo.credential.publicKey,
       ).toString("base64url"),
       id: verification.registrationInfo.credential.id,
-      aaguid: verification.registrationInfo.aaguid,
+      aaguid: tempAaguidToUse,
       isAttested: attestationSignature !== undefined,
       signCount: verification.registrationInfo.credential.counter,
       transports: verification.registrationInfo.credential.transports ?? [],
@@ -431,9 +435,7 @@ export async function postHandler(
   }
 
   const passkeyConvenienceMetadata =
-    await getPasskeyConvenienceMetadataByAaguid(
-      verification.registrationInfo.aaguid,
-    );
+    await getPasskeyConvenienceMetadataByAaguid(tempAaguidToUse);
 
   await sendNotification(
     passkeyConvenienceMetadata
@@ -460,7 +462,7 @@ export async function postHandler(
   await completeJourneyActionSuccessfully<"passkeyCreate">(
     {
       action: "passkey-create",
-      details: { aaguid: verification.registrationInfo.aaguid },
+      details: { aaguid: tempAaguidToUse },
     },
     request,
     reply,

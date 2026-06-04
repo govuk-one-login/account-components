@@ -49,6 +49,11 @@ const mockCreateAccessToken = vi.mocked(
   await import("./utils/createAccessToken.js"),
 ).createAccessToken;
 
+vi.mock(import("../../../../commons/utils/getAppConfig/index.js"));
+const mockGetAppConfig = vi.mocked(
+  await import("../../../../commons/utils/getAppConfig/index.js"),
+).getAppConfig;
+
 vi.mock(import("./utils/assertTokenRequest.js"));
 const mockAssertTokenRequest = vi.mocked(
   await import("./utils/assertTokenRequest.js"),
@@ -73,6 +78,10 @@ describe("token handler", () => {
     mockAssertTokenRequest.mockImplementation(() => {
       // Empty implementation for successful validation
     });
+
+    mockGetAppConfig.mockResolvedValue({
+      access_token_max_age: 180,
+    } as Awaited<ReturnType<typeof mockGetAppConfig>>);
 
     // Mock error manager to return proper error responses
     mockErrorManager.handleError.mockReturnValue({
@@ -146,7 +155,7 @@ describe("token handler", () => {
       body: {
         access_token: "mock-access-token",
         token_type: "Bearer",
-        expires_in: 300,
+        expires_in: 180,
       },
     });
   });

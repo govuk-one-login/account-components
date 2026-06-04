@@ -17,7 +17,9 @@
     {
       "client_id": "home",
       "scope": "passkey-create",
-      "redirect_uris": ["https://home.integration.account.gov.uk/amc/callback"],
+      "redirect_uris": [
+        "https://home.integration.account.gov.uk/amc/callback?scope=passkey-create"
+      ],
       "client_name": "Home",
       "jwks_uri": "https://home.integration.account.gov.uk/.well-known/jwks.json",
       "consider_user_logged_in": true,

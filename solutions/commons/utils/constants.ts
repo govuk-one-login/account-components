@@ -31,3 +31,8 @@ export const passkeyDetailsSchema = v.object({
 
 export const rootDomain = process.env["ROOT_DOMAIN"];
 export const rootDomainWithEnv = process.env["ROOT_DOMAIN_WITH_ENV"];
+
+export enum Lang {
+  English = "en",
+  Welsh = "cy",
+}
