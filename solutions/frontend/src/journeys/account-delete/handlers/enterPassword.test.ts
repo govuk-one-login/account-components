@@ -235,7 +235,7 @@ describe("enterPassword handlers", () => {
 
     it("should throw if session claims are not available", async () => {
       delete mockRequest.session;
-      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      mockRequest.body = { password: "validPassword123" };
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
 
       await expect(
