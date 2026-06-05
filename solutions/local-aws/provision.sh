@@ -5,7 +5,7 @@ set -e
 export AWS_PAGER=""
 export AWS_ACCESS_KEY_ID="test"
 export AWS_SECRET_ACCESS_KEY="test" # pragma: allowlist secret
-export AWS_DEFAULT_REGION="eu-west-2"
+export AWS_DEFAULT_REGION="local"
 
 FLOCI_ENDPOINT="http://localhost:4566"
 KMS_ENDPOINT="http://localhost:4567"
