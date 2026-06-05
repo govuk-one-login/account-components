@@ -134,10 +134,12 @@
                 statusCode: {% if reply.statusCode %}{{ reply.statusCode }}{% else %}200{% endif %},
                 logged_in_status: {% if reply.client.consider_user_logged_in === true %}true{% else %}false{% endif %},
                 dynamic: {% if reply.analytics.dynamic === false %}false{% else %}true{% endif %},
-                {% if reply.analytics.taxonomyLevel1 %}taxonomy_level1: "{{ reply.analytics.taxonomyLevel1 }}",{% endif %}
-                {% if reply.analytics.taxonomyLevel2 %}taxonomy_level2: "{{ reply.analytics.taxonomyLevel2 }}",{% endif %}
+                taxonomy_level1: "{{ reply.analytics.taxonomyLevel1 }}",
+                taxonomy_level2: "{{ reply.analytics.taxonomyLevel2 }}",
                 {% if reply.analytics.taxonomyLevel3 %}taxonomy_level3: "{{ reply.analytics.taxonomyLevel3 }}",{% endif %}
-                {% if reply.analytics.contentId %}content_id: "{{ reply.analytics.contentId }}",{% endif %}                
+                {% if reply.analytics.taxonomyLevel4 %}taxonomy_level4: "{{ reply.analytics.taxonomyLevel4 }}",{% endif %}
+                {% if reply.analytics.taxonomyLevel5 %}taxonomy_level5: "{{ reply.analytics.taxonomyLevel5 }}",{% endif %}
+                content_id: "{{ reply.analytics.contentId }}",
                 {% if reply.analytics.reason %}reason: "{{ reply.analytics.reason }}",{% endif %}
             });
         }
