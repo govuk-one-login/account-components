@@ -92,7 +92,7 @@ describe("accountManagementApiClient", () => {
     it("should make correct API call", async () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
       const email = "test@example.com";
-      const password = "password123"; // pragma: allowlist secret
+      const password = "password123";
 
       mockThisFetch.mockResolvedValueOnce(new Response());
 

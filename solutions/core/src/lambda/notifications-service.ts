@@ -66,9 +66,7 @@ if (!notifyApiKey) {
   );
 }
 
-if (
-  typeof notifyApiKey !== "string" // pragma: allowlist secret
-) {
+if (typeof notifyApiKey !== "string") {
   const errorName = "notify_api_key_is_not_a_string";
   addSendNotificationFailedMetric(errorName);
   throw new Error(

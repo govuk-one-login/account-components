@@ -3,8 +3,8 @@ import { createJourneyStateMachine } from "./index.js";
 import type { MachineContext } from "xstate";
 
 export enum TestingJourneyState {
-  passwordNotProvided = "PASSWORD_NOT_PROVIDED", // pragma: allowlist secret
-  passwordProvided = "PASSWORD_PROVIDED", // pragma: allowlist secret
+  passwordNotProvided = "PASSWORD_NOT_PROVIDED",
+  passwordProvided = "PASSWORD_PROVIDED",
 }
 
 export const testingJourneyStateMachine = createJourneyStateMachine<

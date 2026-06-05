@@ -71,7 +71,7 @@ describe("generateAccessToken", () => {
     expect(
       setProtectedHeaderMock.setProtectedHeader,
     ).toHaveBeenCalledExactlyOnceWith({
-      kid: "B-QMUxdJOJ8ubkmArc4i1SGmfZnNNlM-va9h0HJ0jCo", // pragma: allowlist secret
+      kid: "B-QMUxdJOJ8ubkmArc4i1SGmfZnNNlM-va9h0HJ0jCo",
       alg: "ES256",
     });
 

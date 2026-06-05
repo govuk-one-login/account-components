@@ -72,7 +72,7 @@ describe("enterPassword handlers", () => {
 
   describe("enterPasswordPostHandler", () => {
     it("should authenticate user, send authenticated event and redirect when valid password provided", async () => {
-      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      mockRequest.body = { password: "validPassword123" };
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockAuthenticate.mockResolvedValue({ success: true });
 
@@ -168,7 +168,7 @@ describe("enterPassword handlers", () => {
     });
 
     it("should render error when password is incorrect", async () => {
-      mockRequest.body = { password: "wrongPassword" }; // pragma: allowlist secret
+      mockRequest.body = { password: "wrongPassword" };
       mockRequest.i18n = {
         t: vi.fn().mockImplementation((key: string) => {
           if (key === "journey:enterPassword.formErrors.incorrect") {
@@ -235,7 +235,7 @@ describe("enterPassword handlers", () => {
 
     it("should throw if session claims are not available", async () => {
       delete mockRequest.session;
-      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      mockRequest.body = { password: "validPassword123" };
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
 
       await expect(
@@ -249,7 +249,7 @@ describe("enterPassword handlers", () => {
     it("should throw if access token is not available", async () => {
       // @ts-expect-error
       delete mockRequest.session.claims.account_management_api_access_token;
-      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      mockRequest.body = { password: "validPassword123" };
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
 
       await expect(
@@ -261,7 +261,7 @@ describe("enterPassword handlers", () => {
     });
 
     it("should throw error when ExceededIncorrectPasswordSubmissionLimit", async () => {
-      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      mockRequest.body = { password: "validPassword123" };
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockAuthenticate.mockResolvedValue({
         success: false,
@@ -277,7 +277,7 @@ describe("enterPassword handlers", () => {
     });
 
     it("should throw error when AccountInterventionsUnexpectedError", async () => {
-      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      mockRequest.body = { password: "validPassword123" };
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockAuthenticate.mockResolvedValue({
         success: false,
@@ -293,7 +293,7 @@ describe("enterPassword handlers", () => {
     });
 
     it("should throw error when UserAccountSuspended", async () => {
-      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      mockRequest.body = { password: "validPassword123" };
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockAuthenticate.mockResolvedValue({
         success: false,
@@ -309,7 +309,7 @@ describe("enterPassword handlers", () => {
     });
 
     it("should throw error when UserAccountBlocked", async () => {
-      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+      mockRequest.body = { password: "validPassword123" };
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockAuthenticate.mockResolvedValue({
         success: false,

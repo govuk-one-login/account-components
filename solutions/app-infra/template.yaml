@@ -56,7 +56,7 @@ Parameters:
 Mappings:
   EnvironmentConfiguration:
     dev:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
       authorizeEndpointUrl: https://manage.dev.account.gov.uk/authorize
       issuerUrl: https://manage.dev.account.gov.uk
       apiAllowedVpceIds: []
@@ -91,7 +91,7 @@ Mappings:
       rootDomain: account.gov.uk
       rootDomainWithEnv: dev.account.gov.uk
     build:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
       authorizeEndpointUrl: https://manage.build.account.gov.uk/authorize
       issuerUrl: https://manage.build.account.gov.uk
       apiAllowedVpceIds: []
@@ -126,7 +126,7 @@ Mappings:
       rootDomain: account.gov.uk
       rootDomainWithEnv: build.account.gov.uk
     staging:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
       authorizeEndpointUrl: https://manage.staging.account.gov.uk/authorize
       issuerUrl: https://manage.staging.account.gov.uk
       apiAllowedVpceIds:
@@ -163,7 +163,7 @@ Mappings:
       rootDomain: account.gov.uk
       rootDomainWithEnv: staging.account.gov.uk
     integration:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables
       authorizeEndpointUrl: https://manage.integration.account.gov.uk/authorize
       issuerUrl: https://manage.integration.account.gov.uk
       apiAllowedVpceIds:
@@ -200,7 +200,7 @@ Mappings:
       rootDomain: account.gov.uk
       rootDomainWithEnv: integration.account.gov.uk
     production:
-      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist secret
+      dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables
       authorizeEndpointUrl: https://manage.account.gov.uk/authorize
       issuerUrl: https://manage.account.gov.uk
       apiAllowedVpceIds:
@@ -326,7 +326,7 @@ Globals:
         AWS_LAMBDA_EXEC_WRAPPER:
           !If [IsLocal, !Ref AWS::NoValue, "/opt/dynatrace"]
         DT_CONNECTION_AUTH_TOKEN: !Sub
-          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}" # pragma: allowlist secret
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_AUTH_TOKEN}}"
           - SecretArn:
               !FindInMap [
                 EnvironmentConfiguration,
@@ -334,7 +334,7 @@ Globals:
                 dynatraceSecretArn,
               ]
         DT_CONNECTION_BASE_URL: !Sub
-          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}" # pragma: allowlist secret
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CONNECTION_BASE_URL}}"
           - SecretArn:
               !FindInMap [
                 EnvironmentConfiguration,
@@ -342,7 +342,7 @@ Globals:
                 dynatraceSecretArn,
               ]
         DT_CLUSTER_ID: !Sub
-          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}" # pragma: allowlist secret
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_CLUSTER_ID}}"
           - SecretArn:
               !FindInMap [
                 EnvironmentConfiguration,
@@ -350,7 +350,7 @@ Globals:
                 dynatraceSecretArn,
               ]
         DT_LOG_COLLECTION_AUTH_TOKEN: !Sub
-          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}" # pragma: allowlist secret
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_LOG_COLLECTION_AUTH_TOKEN}}"
           - SecretArn:
               !FindInMap [
                 EnvironmentConfiguration,
@@ -358,7 +358,7 @@ Globals:
                 dynatraceSecretArn,
               ]
         DT_TENANT: !Sub
-          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}" # pragma: allowlist secret
+          - "{{resolve:secretsmanager:${SecretArn}:SecretString:DT_TENANT}}"
           - SecretArn:
               !FindInMap [
                 EnvironmentConfiguration,
@@ -942,7 +942,7 @@ Resources:
     UpdateReplacePolicy: Retain
     Properties:
       KmsKeyId: !Ref SecretsKmsKey
-      SecretString: set-me # pragma: allowlist secret
+      SecretString: set-me
 
   SqsKmsKey:
     Type: AWS::KMS::Key
@@ -1057,7 +1057,7 @@ Resources:
               Resource:
                 - !GetAtt SecretsKmsKey.Arn
             - Effect: Allow
-              Action: secretsmanager:GetSecretValue # pragma: allowlist secret
+              Action: secretsmanager:GetSecretValue
               Resource: !Ref NotifyAPIKeySecret
     Metadata:
       BuildMethod: esbuild

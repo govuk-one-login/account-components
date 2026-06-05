@@ -33,6 +33,7 @@
         "awk",
         "jsonschema",
         "import",
+        "detect-secrets",
       ],
       "ignoreDependencies": [
         "csso-cli",
