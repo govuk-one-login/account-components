@@ -3,6 +3,7 @@ import type { FastifyReply } from "fastify";
 import { addLanguageParam, contactUsUrl } from "@govuk-one-login/frontend-ui";
 import * as path from "node:path";
 import { getQueryParamsFromUrl } from "../../getQueryParamsFromUrl/index.js";
+import { Lang } from "../../constants.js";
 
 export const render = async function (
   this: FastifyReply,
@@ -26,6 +27,7 @@ export const render = async function (
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
   if (this.request.i18n) {
     env.addFilter("translate", this.request.i18n.t);
+    env.addFilter("getFixedT_en", this.request.i18n.getFixedT(Lang.English));
   }
   env.addGlobal("cspNonce", this.cspNonce.script);
   env.addGlobal("styleNonce", this.cspNonce.style);

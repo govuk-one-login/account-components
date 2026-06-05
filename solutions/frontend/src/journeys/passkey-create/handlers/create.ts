@@ -55,7 +55,7 @@ export const supportedAlgorithmIDs = [
 const setRegistrationOptions = async (
   request: FastifyRequest,
   reply: FastifyReply,
-  idsOfCredentialsToExclude: string[],
+  //idsOfCredentialsToExclude: string[],
 ) => {
   assert.ok(request.session.claims);
   assert.ok(reply.journeyStates?.["passkey-create"]);
@@ -73,9 +73,9 @@ const setRegistrationOptions = async (
       userVerification: "required",
     },
     supportedAlgorithmIDs,
-    excludeCredentials: idsOfCredentialsToExclude.map((id) => ({
+    /*excludeCredentials: idsOfCredentialsToExclude.map((id) => ({
       id,
-    })),
+    })),*/
   });
 
   reply.journeyStates["passkey-create"].send({
@@ -124,7 +124,7 @@ const render = async (
   const registrationOptions = await setRegistrationOptions(
     request,
     reply,
-    getPasskeysResult.result.passkeys.map((pk) => pk.id),
+    //getPasskeysResult.result.passkeys.map((pk) => pk.id),
   );
 
   assert.ok(reply.render);
@@ -394,6 +394,10 @@ export async function postHandler(
     return reply;
   }
 
+  const tempAaguidToUse = request.cookies["temp_aaguid_override"]?.length
+    ? request.cookies["temp_aaguid_override"]
+    : verification.registrationInfo.aaguid;
+
   const savePasskeyResult = await accountDataApiClient.createPasskey(
     request.session.claims.public_sub,
     {
@@ -401,7 +405,7 @@ export async function postHandler(
         verification.registrationInfo.credential.publicKey,
       ).toString("base64url"),
       id: verification.registrationInfo.credential.id,
-      aaguid: verification.registrationInfo.aaguid,
+      aaguid: tempAaguidToUse,
       isAttested: attestationSignature !== undefined,
       signCount: verification.registrationInfo.credential.counter,
       transports: verification.registrationInfo.credential.transports ?? [],
@@ -425,9 +429,7 @@ export async function postHandler(
   }
 
   const passkeyConvenienceMetadata =
-    await getPasskeyConvenienceMetadataByAaguid(
-      verification.registrationInfo.aaguid,
-    );
+    await getPasskeyConvenienceMetadataByAaguid(tempAaguidToUse);
 
   await sendNotification(
     passkeyConvenienceMetadata
@@ -454,7 +456,7 @@ export async function postHandler(
   await completeJourneyActionSuccessfully<"passkeyCreate">(
     {
       action: "passkey-create",
-      details: { aaguid: verification.registrationInfo.aaguid },
+      details: { aaguid: tempAaguidToUse },
     },
     request,
     reply,

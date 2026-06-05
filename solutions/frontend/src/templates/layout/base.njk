@@ -27,6 +27,15 @@
   {% endif -%}
   {{ 'general.serviceNameTitle' | translate if not hideTitleProductName}}
 {%- endblock %}
+{%- set englishPageTitleFull -%}
+  {%- if error or errors %} {{ 'general.errorTitlePrefix' | getFixedT_en }} - {% endif -%}
+  {%- if englishPageTitleName -%}
+      {{ englishPageTitleName }}
+      {%- if not hideTitleProductName %} - {% endif -%}
+  {% endif -%}
+  {{ 'general.serviceNameTitle' | getFixedT_en if not hideTitleProductName}}
+{%- endset -%}
+
 {% block bodyStart %}
   {% include 'templates/layout/cookieBanner.njk' %}
 {% endblock %}
@@ -99,44 +108,50 @@
     </script>
     <script src="/public/scripts/analytics.js?{{ globals.publicScriptsHash }}" nonce='{{ cspNonce }}'></script>
 
+    {% if globals.ga4ContainerId %}
     <script nonce='{{ cspNonce }}'>
-    if (window.DI) {
-      window.DI.appInit({
-        ga4ContainerId: "{{ globals.ga4ContainerId }}",
-      }, {
-        enableGa4Tracking: {% if globals.analyticsEnabled === true %}true{% else %}false{% endif %},
-        cookieDomain: "{{ globals.analyticsCookieDomain }}",
-        isDataSensitive: false,
-        isPageDataSensitive: {% if reply.analytics.isPageDataSensitive === true %}true{% else %}false{% endif %},
-        enablePageViewTracking: true,
-        enableFormResponseTracking: true,
-        enableFormChangeTracking: true,
-        enableFormErrorTracking: true,
-        enableNavigationTracking: true,
-        enableSelectContentTracking: {% if reply.analytics.isSelectContentTrackingEnabled === true %}true{% else %}false{% endif %},
-      });
-    }
+      if (window.DI) {
+        window.DI.appInit({
+          ga4ContainerId: "{{ globals.ga4ContainerId }}",
+        }, {
+          enableGa4Tracking: {% if globals.analyticsEnabled === true %}true{% else %}false{% endif %},
+          cookieDomain: "{{ globals.analyticsCookieDomain }}",
+          isDataSensitive: false,
+          isPageDataSensitive: {% if reply.analytics.isPageDataSensitive === true %}true{% else %}false{% endif %},
+          enablePageViewTracking: true,
+          enableFormResponseTracking: true,
+          enableFormChangeTracking: true,
+          enableFormErrorTracking: true,
+          enableNavigationTracking: true,
+          enableSelectContentTracking: {% if reply.analytics.isSelectContentTrackingEnabled === true %}true{% else %}false{% endif %},
+        });
+      }
 
-    {% if reply.analytics %}
-      window.addEventListener('load', function () {
-        if (window.DI && window.DI.analyticsGa4) {
-            window.DI.analyticsGa4.pageViewTracker.trackOnPageLoad({
-                statusCode: {% if reply.statusCode %}{{ reply.statusCode }}{% else %}200{% endif %},
-                taxonomy_level1: "{{ reply.analytics.taxonomyLevel1 }}",
-                taxonomy_level2: "{{ reply.analytics.taxonomyLevel2 }}",
-                taxonomy_level3: "{{ reply.analytics.taxonomyLevel3 }}",
-                content_id: "{{ reply.analytics.contentId }}",
-                logged_in_status: {% if reply.client.consider_user_logged_in === true %}true{% else %}false{% endif %},
-                dynamic: {% if reply.analytics.dynamic === false %}false{% else %}true{% endif %},
-                reason: "{{ reply.analytics.reason }}",
-            });
-        }
-      });
+      {% if reply.analytics %}
+        window.addEventListener('load', function () {
+          if (window.DI && window.DI.analyticsGa4) {
+              window.DI.analyticsGa4.pageViewTracker.trackOnPageLoad({
+                  englishPageTitle: "{{ englishPageTitleFull }}",
+                  statusCode: {% if reply.statusCode %}{{ reply.statusCode }}{% else %}200{% endif %},
+                  logged_in_status: {% if reply.client.consider_user_logged_in === true %}true{% else %}false{% endif %},
+                  dynamic: {% if reply.analytics.dynamic === false %}false{% else %}true{% endif %},
+                  taxonomy_level1: "{{ reply.analytics.taxonomyLevel1 }}",
+                  taxonomy_level2: "{{ reply.analytics.taxonomyLevel2 }}",
+                  {% if reply.analytics.taxonomyLevel3 %}taxonomy_level3: "{{ reply.analytics.taxonomyLevel3 }}",{% endif %}
+                  {% if reply.analytics.taxonomyLevel4 %}taxonomy_level4: "{{ reply.analytics.taxonomyLevel4 }}",{% endif %}
+                  {% if reply.analytics.taxonomyLevel5 %}taxonomy_level5: "{{ reply.analytics.taxonomyLevel5 }}",{% endif %}
+                  content_id: "{{ reply.analytics.contentId }}",
+                  {% if reply.analytics.reason %}reason: "{{ reply.analytics.reason }}",{% endif %}
+              });
+          }
+        });
+      {% endif %}
+    </script>
     {% endif %}
-  </script>
-  <script type="module" src="/fingerprint/index.js?{{ globals.fingerprintHash }}" nonce='{{ cspNonce }}'></script>
-  <script type="module" nonce='{{ cspNonce }}'>
-    import { setFingerprintCookie } from "/fingerprint/index.js?{{ globals.fingerprintHash }}";
-    setFingerprintCookie({% if globals.env === "local" %}"localhost"{% endif %});
-  </script>
+
+    <script type="module" src="/fingerprint/index.js?{{ globals.fingerprintHash }}" nonce='{{ cspNonce }}'></script>
+    <script type="module" nonce='{{ cspNonce }}'>
+      import { setFingerprintCookie } from "/fingerprint/index.js?{{ globals.fingerprintHash }}";
+      setFingerprintCookie({% if globals.env === "local" %}"localhost"{% endif %});
+    </script>
 {% endblock %}

@@ -2,6 +2,7 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 
 {% set pageTitleName = 'journey:step1.pageTitle' | translate %}
+{% set englishPageTitleName = 'journey:step1.pageTitle' | getFixedT_en %}
 
 {% block pageContent %}
   <h1 class="govuk-heading-l">{{ 'journey:step1.heading' | translate }}</h1>

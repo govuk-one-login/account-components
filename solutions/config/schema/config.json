@@ -69,6 +69,8 @@
         "taxonomyLevel1": { "type": "string" },
         "taxonomyLevel2": { "type": "string" },
         "taxonomyLevel3": { "type": "string" },
+        "taxonomyLevel4": { "type": "string" },
+        "taxonomyLevel5": { "type": "string" },
         "dynamic": { "type": "boolean" },
         "isSelectContentTrackingEnabled": { "type": "boolean" }
       },

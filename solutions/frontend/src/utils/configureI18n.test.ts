@@ -1,16 +1,24 @@
 import { expect, it, describe, vi, beforeEach, afterEach } from "vitest";
-import { configureI18n, Lang } from "./configureI18n.js";
+import { configureI18n } from "./configureI18n.js";
 import i18next from "i18next";
 import { LanguageDetector } from "i18next-http-middleware";
 import { getEnvironment } from "../../../commons/utils/getEnvironment/index.js";
+import { Lang } from "../../../commons/utils/constants.js";
 
 vi.mock(import("../../../commons/utils/getEnvironment/index.js"), () => ({
   getEnvironment: vi.fn(),
 }));
 
-vi.mock(import("../../../commons/utils/constants.js"), () => ({
-  rootDomainWithEnv: "account.gov.uk",
-}));
+vi.mock(
+  import("../../../commons/utils/constants.js"),
+  async (importOriginal) => {
+    const actual = await importOriginal();
+    return {
+      ...actual,
+      rootDomainWithEnv: "account.gov.uk",
+    };
+  },
+);
 
 // @ts-expect-error
 vi.mock(import("i18next"), () => {

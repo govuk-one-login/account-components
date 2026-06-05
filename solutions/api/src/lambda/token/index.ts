@@ -16,6 +16,7 @@ import { createAccessToken } from "./utils/createAccessToken.js";
 import { getApiBaseUrlWithStage } from "../../utils/common.js";
 import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
+import { getAppConfig } from "../../../../commons/utils/getAppConfig/index.js";
 
 export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
@@ -48,6 +49,8 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
 
           const accessToken = await createAccessToken(authRequest, apiBaseUrl);
 
+          const appConfig = await getAppConfig();
+
           return {
             statusCode: 200,
             headers: {
@@ -56,7 +59,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
             body: JSON.stringify({
               access_token: accessToken,
               token_type: "Bearer",
-              expires_in: 300,
+              expires_in: appConfig.access_token_max_age,
             }),
           };
         } catch (error) {
