@@ -316,13 +316,13 @@ Globals:
         AWS_XRAY_CONTEXT_MISSING: IGNORE_ERROR
         NODE_OPTIONS:
           !If [IsLocalOrDev, "--enable-source-maps", !Ref AWS::NoValue]
-        USE_LOCALSTACK: !Ref AWS::NoValue
+        USE_LOCAL_AWS: !Ref AWS::NoValue
         ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"
-        LOCALSTACK_ENDPOINT: !Ref AWS::NoValue
-        LOCALSTACK_ACCESS_KEY_ID: !Ref AWS::NoValue
-        LOCALSTACK_ACCESS_KEY: !Ref AWS::NoValue
-        LOCAL_KMS_ENDPOINT: !Ref AWS::NoValue
+        LOCAL_AWS_ENDPOINT: !Ref AWS::NoValue
+        LOCAL_AWS_ACCESS_KEY_ID: !Ref AWS::NoValue
+        LOCAL_AWS_ACCESS_KEY: !Ref AWS::NoValue
+        LOCAL_AWS_KMS_ENDPOINT: !Ref AWS::NoValue
         AWS_LAMBDA_EXEC_WRAPPER:
           !If [IsLocal, !Ref AWS::NoValue, "/opt/dynatrace"]
         DT_CONNECTION_AUTH_TOKEN: !Sub
