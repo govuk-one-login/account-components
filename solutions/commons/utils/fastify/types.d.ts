@@ -64,6 +64,8 @@ declare module "fastify" {
           taxonomyLevel1?: string;
           taxonomyLevel2?: string;
           taxonomyLevel3?: string;
+          taxonomyLevel4?: string;
+          taxonomyLevel5?: string;
           dynamic?: boolean;
           isSelectContentTrackingEnabled?: boolean;
           reason?: string;

@@ -56,7 +56,7 @@ export const supportedAlgorithmIDs = [
 const setRegistrationOptions = async (
   request: FastifyRequest,
   reply: FastifyReply,
-  idsOfCredentialsToExclude: string[],
+  //idsOfCredentialsToExclude: string[],
 ) => {
   assert.ok(request.session.claims);
   assert.ok(reply.journeyStates?.["passkey-create"]);
@@ -74,9 +74,9 @@ const setRegistrationOptions = async (
       userVerification: "required",
     },
     supportedAlgorithmIDs,
-    excludeCredentials: idsOfCredentialsToExclude.map((id) => ({
+    /*excludeCredentials: idsOfCredentialsToExclude.map((id) => ({
       id,
-    })),
+    })),*/
   });
 
   reply.journeyStates["passkey-create"].send({
@@ -125,7 +125,7 @@ const render = async (
   const registrationOptions = await setRegistrationOptions(
     request,
     reply,
-    getPasskeysResult.result.passkeys.map((pk) => pk.id),
+    //getPasskeysResult.result.passkeys.map((pk) => pk.id),
   );
 
   assert.ok(reply.render);
