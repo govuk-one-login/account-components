@@ -48,7 +48,7 @@ jobs:
           python-version: "3.14"
 
       - name: Install Python dependencies
-        run: pip install --require-hashes -r .github/workflows/requirements.txt
+        run: "pip install --require-hashes --only-binary :all: -r .github/workflows/requirements.txt"
 
       - name: Install dependencies
         env:
