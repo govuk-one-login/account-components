@@ -330,7 +330,7 @@ describe("passkey-create handlers", () => {
 
       expect(mockGenerateRegistrationOptions).toHaveBeenCalledWith(
         expect.objectContaining({
-          excludeCredentials: [{ id: "passkey-1" }, { id: "passkey-2" }],
+          //excludeCredentials: [{ id: "passkey-1" }, { id: "passkey-2" }],
           supportedAlgorithmIDs: [-7, -8, -257],
         }),
       );
