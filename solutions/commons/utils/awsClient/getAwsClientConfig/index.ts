@@ -15,7 +15,6 @@ export const getAwsClientConfig = (kms = false) => {
       if (!resolveEnvVarToBool("USE_LOCAL_AWS")) {
         return {};
       }
-      console.log("MHTEST8");
 
       assert.ok(
         process.env["LOCAL_AWS_ENDPOINT"],

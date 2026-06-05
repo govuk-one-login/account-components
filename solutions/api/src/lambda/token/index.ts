@@ -34,12 +34,9 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
 
         const keyAlias = process.env["JWT_SIGNING_KEY_ALIAS"];
 
-        console.log("MHTEST1", keyAlias);
-
         const kmsClient = getKmsClient();
 
         let keyId = keyIdCache.get(keyAlias);
-        console.log("MHTEST2", keyId);
 
         if (!keyId) {
           keyId = (
@@ -47,11 +44,9 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
               KeyId: keyAlias,
             })
           ).KeyMetadata?.KeyId;
-          console.log("MHTEST3", keyId);
 
           if (keyId) {
             keyIdCache.set(keyAlias, keyId);
-            console.log("MHTEST4", keyId);
           }
         }
 

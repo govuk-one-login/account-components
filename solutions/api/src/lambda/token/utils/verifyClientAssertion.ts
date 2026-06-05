@@ -109,8 +109,6 @@ export const verifyClientAssertion = async (
       algorithms: jwtVerifyAlgorithms,
     });
 
-    console.log("MHTEST7", payload);
-
     return payload;
   } catch (e) {
     errorManager.throwError(
