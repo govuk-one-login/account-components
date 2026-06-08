@@ -53,11 +53,11 @@ describe("accountDelete", () => {
     accountDelete(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      "/delete-account/introduction",
+      "/reset-delete/start",
       expect.any(Function),
     );
     expect(mockPost).toHaveBeenCalledWith(
-      "/delete-account/introduction",
+      "/reset-delete/start",
       expect.any(Function),
     );
   });
@@ -66,11 +66,11 @@ describe("accountDelete", () => {
     accountDelete(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      "/delete-account/resend-verification-code",
+      "/reset-delete/resend-email-code",
       expect.any(Function),
     );
     expect(mockPost).toHaveBeenCalledWith(
-      "/delete-account/resend-verification-code",
+      "/reset-delete/resend-email-code",
       expect.any(Function),
     );
   });
@@ -79,11 +79,11 @@ describe("accountDelete", () => {
     accountDelete(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      "/delete-account/verify-email-address",
+      "/reset-delete/check-email",
       expect.any(Function),
     );
     expect(mockPost).toHaveBeenCalledWith(
-      "/delete-account/verify-email-address",
+      "/reset-delete/check-email",
       expect.any(Function),
     );
   });
@@ -92,11 +92,11 @@ describe("accountDelete", () => {
     accountDelete(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      "/delete-account/enter-password",
+      "/reset-delete/enter-password",
       expect.any(Function),
     );
     expect(mockPost).toHaveBeenCalledWith(
-      "/delete-account/enter-password",
+      "/reset-delete/enter-password",
       expect.any(Function),
     );
   });
@@ -105,11 +105,11 @@ describe("accountDelete", () => {
     accountDelete(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      "/delete-account/confirm",
+      "/reset-delete/confirm",
       expect.any(Function),
     );
     expect(mockPost).toHaveBeenCalledWith(
-      "/delete-account/confirm",
+      "/reset-delete/confirm",
       expect.any(Function),
     );
   });

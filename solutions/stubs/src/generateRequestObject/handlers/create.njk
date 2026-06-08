@@ -110,6 +110,10 @@
                         Authenticate
                         <select name="account_management_api_authenticate_scenario">
                             <option value="successful">Successful</option>
+                            <option value="incorrect_password_entered">Incorrect password entered</option>
+                            <option value="too_many_incorrect_passwords_entered">Too many incorrect passwords entered</option>
+                            <option value="temporary_intervention">Account has temporary intervention</option>
+                            <option value="permanent_intervention">Account has permanent intervention</option>
                         </select>
                     </label>
                     <label class="api_scenario_selector">
@@ -122,6 +126,8 @@
                         Send OTP challenge
                         <select name="account_management_api_sendOtpChallenge_scenario">
                             <option value="successful">Successful</option>
+                            <option value="too_many_codes_requested">Too many OTP codes requested</option>
+                            <option value="too_many_codes_entered">Too many OTP codes entered</option>
                         </select>
                     </label>
                     <label class="api_scenario_selector">
@@ -129,6 +135,7 @@
                         <select name="account_management_api_verifyOtpChallenge_scenario">
                             <option value="successful">Successful</option>
                             <option value="invalid_otp_code">Invalid OTP code</option>
+                            <option value="too_many_codes_entered">Too many OTP codes entered</option>
                         </select>
                     </label>
                 </div>

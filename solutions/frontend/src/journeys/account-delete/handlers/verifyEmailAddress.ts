@@ -102,7 +102,7 @@ export async function verifyEmailAddressPostHandler(
       });
       return reply;
     } else if (result.error === "TooManyEmailCodesEntered") {
-      // TODO need to do something in this case?
+      // TODO https://govukverify.atlassian.net/browse/OLH-4275
     }
 
     throw new Error(result.error);

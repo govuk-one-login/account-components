@@ -76,13 +76,11 @@ export async function enterPasswordPostHandler(
       });
       return reply;
     } else if (result.error === "ExceededIncorrectPasswordSubmissionLimit") {
-      // TODO need to do something in this case?
-    } else if (result.error === "AccountInterventionsUnexpectedError") {
-      // TODO need to do something in this case?
+      // TODO https://govukverify.atlassian.net/browse/OLH-4276
     } else if (result.error === "UserAccountSuspended") {
-      // TODO need to do something in this case?
+      // TODO https://govukverify.atlassian.net/browse/OLH-2858
     } else if (result.error === "UserAccountBlocked") {
-      // TODO need to do something in this case?
+      // TODO https://govukverify.atlassian.net/browse/OLH-2858
     }
 
     throw new Error(result.error);
