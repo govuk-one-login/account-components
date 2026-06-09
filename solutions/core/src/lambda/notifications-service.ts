@@ -164,6 +164,8 @@ const processNotification = async (
         notifyStubUrl ??= nockNotifyBaseUrl;
         notifyClient = new NotifyClient(notifyStubUrl, notifyApiKey);
 
+        console.log("MHTEST", notifyStubUrl);
+
         nockScope.post("/v2/notifications/email").reply(200, {
           data: {
             id: randomUUID(),
