@@ -168,7 +168,7 @@ const processNotification = async (
               { abortEarly: false },
             );
 
-            logger.info("NotifySendEmailCalled", {
+            logger.info("NotifyRequestReceivedByMock", {
               reference: body.reference,
               templateId: body.template_id,
               template: Object.entries(notifyTemplateIds).find(

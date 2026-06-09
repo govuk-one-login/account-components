@@ -478,11 +478,14 @@ describe("notifications-service", () => {
       },
     });
 
-    expect(mockLogger.info).toHaveBeenCalledWith("NotifySendEmailCalled", {
-      reference: "test-reference",
-      templateId: "template-personalisation",
-      template: "WITH_PERSONALISATION",
-    });
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      "NotifyRequestReceivedByMock",
+      {
+        reference: "test-reference",
+        templateId: "template-personalisation",
+        template: "WITH_PERSONALISATION",
+      },
+    );
 
     delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
   });
