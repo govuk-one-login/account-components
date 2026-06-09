@@ -22,9 +22,6 @@ import {
 import nock from "nock";
 
 const nockNotifyBaseUrl = "https://notify.gov.uk.nock";
-let notifyStubUrl = process.env["NOTIFY_STUB_URL"]?.length
-  ? process.env["NOTIFY_STUB_URL"]
-  : undefined;
 const nockScope = nock(nockNotifyBaseUrl);
 
 type Personalisation = Record<string, string>;
@@ -157,8 +154,7 @@ const processNotification = async (
           message.emailAddress,
         )
       ) {
-        notifyStubUrl ??= nockNotifyBaseUrl;
-        notifyClient = new NotifyClient(notifyStubUrl, notifyApiKey);
+        notifyClient = new NotifyClient(nockNotifyBaseUrl, notifyApiKey);
 
         nockScope
           .post("/v2/notifications/email")

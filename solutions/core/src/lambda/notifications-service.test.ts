@@ -435,64 +435,7 @@ describe("notifications-service", () => {
     );
   });
 
-  it("uses stub URL when email matches NOTIFY_DONT_SEND_EMAILS_TO and NOTIFY_STUB_URL is set", async () => {
-    process.env["NOTIFY_STUB_URL"] = "http://localhost:6003";
-    process.env["NOTIFY_DONT_SEND_EMAILS_TO"] = "@test\\.null\\.local$";
-
-    const { handler } = await import("./notifications-service.js");
-
-    mockSendEmail.mockResolvedValue({
-      data: { id: "notify-id", reference: "ref" },
-    });
-
-    const message = {
-      emailAddress: "testuser@test.null.local",
-      notificationType: "WITH_PERSONALISATION",
-      name: "Test User",
-    };
-
-    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
-    await handler(event);
-
-    expect(mockNotifyClientConstructor).toHaveBeenCalledWith(
-      "http://localhost:6003",
-      "test-api-key",
-    );
-
-    delete process.env["NOTIFY_STUB_URL"];
-    delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
-  });
-
-  it("uses nock stub URL when email matches NOTIFY_DONT_SEND_EMAILS_TO and NOTIFY_STUB_URL is empty string", async () => {
-    process.env["NOTIFY_STUB_URL"] = "";
-    process.env["NOTIFY_DONT_SEND_EMAILS_TO"] = "@test\\.null\\.local$";
-
-    const { handler } = await import("./notifications-service.js");
-
-    mockSendEmail.mockResolvedValue({
-      data: { id: "notify-id", reference: "ref" },
-    });
-
-    const message = {
-      emailAddress: "testuser@test.null.local",
-      notificationType: "WITH_PERSONALISATION",
-      name: "Test User",
-    };
-
-    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
-    await handler(event);
-
-    expect(mockNotifyClientConstructor).toHaveBeenCalledWith(
-      "https://notify.gov.uk.nock",
-      "test-api-key",
-    );
-
-    delete process.env["NOTIFY_STUB_URL"];
-    delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
-  });
-
-  it("uses nock stub URL when email matches NOTIFY_DONT_SEND_EMAILS_TO and NOTIFY_STUB_URL is not set", async () => {
-    delete process.env["NOTIFY_STUB_URL"];
+  it("uses nock stub URL when email matches NOTIFY_DONT_SEND_EMAILS_TO", async () => {
     process.env["NOTIFY_DONT_SEND_EMAILS_TO"] = "@test\\.null\\.local$";
 
     const { handler } = await import("./notifications-service.js");
