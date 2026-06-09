@@ -483,10 +483,10 @@ describe("notifications-service", () => {
     await handler(event);
 
     expect(mockNotifyClientConstructor).toHaveBeenCalledWith(
-      "https://notify.gov.uk.nock/",
+      "https://notify.gov.uk.nock",
       "test-api-key",
     );
-    expect(mockNockPost).toHaveBeenCalledWith("/");
+    expect(mockNockPost).toHaveBeenCalledWith("/v2/notifications/email");
     expect(mockNockReply).toHaveBeenCalledWith(
       200,
       expect.objectContaining({

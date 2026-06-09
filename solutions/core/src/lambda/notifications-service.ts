@@ -22,7 +22,6 @@ import {
 import nock from "nock";
 
 const nockNotifyBaseUrl = "https://notify.gov.uk.nock";
-const nockNotifyPath = "/";
 let notifyStubUrl = process.env["NOTIFY_STUB_URL"];
 const nockScope = nock(nockNotifyBaseUrl);
 
@@ -158,10 +157,10 @@ const processNotification = async (
           message.emailAddress,
         )
       ) {
-        notifyStubUrl ??= `${nockNotifyBaseUrl}${nockNotifyPath}`;
+        notifyStubUrl ??= nockNotifyBaseUrl;
         notifyClient = new NotifyClient(notifyStubUrl, notifyApiKey);
 
-        nockScope.post(nockNotifyPath).reply(200, {
+        nockScope.post("/v2/notifications/email").reply(200, {
           data: {
             id: randomUUID(),
             reference,
