@@ -78,7 +78,7 @@ Mappings:
       securityUrl: https://home.dev.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.dev.account.gov.uk/account-data-api
-      notifyDontSendEmailsTo: "^(perftestPasskeys_.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
+      notifyDontSendEmailsTo: "^(michael.hens.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyStubUrl: ""
       notifyTemplateIds: |
         {
