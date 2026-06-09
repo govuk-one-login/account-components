@@ -22,12 +22,10 @@ import {
 import nock from "nock";
 
 const nockNotifyBaseUrl = "https://notify.gov.uk.nock";
-let notifyStubUrl = process.env["NOTIFY_STUB_URL"];
+let notifyStubUrl = process.env["NOTIFY_STUB_URL"]?.length
+  ? process.env["NOTIFY_STUB_URL"]
+  : undefined;
 const nockScope = nock(nockNotifyBaseUrl);
-
-nock.emitter.on("no match", (req, options) => {
-  console.log(`Unmatched request`, req, options);
-});
 
 type Personalisation = Record<string, string>;
 
@@ -155,15 +153,6 @@ const processNotification = async (
 
       const reference = randomUUID();
 
-      console.log("MHTEST2", process.env["NOTIFY_DONT_SEND_EMAILS_TO"]);
-      console.log("MHTEST3", message.emailAddress);
-      console.log(
-        "MHTEST4",
-        new RegExp(process.env["NOTIFY_DONT_SEND_EMAILS_TO"], "i").test(
-          message.emailAddress,
-        ),
-      );
-
       if (
         process.env["NOTIFY_DONT_SEND_EMAILS_TO"] &&
         new RegExp(process.env["NOTIFY_DONT_SEND_EMAILS_TO"], "i").test(
@@ -173,23 +162,18 @@ const processNotification = async (
         notifyStubUrl ??= nockNotifyBaseUrl;
         notifyClient = new NotifyClient(notifyStubUrl, notifyApiKey);
 
-        console.log("MHTEST", notifyStubUrl);
+        nockScope.post("/v2/notifications/email").reply(200, (_, body) => {
+          console.log("Received Body:", body);
 
-        nockScope
-          .post("/v2/notifications/email")
-          .reply(200, (uri, requestBody) => {
-            console.log("Matched URI:", uri);
-            console.log("Received Body:", requestBody);
+          // TODO log like in stub
 
-            // TODO log like in stub
-
-            return {
-              data: {
-                id: randomUUID(),
-                reference,
-              },
-            };
-          });
+          return {
+            data: {
+              id: randomUUID(),
+              reference,
+            },
+          };
+        });
       } else {
         notifyClient = new NotifyClient(notifyApiKey);
       }
