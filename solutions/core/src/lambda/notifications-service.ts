@@ -25,6 +25,10 @@ const nockNotifyBaseUrl = "https://notify.gov.uk.nock";
 let notifyStubUrl = process.env["NOTIFY_STUB_URL"];
 const nockScope = nock(nockNotifyBaseUrl);
 
+nock.emitter.on("no match", (req, options) => {
+  console.log(`Unmatched request: ${req.method} ${options.href}`);
+});
+
 type Personalisation = Record<string, string>;
 
 const addSendNotificationFailedMetric = (failureReason: string) => {
