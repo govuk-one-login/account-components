@@ -166,12 +166,22 @@ const processNotification = async (
 
         console.log("MHTEST", notifyStubUrl);
 
-        nockScope.post("/v2/notifications/email").reply(200, {
-          data: {
-            id: randomUUID(),
-            reference,
-          },
-        });
+        nockScope
+          .post("/v2/notifications/email")
+          .reply(200, (uri, requestBody) => {
+            console.log("Matched URI:", uri);
+            console.log("Received Body:", requestBody);
+
+            // TODO log like in stub
+
+            // Return the mock response body
+            return {
+              data: {
+                id: randomUUID(),
+                reference,
+              },
+            };
+          });
       } else {
         notifyClient = new NotifyClient(notifyApiKey);
       }
