@@ -19,7 +19,12 @@ import {
   messageSchema,
   notifyTemplateIDsSchema,
 } from "../../../commons/utils/notifications/index.js";
-import { mockEmailAddress } from "../../../commons/utils/constants.js";
+import nock from "nock";
+
+const nockNotifyBaseUrl = "https://notify.gov.uk.nock";
+const nockNotifyPath = "/";
+let notifyStubUrl = process.env["NOTIFY_STUB_URL"];
+const nockScope = nock(nockNotifyBaseUrl);
 
 type Personalisation = Record<string, string>;
 
@@ -145,14 +150,23 @@ const processNotification = async (
     try {
       let notifyClient: InstanceType<typeof NotifyClient>;
 
+      const reference = randomUUID();
+
       if (
-        message.emailAddress === mockEmailAddress &&
-        process.env["NOTIFY_STUB_URL"]
+        process.env["NOTIFY_DONT_SEND_EMAILS_TO"] &&
+        new RegExp(process.env["NOTIFY_DONT_SEND_EMAILS_TO"], "i").test(
+          message.emailAddress,
+        )
       ) {
-        notifyClient = new NotifyClient(
-          process.env["NOTIFY_STUB_URL"],
-          notifyApiKey,
-        );
+        notifyStubUrl ??= `${nockNotifyBaseUrl}${nockNotifyPath}`;
+        notifyClient = new NotifyClient(notifyStubUrl, notifyApiKey);
+
+        nockScope.post(nockNotifyPath).reply(200, {
+          data: {
+            id: randomUUID(),
+            reference,
+          },
+        });
       } else {
         notifyClient = new NotifyClient(notifyApiKey);
       }
@@ -169,7 +183,7 @@ const processNotification = async (
               ),
             ),
           },
-          reference: randomUUID(),
+          reference,
         },
       );
     } catch (error) {
@@ -213,6 +227,7 @@ const processNotification = async (
 
   logger.resetKeys();
   metrics.publishStoredMetrics();
+  nock.cleanAll();
 };
 
 export const handler = async (event: SQSEvent): Promise<SQSBatchResponse> => {

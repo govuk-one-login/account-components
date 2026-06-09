@@ -78,7 +78,8 @@ Mappings:
       securityUrl: https://home.dev.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.dev.account.gov.uk/account-data-api
-      notifyStubUrl: https://stubs.manage.dev.account.gov.uk/notify
+      notifyDontSendEmailsTo: "^(perftestPasskeys_.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
+      notifyStubUrl: ""
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "fb385d74-ac28-466d-8695-3d8a732a4cf8",
@@ -113,6 +114,7 @@ Mappings:
       securityUrl: https://home.build.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.build.account.gov.uk/account-data-api
+      notifyDontSendEmailsTo: "^(perftestPasskeys_.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyStubUrl: https://stubs.manage.build.account.gov.uk/notify
       notifyTemplateIds: |
         {
@@ -150,6 +152,7 @@ Mappings:
       securityUrl: https://home.staging.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://7xgl7lexy4.execute-api.eu-west-2.amazonaws.com/staging
+      notifyDontSendEmailsTo: "^(perftestPasskeys_.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyStubUrl: ""
       notifyTemplateIds: |
         {
@@ -187,6 +190,7 @@ Mappings:
       securityUrl: https://home.integration.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://hoidt6wujb.execute-api.eu-west-2.amazonaws.com/integration
+      notifyDontSendEmailsTo: ""
       notifyStubUrl: ""
       notifyTemplateIds: |
         {
@@ -224,6 +228,7 @@ Mappings:
       securityUrl: https://home.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://0218o1p9tj.execute-api.eu-west-2.amazonaws.com/production
+      notifyDontSendEmailsTo: ""
       notifyStubUrl: ""
       notifyTemplateIds: |
         {
@@ -1034,6 +1039,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               notifyStubUrl,
+            ]
+          NOTIFY_DONT_SEND_EMAILS_TO:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              notifyDontSendEmailsTo,
             ]
       DeploymentPreference:
         Alarms:
@@ -2855,6 +2866,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               notifyTemplateIds,
+            ]
+          NOTIFY_DONT_SEND_EMAILS_TO:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              notifyDontSendEmailsTo,
             ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess

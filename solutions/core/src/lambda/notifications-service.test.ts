@@ -98,10 +98,17 @@ vi.mock(import("notifications-node-client"), () => ({
   },
 }));
 
+const mockNock = vi.fn(() => ({ post: mockNockPost }));
+const mockNockPost = vi.fn(() => ({ reply: mockNockReply }));
+const mockNockReply = vi.fn();
+const mockNockCleanAll = vi.fn();
+
 // @ts-expect-error
-vi.mock(import("../../../commons/utils/constants.js"), () => ({
-  mockEmailAddress: "testuser@test.null.local",
-}));
+vi.mock(import("nock"), () => {
+  const nockFn = (...args: Parameters<typeof mockNock>) => mockNock(...args);
+  nockFn.cleanAll = mockNockCleanAll;
+  return { default: nockFn };
+});
 
 // @ts-expect-error
 vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
@@ -428,8 +435,9 @@ describe("notifications-service", () => {
     );
   });
 
-  it("uses stub URL when email matches mockEmailAddress and NOTIFY_STUB_URL is set", async () => {
+  it("uses stub URL when email matches NOTIFY_DONT_SEND_EMAILS_TO and NOTIFY_STUB_URL is set", async () => {
     process.env["NOTIFY_STUB_URL"] = "http://localhost:6003";
+    process.env["NOTIFY_DONT_SEND_EMAILS_TO"] = "@test\\.null\\.local$";
 
     const { handler } = await import("./notifications-service.js");
 
@@ -452,10 +460,45 @@ describe("notifications-service", () => {
     );
 
     delete process.env["NOTIFY_STUB_URL"];
+    delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
   });
 
-  it("uses API key when email does not match mockEmailAddress", async () => {
-    process.env["NOTIFY_STUB_URL"] = "http://localhost:6003";
+  it("uses nock stub URL when email matches NOTIFY_DONT_SEND_EMAILS_TO and NOTIFY_STUB_URL is not set", async () => {
+    delete process.env["NOTIFY_STUB_URL"];
+    process.env["NOTIFY_DONT_SEND_EMAILS_TO"] = "@test\\.null\\.local$";
+
+    const { handler } = await import("./notifications-service.js");
+
+    mockSendEmail.mockResolvedValue({
+      data: { id: "notify-id", reference: "ref" },
+    });
+
+    const message = {
+      emailAddress: "testuser@test.null.local",
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
+    };
+
+    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
+    await handler(event);
+
+    expect(mockNotifyClientConstructor).toHaveBeenCalledWith(
+      "https://notify.gov.uk.nock/",
+      "test-api-key",
+    );
+    expect(mockNockPost).toHaveBeenCalledWith("/");
+    expect(mockNockReply).toHaveBeenCalledWith(
+      200,
+      expect.objectContaining({
+        data: expect.objectContaining({ reference: expect.any(String) }),
+      }),
+    );
+
+    delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
+  });
+
+  it("uses API key when email does not match NOTIFY_DONT_SEND_EMAILS_TO", async () => {
+    process.env["NOTIFY_DONT_SEND_EMAILS_TO"] = "@test\\.null\\.local$";
 
     const { handler } = await import("./notifications-service.js");
 
@@ -474,11 +517,11 @@ describe("notifications-service", () => {
 
     expect(mockNotifyClientConstructor).toHaveBeenCalledWith("test-api-key");
 
-    delete process.env["NOTIFY_STUB_URL"];
+    delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
   });
 
-  it("uses API key when NOTIFY_STUB_URL is not set", async () => {
-    delete process.env["NOTIFY_STUB_URL"];
+  it("uses API key when NOTIFY_DONT_SEND_EMAILS_TO is not set", async () => {
+    delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
 
     const { handler } = await import("./notifications-service.js");
 
@@ -496,6 +539,32 @@ describe("notifications-service", () => {
     await handler(event);
 
     expect(mockNotifyClientConstructor).toHaveBeenCalledWith("test-api-key");
+  });
+
+  it("matches email case-insensitively against NOTIFY_DONT_SEND_EMAILS_TO", async () => {
+    process.env["NOTIFY_DONT_SEND_EMAILS_TO"] = "@test\\.null\\.local$";
+
+    const { handler } = await import("./notifications-service.js");
+
+    mockSendEmail.mockResolvedValue({
+      data: { id: "notify-id", reference: "ref" },
+    });
+
+    const message = {
+      emailAddress: "TestUser@Test.Null.Local",
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
+    };
+
+    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
+    await handler(event);
+
+    expect(mockNotifyClientConstructor).toHaveBeenCalledWith(
+      expect.any(String),
+      "test-api-key",
+    );
+
+    delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
   });
 
   it("calls metrics and logger cleanup methods", async () => {
