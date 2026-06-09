@@ -463,6 +463,34 @@ describe("notifications-service", () => {
     delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
   });
 
+  it("uses nock stub URL when email matches NOTIFY_DONT_SEND_EMAILS_TO and NOTIFY_STUB_URL is empty string", async () => {
+    process.env["NOTIFY_STUB_URL"] = "";
+    process.env["NOTIFY_DONT_SEND_EMAILS_TO"] = "@test\\.null\\.local$";
+
+    const { handler } = await import("./notifications-service.js");
+
+    mockSendEmail.mockResolvedValue({
+      data: { id: "notify-id", reference: "ref" },
+    });
+
+    const message = {
+      emailAddress: "testuser@test.null.local",
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
+    };
+
+    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
+    await handler(event);
+
+    expect(mockNotifyClientConstructor).toHaveBeenCalledWith(
+      "https://notify.gov.uk.nock",
+      "test-api-key",
+    );
+
+    delete process.env["NOTIFY_STUB_URL"];
+    delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
+  });
+
   it("uses nock stub URL when email matches NOTIFY_DONT_SEND_EMAILS_TO and NOTIFY_STUB_URL is not set", async () => {
     delete process.env["NOTIFY_STUB_URL"];
     process.env["NOTIFY_DONT_SEND_EMAILS_TO"] = "@test\\.null\\.local$";
@@ -487,12 +515,31 @@ describe("notifications-service", () => {
       "test-api-key",
     );
     expect(mockNockPost).toHaveBeenCalledWith("/v2/notifications/email");
-    expect(mockNockReply).toHaveBeenCalledWith(
-      200,
-      expect.objectContaining({
-        data: expect.objectContaining({ reference: expect.any(String) }),
-      }),
-    );
+    expect(mockNockReply).toHaveBeenCalledWith(200, expect.any(Function));
+
+    const replyCallback = mockNockReply.mock.calls[0]?.[1] as
+      | ((uri: string, body: unknown) => unknown)
+      | undefined;
+
+    expect(replyCallback).toBeDefined();
+
+    const replyBody = replyCallback!("/v2/notifications/email", {
+      template_id: "template-personalisation",
+      reference: "test-reference",
+    });
+
+    expect(replyBody).toStrictEqual({
+      data: {
+        id: expect.any(String),
+        reference: "test-reference",
+      },
+    });
+
+    expect(mockLogger.info).toHaveBeenCalledWith("NotifySendEmailCalled", {
+      reference: "test-reference",
+      templateId: "template-personalisation",
+      template: "WITH_PERSONALISATION",
+    });
 
     delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
   });

@@ -151,8 +151,6 @@ const processNotification = async (
     try {
       let notifyClient: InstanceType<typeof NotifyClient>;
 
-      const reference = randomUUID();
-
       if (
         process.env["NOTIFY_DONT_SEND_EMAILS_TO"] &&
         new RegExp(process.env["NOTIFY_DONT_SEND_EMAILS_TO"], "i").test(
@@ -162,18 +160,33 @@ const processNotification = async (
         notifyStubUrl ??= nockNotifyBaseUrl;
         notifyClient = new NotifyClient(notifyStubUrl, notifyApiKey);
 
-        nockScope.post("/v2/notifications/email").reply(200, (_, body) => {
-          console.log("Received Body:", body);
+        nockScope
+          .post("/v2/notifications/email")
+          .reply(200, (_, requestBody) => {
+            const body = v.parse(
+              v.object({
+                template_id: v.string(),
+                reference: v.optional(v.string()),
+              }),
+              requestBody,
+              { abortEarly: false },
+            );
 
-          // TODO log like in stub
+            logger.info("NotifySendEmailCalled", {
+              reference: body.reference,
+              templateId: body.template_id,
+              template: Object.entries(notifyTemplateIds).find(
+                ([, id]) => id === body.template_id,
+              )?.[0],
+            });
 
-          return {
-            data: {
-              id: randomUUID(),
-              reference,
-            },
-          };
-        });
+            return {
+              data: {
+                id: randomUUID(),
+                reference: body.reference,
+              },
+            };
+          });
       } else {
         notifyClient = new NotifyClient(notifyApiKey);
       }
@@ -190,7 +203,7 @@ const processNotification = async (
               ),
             ),
           },
-          reference,
+          reference: randomUUID(),
         },
       );
     } catch (error) {
