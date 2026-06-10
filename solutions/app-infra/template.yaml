@@ -78,7 +78,7 @@ Mappings:
       securityUrl: https://home.dev.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.dev.account.gov.uk/account-data-api
-      notifyStubUrl: https://stubs.manage.dev.account.gov.uk/notify
+      notifyDontSendEmailsTo: "^(perftestPasskeys_.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "fb385d74-ac28-466d-8695-3d8a732a4cf8",
@@ -113,7 +113,7 @@ Mappings:
       securityUrl: https://home.build.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.build.account.gov.uk/account-data-api
-      notifyStubUrl: https://stubs.manage.build.account.gov.uk/notify
+      notifyDontSendEmailsTo: "^(perftestPasskeys_.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "fb385d74-ac28-466d-8695-3d8a732a4cf8",
@@ -150,7 +150,7 @@ Mappings:
       securityUrl: https://home.staging.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://7xgl7lexy4.execute-api.eu-west-2.amazonaws.com/staging
-      notifyStubUrl: ""
+      notifyDontSendEmailsTo: "^(perftestPasskeys_.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "aa8697b6-23e6-4317-9aff-5a274142e7f2",
@@ -187,7 +187,7 @@ Mappings:
       securityUrl: https://home.integration.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://hoidt6wujb.execute-api.eu-west-2.amazonaws.com/integration
-      notifyStubUrl: ""
+      notifyDontSendEmailsTo: ""
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "aa8697b6-23e6-4317-9aff-5a274142e7f2",
@@ -224,7 +224,7 @@ Mappings:
       securityUrl: https://home.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://0218o1p9tj.execute-api.eu-west-2.amazonaws.com/production
-      notifyStubUrl: ""
+      notifyDontSendEmailsTo: ""
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "07fc5ed8-4775-4f03-b6cf-08a273458849",
@@ -1029,11 +1029,11 @@ Resources:
               !Ref Environment,
               notifyTemplateIds,
             ]
-          NOTIFY_STUB_URL:
+          NOTIFY_DONT_SEND_EMAILS_TO:
             !FindInMap [
               EnvironmentConfiguration,
               !Ref Environment,
-              notifyStubUrl,
+              notifyDontSendEmailsTo,
             ]
       DeploymentPreference:
         Alarms:
@@ -2850,11 +2850,11 @@ Resources:
           API_BASE_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
           ROOT_DOMAIN:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
-          NOTIFY_TEMPLATE_IDS:
+          NOTIFY_DONT_SEND_EMAILS_TO:
             !FindInMap [
               EnvironmentConfiguration,
               !Ref Environment,
-              notifyTemplateIds,
+              notifyDontSendEmailsTo,
             ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
