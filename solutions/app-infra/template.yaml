@@ -3138,9 +3138,9 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
-                  [ { "expression": "SUM(SEARCH('MetricName=\"ResponseCount\"', 'Sum'))", "id": "all_responses", "visible": false } ],
-                  [ { "expression": "SUM(SEARCH('MetricName=\"5XXResponseCount\"', 'Sum'))", "id": "server_error_responses", "visible": false } ],
-                  [ { "expression": "((all_responses - server_error_responses) / all_responses) * 100", "id": "availability", "label": "Availability %" } ]
+                  [ { "expression": "FILL(SUM(SEARCH('MetricName=\"ResponseCount\"', 'Sum')),0)", "id": "all_responses", "visible": false } ],
+                  [ { "expression": "FILL(SUM(SEARCH('MetricName=\"5XXResponseCount\"', 'Sum')),0)", "id": "server_error_responses", "visible": false } ],
+                  [ { "expression": "((all_responses - server_error_responses) / all_responses) * 100", "id": "availability" } ]
                 ],
                 "view": "singleValue",
                 "title": "Availability %",
@@ -3149,7 +3149,25 @@ Resources:
               },
               "width": 6,
               "height": 6
-            },               
+            },  
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | fields method, path, total | filter message = 'Request' | stats count(*) as total by method, path | sort total desc",
+                "region": "${AWS::Region}",
+                "title": "Frontend requests"
+              },
+              "width": 12
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | fields method, path, statusCode, total | filter message = 'Response' | stats count(*) as total by method, path, statusCode | sort total desc",
+                "region": "${AWS::Region}",
+                "title": "Frontend responses"
+              },
+              "width": 12
+            },                          
             {
               "type": "metric",
               "properties": {
@@ -3331,25 +3349,7 @@ Resources:
               },
               "width": 10,               
               "height": 4
-            },
-            {
-              "type": "log",
-              "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | fields method, path, total | filter message = 'Request' | stats count(*) as total by method, path | sort total desc",
-                "region": "${AWS::Region}",
-                "title": "Frontend requests"
-              },
-              "width": 12
-            },             
-            {
-              "type": "log",
-              "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | fields method, path, statusCode, total | filter message = 'Response' | stats count(*) as total by method, path, statusCode | sort total desc",
-                "region": "${AWS::Region}",
-                "title": "Frontend responses"
-              },
-              "width": 12
-            },   
+            },  
             {
               "type": "text",
               "properties": {
