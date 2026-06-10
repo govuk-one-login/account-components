@@ -255,6 +255,7 @@ Conditions:
   CanariesEnabled: !Equals
     - !FindInMap [EnvironmentConfiguration, !Ref Environment, UseCanary]
     - true
+  IsProduction: !Equals [!Ref Environment, "production"]
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
   IsBuildEnvironment: !Equals [!Ref Environment, "build"]
   IsDevOrBuild: !Or [Condition: IsDevEnvironment, Condition: IsBuildEnvironment]
@@ -1122,7 +1123,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   NotificationsServiceLambdaLogWarnByContextMetricFilter:
     Type: AWS::Logs::MetricFilter
@@ -1621,6 +1625,8 @@ Resources:
         Alarms:
           - !Ref ApiHealthcheckLambdaErrorsAlarm
           - !Ref ApiHealthcheckLambdaThrottlesAlarm
+          - !Ref ApiHealthcheckLambdaAvailabilityAlarm
+          - !Ref ApiHealthcheckLambdaLogErrorAlarm
       LoggingConfig:
         LogGroup: !Ref ApiHealthcheckLambdaLogGroup
       Handler: healthcheck.handler
@@ -1667,6 +1673,8 @@ Resources:
         Alarms:
           - !Ref ApiTokenLambdaErrorsAlarm
           - !Ref ApiTokenLambdaThrottlesAlarm
+          - !Ref ApiTokenLambdaAvailabilityAlarm
+          - !Ref ApiTokenLambdaLogErrorAlarm
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: 1
       LoggingConfig:
@@ -1741,6 +1749,8 @@ Resources:
         Alarms:
           - !Ref ApiJourneyOutcomeLambdaErrorsAlarm
           - !Ref ApiJourneyOutcomeLambdaThrottlesAlarm
+          - !Ref ApiJourneyOutcomeLambdaAvailabilityAlarm
+          - !Ref ApiJourneyOutcomeLambdaLogErrorAlarm
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: 1
       LoggingConfig:
@@ -1830,7 +1840,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiApiGatewayHighLatencyAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1865,7 +1878,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiHealthcheckLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1927,7 +1943,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiHealthcheckLambda5XXResponseMetricFilter:
     Type: AWS::Logs::MetricFilter
@@ -1999,7 +2018,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiTokenLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2106,7 +2128,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiTokenLambda5XXResponseMetricFilter:
     Type: AWS::Logs::MetricFilter
@@ -2178,7 +2203,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiJourneyOutcomeLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2285,7 +2313,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiJourneyOutcomeLambda5XXResponseMetricFilter:
     Type: AWS::Logs::MetricFilter
@@ -2510,6 +2541,8 @@ Resources:
         Alarms:
           - !Ref FrontendLambdaErrorsAlarm
           - !Ref FrontendLambdaThrottlesAlarm
+          - !Ref FrontendLambdaAvailabilityAlarm
+          - !Ref FrontendLambdaLogErrorAlarm
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: 1
       LoggingConfig:
@@ -2688,7 +2721,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   FrontendApiGatewayHighLatencyAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2723,7 +2759,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   FrontendLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2818,7 +2857,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   FrontendLambda5XXResponseMetricFilter:
     Type: AWS::Logs::MetricFilter
