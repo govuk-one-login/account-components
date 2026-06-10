@@ -19,10 +19,6 @@ import {
   messageSchema,
   notifyTemplateIDsSchema,
 } from "../../../commons/utils/notifications/index.js";
-import nock from "nock";
-
-const nockNotifyBaseUrl = "https://notify.gov.uk.nock";
-const nockScope = nock(nockNotifyBaseUrl);
 
 type Personalisation = Record<string, string>;
 
@@ -130,7 +126,8 @@ const processNotification = async (
     metrics.addDimensions({ notificationType: message.notificationType });
     logger.appendKeys({ notificationType: message.notificationType });
 
-    const templateId = notifyTemplateIds[message.notificationType];
+    const templateType = message.notificationType;
+    const templateId = notifyTemplateIds[templateType];
 
     if (!templateId) {
       const errorName = "template_id_not_found";
@@ -142,52 +139,26 @@ const processNotification = async (
       return;
     }
 
-    let sendResult: Awaited<
-      ReturnType<InstanceType<typeof NotifyClient>["sendEmail"]>
-    >;
+    const reference = randomUUID();
+
+    if (
+      process.env["NOTIFY_DONT_SEND_EMAILS_TO"] &&
+      new RegExp(process.env["NOTIFY_DONT_SEND_EMAILS_TO"], "i").test(
+        message.emailAddress,
+      )
+    ) {
+      logger.info("notification_would_have_been_sent", {
+        reference,
+        templateId,
+        template: templateType,
+      });
+      return;
+    }
+
     try {
-      let notifyClient: InstanceType<typeof NotifyClient>;
+      const notifyClient = new NotifyClient(notifyApiKey);
 
-      if (
-        process.env["NOTIFY_DONT_SEND_EMAILS_TO"] &&
-        new RegExp(process.env["NOTIFY_DONT_SEND_EMAILS_TO"], "i").test(
-          message.emailAddress,
-        )
-      ) {
-        notifyClient = new NotifyClient(nockNotifyBaseUrl, notifyApiKey);
-
-        nockScope
-          .post("/v2/notifications/email")
-          .reply(200, (_, requestBody) => {
-            const body = v.parse(
-              v.object({
-                template_id: v.string(),
-                reference: v.optional(v.string()),
-              }),
-              requestBody,
-              { abortEarly: false },
-            );
-
-            logger.info("NotifyRequestReceivedByMock", {
-              reference: body.reference,
-              templateId: body.template_id,
-              template: Object.entries(notifyTemplateIds).find(
-                ([, id]) => id === body.template_id,
-              )?.[0],
-            });
-
-            return {
-              data: {
-                id: randomUUID(),
-                reference: body.reference,
-              },
-            };
-          });
-      } else {
-        notifyClient = new NotifyClient(notifyApiKey);
-      }
-
-      sendResult = await notifyClient.sendEmail(
+      const sendResult = await notifyClient.sendEmail(
         templateId,
         message.emailAddress,
         {
@@ -199,9 +170,17 @@ const processNotification = async (
               ),
             ),
           },
-          reference: randomUUID(),
+          reference,
         },
       );
+
+      logger.info("notification_sent", {
+        messageId: record.messageId,
+        id: sendResult.data.id,
+        reference: sendResult.data.reference,
+      });
+      metrics.addMetric("SendNotificationSucceeded", MetricUnit.Count, 1);
+      return;
     } catch (error) {
       if (isAxiosError(error)) {
         const errorName = "unable_to_send_notification";
@@ -223,13 +202,6 @@ const processNotification = async (
       batchItemFailures.push({ itemIdentifier: record.messageId });
       return;
     }
-
-    logger.info("notification_sent", {
-      messageId: record.messageId,
-      id: sendResult.data.id,
-      reference: sendResult.data.reference,
-    });
-    metrics.addMetric("SendNotificationSucceeded", MetricUnit.Count, 1);
   } catch (error) {
     const errorName = "unknown_error";
     logger.error(errorName, {
@@ -240,23 +212,16 @@ const processNotification = async (
     batchItemFailures.push({ itemIdentifier: record.messageId });
     return;
   }
-
-  logger.resetKeys();
-  metrics.publishStoredMetrics();
-  nock.cleanAll();
 };
 
 export const handler = async (event: SQSEvent): Promise<SQSBatchResponse> => {
   const batchItemFailures: SQSBatchItemFailure[] = [];
 
-  await Promise.allSettled(
-    event.Records.map((record) =>
-      processNotification(record, batchItemFailures),
-    ),
-  );
-
-  logger.resetKeys();
-  metrics.publishStoredMetrics();
+  for (const record of event.Records) {
+    await processNotification(record, batchItemFailures);
+    logger.resetKeys();
+    metrics.publishStoredMetrics();
+  }
 
   return {
     batchItemFailures,

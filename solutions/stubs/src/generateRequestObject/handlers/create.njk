@@ -101,7 +101,7 @@
                     Defaults to <strong>{{defaultEmailAddress}}</strong>.
                     {% if not isLocal %}
                         {% if notifyDontSendEmailsTo %}
-                            If the email address matches the regex <code>{{ notifyDontSendEmailsTo }}</code> then email requests will be sent to the Notify stub, not the real Notify service.
+                            If the email address matches the regex <code>{{ notifyDontSendEmailsTo }}</code> then emails will not be sent.
                         {% endif %}
                     {% else %}
                         Emails are not sent when running locally.
