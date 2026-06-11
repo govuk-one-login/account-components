@@ -502,7 +502,7 @@ describe("passkey-create handlers", () => {
         );
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
-        ).toHaveBeenCalledWith(mockRequest, mockReply, "InvalidRequestBody");
+        ).toHaveBeenCalledWith(mockRequest, mockReply);
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
         ).toHaveBeenCalledTimes(1);
