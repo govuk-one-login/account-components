@@ -78,7 +78,7 @@ Mappings:
       securityUrl: https://home.dev.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.dev.account.gov.uk/account-data-api
-      notifyStubUrl: https://stubs.manage.dev.account.gov.uk/notify
+      notifyDontSendEmailsTo: "^(perftestPasskeys_.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "fb385d74-ac28-466d-8695-3d8a732a4cf8",
@@ -113,7 +113,7 @@ Mappings:
       securityUrl: https://home.build.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.build.account.gov.uk/account-data-api
-      notifyStubUrl: https://stubs.manage.build.account.gov.uk/notify
+      notifyDontSendEmailsTo: "^(perftestPasskeys_.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "fb385d74-ac28-466d-8695-3d8a732a4cf8",
@@ -150,7 +150,7 @@ Mappings:
       securityUrl: https://home.staging.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://7xgl7lexy4.execute-api.eu-west-2.amazonaws.com/staging
-      notifyStubUrl: ""
+      notifyDontSendEmailsTo: "^(perftestPasskeys_.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "aa8697b6-23e6-4317-9aff-5a274142e7f2",
@@ -187,7 +187,7 @@ Mappings:
       securityUrl: https://home.integration.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://hoidt6wujb.execute-api.eu-west-2.amazonaws.com/integration
-      notifyStubUrl: ""
+      notifyDontSendEmailsTo: ""
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "aa8697b6-23e6-4317-9aff-5a274142e7f2",
@@ -224,7 +224,7 @@ Mappings:
       securityUrl: https://home.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://0218o1p9tj.execute-api.eu-west-2.amazonaws.com/production
-      notifyStubUrl: ""
+      notifyDontSendEmailsTo: ""
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "07fc5ed8-4775-4f03-b6cf-08a273458849",
@@ -255,6 +255,7 @@ Conditions:
   CanariesEnabled: !Equals
     - !FindInMap [EnvironmentConfiguration, !Ref Environment, UseCanary]
     - true
+  IsProduction: !Equals [!Ref Environment, "production"]
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
   IsBuildEnvironment: !Equals [!Ref Environment, "build"]
   IsDevOrBuild: !Or [Condition: IsDevEnvironment, Condition: IsBuildEnvironment]
@@ -1029,11 +1030,11 @@ Resources:
               !Ref Environment,
               notifyTemplateIds,
             ]
-          NOTIFY_STUB_URL:
+          NOTIFY_DONT_SEND_EMAILS_TO:
             !FindInMap [
               EnvironmentConfiguration,
               !Ref Environment,
-              notifyStubUrl,
+              notifyDontSendEmailsTo,
             ]
       DeploymentPreference:
         Alarms:
@@ -1621,6 +1622,8 @@ Resources:
         Alarms:
           - !Ref ApiHealthcheckLambdaErrorsAlarm
           - !Ref ApiHealthcheckLambdaThrottlesAlarm
+          - !Ref ApiHealthcheckLambdaAvailabilityAlarm
+          - !Ref ApiHealthcheckLambdaLogErrorAlarm
       LoggingConfig:
         LogGroup: !Ref ApiHealthcheckLambdaLogGroup
       Handler: healthcheck.handler
@@ -1667,6 +1670,8 @@ Resources:
         Alarms:
           - !Ref ApiTokenLambdaErrorsAlarm
           - !Ref ApiTokenLambdaThrottlesAlarm
+          - !Ref ApiTokenLambdaAvailabilityAlarm
+          - !Ref ApiTokenLambdaLogErrorAlarm
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: 1
       LoggingConfig:
@@ -1741,6 +1746,8 @@ Resources:
         Alarms:
           - !Ref ApiJourneyOutcomeLambdaErrorsAlarm
           - !Ref ApiJourneyOutcomeLambdaThrottlesAlarm
+          - !Ref ApiJourneyOutcomeLambdaAvailabilityAlarm
+          - !Ref ApiJourneyOutcomeLambdaLogErrorAlarm
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: 1
       LoggingConfig:
@@ -1818,6 +1825,7 @@ Resources:
   ApiApiGateway5XXErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC private API Gateway is returning 5XX server errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Namespace: AWS/ApiGateway
       MetricName: 5XXError
       Dimensions:
@@ -1830,7 +1838,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiApiGatewayHighLatencyAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1929,9 +1940,64 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  ApiHealthcheckLambda5XXResponseMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiHealthcheckLambdaLogGroup
+      FilterPattern: '{ $.message = "Response" && $.statusCode >= 500 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
+          MetricName: 5XXResponseCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiHealthcheckLambdaResponseCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiHealthcheckLambdaLogGroup
+      FilterPattern: '{ $.message = "Response" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
+          MetricName: ResponseCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiHealthcheckLambdaAvailabilityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
+              MetricName: 5XXResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: total
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
+              MetricName: ResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: availability
+          Expression: "1 - (errors / total)"
+          Label: "Availability"
+          ReturnData: true
+      Threshold: 0.999
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
   ApiTokenLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC token lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
       MetricName: Errors
       Dimensions:
@@ -1945,7 +2011,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiTokenLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2042,6 +2111,7 @@ Resources:
   ApiTokenLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC token lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
@@ -2052,11 +2122,69 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiTokenLambda5XXResponseMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.message = "Response" && $.statusCode >= 500 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+          MetricName: 5XXResponseCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiTokenLambdaResponseCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.message = "Response" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+          MetricName: ResponseCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiTokenLambdaAvailabilityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+              MetricName: 5XXResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: total
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+              MetricName: ResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: availability
+          Expression: "1 - (errors / total)"
+          Label: "Availability"
+          ReturnData: true
+      Threshold: 0.999
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiJourneyOutcomeLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC journey outcome lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
       MetricName: Errors
       Dimensions:
@@ -2070,7 +2198,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiJourneyOutcomeLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2167,6 +2298,7 @@ Resources:
   ApiJourneyOutcomeLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC journey outcome lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
@@ -2175,6 +2307,63 @@ Resources:
       DatapointsToAlarm: 3
       Threshold: 3
       ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiJourneyOutcomeLambda5XXResponseMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.message = "Response" && $.statusCode >= 500 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+          MetricName: 5XXResponseCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiJourneyOutcomeLambdaResponseCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.message = "Response" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+          MetricName: ResponseCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  ApiJourneyOutcomeLambdaAvailabilityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+              MetricName: 5XXResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: total
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+              MetricName: ResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: availability
+          Expression: "1 - (errors / total)"
+          Label: "Availability"
+          ReturnData: true
+      Threshold: 0.999
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
       TreatMissingData: notBreaching
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
@@ -2348,6 +2537,8 @@ Resources:
         Alarms:
           - !Ref FrontendLambdaErrorsAlarm
           - !Ref FrontendLambdaThrottlesAlarm
+          - !Ref FrontendLambdaAvailabilityAlarm
+          - !Ref FrontendLambdaLogErrorAlarm
       ProvisionedConcurrencyConfig:
         ProvisionedConcurrentExecutions: 1
       LoggingConfig:
@@ -2514,6 +2705,7 @@ Resources:
   FrontendApiGateway5XXErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC frontend API Gateway is returning 5XX server errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
       Namespace: AWS/ApiGateway
       MetricName: 5XXError
       Dimensions:
@@ -2526,7 +2718,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   FrontendApiGatewayHighLatencyAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2548,6 +2743,7 @@ Resources:
   FrontendLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC frontend lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
       Namespace: !Sub "${AWS::StackName}/FrontendLambda"
       MetricName: Errors
       Dimensions:
@@ -2561,7 +2757,10 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   FrontendLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2646,6 +2845,7 @@ Resources:
   FrontendLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC frontend lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
       Namespace: !Sub "${AWS::StackName}/FrontendLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
@@ -2654,6 +2854,63 @@ Resources:
       DatapointsToAlarm: 3
       Threshold: 3
       ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  FrontendLambda5XXResponseMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.message = "Response" && $.statusCode >= 500 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: 5XXResponseCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  FrontendLambdaResponseCountMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.message = "Response" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: ResponseCount
+          MetricValue: "1"
+          DefaultValue: 0
+
+  FrontendLambdaAvailabilityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+              MetricName: 5XXResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: total
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+              MetricName: ResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: availability
+          Expression: "1 - (errors / total)"
+          Label: "Availability"
+          ReturnData: true
+      Threshold: 0.999
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
       TreatMissingData: notBreaching
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
@@ -2850,11 +3107,11 @@ Resources:
           API_BASE_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
           ROOT_DOMAIN:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
-          NOTIFY_TEMPLATE_IDS:
+          NOTIFY_DONT_SEND_EMAILS_TO:
             !FindInMap [
               EnvironmentConfiguration,
               !Ref Environment,
-              notifyTemplateIds,
+              notifyDontSendEmailsTo,
             ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
@@ -2898,12 +3155,60 @@ Resources:
             {
               "type": "text",
               "properties": {
-                "markdown": "# General",
+                "markdown": "# Requests",
                 "background": "transparent"
               },
               "width": 24,
               "height": 2
-            },          
+            },       
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('MetricName=\"ResponseCount\"', 'Sum')),0)", "id": "all_responses" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('MetricName=\"5XXResponseCount\"', 'Sum')),0)", "id": "server_error_responses" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Availability",
+                "region": "${AWS::Region}"
+              },
+              "width": 18,
+              "height": 6          
+            },
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('MetricName=\"ResponseCount\"', 'Sum')),0)", "id": "all_responses", "visible": false } ],
+                  [ { "expression": "FILL(SUM(SEARCH('MetricName=\"5XXResponseCount\"', 'Sum')),0)", "id": "server_error_responses", "visible": false } ],
+                  [ { "expression": "((all_responses - server_error_responses) / all_responses) * 100", "id": "availability" } ]
+                ],
+                "view": "singleValue",
+                "title": "Availability %",
+                "region": "${AWS::Region}",
+                "setPeriodToTimeRange": true
+              },
+              "width": 6,
+              "height": 6
+            },  
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | fields method, path, total | filter message = 'Request' | stats count(*) as total by method, path | sort total desc",
+                "region": "${AWS::Region}",
+                "title": "Frontend requests"
+              },
+              "width": 12
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | fields method, path, statusCode, total | filter message = 'Response' | stats count(*) as total by method, path, statusCode | sort total desc",
+                "region": "${AWS::Region}",
+                "title": "Frontend responses"
+              },
+              "width": 12
+            },                          
             {
               "type": "metric",
               "properties": {
@@ -3085,25 +3390,42 @@ Resources:
               },
               "width": 10,               
               "height": 4
-            },
+            },  
             {
-              "type": "log",
+              "type": "text",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | fields method, path, total | filter message = 'Request' | stats count(*) as total by method, path | sort total desc",
-                "region": "${AWS::Region}",
-                "title": "Frontend requests"
+                "markdown": "&nbsp;\n# Lambdas",
+                "background": "transparent"
               },
-              "width": 12
-            },             
-            {
-              "type": "log",
-              "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | fields method, path, statusCode, total | filter message = 'Response' | stats count(*) as total by method, path, statusCode | sort total desc",
-                "region": "${AWS::Region}",
-                "title": "Frontend responses"
-              },
-              "width": 12
+              "width": 24,
+              "height": 3
             },   
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SEARCH('{AWS/Lambda} MetricName=\"ConcurrentExecutions\"', 'Maximum'),0)", "id": "total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Concurrent lambda executions",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4
+            }, 
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SEARCH('{AWS/Lambda} MetricName=\"Invocations\"', 'Sum'),0)", "id": "total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Lambda invocations",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4
+            },                     
             {
               "type": "metric",
               "properties": {
@@ -3247,33 +3569,7 @@ Resources:
               },
               "width": 6,
               "height": 4
-            },             
-            {
-              "type": "metric",
-              "properties": {
-                "metrics": [
-                  [ { "expression": "FILL(SEARCH('{AWS/Lambda} MetricName=\"ConcurrentExecutions\"', 'Maximum'),0)", "id": "total" } ]
-                ],
-                "view": "timeSeries",
-                "title": "Concurrent lambda executions",
-                "region": "${AWS::Region}"
-              },
-              "width": 12,
-              "height": 4
-            }, 
-            {
-              "type": "metric",
-              "properties": {
-                "metrics": [
-                  [ { "expression": "FILL(SEARCH('{AWS/Lambda} MetricName=\"Invocations\"', 'Sum'),0)", "id": "total" } ]
-                ],
-                "view": "timeSeries",
-                "title": "Lambda invocations",
-                "region": "${AWS::Region}"
-              },
-              "width": 12,
-              "height": 4
-            },                                                                        
+            },                                                                                    
             {
               "type": "text",
               "properties": {

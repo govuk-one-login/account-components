@@ -7,6 +7,7 @@ import type { JwtHeader } from "../../types/common.js";
 import {
   Algorithms,
   Channels,
+  defaultEmailAddress,
   MockRequestObjectScenarios,
   Scope,
   Users,
@@ -20,7 +21,6 @@ import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.j
 import { createHash } from "node:crypto";
 import {
   checkUserAgentCookieName,
-  mockEmailAddress,
   rootDomain,
 } from "../../../../commons/utils/constants.js";
 
@@ -71,7 +71,8 @@ export async function createRequestObjectGet(
     jwtPayload,
     jwtHeader,
     originalRequestBody,
-    mockEmailAddress,
+    defaultEmailAddress,
+    notifyDontSendEmailsTo: process.env["NOTIFY_DONT_SEND_EMAILS_TO"],
     isLocal: getEnvironment() === "local",
   });
   return reply;
