@@ -99,11 +99,6 @@ vi.mock(import("notifications-node-client"), () => ({
 }));
 
 // @ts-expect-error
-vi.mock(import("../../../commons/utils/constants.js"), () => ({
-  mockEmailAddress: "testuser@test.null.local",
-}));
-
-// @ts-expect-error
 vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
   logger: mockLogger,
 }));
@@ -188,6 +183,17 @@ describe("notifications-service", () => {
         reference: expect.any(String),
       }),
     );
+    expect(mockMetrics.addMetric).toHaveBeenCalledWith(
+      "SendNotificationSucceeded",
+      expect.anything(),
+      1,
+    );
+    expect(mockMetrics.addDimensions).toHaveBeenCalledWith({
+      notificationType: "WITH_NEITHER",
+    });
+    expect(mockLogger.appendKeys).toHaveBeenCalledWith({
+      notificationType: "WITH_NEITHER",
+    });
   });
 
   it("successfully processes valid notification message with personalisation", async () => {
@@ -237,9 +243,18 @@ describe("notifications-service", () => {
     expect(result.batchItemFailures[0]?.itemIdentifier).toBe("test-message-id");
     expect(mockLogger.error).toHaveBeenCalledWith(
       "invalid_message_format",
-      expect.any(Object),
+      expect.objectContaining({ messageId: "test-message-id" }),
     );
-    expect(mockSendEmail).not.toHaveBeenCalledWith();
+    expect(mockMetrics.addMetric).toHaveBeenCalledWith(
+      "SendNotificationFailed",
+      expect.anything(),
+      1,
+    );
+    expect(mockMetrics.addMetadata).toHaveBeenCalledWith(
+      "SendNotificationFailedReason",
+      "invalid_message_format",
+    );
+    expect(mockSendEmail).not.toHaveBeenCalled();
   });
 
   it("merges optionalContentSwitches into personalisation as yes/no strings", async () => {
@@ -323,11 +338,21 @@ describe("notifications-service", () => {
     const result = await handler(event);
 
     expect(result.batchItemFailures).toHaveLength(1);
+    expect(result.batchItemFailures[0]?.itemIdentifier).toBe("test-message-id");
     expect(mockLogger.error).toHaveBeenCalledWith(
       "template_id_not_found",
-      expect.any(Object),
+      expect.objectContaining({ messageId: "test-message-id" }),
     );
-    expect(mockSendEmail).not.toHaveBeenCalledWith();
+    expect(mockMetrics.addMetric).toHaveBeenCalledWith(
+      "SendNotificationFailed",
+      expect.anything(),
+      1,
+    );
+    expect(mockMetrics.addMetadata).toHaveBeenCalledWith(
+      "SendNotificationFailedReason",
+      "template_id_not_found",
+    );
+    expect(mockSendEmail).not.toHaveBeenCalled();
   });
 
   it("handles axios error when sending notification", async () => {
@@ -353,14 +378,25 @@ describe("notifications-service", () => {
     const result = await handler(event);
 
     expect(result.batchItemFailures).toHaveLength(1);
+    expect(result.batchItemFailures[0]?.itemIdentifier).toBe("test-message-id");
     expect(mockLogger.error).toHaveBeenCalledWith(
       "unable_to_send_notification",
       expect.objectContaining({
+        messageId: "test-message-id",
         status: 400,
         statusText: "Bad Request",
+        details: { error: "Invalid template" },
       }),
     );
-    expect(mockSendEmail).not.toHaveBeenCalledWith();
+    expect(mockMetrics.addMetric).toHaveBeenCalledWith(
+      "SendNotificationFailed",
+      expect.anything(),
+      1,
+    );
+    expect(mockMetrics.addMetadata).toHaveBeenCalledWith(
+      "SendNotificationFailedReason",
+      "unable_to_send_notification",
+    );
   });
 
   it("handles non-axios error when sending notification", async () => {
@@ -378,23 +414,38 @@ describe("notifications-service", () => {
     const result = await handler(event);
 
     expect(result.batchItemFailures).toHaveLength(1);
+    expect(result.batchItemFailures[0]?.itemIdentifier).toBe("test-message-id");
     expect(mockLogger.error).toHaveBeenCalledWith(
       "unable_to_send_notification_due_to_an_unknown_error",
       expect.objectContaining({
+        messageId: "test-message-id",
         details: "Network failure",
       }),
     );
-    expect(mockSendEmail).not.toHaveBeenCalledWith();
+    expect(mockMetrics.addMetric).toHaveBeenCalledWith(
+      "SendNotificationFailed",
+      expect.anything(),
+      1,
+    );
+    expect(mockMetrics.addMetadata).toHaveBeenCalledWith(
+      "SendNotificationFailedReason",
+      "unable_to_send_notification_due_to_an_unknown_error",
+    );
   });
 
-  it("processes multiple records and returns partial failures", async () => {
+  it("processes multiple records sequentially and returns partial failures", async () => {
     const { handler } = await import("./notifications-service.js");
 
+    const callOrder: string[] = [];
     mockSendEmail
-      .mockResolvedValueOnce({
-        data: { id: "notify-1", reference: "ref-1" },
+      .mockImplementationOnce(async () => {
+        callOrder.push("send-1");
+        return { data: { id: "notify-1", reference: "ref-1" } };
       })
-      .mockRejectedValueOnce(new Error("Failed"));
+      .mockImplementationOnce(async () => {
+        callOrder.push("send-2");
+        throw new Error("Failed");
+      });
 
     const message1 = {
       emailAddress: "test1@example.com",
@@ -417,6 +468,8 @@ describe("notifications-service", () => {
     expect(result.batchItemFailures).toHaveLength(1);
     expect(result.batchItemFailures[0]?.itemIdentifier).toBe("msg-2");
 
+    expect(callOrder).toStrictEqual(["send-1", "send-2"]);
+
     expect(mockLogger.info).toHaveBeenCalledTimes(1);
     expect(mockLogger.info).toHaveBeenCalledWith(
       "notification_sent",
@@ -426,16 +479,27 @@ describe("notifications-service", () => {
         reference: "ref-1",
       }),
     );
+
+    expect(mockLogger.resetKeys).toHaveBeenCalledTimes(2);
+    expect(mockMetrics.publishStoredMetrics).toHaveBeenCalledTimes(2);
   });
 
-  it("uses stub URL when email matches mockEmailAddress and NOTIFY_STUB_URL is set", async () => {
-    process.env["NOTIFY_STUB_URL"] = "http://localhost:6003";
-
+  it("returns empty batch failures for an empty event", async () => {
     const { handler } = await import("./notifications-service.js");
 
-    mockSendEmail.mockResolvedValue({
-      data: { id: "notify-id", reference: "ref" },
-    });
+    const event = createSQSEvent([]);
+    const result = await handler(event);
+
+    expect(result.batchItemFailures).toHaveLength(0);
+    expect(mockSendEmail).not.toHaveBeenCalled();
+    expect(mockLogger.resetKeys).not.toHaveBeenCalled();
+    expect(mockMetrics.publishStoredMetrics).not.toHaveBeenCalled();
+  });
+
+  it("skips sending when email matches NOTIFY_DONT_SEND_EMAILS_TO", async () => {
+    process.env["NOTIFY_DONT_SEND_EMAILS_TO"] = "@test\\.null\\.local$";
+
+    const { handler } = await import("./notifications-service.js");
 
     const message = {
       emailAddress: "testuser@test.null.local",
@@ -444,18 +508,24 @@ describe("notifications-service", () => {
     };
 
     const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
-    await handler(event);
+    const result = await handler(event);
 
-    expect(mockNotifyClientConstructor).toHaveBeenCalledWith(
-      "http://localhost:6003",
-      "test-api-key",
+    expect(result.batchItemFailures).toHaveLength(0);
+    expect(mockSendEmail).not.toHaveBeenCalled();
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      "notification_would_have_been_sent",
+      expect.objectContaining({
+        reference: expect.any(String),
+        templateId: "template-personalisation",
+        template: "WITH_PERSONALISATION",
+      }),
     );
 
-    delete process.env["NOTIFY_STUB_URL"];
+    delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
   });
 
-  it("uses API key when email does not match mockEmailAddress", async () => {
-    process.env["NOTIFY_STUB_URL"] = "http://localhost:6003";
+  it("sends notification when email does not match NOTIFY_DONT_SEND_EMAILS_TO", async () => {
+    process.env["NOTIFY_DONT_SEND_EMAILS_TO"] = "@test\\.null\\.local$";
 
     const { handler } = await import("./notifications-service.js");
 
@@ -470,15 +540,23 @@ describe("notifications-service", () => {
     };
 
     const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
-    await handler(event);
+    const result = await handler(event);
 
-    expect(mockNotifyClientConstructor).toHaveBeenCalledWith("test-api-key");
+    expect(result.batchItemFailures).toHaveLength(0);
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      "template-personalisation",
+      "other@example.com",
+      expect.objectContaining({
+        personalisation: { name: "Test User" },
+        reference: expect.any(String),
+      }),
+    );
 
-    delete process.env["NOTIFY_STUB_URL"];
+    delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
   });
 
-  it("uses API key when NOTIFY_STUB_URL is not set", async () => {
-    delete process.env["NOTIFY_STUB_URL"];
+  it("sends notification when NOTIFY_DONT_SEND_EMAILS_TO is not set", async () => {
+    delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
 
     const { handler } = await import("./notifications-service.js");
 
@@ -493,12 +571,46 @@ describe("notifications-service", () => {
     };
 
     const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
-    await handler(event);
+    const result = await handler(event);
 
-    expect(mockNotifyClientConstructor).toHaveBeenCalledWith("test-api-key");
+    expect(result.batchItemFailures).toHaveLength(0);
+    expect(mockSendEmail).toHaveBeenCalledWith(
+      "template-personalisation",
+      "testuser@test.null.local",
+      expect.objectContaining({
+        personalisation: { name: "Test User" },
+        reference: expect.any(String),
+      }),
+    );
   });
 
-  it("calls metrics and logger cleanup methods", async () => {
+  it("matches email case-insensitively against NOTIFY_DONT_SEND_EMAILS_TO", async () => {
+    process.env["NOTIFY_DONT_SEND_EMAILS_TO"] = "@test\\.null\\.local$";
+
+    const { handler } = await import("./notifications-service.js");
+
+    const message = {
+      emailAddress: "TestUser@Test.Null.Local",
+      notificationType: "WITH_PERSONALISATION",
+      name: "Test User",
+    };
+
+    const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
+    const result = await handler(event);
+
+    expect(result.batchItemFailures).toHaveLength(0);
+    expect(mockSendEmail).not.toHaveBeenCalled();
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      "notification_would_have_been_sent",
+      expect.objectContaining({
+        template: "WITH_PERSONALISATION",
+      }),
+    );
+
+    delete process.env["NOTIFY_DONT_SEND_EMAILS_TO"];
+  });
+
+  it("calls metrics and logger cleanup methods after each record", async () => {
     const { handler } = await import("./notifications-service.js");
 
     mockSendEmail.mockResolvedValue({
@@ -514,8 +626,8 @@ describe("notifications-service", () => {
     const event = createSQSEvent([createSQSRecord(JSON.stringify(message))]);
     await handler(event);
 
-    expect(mockLogger.resetKeys).toHaveBeenCalledWith();
-    expect(mockMetrics.publishStoredMetrics).toHaveBeenCalledWith();
+    expect(mockLogger.resetKeys).toHaveBeenCalledTimes(1);
+    expect(mockMetrics.publishStoredMetrics).toHaveBeenCalledTimes(1);
   });
 
   it("throws error when NOTIFY_API_KEY_SECRET_ARN is undefined", async () => {

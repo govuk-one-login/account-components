@@ -62,7 +62,7 @@
     "@vitest/coverage-v8": "^4.1.7",
     "@vitest/eslint-plugin": "^1.6.18",
     "chokidar-cli": "^3.0.0",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "csso-cli": "^4.0.2",
     "eslint": "^10.4.0",
     "eslint-plugin-depend": "^1.5.0",
@@ -78,7 +78,7 @@
     "tsx": "^4.22.3",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.59.4",
-    "vitest": "^4.0.13"
+    "vitest": "^4.1.7"
   },
   "scripts": {
     "install-all": "npm ci && npm run install-submodules && npm run install-integration-tests",
