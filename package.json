@@ -51,8 +51,8 @@
   "devDependencies": {
     "@eslint/compat": "^2.1.0",
     "@eslint/js": "^10.0.1",
-    "@govuk-one-login/event-catalogue": "^44.3.0",
-    "@govuk-one-login/event-catalogue-schemas": "^44.3.0",
+    "@govuk-one-login/event-catalogue": "^46.0.0",
+    "@govuk-one-login/event-catalogue-schemas": "^46.0.0",
     "@redocly/cli": "^2.31.4",
     "@tsconfig/node24": "^24.0.4",
     "@tsconfig/strictest": "^2.0.8",
@@ -81,7 +81,7 @@
     "vitest": "^4.1.7"
   },
   "scripts": {
-    "install-all": "npm ci && npm run install-submodules && npm run install-integration-tests",
+    "install-all": "npm ci --legacy-peer-deps && npm run install-submodules && npm run install-integration-tests",
     "install-integration-tests": "cd solutions/integration-tests && npm ci",
     "install-submodules": "git submodule update --init --recursive",
     "install-brewfile": "cat Brewfile; echo; echo; read -p \"Install/update Brewfile dependencies as shown above (y/N)?\" -n 1 -r; echo; if [ \"$REPLY\" == \"y\" ]; then brew bundle check || brew bundle install; fi",

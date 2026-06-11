@@ -14,7 +14,6 @@ import {
 import type { InferOutput } from "valibot";
 
 export const passkeyRegistrationFailureReason = [
-  "InvalidRequestBody",
   "JavaScriptNotEnabled",
   "BrowserDoesNotSupportWebAuthn",
   "AbortError",
@@ -163,7 +162,6 @@ export const sendPasskeyRegistrationGeneratedAuditEvent = async (
       restricted: {
         ...base.commonAuditEventProps.restricted,
         passkey: {
-          // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
           passkey_excluded_credentials:
             buildExcludedCredentials(registrationOptions),
         },
@@ -176,7 +174,7 @@ export const sendPasskeyRegistrationGeneratedAuditEvent = async (
 export const sendPasskeyRegistrationFailedAuditEvent = async (
   request: FastifyRequest,
   reply: FastifyReply,
-  reason: (typeof passkeyRegistrationFailureReason)[number],
+  reason: (typeof passkeyRegistrationFailureReason)[number] = "UnknownError",
 ) => {
   const base = getBaseEventProps(request, reply);
   if (!base) return;
@@ -187,9 +185,10 @@ export const sendPasskeyRegistrationFailedAuditEvent = async (
       event_name: "AMC_PASSKEY_REGISTRATION_FAILED",
       client_id: base.claims.client_id,
       extensions: {
-        "journey-type": base.journeyType,
+        ...(base.journeyType !== undefined && {
+          "journey-type": base.journeyType,
+        }),
         passkey: {
-          // @ts-expect-error - will error until "InvalidRequestBody", "JavaScriptNotEnabled" and "BrowserDoesNotSupportWebAuthn" are added to the failure reasons type. Once they have been added then this comment can be removed.
           passkey_registration_failure_reason: reason,
         },
       },
@@ -216,8 +215,9 @@ export const sendPasskeyRegistrationSuccessfulAuditEvent = async (
       event_name: "AMC_PASSKEY_REGISTRATION_SUCCESSFUL",
       client_id: base.claims.client_id,
       extensions: {
-        "journey-type": base.journeyType,
-        // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
+        ...(base.journeyType !== undefined && {
+          "journey-type": base.journeyType,
+        }),
         passkey: buildResponseInfoPasskeyFields(responseInfo),
       },
       restricted: {
@@ -256,16 +256,16 @@ export const sendPasskeyEnrolmentFailedAuditEvent = async (
       event_name: "AMC_PASSKEY_ENROLMENT_FAILED",
       client_id: base.claims.client_id,
       extensions: {
-        "journey-type": base.journeyType,
+        ...(base.journeyType !== undefined && {
+          "journey-type": base.journeyType,
+        }),
         passkey: {
           ...enrolment.extensions,
-          // @ts-expect-error - will error until passkey_enrolment_failure_reason os updated to be a string rather than an enum. Once it has been updated then this comment can be removed.
           passkey_enrolment_failure_reason: reason,
         },
       },
       restricted: {
         ...base.commonAuditEventProps.restricted,
-        // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
         passkey: enrolment.restricted,
       },
       user: base.user,
@@ -296,13 +296,13 @@ export const sendPasskeyEnrolmentSuccessfulAuditEvent = async (
       event_name: "AMC_PASSKEY_ENROLMENT_SUCCESSFUL",
       client_id: base.claims.client_id,
       extensions: {
-        "journey-type": base.journeyType,
-        // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
+        ...(base.journeyType !== undefined && {
+          "journey-type": base.journeyType,
+        }),
         passkey: enrolment.extensions,
       },
       restricted: {
         ...base.commonAuditEventProps.restricted,
-        // @ts-expect-error - will error until "cable" is added to the transports type. Once it has been added then this comment can be removed.
         passkey: enrolment.restricted,
       },
       user: {
