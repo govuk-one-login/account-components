@@ -1123,10 +1123,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - !If
-          - IsProduction
-          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
-          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   NotificationsServiceLambdaLogWarnByContextMetricFilter:
     Type: AWS::Logs::MetricFilter
@@ -1828,6 +1825,7 @@ Resources:
   ApiApiGateway5XXErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC private API Gateway is returning 5XX server errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Namespace: AWS/ApiGateway
       MetricName: 5XXError
       Dimensions:
@@ -1878,10 +1876,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - !If
-          - IsProduction
-          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
-          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiHealthcheckLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -1943,10 +1938,7 @@ Resources:
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
-        - !If
-          - IsProduction
-          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
-          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
   ApiHealthcheckLambda5XXResponseMetricFilter:
     Type: AWS::Logs::MetricFilter
@@ -2005,6 +1997,7 @@ Resources:
   ApiTokenLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC token lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
       MetricName: Errors
       Dimensions:
@@ -2118,6 +2111,7 @@ Resources:
   ApiTokenLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC token lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
@@ -2190,6 +2184,7 @@ Resources:
   ApiJourneyOutcomeLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC journey outcome lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
       MetricName: Errors
       Dimensions:
@@ -2303,6 +2298,7 @@ Resources:
   ApiJourneyOutcomeLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC journey outcome lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
@@ -2709,6 +2705,7 @@ Resources:
   FrontendApiGateway5XXErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC frontend API Gateway is returning 5XX server errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
       Namespace: AWS/ApiGateway
       MetricName: 5XXError
       Dimensions:
@@ -2746,6 +2743,7 @@ Resources:
   FrontendLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC frontend lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
       Namespace: !Sub "${AWS::StackName}/FrontendLambda"
       MetricName: Errors
       Dimensions:
@@ -2847,6 +2845,7 @@ Resources:
   FrontendLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
+      AlarmDescription: "AMC frontend lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
       Namespace: !Sub "${AWS::StackName}/FrontendLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
