@@ -49,7 +49,7 @@ describe("resendEmailVerificationCode handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/resendEmailVerificationCode.njk",
         {
-          verifyCodeLinkUrl: "/delete-account/verify-email-address",
+          verifyCodeLinkUrl: "/reset-delete/check-email",
         },
       );
       expect(result).toBe(mockReply);
@@ -78,7 +78,7 @@ describe("resendEmailVerificationCode handlers", () => {
 
       expect(mockSendOtpChallenge).toHaveBeenCalledWith("test-public-sub");
       expect(mockReply.redirect).toHaveBeenCalledWith(
-        "/delete-account/verify-email-address",
+        "/reset-delete/check-email",
       );
       expect(result).toBe(mockReply);
     });

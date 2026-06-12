@@ -21,5 +21,6 @@
     }) }}
   </form>
 
-  <p class="govuk-body"><a href="#TODO" class="govuk-link govuk-link--no-visited-state">{{ 'journey:introduction.exitJourneyLinkText' | translate }}</a></p>
+  {% set exitLink = globals.buildCompleteFailedJourneyUri(globals.unsuccessfulJourneyActionErrors.userBackedOutOfJourney) %}
+  <p class="govuk-body"><a href="{{ exitLink }}" class="govuk-link govuk-link--no-visited-state">{{ 'journey:introduction.exitJourneyLinkText' | translate }}</a></p>
 {% endblock %}

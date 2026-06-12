@@ -55,9 +55,9 @@ describe("verifyEmailAddress handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/verifyEmailAddress.njk",
         {
-          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          resendCodeLinkUrl: "/reset-delete/resend-email-code",
           emailAddress: "test@example.com",
-          backLink: "/delete-account/introduction",
+          backLink: "/reset-delete/start",
         },
       );
       expect(result).toBe(mockReply);
@@ -108,7 +108,7 @@ describe("verifyEmailAddress handlers", () => {
         type: "notAuthenticated",
       });
       expect(mockReply.redirect).toHaveBeenCalledWith(
-        "/delete-account/enter-password",
+        "/reset-delete/enter-password",
       );
       expect(result).toBe(mockReply);
     });
@@ -143,9 +143,9 @@ describe("verifyEmailAddress handlers", () => {
               href: "#code",
             }),
           ]),
-          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          resendCodeLinkUrl: "/reset-delete/resend-email-code",
           emailAddress: "test@example.com",
-          backLink: "/delete-account/introduction",
+          backLink: "/reset-delete/start",
         }),
       );
       expect(result).toBe(mockReply);
@@ -177,9 +177,9 @@ describe("verifyEmailAddress handlers", () => {
               href: "#code",
             }),
           ]),
-          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          resendCodeLinkUrl: "/reset-delete/resend-email-code",
           emailAddress: "test@example.com",
-          backLink: "/delete-account/introduction",
+          backLink: "/reset-delete/start",
         }),
       );
       expect(result).toBe(mockReply);
@@ -211,9 +211,9 @@ describe("verifyEmailAddress handlers", () => {
               href: "#code",
             }),
           ]),
-          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          resendCodeLinkUrl: "/reset-delete/resend-email-code",
           emailAddress: "test@example.com",
-          backLink: "/delete-account/introduction",
+          backLink: "/reset-delete/start",
         }),
       );
       expect(result).toBe(mockReply);
@@ -247,9 +247,9 @@ describe("verifyEmailAddress handlers", () => {
               href: "#code",
             }),
           ]),
-          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          resendCodeLinkUrl: "/reset-delete/resend-email-code",
           emailAddress: "test@example.com",
-          backLink: "/delete-account/introduction",
+          backLink: "/reset-delete/start",
         }),
       );
       expect(result).toBe(mockReply);
@@ -281,9 +281,9 @@ describe("verifyEmailAddress handlers", () => {
               href: "#code",
             }),
           ]),
-          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          resendCodeLinkUrl: "/reset-delete/resend-email-code",
           emailAddress: "test@example.com",
-          backLink: "/delete-account/introduction",
+          backLink: "/reset-delete/start",
         }),
       );
       expect(result).toBe(mockReply);
@@ -319,9 +319,9 @@ describe("verifyEmailAddress handlers", () => {
               href: "#",
             }),
           ]),
-          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          resendCodeLinkUrl: "/reset-delete/resend-email-code",
           emailAddress: "test@example.com",
-          backLink: "/delete-account/introduction",
+          backLink: "/reset-delete/start",
         }),
       );
       expect(result).toBe(mockReply);
@@ -410,9 +410,9 @@ describe("verifyEmailAddress handlers", () => {
               href: "#code",
             }),
           ]),
-          resendCodeLinkUrl: "/delete-account/resend-verification-code",
+          resendCodeLinkUrl: "/reset-delete/resend-email-code",
           emailAddress: "test@example.com",
-          backLink: "/delete-account/introduction",
+          backLink: "/reset-delete/start",
         }),
       );
       expect(result).toBe(mockReply);
