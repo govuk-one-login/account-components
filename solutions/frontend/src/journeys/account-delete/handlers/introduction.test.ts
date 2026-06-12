@@ -85,7 +85,7 @@ describe("introduction handlers", () => {
 
       expect(mockSendOtpChallenge).toHaveBeenCalledWith("test-public-sub");
       expect(mockReply.redirect).toHaveBeenCalledWith(
-        "/delete-account/verify-email-address",
+        "/reset-delete/check-email",
       );
       expect(result).toBe(mockReply);
     });

@@ -90,9 +90,7 @@ describe("enterPassword handlers", () => {
       ).toHaveBeenCalledWith({
         type: "authenticated",
       });
-      expect(mockReply.redirect).toHaveBeenCalledWith(
-        "/delete-account/confirm",
-      );
+      expect(mockReply.redirect).toHaveBeenCalledWith("/reset-delete/confirm");
       expect(result).toBe(mockReply);
     });
 

@@ -43,9 +43,9 @@ export async function introductionPostHandler(
 
   if (!result.success) {
     if (result.error === "TooManyEmailCodesEntered") {
-      // TODO need to do something in this case?
+      // TODO https://govukverify.atlassian.net/browse/OLH-4275
     } else if (result.error === "BlockedForEmailVerificationCodes") {
-      // TODO need to do something in this case?
+      // TODO https://govukverify.atlassian.net/browse/OLH-4274
     }
 
     throw new Error(result.error);
