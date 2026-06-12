@@ -6,6 +6,14 @@ import {
 import { createEvent } from "@govuk-one-login/event-catalogue-utils";
 import assert from "node:assert";
 
+export const journeyActionNames = {
+  testingJourneyAction: "testing-journey-action",
+  accountDelete: "account-delete",
+  passkeyCreate: "passkey-create",
+} as const;
+export type JourneyActionName =
+  (typeof journeyActionNames)[keyof typeof journeyActionNames];
+
 export const unsuccessfulJourneyActionErrors = {
   userSignedOut: {
     code: 1001,
@@ -32,7 +40,7 @@ export const unsuccessfulJourneyActionErrors = {
 >;
 
 export type JourneyAction<
-  Name extends string,
+  Name extends JourneyActionName,
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   Details extends Record<string, unknown> = {},
 > =
@@ -52,12 +60,6 @@ export type JourneyAction<
       timestamp: number;
     };
 
-export const journeyActionNames = {
-  testingJourneyAction: "testing-journey-action",
-  accountDelete: "account-delete",
-  passkeyCreate: "passkey-create",
-} as const;
-
 interface JourneyActionDetails {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   testingJourneyAction: {};
@@ -73,12 +75,12 @@ type JourneyActions = {
   >;
 };
 
-type InProgressAction<T extends JourneyAction<string>> = Exclude<
+type InProgressAction<T extends JourneyAction<JourneyActionName>> = Exclude<
   T,
   { success: boolean }
 >;
 
-type SuccessfulAction<T extends JourneyAction<string>> = Omit<
+type SuccessfulAction<T extends JourneyAction<JourneyActionName>> = Omit<
   Extract<T, { success: true }>,
   "timestamp" | "success"
 >;
@@ -139,7 +141,9 @@ export const startJourneyAction = async <
 };
 
 const updateInProgressAction = (
-  action: Omit<JourneyAction<string>, "timestamp"> & { success: boolean },
+  action: Omit<JourneyAction<JourneyActionName>, "timestamp"> & {
+    success: boolean;
+  },
   request: FastifyRequest,
 ): void => {
   if (!request.session.journeyActions) {

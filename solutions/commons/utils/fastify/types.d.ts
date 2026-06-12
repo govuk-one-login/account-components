@@ -10,6 +10,7 @@ import type { getClaimsSchema } from "../../../frontend/src/utils/getClaimsSchem
 import type {
   JourneyAction,
   unsuccessfulJourneyActionErrors,
+  JourneyActionName,
 } from "../../../frontend/src/journeys/utils/journeyActions.ts";
 
 declare module "fastify" {
@@ -80,7 +81,7 @@ declare module "fastify" {
     _csrf?: string;
     claims?: v.InferOutput<ReturnType<typeof getClaimsSchema>>;
     journeyStateSnapshot?: AnyMachineSnapshot;
-    journeyActions?: JourneyAction<string>[];
+    journeyActions?: JourneyAction<JourneyActionName>[];
     completedJourneyOutcomeId?: string;
   }
 }
