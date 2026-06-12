@@ -1,5 +1,3 @@
-#checkov:skip=CKV_DOCKER_3: Not applicable for development image
-
 # Despite what SonarQube says both the tag and sha digest are needed:
 # the digest pins the exact image for reproducibility,
 # the tag allows Dependabot to evaluate version constraints
@@ -16,10 +14,13 @@ COPY package-lock.json package-lock.json
 COPY .npmrc .npmrc
 COPY .nvmrc .nvmrc
 
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 RUN npm ci && npm run install-browsers
 
 COPY . .
 
 HEALTHCHECK NONE
+
+USER node
 
 ENTRYPOINT [ "./run-tests.sh" ]
