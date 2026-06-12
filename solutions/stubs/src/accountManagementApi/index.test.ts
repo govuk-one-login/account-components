@@ -28,6 +28,178 @@ describe("accountManagementApi", () => {
     expect(mockApp.post).toHaveBeenCalledTimes(4);
   });
 
+  it("should handle authenticate with incorrect_password_entered scenario", async () => {
+    accountManagementApi(mockApp);
+
+    const token = await new SignJWT({
+      authenticate_scenario: "incorrect_password_entered",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(new TextEncoder().encode("secret"));
+
+    mockRequest.headers = { authorization: `Bearer ${token}` };
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[0]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(400);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: 1008,
+      message: "Incorrect password",
+    });
+  });
+
+  it("should handle authenticate with too_many_incorrect_passwords_entered scenario", async () => {
+    accountManagementApi(mockApp);
+
+    const token = await new SignJWT({
+      authenticate_scenario: "too_many_incorrect_passwords_entered",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(new TextEncoder().encode("secret"));
+
+    mockRequest.headers = { authorization: `Bearer ${token}` };
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[0]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(400);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: 1094,
+      message: "Too many incorrect passwords entered",
+    });
+  });
+
+  it("should handle authenticate with temporary_intervention scenario", async () => {
+    accountManagementApi(mockApp);
+
+    const token = await new SignJWT({
+      authenticate_scenario: "temporary_intervention",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(new TextEncoder().encode("secret"));
+
+    mockRequest.headers = { authorization: `Bearer ${token}` };
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[0]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(400);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: 1083,
+      message: "Account has temporary intervention",
+    });
+  });
+
+  it("should handle authenticate with permanent_intervention scenario", async () => {
+    accountManagementApi(mockApp);
+
+    const token = await new SignJWT({
+      authenticate_scenario: "permanent_intervention",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(new TextEncoder().encode("secret"));
+
+    mockRequest.headers = { authorization: `Bearer ${token}` };
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[0]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(400);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: 1084,
+      message: "Account has permanent intervention",
+    });
+  });
+
+  it("should handle authenticate without error scenario", async () => {
+    accountManagementApi(mockApp);
+
+    const token = await new SignJWT({})
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(new TextEncoder().encode("secret"));
+
+    mockRequest.headers = { authorization: `Bearer ${token}` };
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[0]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.send).toHaveBeenCalledWith();
+  });
+
+  it("should handle sendOtpChallenge with too_many_codes_requested scenario", async () => {
+    accountManagementApi(mockApp);
+
+    const token = await new SignJWT({
+      sendOtpChallenge_scenario: "too_many_codes_requested",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(new TextEncoder().encode("secret"));
+
+    mockRequest.headers = { authorization: `Bearer ${token}` };
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[2]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(400);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: 1092,
+      message: "Too many email codes requested",
+    });
+  });
+
+  it("should handle sendOtpChallenge with too_many_codes_entered scenario", async () => {
+    accountManagementApi(mockApp);
+
+    const token = await new SignJWT({
+      sendOtpChallenge_scenario: "too_many_codes_entered",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(new TextEncoder().encode("secret"));
+
+    mockRequest.headers = { authorization: `Bearer ${token}` };
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[2]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(400);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: 1093,
+      message: "Too many email codes entered",
+    });
+  });
+
+  it("should handle sendOtpChallenge without error scenario", async () => {
+    accountManagementApi(mockApp);
+
+    const token = await new SignJWT({})
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(new TextEncoder().encode("secret"));
+
+    mockRequest.headers = { authorization: `Bearer ${token}` };
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[2]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.send).toHaveBeenCalledWith();
+  });
+
   it("should handle verifyOtpChallenge with invalid_otp_code scenario", async () => {
     accountManagementApi(mockApp);
 
@@ -51,7 +223,30 @@ describe("accountManagementApi", () => {
     });
   });
 
-  it("should handle verifyOtpChallenge without invalid scenario", async () => {
+  it("should handle verifyOtpChallenge with too_many_codes_entered scenario", async () => {
+    accountManagementApi(mockApp);
+
+    const token = await new SignJWT({
+      verifyOtpChallenge_scenario: "too_many_codes_entered",
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .sign(new TextEncoder().encode("secret"));
+
+    mockRequest.headers = { authorization: `Bearer ${token}` };
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[3]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(400);
+    expect(mockReply.send).toHaveBeenCalledWith({
+      code: 1093,
+      message: "Too many email codes entered",
+    });
+  });
+
+  it("should handle verifyOtpChallenge without error scenario", async () => {
     accountManagementApi(mockApp);
 
     const token = await new SignJWT({})
