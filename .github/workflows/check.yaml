@@ -103,7 +103,7 @@ jobs:
           '
 
       - name: Checkov
-        uses: bridgecrewio/checkov-action@4048c972aae68d0b983a48bb3479aab2d877b898
+        uses: bridgecrewio/checkov-action@dfb51aed1b783289b0d3f255028e7a88d5e8caa1
         with:
           directory: .
           output_format: cli
