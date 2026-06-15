@@ -38,6 +38,7 @@ import {
   sendPasskeyEnrolmentSuccessfulAuditEvent,
   passkeyRegistrationFailureReason,
 } from "../utils/auditEvents/index.js";
+import { extractRegistrationResponseInfo } from "../utils/extractRegistrationResponseInfo/index.js";
 
 export const postBodySchema = v.object({
   action: v.optional(v.picklist(["register", "skip"])),
@@ -394,6 +395,10 @@ export async function postHandler(
     return reply;
   }
 
+  const registrationResponseInfo = extractRegistrationResponseInfo(
+    body.registrationResponse,
+  );
+
   const tempAaguidToUse = request.cookies["temp_aaguid_override"]?.length
     ? request.cookies["temp_aaguid_override"]
     : verification.registrationInfo.aaguid;
@@ -413,6 +418,7 @@ export async function postHandler(
       isBackUpEligible:
         verification.registrationInfo.credentialDeviceType === "multiDevice",
       isResidentKey: true,
+      algorithm: registrationResponseInfo.publicKeyAlgorithm ?? 0,
     },
   );
 

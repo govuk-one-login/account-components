@@ -24,6 +24,7 @@ const mockSendPasskeyRegistrationFailedAuditEvent = vi.fn();
 const mockSendPasskeyRegistrationSuccessfulAuditEvent = vi.fn();
 const mockSendPasskeyEnrolmentFailedAuditEvent = vi.fn();
 const mockSendPasskeyEnrolmentSuccessfulAuditEvent = vi.fn();
+const mockExtractRegistrationResponseInfo = vi.fn();
 
 vi.mock(import("@simplewebauthn/server"), () => ({
   generateRegistrationOptions: mockGenerateRegistrationOptions,
@@ -95,6 +96,10 @@ vi.mock(
       mockGetPasskeyConvenienceMetadataByAaguid,
   }),
 );
+
+vi.mock(import("../utils/extractRegistrationResponseInfo/index.js"), () => ({
+  extractRegistrationResponseInfo: mockExtractRegistrationResponseInfo,
+}));
 
 const { getHandler, postHandler } = await import("./create.js");
 
@@ -586,6 +591,9 @@ describe("passkey-create handlers", () => {
         mockGetPasskeyConvenienceMetadataByAaguid.mockResolvedValue(undefined);
         mockSendNotification.mockResolvedValue(undefined);
         mockCompleteJourney.mockResolvedValue(mockReply);
+        mockExtractRegistrationResponseInfo.mockReturnValue({
+          publicKeyAlgorithm: -7,
+        });
       });
 
       it("should successfully register a passkey", async () => {
@@ -629,6 +637,7 @@ describe("passkey-create handlers", () => {
             transports: ["usb", "nfc"],
             isBackedUp: true,
             isBackUpEligible: true,
+            algorithm: -7,
           }),
         );
 
@@ -681,6 +690,26 @@ describe("passkey-create handlers", () => {
           "user-123",
           expect.objectContaining({
             isAttested: false,
+          }),
+        );
+      });
+
+      it("should use 0 as algorithm when publicKeyAlgorithm is undefined", async () => {
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [{ action: "passkey-create" }];
+        mockExtractRegistrationResponseInfo.mockReturnValue({
+          publicKeyAlgorithm: undefined,
+        });
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockCreatePasskey).toHaveBeenCalledWith(
+          "user-123",
+          expect.objectContaining({
+            algorithm: 0,
           }),
         );
       });
