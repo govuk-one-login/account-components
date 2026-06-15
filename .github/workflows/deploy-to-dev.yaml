@@ -37,7 +37,7 @@ jobs:
           persist-credentials: false
 
       - name: Assume AWS role
-        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b
         with:
           role-to-assume: ${{ secrets.DEV_PIPELINE_GH_ACTIONS_ROLE_ARN }}
           aws-region: "eu-west-2"
@@ -105,7 +105,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Assume AWS role
-        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885
+        uses: aws-actions/configure-aws-credentials@e7f100cf4c008499ea8adda475de1042d6975c7b
         with:
           role-to-assume: ${{ secrets.DEV_PIPELINE_GH_ACTIONS_ROLE_ARN }}
           aws-region: "eu-west-2"
