@@ -3216,14 +3216,26 @@ Resources:
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyStarted\"', 'Sum')),0)", "id": "started__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyStarted\" client_id=auth scope=\"passkey-create\"', 'Sum')),0)", "id": "started__auth__passkey_create" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyStarted\" client_id=home scope=\"passkey-create\"', 'Sum')),0)", "id": "started__home__passkey_create" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyStarted\" client_id=auth scope=\"account-delete\"', 'Sum')),0)", "id": "started__auth__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyStarted\" client_id=home scope=\"account-delete\"', 'Sum')),0)", "id": "started__home__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyStarted\" client_id=auth scope=\"testing-journey\"', 'Sum')),0)", "id": "started__auth__testing_journey" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyStarted\" client_id=home scope=\"testing-journey\"', 'Sum')),0)", "id": "started__home__testing_journey" } ],
 
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\"', 'Sum')),0)", "id": "completed_successfully__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=auth scope=\"passkey-create\"', 'Sum')),0)", "id": "completed_successfully__auth__passkey_create" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=home scope=\"passkey-create\"', 'Sum')),0)", "id": "completed_successfully__home__passkey_create" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=auth scope=\"account-delete\"', 'Sum')),0)", "id": "completed_successfully__auth__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=home scope=\"account-delete\"', 'Sum')),0)", "id": "completed_successfully__home__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=auth scope=\"testing-journey\"', 'Sum')),0)", "id": "completed_successfully__auth__testing_journey" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=home scope=\"testing-journey\"', 'Sum')),0)", "id": "completed_successfully__home__testing_journey" } ],                  
 
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedUnsuccessfully\"', 'Sum')),0)", "id": "completed_unsuccessfully__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedUnsuccessfully\" client_id=auth scope=\"passkey-create\"', 'Sum')),0)", "id": "completed_unsuccessfully__auth__passkey_create" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedUnsuccessfully\" client_id=home scope=\"passkey-create\"', 'Sum')),0)", "id": "completed_unsuccessfully__home__passkey_create" } ]
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedUnsuccessfully\" client_id=home scope=\"passkey-create\"', 'Sum')),0)", "id": "completed_unsuccessfully__home__passkey_create" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedUnsuccessfully\" client_id=auth scope=\"account-delete\"', 'Sum')),0)", "id": "completed_unsuccessfully__auth__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedUnsuccessfully\" client_id=home scope=\"account-delete\"', 'Sum')),0)", "id": "completed_unsuccessfully__home__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedUnsuccessfully\" client_id=auth scope=\"testing-journey\"', 'Sum')),0)", "id": "completed_unsuccessfully__auth__testing_journey" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedUnsuccessfully\" client_id=home scope=\"testing-journey\"', 'Sum')),0)", "id": "completed_unsuccessfully__home__testing_journey" } ]                                    
                 ],
                 "view": "timeSeries",
                 "title": "Journeys started and completed",
@@ -3251,7 +3263,11 @@ Resources:
               "properties": {
                 "metrics": [
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=auth scope=\"passkey-create\"', 'Sum'))", "id": "completed_successfully__auth__passkey_create" } ],
-                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=home scope=\"passkey-create\"', 'Sum'))", "id": "completed_successfully__home__passkey_create" } ]                  
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=home scope=\"passkey-create\"', 'Sum'))", "id": "completed_successfully__home__passkey_create" } ],      
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=auth scope=\"account-delete\"', 'Sum'))", "id": "completed_successfully__auth__account_delete" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=home scope=\"account-delete\"', 'Sum'))", "id": "completed_successfully__home__account_delete" } ],      
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=auth scope=\"testing-journey\"', 'Sum'))", "id": "completed_successfully__auth__testing_journey" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" client_id=home scope=\"testing-journey\"', 'Sum'))", "id": "completed_successfully__home__testing_journey" } ]
                 ],
                 "view": "pie",
                 "title": "Journeys successfully completed by client and scope",
@@ -3270,10 +3286,18 @@ Resources:
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\"', 'Sum')),0)", "id": "with_context__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=auth scope=\"passkey-create\"', 'Sum')),0)", "id": "with_context__auth__passkey_create" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=home scope=\"passkey-create\"', 'Sum')),0)", "id": "with_context__home__passkey_create" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=auth scope=\"account-delete\"', 'Sum')),0)", "id": "with_context__auth__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=home scope=\"account-delete\"', 'Sum')),0)", "id": "with_context__home__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=auth scope=\"testing-journey\"', 'Sum')),0)", "id": "with_context__auth__testing_journey" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=home scope=\"testing-journey\"', 'Sum')),0)", "id": "with_context__home__testing_journey" } ],                                    
 
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeError\"', 'Sum')),0)", "id": "error__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeError\" client_id=auth scope=\"passkey-create\"', 'Sum')),0)", "id": "error__auth__passkey_create" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeError\" client_id=home scope=\"passkey-create\"', 'Sum')),0)", "id": "error__home__passkey_create" } ]
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeError\" client_id=home scope=\"passkey-create\"', 'Sum')),0)", "id": "error__home__passkey_create" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeError\" client_id=auth scope=\"account-delete\"', 'Sum')),0)", "id": "error__auth__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeError\" client_id=home scope=\"account-delete\"', 'Sum')),0)", "id": "error__home__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeError\" client_id=auth scope=\"testing-journey\"', 'Sum')),0)", "id": "error__auth__testing_journey" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeError\" client_id=home scope=\"testing-journey\"', 'Sum')),0)", "id": "error__home__testing_journey" } ]
                 ],
                 "view": "timeSeries",
                 "title": "Authorize requests and errors",
@@ -3301,7 +3325,11 @@ Resources:
               "properties": {
                 "metrics": [
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=auth scope=\"passkey-create\"', 'Sum'))", "id": "with_context__auth__passkey_create" } ],
-                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=home scope=\"passkey-create\"', 'Sum'))", "id": "with_context__home__passkey_create" } ]
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=home scope=\"passkey-create\"', 'Sum'))", "id": "with_context__home__passkey_create" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=auth scope=\"account-delete\"', 'Sum'))", "id": "with_context__auth__account_delete" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=home scope=\"account-delete\"', 'Sum'))", "id": "with_context__home__account_delete" } ],    
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=auth scope=\"testing-journey\"', 'Sum'))", "id": "with_context__auth__testing_journey" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=home scope=\"testing-journey\"', 'Sum'))", "id": "with_context__home__testing_journey" } ]
                 ],
                 "view": "pie",
                 "title": "Authorize requests by client and scope",
@@ -3320,10 +3348,18 @@ Resources:
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\"', 'Sum')),0)", "id": "with_context__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=auth scope=\"passkey-create\"', 'Sum')),0)", "id": "with_context__auth__passkey_create" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=home scope=\"passkey-create\"', 'Sum')),0)", "id": "with_context__home__passkey_create" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=auth scope=\"account-delete\"', 'Sum')),0)", "id": "with_context__auth__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=home scope=\"account-delete\"', 'Sum')),0)", "id": "with_context__home__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=auth scope=\"testing-journey\"', 'Sum')),0)", "id": "with_context__auth__testing_journey" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=home scope=\"testing-journey\"', 'Sum')),0)", "id": "with_context__home__testing_journey" } ],                                    
 
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestError\"', 'Sum')),0)", "id": "error__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestError\" client_id=auth scope=\"passkey-create\"', 'Sum')),0)", "id": "error__auth__passkey_create" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestError\" client_id=home scope=\"passkey-create\"', 'Sum')),0)", "id": "error__home__passkey_create" } ]                  
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestError\" client_id=home scope=\"passkey-create\"', 'Sum')),0)", "id": "error__home__passkey_create" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestError\" client_id=auth scope=\"account-delete\"', 'Sum')),0)", "id": "error__auth__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestError\" client_id=home scope=\"account-delete\"', 'Sum')),0)", "id": "error__home__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestError\" client_id=auth scope=\"testing-journey\"', 'Sum')),0)", "id": "error__auth__testing_journey" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestError\" client_id=home scope=\"testing-journey\"', 'Sum')),0)", "id": "error__home__testing_journey" } ]                 
                 ],
                 "view": "timeSeries",
                 "title": "Journey requests and errors",
@@ -3351,7 +3387,11 @@ Resources:
               "properties": {
                 "metrics": [
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=auth scope=\"passkey-create\"', 'Sum'))", "id": "with_context__auth__passkey_create" } ],
-                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=home scope=\"passkey-create\"', 'Sum'))", "id": "with_context__home__passkey_create" } ]
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=home scope=\"passkey-create\"', 'Sum'))", "id": "with_context__home__passkey_create" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=auth scope=\"account-delete\"', 'Sum'))", "id": "with_context__auth__account_delete" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=home scope=\"account-delete\"', 'Sum'))", "id": "with_context__home__account_delete" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=auth scope=\"testing-journey\"', 'Sum'))", "id": "with_context__auth__testing_journey" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=home scope=\"testing-journey\"', 'Sum'))", "id": "with_context__home__testing_journey" } ]                                 
                 ],
                 "view": "pie",
                 "title": "Journey requests by client and scope",
@@ -3420,10 +3460,18 @@ Resources:
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\"', 'Sum')),0)", "id": "with_context__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"passkey-create\"', 'Sum')),0)", "id": "with_context__passkey_create" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"passkey-create\"', 'Sum')),0)", "id": "with_context__passkey_create" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"account-delete\"', 'Sum')),0)", "id": "with_context__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"account-delete\"', 'Sum')),0)", "id": "with_context__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"testing-journey\"', 'Sum')),0)", "id": "with_context__testing_journey" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"testing-journey\"', 'Sum')),0)", "id": "with_context__testing_journey" } ],                                    
 
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeError\"', 'Sum')),0)", "id": "error__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeError\" scope=\"passkey-create\"', 'Sum')),0)", "id": "error__passkey_create" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeError\" scope=\"passkey-create\"', 'Sum')),0)", "id": "error__passkey_create" } ]                  
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeError\" scope=\"passkey-create\"', 'Sum')),0)", "id": "error__passkey_create" } ],    
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeError\" scope=\"account-delete\"', 'Sum')),0)", "id": "error__account_delete" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeError\" scope=\"account-delete\"', 'Sum')),0)", "id": "error__account_delete" } ],    
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeError\" scope=\"testing-journey\"', 'Sum')),0)", "id": "error__testing_journey" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeError\" scope=\"testing-journey\"', 'Sum')),0)", "id": "error__testing_journey" } ]                                                 
                 ],
                 "view": "timeSeries",
                 "title": "Journey outcome requests and errors",
@@ -3451,7 +3499,11 @@ Resources:
               "properties": {
                 "metrics": [
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"passkey-create\"', 'Sum'))", "id": "with_context__passkey_create" } ],
-                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"passkey-create\"', 'Sum'))", "id": "with_context__passkey_create" } ]
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"passkey-create\"', 'Sum'))", "id": "with_context__passkey_create" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"account-delete\"', 'Sum'))", "id": "with_context__account_delete" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"account-delete\"', 'Sum'))", "id": "with_context__account_delete" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"testing-journey\"', 'Sum'))", "id": "with_context__testing_journey" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"testing-journey\"', 'Sum'))", "id": "with_context__testing_journey" } ]                                    
                 ],
                 "view": "pie",
                 "title": "Journey outcome requests by scope",
