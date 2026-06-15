@@ -3301,7 +3301,7 @@ Resources:
               "properties": {
                 "metrics": [
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=auth scope=\"passkey-create\"', 'Sum'))", "id": "with_context__auth__passkey_create" } ],
-                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=home scope=\"passkey-create\"', 'Sum'))", "id": "with_context__home__passkey_create" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\" client_id=home scope=\"passkey-create\"', 'Sum'))", "id": "with_context__home__passkey_create" } ]
                 ],
                 "view": "pie",
                 "title": "Authorize requests by client and scope",
@@ -3351,7 +3351,7 @@ Resources:
               "properties": {
                 "metrics": [
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=auth scope=\"passkey-create\"', 'Sum'))", "id": "with_context__auth__passkey_create" } ],
-                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=home scope=\"passkey-create\"', 'Sum'))", "id": "with_context__home__passkey_create" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\" client_id=home scope=\"passkey-create\"', 'Sum'))", "id": "with_context__home__passkey_create" } ]
                 ],
                 "view": "pie",
                 "title": "Journey requests by client and scope",
@@ -3401,7 +3401,7 @@ Resources:
               "properties": {
                 "metrics": [
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"TokenRequestWithContext\" client_id=auth', 'Sum'))", "id": "with_context__auth" } ],
-                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"TokenRequestWithContext\" client_id=home', 'Sum'))", "id": "with_context__home" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"TokenRequestWithContext\" client_id=home', 'Sum'))", "id": "with_context__home" } ]
                 ],
                 "view": "pie",
                 "title": "Token requests by client",
@@ -3451,7 +3451,7 @@ Resources:
               "properties": {
                 "metrics": [
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"passkey-create\"', 'Sum'))", "id": "with_context__passkey_create" } ],
-                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"passkey-create\"', 'Sum'))", "id": "with_context__passkey_create" } ],
+                  [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\" scope=\"passkey-create\"', 'Sum'))", "id": "with_context__passkey_create" } ]
                 ],
                 "view": "pie",
                 "title": "Journey outcome requests by scope",
@@ -3788,8 +3788,8 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"SendNotificationSucceeded\"', 'Sum')),0)", "id": "succeeded_total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"SendNotificationFailed\"', 'Sum')),0)", "id": "failed_total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"SendNotificationSucceeded\"', 'Sum')),0)", "id": "succeeded__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"SendNotificationFailed\"', 'Sum')),0)", "id": "failed__total" } ],
                   [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"SendNotificationSucceeded\"', 'Sum'),0)", "id": "succeeded" } ],
                   [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"SendNotificationFailed\"', 'Sum'),0)", "id": "failed" } ]
                 ],
