@@ -101,7 +101,7 @@ jobs:
         run: npm run test
 
       - name: Deploy
-        uses: govuk-one-login/devplatform-upload-action@5879c30205266ad61e8299a4fcea76364530c9c1
+        uses: govuk-one-login/devplatform-upload-action@64e46134b4108ebfa1cf2a64fee00782f8e2e8cf
         with:
           artifact-bucket-name: ${{ secrets.PIPELINE_SOURCE_BUCKET_NAME }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
