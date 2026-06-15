@@ -236,6 +236,23 @@ const verify = async (
       );
     }
 
+    logger.info("MHTEST1", {
+      url: client.jwks_uri,
+      cacheMaxAge: appConfig.jwks_cache_max_age,
+      timeoutDuration: appConfig.jwks_http_timeout,
+    });
+
+    try {
+      const test = await fetch(client.jwks_uri);
+
+      logger.info("MHTEST2", {
+        status: test.status,
+        body: await test.text(),
+      });
+    } catch (error) {
+      logger.error("MHTEST3", { error });
+    }
+
     const jwks = createRemoteJWKSet(new URL(client.jwks_uri), {
       cacheMaxAge: appConfig.jwks_cache_max_age,
       timeoutDuration: appConfig.jwks_http_timeout,
