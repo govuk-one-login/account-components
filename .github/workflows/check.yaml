@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           persist-credentials: false
 
@@ -37,7 +37,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up JSON Schema CLI
-        uses: sourcemeta/jsonschema@cb9ec0145533126399065ffa13d3638842c65e25
+        uses: sourcemeta/jsonschema@389e0bc3e4df4bfe4ca3a2cb4c76996b9990a78c
 
       - name: Set up cfn-lint
         uses: scottbrenner/cfn-lint-action@ed184e91f5085a2932501da8314e899e5e0ef5be
@@ -103,7 +103,7 @@ jobs:
           '
 
       - name: Checkov
-        uses: bridgecrewio/checkov-action@4048c972aae68d0b983a48bb3479aab2d877b898
+        uses: bridgecrewio/checkov-action@dfb51aed1b783289b0d3f255028e7a88d5e8caa1
         with:
           directory: .
           output_format: cli
