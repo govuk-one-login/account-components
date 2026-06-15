@@ -1,10 +1,10 @@
 {
   "introduction": {
-    "pageTitle": "You’ll need to delete your GOV.UK One Login",
-    "heading": "You’ll need to delete your GOV.UK One Login",
+    "pageTitle": "You’ll need to permanently delete your GOV.UK One Login",
+    "heading": "You’ll need to permanently delete your GOV.UK One Login",
     "paragraphs": [
       "We cannot be sure it’s you trying to sign in.",
-      "You’ll need to delete your GOV.UK One Login and will no longer be able to access the services you’ve used with it.",
+      "You’ll need to permanently delete your GOV.UK One Login and will no longer be able to access the services you’ve used with it.",
       "After you delete your GOV.UK One Login, you can create a new one.",
       "But first, we need you to confirm some details."
     ],
@@ -12,10 +12,13 @@
     "exitJourneyLinkText": "Go back and try entering a security code again"
   },
   "resendEmailVerificationCode": {
-    "pageTitle": "TODO resendEmailVerificationCode",
-    "heading": "TODO resendEmailVerificationCode",
-    "buttonLabel": "TODO resend",
-    "verifyCodeLinkText": "TODO verifyCode"
+    "pageTitle": "Get security code",
+    "heading": "Get security code",
+    "emailAddress": "We have sent an email to <strong>{{emailAddress}}</strong>",
+    "paragraphs": [
+      "Your email might take a few minutes to arrive. If you do not get an email, check your spam folder."
+    ],
+    "buttonLabel": "Get security code"
   },
   "verifyEmailAddress": {
     "pageTitle": "Enter the code sent to your email address",
@@ -33,10 +36,9 @@
     "problemsWithTheCodeSummary": "Problems with the code?",
     "problemsWithTheCode": "We can <a href=\"{{resendCodeLinkUrl}}\" class=\"govuk-link govuk-link--no-visited-state\">send the code again</a> if the code is not working or you did not receive it.",
     "formErrors": {
-      "empty": "TODO empty",
-      "tooShort": "TODO tooShort",
-      "notAllDigits": "TODO notAllDigits",
-      "incorrect": "TODO incorrect"
+      "empty": "Enter the code",
+      "invalidFormat": "Enter the code using only 6 digits",
+      "incorrect": "The code you entered is not correct, or may have expired, try entering it again or request a new code"
     }
   },
   "enterPassword": {
@@ -44,20 +46,20 @@
     "inputLabel": "Enter your password",
     "buttonLabel": "Continue",
     "formErrors": {
-      "empty": "TODO empty",
-      "incorrect": "TODO incorrect"
+      "empty": "Enter your password",
+      "incorrect": "Enter the correct password"
     }
   },
   "confirm": {
     "pageTitle": "Delete your GOV.UK One Login",
     "heading": "Delete your GOV.UK One Login",
     "paragraphs1": [
-      "You can now delete your GOV.UK One Login.",
+      "You can now permanently delete your GOV.UK One Login.",
       "You’ll no longer be able to access the services you’ve used with it.",
-      "This will permanently delete your:"
+      "This will permanently delete:"
     ],
     "listItems": [
-      "sign in details",
+      "your sign in details",
       "the record of which services you’ve accessed with GOV.UK One Login and when"
     ],
     "paragraphs2": [
@@ -66,6 +68,6 @@
     ],
     "deleteButtonLabel": "Delete your GOV.UK One Login",
     "cancelButtonLabel": "Cancel and try signing in again",
-    "contactLinkText": "Contact the GOV.UK One Login team (opens in a new tab)."
+    "contactLinkText": "Contact the GOV.UK One Login team (opens in a new tab)"
   }
 }

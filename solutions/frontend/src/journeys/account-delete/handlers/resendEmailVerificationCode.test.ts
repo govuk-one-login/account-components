@@ -49,7 +49,7 @@ describe("resendEmailVerificationCode handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/resendEmailVerificationCode.njk",
         {
-          verifyCodeLinkUrl: "/reset-delete/check-email",
+          backLink: "/reset-delete/check-email",
         },
       );
       expect(result).toBe(mockReply);

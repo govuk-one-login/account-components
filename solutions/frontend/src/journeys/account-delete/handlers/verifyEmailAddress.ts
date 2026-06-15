@@ -54,10 +54,10 @@ export async function verifyEmailAddressPostHandler(
       ),
       v.length(
         6,
-        request.i18n.t("journey:verifyEmailAddress.formErrors.tooShort"),
+        request.i18n.t("journey:verifyEmailAddress.formErrors.invalidFormat"),
       ),
       v.digits(
-        request.i18n.t("journey:verifyEmailAddress.formErrors.notAllDigits"),
+        request.i18n.t("journey:verifyEmailAddress.formErrors.invalidFormat"),
       ),
     ),
   });
