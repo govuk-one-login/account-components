@@ -3217,7 +3217,7 @@ Resources:
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\"', 'Sum')),0)", "id": "completed_successfully_total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedUnsuccessfully\"', 'Sum')),0)", "id": "completed_unsuccessfully_total" } ],
                   [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"JourneyStarted\"', 'Sum'),0)", "id": "started" } ],
-                  [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\"', 'Sum'),0)", "id": "completed_uccessfully" } ],
+                  [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\"', 'Sum'),0)", "id": "completed_successfully" } ],
                   [ { "expression": "FILL(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedUnsuccessfully\"', 'Sum'),0)", "id": "completed_unsuccessfully" } ]
                 ],
                 "view": "timeSeries",

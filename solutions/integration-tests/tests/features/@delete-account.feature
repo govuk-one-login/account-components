@@ -5,7 +5,7 @@ Feature: Delete account
   Scenario: Successfully delete account
     Given I go to the journey initiator
     And I begin a "account-delete" journey    
-    Then the page title is prefixed with "You’ll need to delete your GOV.UK One Login"
+    Then the page title is prefixed with "You’ll need to permanently delete your GOV.UK One Login"
     And the page looks as expected
     And the page meets our accessibility standards
   
@@ -14,21 +14,27 @@ Feature: Delete account
     And the page contains the text "testuser@test.null.local"
     And the page looks as expected
     And the page meets our accessibility standards
+
+    Given I click the "Back" link
+    Then the page title is prefixed with "You’ll need to permanently delete your GOV.UK One Login"
   
+    Given I click the "Start" button    
+    Then the page title is prefixed with "Enter the code sent to your email address"
+
     Given I click the "Problems with the code?" element
     Then I click the "send the code again" link    
-    Then the page title is prefixed with "TODO resendEmailVerificationCode"
+    Then the page title is prefixed with "Get security code"
     And the page looks as expected
     And the page meets our accessibility standards
   
-    Given I click the "TODO resend" button
+    Given I click the "Get security code" button
     Then the page title is prefixed with "Enter the code sent to your email address"
 
     Given I click the "Problems with the code?" element
     Then I click the "send the code again" link
-    Then the page title is prefixed with "TODO resendEmailVerificationCode"
+    Then the page title is prefixed with "Get security code"
 
-    Given I click the "TODO verifyCode" link
+    Given I click the "Back" link
     Then the page title is prefixed with "Enter the code sent to your email address"
 
     Given I enter the correct verification code

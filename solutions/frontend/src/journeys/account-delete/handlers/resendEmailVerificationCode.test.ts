@@ -30,6 +30,7 @@ describe("resendEmailVerificationCode handlers", () => {
         claims: {
           account_management_api_access_token: "test-token",
           public_sub: "test-public-sub",
+          email: "test@example.com",
         },
       },
     };
@@ -49,7 +50,8 @@ describe("resendEmailVerificationCode handlers", () => {
       expect(mockReply.render).toHaveBeenCalledWith(
         "journeys/account-delete/templates/resendEmailVerificationCode.njk",
         {
-          verifyCodeLinkUrl: "/reset-delete/check-email",
+          emailAddress: "test@example.com",
+          backLink: "/reset-delete/check-email",
         },
       );
       expect(result).toBe(mockReply);
