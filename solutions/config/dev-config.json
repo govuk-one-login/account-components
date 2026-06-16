@@ -7,7 +7,7 @@
         "https://stubs.manage.dev.account.gov.uk/auth/callback"
       ],
       "client_name": "Auth",
-      "jwks_uri": "https://stubs.manage.dev.account.gov.uk/auth/.well-known/jwks.json",
+      "jwks_uri": "https://home.dev.account.gov.uk/.well-known/jwks.json",
       "consider_user_logged_in": false,
       "journey_types_by_scope": {
         "passkey-create": "SIGN_IN",
