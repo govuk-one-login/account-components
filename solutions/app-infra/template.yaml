@@ -1460,6 +1460,7 @@ Resources:
         DestinationArn: !GetAtt ApiApiGatewayAccessLogGroup.Arn
       MethodSettings:
         - MetricsEnabled: true
+          CacheDataEncrypted: true
           ResourcePath: /*
           HttpMethod: "*"
       Policy:
@@ -2509,6 +2510,7 @@ Resources:
         DestinationArn: !GetAtt FrontendApiGatewayAccessLogGroup.Arn
       MethodSettings:
         - MetricsEnabled: true
+          CacheDataEncrypted: true
           ResourcePath: /*
           HttpMethod: "*"
       Tags:
@@ -3057,6 +3059,7 @@ Resources:
         DestinationArn: !GetAtt StubsApiGatewayAccessLogGroup.Arn
       MethodSettings:
         - MetricsEnabled: true
+          CacheDataEncrypted: true
           ResourcePath: /*
           HttpMethod: "*"
       Tags:
