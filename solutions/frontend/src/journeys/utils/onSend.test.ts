@@ -49,8 +49,7 @@ describe("onSend", () => {
 
   it("should not process journey state when journeyStates is undefined", async () => {
     mockSession.claims = { scope: "testing-journey" } as Claims;
-    // @ts-expect-error
-    mockReply.journeyStates = undefined;
+    delete mockReply.journeyStates;
 
     await onSend(mockRequest as FastifyRequest, mockReply as FastifyReply);
 
