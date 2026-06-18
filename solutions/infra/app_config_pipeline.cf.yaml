@@ -261,6 +261,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
+      EnableKeyRotation: true
       KeyUsage: ENCRYPT_DECRYPT
       KeyPolicy:
         Version: "2012-10-17"
