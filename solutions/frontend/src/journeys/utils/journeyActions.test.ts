@@ -38,20 +38,20 @@ describe("journeyActions", () => {
 
   describe("startAction", () => {
     it("should initialise journeyActions and push the action when journeyActions is undefined", async () => {
-      await startJourneyAction<"accountDelete">(
-        { action: "account-delete" },
+      await startJourneyAction<"tempAccountDeleteAction">(
+        { action: "temp-account-delete-action" },
         mockRequest as unknown as FastifyRequest,
         mockReply as FastifyReply,
       );
 
       expect(mockRequest.session.journeyActions).toStrictEqual([
-        { action: "account-delete" },
+        { action: "temp-account-delete-action" },
       ]);
     });
 
     it("should push the action to existing journeyActions", async () => {
       mockRequest.session.journeyActions = [
-        { action: "account-delete" },
+        { action: "temp-account-delete-action" },
       ] as FastifySessionObject["journeyActions"];
 
       await startJourneyAction<"passkeyCreate">(
@@ -61,24 +61,24 @@ describe("journeyActions", () => {
       );
 
       expect(mockRequest.session.journeyActions).toStrictEqual([
-        { action: "account-delete" },
+        { action: "temp-account-delete-action" },
         { action: "passkey-create" },
       ]);
     });
 
     it("should not push a duplicate when the action is already in progress", async () => {
       mockRequest.session.journeyActions = [
-        { action: "account-delete" },
+        { action: "temp-account-delete-action" },
       ] as FastifySessionObject["journeyActions"];
 
-      await startJourneyAction<"accountDelete">(
-        { action: "account-delete" },
+      await startJourneyAction<"tempAccountDeleteAction">(
+        { action: "temp-account-delete-action" },
         mockRequest as unknown as FastifyRequest,
         mockReply as FastifyReply,
       );
 
       expect(mockRequest.session.journeyActions).toStrictEqual([
-        { action: "account-delete" },
+        { action: "temp-account-delete-action" },
       ]);
     });
 
@@ -98,8 +98,8 @@ describe("journeyActions", () => {
       mockCreateEvent.mockReturnValue({ event_name: "AMC_ACTION_STARTED" });
       mockSendAuditEvent.mockResolvedValue(undefined);
 
-      await startJourneyAction<"accountDelete">(
-        { action: "account-delete" },
+      await startJourneyAction<"tempAccountDeleteAction">(
+        { action: "temp-account-delete-action" },
         mockRequest as unknown as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -110,7 +110,7 @@ describe("journeyActions", () => {
           event_name: "AMC_ACTION_STARTED",
           client_id: "client-123",
           extensions: expect.objectContaining({
-            account_action: "account-delete",
+            account_action: "temp-account-delete-action",
             amc_scope: "account-delete",
           }),
         }),
@@ -119,8 +119,8 @@ describe("journeyActions", () => {
     });
 
     it("should not send an audit event when awsLambda event is not present", async () => {
-      await startJourneyAction<"accountDelete">(
-        { action: "account-delete" },
+      await startJourneyAction<"tempAccountDeleteAction">(
+        { action: "temp-account-delete-action" },
         mockRequest as unknown as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -136,9 +136,9 @@ describe("journeyActions", () => {
 
     it("should throw when there are no current journey actions", async () => {
       await expect(
-        completeJourneyActionSuccessfully<"accountDelete">(
+        completeJourneyActionSuccessfully<"tempAccountDeleteAction">(
           {
-            action: "account-delete",
+            action: "temp-account-delete-action",
             details: {},
           },
           mockRequest as unknown as FastifyRequest,
@@ -153,27 +153,27 @@ describe("journeyActions", () => {
       ] as FastifySessionObject["journeyActions"];
 
       await expect(
-        completeJourneyActionSuccessfully<"accountDelete">(
+        completeJourneyActionSuccessfully<"tempAccountDeleteAction">(
           {
-            action: "account-delete",
+            action: "temp-account-delete-action",
             details: {},
           },
           mockRequest as unknown as FastifyRequest,
           mockReply as FastifyReply,
         ),
       ).rejects.toThrow(
-        'In progress action of type "account-delete" not found in journey actions',
+        'In progress action of type "temp-account-delete-action" not found in journey actions',
       );
     });
 
     it("should replace the action with a successful completed action and add a timestamp", async () => {
       mockRequest.session.journeyActions = [
-        { action: "account-delete" },
+        { action: "temp-account-delete-action" },
       ] as FastifySessionObject["journeyActions"];
 
-      await completeJourneyActionSuccessfully<"accountDelete">(
+      await completeJourneyActionSuccessfully<"tempAccountDeleteAction">(
         {
-          action: "account-delete",
+          action: "temp-account-delete-action",
           details: {},
         },
         mockRequest as unknown as FastifyRequest,
@@ -182,7 +182,7 @@ describe("journeyActions", () => {
 
       expect(mockRequest.session.journeyActions).toStrictEqual([
         {
-          action: "account-delete",
+          action: "temp-account-delete-action",
           success: true,
           details: {},
           timestamp: 1000,
@@ -199,7 +199,7 @@ describe("journeyActions", () => {
           email: "test@example.com",
           public_sub: "public-sub-123",
         },
-        journeyActions: [{ action: "account-delete" }],
+        journeyActions: [{ action: "temp-account-delete-action" }],
       } as unknown as typeof mockRequest.session;
       mockGetCommonAuditEventProps.mockReturnValue({
         user: { session_id: "session-123" },
@@ -207,9 +207,9 @@ describe("journeyActions", () => {
       mockCreateEvent.mockReturnValue({ event_name: "AMC_ACTION_COMPLETED" });
       mockSendAuditEvent.mockResolvedValue(undefined);
 
-      await completeJourneyActionSuccessfully<"accountDelete">(
+      await completeJourneyActionSuccessfully<"tempAccountDeleteAction">(
         {
-          action: "account-delete",
+          action: "temp-account-delete-action",
           details: {},
         },
         mockRequest as unknown as FastifyRequest,
@@ -221,7 +221,7 @@ describe("journeyActions", () => {
         expect.objectContaining({
           event_name: "AMC_ACTION_COMPLETED",
           extensions: expect.objectContaining({
-            account_action: "account-delete",
+            account_action: "temp-account-delete-action",
             account_action_overall_success: true,
           }),
         }),
@@ -239,7 +239,7 @@ describe("journeyActions", () => {
       await expect(
         completeJourneyActionUnsuccessfully(
           {
-            action: "account-delete",
+            action: "temp-account-delete-action",
             error: {
               code: 1001,
               description: "UserSignedOut",
@@ -260,7 +260,7 @@ describe("journeyActions", () => {
       await expect(
         completeJourneyActionUnsuccessfully(
           {
-            action: "account-delete",
+            action: "temp-account-delete-action",
             error: {
               code: 1001,
               description: "UserSignedOut",
@@ -271,18 +271,18 @@ describe("journeyActions", () => {
           mockReply as FastifyReply,
         ),
       ).rejects.toThrow(
-        'In progress action of type "account-delete" not found in journey actions',
+        'In progress action of type "temp-account-delete-action" not found in journey actions',
       );
     });
 
     it("should replace the action with a failed completed action and add a timestamp", async () => {
       mockRequest.session.journeyActions = [
-        { action: "account-delete" },
+        { action: "temp-account-delete-action" },
       ] as FastifySessionObject["journeyActions"];
 
       await completeJourneyActionUnsuccessfully(
         {
-          action: "account-delete",
+          action: "temp-account-delete-action",
           error: {
             code: 1001,
             description: "UserSignedOut",
@@ -295,7 +295,7 @@ describe("journeyActions", () => {
 
       expect(mockRequest.session.journeyActions).toStrictEqual([
         {
-          action: "account-delete",
+          action: "temp-account-delete-action",
           success: false,
           error: {
             code: 1001,
@@ -316,7 +316,7 @@ describe("journeyActions", () => {
           email: "test@example.com",
           public_sub: "public-sub-123",
         },
-        journeyActions: [{ action: "account-delete" }],
+        journeyActions: [{ action: "temp-account-delete-action" }],
       } as unknown as typeof mockRequest.session;
       mockGetCommonAuditEventProps.mockReturnValue({
         user: { session_id: "session-123" },
@@ -326,7 +326,7 @@ describe("journeyActions", () => {
 
       await completeJourneyActionUnsuccessfully(
         {
-          action: "account-delete",
+          action: "temp-account-delete-action",
           error: {
             code: 1001,
             description: "UserSignedOut",
@@ -342,7 +342,7 @@ describe("journeyActions", () => {
         expect.objectContaining({
           event_name: "AMC_ACTION_COMPLETED",
           extensions: expect.objectContaining({
-            account_action: "account-delete",
+            account_action: "temp-account-delete-action",
             account_action_overall_success: false,
             account_action_error: "UserSignedOut",
           }),

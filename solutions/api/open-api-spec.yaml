@@ -479,8 +479,7 @@ components:
             properties:
               action:
                 type: string
-                enum:
-                  ["account-delete", "testing-journey-action", "passkey-create"]
+                enum: ["testing-journey-action", "passkey-create"]
                 description: The name of the action
               timestamp:
                 type: integer

@@ -23,7 +23,7 @@ describe("completeFailedJourneyHandler", () => {
     vi.clearAllMocks();
     mockRequest = {
       session: {
-        journeyActions: [{ action: "account-delete" }],
+        journeyActions: [{ action: "temp-account-delete-action" }],
       },
       method: "GET",
     } as unknown as Partial<FastifyRequest>;
@@ -45,7 +45,7 @@ describe("completeFailedJourneyHandler", () => {
 
       expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledWith(
         {
-          action: "account-delete",
+          action: "temp-account-delete-action",
           error: {
             code: 1001,
             description: "UserSignedOut",
@@ -77,7 +77,7 @@ describe("completeFailedJourneyHandler", () => {
 
       expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledWith(
         {
-          action: "account-delete",
+          action: "temp-account-delete-action",
           error: {
             code: 1002,
             description: "UserAbortedJourney",
@@ -195,7 +195,7 @@ describe("completeFailedJourneyHandler", () => {
         session: {
           journeyActions: [
             {
-              action: "account-delete",
+              action: "temp-account-delete-action",
               success: true,
               details: {},
               timestamp: 1000,
@@ -235,7 +235,7 @@ describe("completeFailedJourneyHandler", () => {
       mockRequest = {
         session: {
           journeyActions: [
-            { action: "account-delete" },
+            { action: "temp-account-delete-action" },
             { action: "passkey-create" },
           ],
         },
@@ -255,7 +255,7 @@ describe("completeFailedJourneyHandler", () => {
       expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledTimes(2);
       expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledWith(
         {
-          action: "account-delete",
+          action: "temp-account-delete-action",
           error: {
             code: 1002,
             description: "UserAbortedJourney",
@@ -284,7 +284,7 @@ describe("completeFailedJourneyHandler", () => {
     beforeEach(() => {
       mockRequest = {
         session: {
-          journeyActions: [{ action: "account-delete" }],
+          journeyActions: [{ action: "temp-account-delete-action" }],
         },
         method: "POST",
       } as unknown as Partial<FastifyRequest>;
@@ -304,7 +304,7 @@ describe("completeFailedJourneyHandler", () => {
 
       expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledWith(
         {
-          action: "account-delete",
+          action: "temp-account-delete-action",
           error: {
             code: 1001,
             description: "UserSignedOut",

@@ -8,7 +8,7 @@ import assert from "node:assert";
 
 export const journeyActionNames = {
   testingJourneyAction: "testing-journey-action",
-  accountDelete: "account-delete",
+  tempAccountDeleteAction: "temp-account-delete-action",
   passkeyCreate: "passkey-create",
 } as const;
 export type JourneyActionName =
@@ -64,7 +64,7 @@ interface JourneyActionDetails {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   testingJourneyAction: {};
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  accountDelete: {};
+  tempAccountDeleteAction: {};
   passkeyCreate: { aaguid: string };
 }
 

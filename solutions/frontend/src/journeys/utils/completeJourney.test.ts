@@ -213,7 +213,7 @@ describe("completeJourney", () => {
 
     mockRequest.session.journeyActions = [
       {
-        action: "account-delete",
+        action: "temp-account-delete-action",
         success: false,
         error: {
           code: 1001,
@@ -252,7 +252,7 @@ describe("completeJourney", () => {
 
     mockRequest.session.journeyActions = [
       {
-        action: "account-delete",
+        action: "temp-account-delete-action",
         success: false,
         error: {
           code: 1001,
@@ -279,7 +279,7 @@ describe("completeJourney", () => {
 
     expect(writtenActions).toStrictEqual([
       {
-        action: "account-delete",
+        action: "temp-account-delete-action",
         success: false,
         details: {
           error: {
@@ -302,7 +302,7 @@ describe("completeJourney", () => {
 
     mockRequest.session.journeyActions = [
       {
-        action: "account-delete",
+        action: "temp-account-delete-action",
         success: false,
         error: {
           code: 1002,
@@ -353,7 +353,9 @@ describe("completeJourney", () => {
     const mockOutcomeId = "mock-outcome-id-hex";
     const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
 
-    mockRequest.session.journeyActions = [{ action: "account-delete" }];
+    mockRequest.session.journeyActions = [
+      { action: "temp-account-delete-action" },
+    ];
 
     mockRandomBytes
       .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
@@ -480,7 +482,7 @@ describe("completeJourney", () => {
 
     mockRequest.session.journeyActions = [
       {
-        action: "account-delete",
+        action: "temp-account-delete-action",
         success: false,
         error: {
           code: 1001,
@@ -518,9 +520,9 @@ describe("completeJourney", () => {
       "AMC_COMPLETED",
       expect.objectContaining({
         extensions: expect.objectContaining({
-          account_actions: ["account-delete"],
+          account_actions: ["temp-account-delete-action"],
           account_actions_errors: ["UserSignedOut"],
-          account_actions_failed: ["account-delete"],
+          account_actions_failed: ["temp-account-delete-action"],
           account_action_overall_success: false,
         }),
       }),
@@ -536,7 +538,7 @@ describe("completeJourney", () => {
 
     mockRequest.session.journeyActions = [
       {
-        action: "account-delete",
+        action: "temp-account-delete-action",
         success: false,
         error: {
           code: 1001,
@@ -584,9 +586,12 @@ describe("completeJourney", () => {
       "AMC_COMPLETED",
       expect.objectContaining({
         extensions: expect.objectContaining({
-          account_actions: ["account-delete", "passkey-create"],
+          account_actions: ["temp-account-delete-action", "passkey-create"],
           account_actions_errors: ["UserSignedOut", "UserAbortedJourney"],
-          account_actions_failed: ["account-delete", "passkey-create"],
+          account_actions_failed: [
+            "temp-account-delete-action",
+            "passkey-create",
+          ],
           account_action_overall_success: false,
         }),
       }),

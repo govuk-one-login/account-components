@@ -79,7 +79,9 @@ describe("confirm handlers", () => {
   describe("confirmPostHandler", () => {
     it("should delete account and complete journey when successful", async () => {
       // @ts-expect-error
-      mockRequest.session.journeyActions = [{ action: "account-delete" }];
+      mockRequest.session.journeyActions = [
+        { action: "temp-account-delete-action" },
+      ];
       mockDeleteAccount.mockResolvedValue({ success: true });
       mockCompleteJourney.mockResolvedValue(mockReply);
 
@@ -91,7 +93,7 @@ describe("confirm handlers", () => {
       expect(mockDeleteAccount).toHaveBeenCalledWith("test@example.com");
       expect(mockCompleteJourneyActionSuccessfully).toHaveBeenCalledWith(
         {
-          action: "account-delete",
+          action: "temp-account-delete-action",
           details: {},
         },
         mockRequest,
