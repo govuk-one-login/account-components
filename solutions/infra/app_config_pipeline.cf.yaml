@@ -256,6 +256,88 @@ Conditions:
       - !Condition MonitorAlarmThree
 
 Resources:
+  ConfigS3SSEKey:
+    Type: AWS::KMS::Key
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      KeyUsage: ENCRYPT_DECRYPT
+      KeyPolicy:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+            Action:
+              - kms:*
+            Resource: "*"
+          - Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action:
+              - kms:Encrypt
+              - kms:Decrypt
+              - kms:ReEncrypt*
+              - kms:GenerateDataKey*
+              - kms:DescribeKey
+            Resource: "*"
+            Condition:
+              StringEquals:
+                kms:ViaService: !Sub "s3.${AWS::Region}.amazonaws.com"
+
+  ConfigS3SSEKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: !Sub "alias/${AWS::StackName}-ConfigS3SSEKey"
+      TargetKeyId: !GetAtt ConfigS3SSEKey.Arn
+
+  ConfigAccessLogsBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref ConfigS3SSEKey
+
+  ConfigAccessLogBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ConfigAccessLogsBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: EnforceHTTPSOnly
+            Effect: Deny
+            Principal: "*"
+            Action: "s3:*"
+            Resource:
+              - !Sub "${ConfigAccessLogsBucket.Arn}"
+              - !Sub "${ConfigAccessLogsBucket.Arn}/*"
+            Condition:
+              Bool:
+                aws:SecureTransport: false
+              NumericLessThan:
+                s3:TlsVersion: "1.2"
+          - Sid: AllowS3LoggingService
+            Effect: Allow
+            Principal:
+              Service: "logging.s3.amazonaws.com"
+            Action: "s3:PutObject"
+            Resource: !Sub "${ConfigAccessLogsBucket.Arn}/AWSLogs/${AWS::AccountId}/*"
+            Condition:
+              StringEquals:
+                aws:SourceAccount: !Ref AWS::AccountId
+
   GitHubArtifactSourceBucket:
     Type: AWS::S3::Bucket
     Condition: CreateSourceBucket
@@ -266,7 +348,9 @@ Resources:
             Status: Enabled
             ExpirationInDays: 180
       VersioningConfiguration:
-        Status: "Enabled"
+        Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Ref ConfigAccessLogsBucket
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -503,7 +587,9 @@ Resources:
             Status: Enabled
             ExpirationInDays: 180
       VersioningConfiguration:
-        Status: "Enabled"
+        Status: Enabled
+      LoggingConfiguration:
+        DestinationBucketName: !Ref ConfigAccessLogsBucket
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true

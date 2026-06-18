@@ -612,7 +612,6 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      Description: KMS key for encrypting JWKSStore bucket
       KeyUsage: ENCRYPT_DECRYPT
       KeyPolicy:
         Version: "2012-10-17"
@@ -644,8 +643,7 @@ Resources:
             Resource: "*"
             Condition:
               ArnLike:
-                "aws:SourceArn":
-                  - !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}*"
+                "aws:SourceArn": !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${AWS::StackName}-JwksGeneratorLambda*"
 
   S3SSEKeyAlias:
     Type: AWS::KMS::Alias
@@ -657,9 +655,7 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
-    DependsOn: AccessLogsBucket
     Properties:
-      BucketName: !Sub "${AWS::StackName}-${Environment}-jwks-store"
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -668,7 +664,7 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
       LoggingConfiguration:
-        DestinationBucketName: !Sub "${AWS::StackName}-${Environment}-access-logs"
+        DestinationBucketName: !Ref AccessLogsBucket
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -711,7 +707,6 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      BucketName: !Sub "${AWS::StackName}-${Environment}-access-logs"
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
