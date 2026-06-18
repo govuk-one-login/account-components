@@ -114,11 +114,11 @@ export const completeJourney = async (
           event_name: "AMC_COMPLETED",
           client_id: claims.client_id,
           extensions: {
-            // @ts-expect-error - scope in event catalogue does not accommodate scopes: account-delete
+            // @ts-expect-error
             amc_scope: claims.scope,
             "journey-type":
               reply.client?.journey_types_by_scope?.[claims.scope],
-            // @ts-expect-error - account actions in event catalogue does not accommodate actions: testing-journey-action, account-delete
+            // @ts-expect-error
             account_actions: request.session.journeyActions.map(
               (action) => action.action,
             ),
@@ -128,7 +128,7 @@ export const completeJourney = async (
               if ("error" in action) errors.push(action.error.description);
               return errors;
             }, []),
-            // @ts-expect-error - account actions in event catalogue does not accommodate actions: testing-journey-action, account-delete
+            // @ts-expect-error
             account_actions_failed: request.session.journeyActions.reduce<
               JourneyActionName[]
             >((errors, action) => {

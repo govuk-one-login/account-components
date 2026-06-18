@@ -1,0 +1,17 @@
+{% extends "templates/layout/base-page.njk" %}
+
+{% set pageTitleName = 'journey:lockedOutSecurityCodeEnteredTooManyTimes.pageTitle' | translate %}
+{% set englishPageTitleName = 'journey:lockedOutSecurityCodeEnteredTooManyTimes.pageTitle' | getFixedT_en %}
+
+{% block pageContent %}
+  <h1 class="govuk-heading-l">{{ 'journey:lockedOutSecurityCodeEnteredTooManyTimes.heading' | translate }}</h1>
+
+  {% set paragraphs = 'journey:lockedOutSecurityCodeEnteredTooManyTimes.paragraphs' | translate({
+    returnObjects: true,
+    exitLinkUrl: globals.buildCompleteFailedJourneyUri(globals.unsuccessfulJourneyActionErrors.userAbortedJourney)
+  }) %}
+
+  {% for paragraph in paragraphs %}
+    <p class="govuk-body">{{ paragraph | safe }}</p>
+  {% endfor %}
+{% endblock %}

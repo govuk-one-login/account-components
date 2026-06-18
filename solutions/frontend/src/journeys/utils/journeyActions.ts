@@ -120,9 +120,9 @@ export const startJourneyAction = async <
           event_name: "AMC_ACTION_STARTED",
           client_id: request.session.claims.client_id,
           extensions: {
-            // @ts-expect-error - type in event catalogue seems to be incorrect
+            // @ts-expect-error
             account_action: action.action,
-            // @ts-expect-error - scope in event catalogue does not accommodate testing-journey scope
+            // @ts-expect-error
             amc_scope: request.session.claims.scope,
             "journey-type":
               reply.client?.journey_types_by_scope?.[
@@ -191,11 +191,11 @@ const sendCompletedActionAuditEvent = async (
         event_name: "AMC_ACTION_COMPLETED",
         client_id: request.session.claims.client_id,
         extensions: {
-          // @ts-expect-error - type in event catalogue seems to be incorrect
+          // @ts-expect-error
           account_action: action.name,
           account_action_overall_success: action.success,
           account_action_error: action.success ? undefined : action.error,
-          // @ts-expect-error - scope in event catalogue does not accommodate testing-journey scope
+          // @ts-expect-error
           amc_scope: request.session.claims.scope,
           "journey-type":
             reply.client?.journey_types_by_scope?.[

@@ -24,6 +24,7 @@ const mockSendPasskeyRegistrationFailedAuditEvent = vi.fn();
 const mockSendPasskeyRegistrationSuccessfulAuditEvent = vi.fn();
 const mockSendPasskeyEnrolmentFailedAuditEvent = vi.fn();
 const mockSendPasskeyEnrolmentSuccessfulAuditEvent = vi.fn();
+const mockExtractRegistrationResponseInfo = vi.fn();
 
 vi.mock(import("@simplewebauthn/server"), () => ({
   generateRegistrationOptions: mockGenerateRegistrationOptions,
@@ -96,6 +97,10 @@ vi.mock(
   }),
 );
 
+vi.mock(import("../utils/extractRegistrationResponseInfo/index.js"), () => ({
+  extractRegistrationResponseInfo: mockExtractRegistrationResponseInfo,
+}));
+
 const { getHandler, postHandler } = await import("./create.js");
 
 describe("passkey-create handlers", () => {
@@ -129,7 +134,6 @@ describe("passkey-create handlers", () => {
         claims: mockClaims,
       } as FastifySessionObject,
       body: {},
-      cookies: {},
       log: {
         warn: vi.fn(),
       } as unknown as FastifyRequest["log"],
@@ -330,7 +334,7 @@ describe("passkey-create handlers", () => {
 
       expect(mockGenerateRegistrationOptions).toHaveBeenCalledWith(
         expect.objectContaining({
-          //excludeCredentials: [{ id: "passkey-1" }, { id: "passkey-2" }],
+          excludeCredentials: [{ id: "passkey-1" }, { id: "passkey-2" }],
           supportedAlgorithmIDs: [-7, -8, -257],
         }),
       );
@@ -586,6 +590,9 @@ describe("passkey-create handlers", () => {
         mockGetPasskeyConvenienceMetadataByAaguid.mockResolvedValue(undefined);
         mockSendNotification.mockResolvedValue(undefined);
         mockCompleteJourney.mockResolvedValue(mockReply);
+        mockExtractRegistrationResponseInfo.mockReturnValue({
+          publicKeyAlgorithm: -7,
+        });
       });
 
       it("should successfully register a passkey", async () => {
@@ -629,6 +636,7 @@ describe("passkey-create handlers", () => {
             transports: ["usb", "nfc"],
             isBackedUp: true,
             isBackUpEligible: true,
+            algorithm: -7,
           }),
         );
 
@@ -681,6 +689,26 @@ describe("passkey-create handlers", () => {
           "user-123",
           expect.objectContaining({
             isAttested: false,
+          }),
+        );
+      });
+
+      it("should use 0 as algorithm when publicKeyAlgorithm is undefined", async () => {
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [{ action: "passkey-create" }];
+        mockExtractRegistrationResponseInfo.mockReturnValue({
+          publicKeyAlgorithm: undefined,
+        });
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockCreatePasskey).toHaveBeenCalledWith(
+          "user-123",
+          expect.objectContaining({
+            algorithm: 0,
           }),
         );
       });
@@ -828,64 +856,6 @@ describe("passkey-create handlers", () => {
           "PasskeyCreateError",
           "Count",
           1,
-        );
-      });
-
-      it("should use temp_aaguid_override cookie when present", async () => {
-        // @ts-expect-error
-        mockRequest.session.journeyActions = [{ action: "passkey-create" }];
-        mockRequest.cookies = { temp_aaguid_override: "override-aaguid" };
-
-        await postHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        );
-
-        expect(mockCreatePasskey).toHaveBeenCalledWith(
-          "user-123",
-          expect.objectContaining({
-            aaguid: "override-aaguid",
-          }),
-        );
-        expect(mockGetPasskeyConvenienceMetadataByAaguid).toHaveBeenCalledWith(
-          "override-aaguid",
-        );
-        expect(mockCompleteJourneyActionSuccessfully).toHaveBeenCalledWith(
-          {
-            action: "passkey-create",
-            details: { aaguid: "override-aaguid" },
-          },
-          mockRequest,
-          mockReply,
-        );
-      });
-
-      it("should fall back to registrationInfo aaguid when temp_aaguid_override cookie is empty", async () => {
-        // @ts-expect-error
-        mockRequest.session.journeyActions = [{ action: "passkey-create" }];
-        mockRequest.cookies = { temp_aaguid_override: "" };
-
-        await postHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        );
-
-        expect(mockCreatePasskey).toHaveBeenCalledWith(
-          "user-123",
-          expect.objectContaining({
-            aaguid: "aaguid-123",
-          }),
-        );
-        expect(mockGetPasskeyConvenienceMetadataByAaguid).toHaveBeenCalledWith(
-          "aaguid-123",
-        );
-        expect(mockCompleteJourneyActionSuccessfully).toHaveBeenCalledWith(
-          {
-            action: "passkey-create",
-            details: { aaguid: "aaguid-123" },
-          },
-          mockRequest,
-          mockReply,
         );
       });
 

@@ -76,7 +76,7 @@ export const startSessionAndGoToJourney = async (
           event_name: "AMC_STARTED",
           client_id: claims.client_id,
           extensions: {
-            // @ts-expect-error - scope in event catalogue does not accommodate testing-journey scope
+            // @ts-expect-error - scope in event catalogue does not accommodate scopes: account-delete
             amc_scope: claims.scope,
             "journey-type": appConfig.client_registry.find(
               (client) => client.client_id === claims.client_id,
