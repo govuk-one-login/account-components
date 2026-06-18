@@ -40,7 +40,12 @@ describe("introduction handlers", () => {
     mockReply = {
       render: vi.fn().mockResolvedValue(undefined),
       redirect: vi.fn().mockReturnThis(),
-    };
+      journeyStates: {
+        "account-delete": {
+          send: vi.fn(),
+        },
+      } as unknown as FastifyReply["journeyStates"],
+    } as unknown as FastifyReply;
   });
 
   describe("introductionGetHandler", () => {
@@ -113,18 +118,37 @@ describe("introduction handlers", () => {
       ).rejects.toThrow();
     });
 
-    it("should throw error when TooManyEmailCodesEntered", async () => {
-      mockSendOtpChallenge.mockResolvedValue({
-        success: false,
-        error: "TooManyEmailCodesEntered",
-      });
+    it("should throw if journey states are not available", async () => {
+      delete mockReply.journeyStates;
 
       await expect(
         introductionPostHandler(
           mockRequest as FastifyRequest,
           mockReply as FastifyReply,
         ),
-      ).rejects.toThrow("TooManyEmailCodesEntered");
+      ).rejects.toThrow();
+    });
+
+    it("should send lockedOutSecurityCodeEnteredTooManyTimes event and redirect when TooManyEmailCodesEntered", async () => {
+      mockSendOtpChallenge.mockResolvedValue({
+        success: false,
+        error: "TooManyEmailCodesEntered",
+      });
+
+      const result = await introductionPostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(
+        mockReply.journeyStates?.["account-delete"]?.send,
+      ).toHaveBeenCalledWith({
+        type: "lockedOutSecurityCodeEnteredTooManyTimes",
+      });
+      expect(mockReply.redirect).toHaveBeenCalledWith(
+        "/reset-delete/security-code-entered-exceeded",
+      );
+      expect(result).toBe(mockReply);
     });
 
     it("should throw error when BlockedForEmailVerificationCodes", async () => {
