@@ -54,6 +54,7 @@
     "@govuk-one-login/event-catalogue": "^46.0.0",
     "@govuk-one-login/event-catalogue-schemas": "^46.0.0",
     "@redocly/cli": "^2.34.0",
+    "@sourcemeta/jsonschema": "^16.0.0",
     "@tsconfig/node24": "^24.0.4",
     "@tsconfig/strictest": "^2.0.8",
     "@types/aws-lambda": "^8.10.162",
