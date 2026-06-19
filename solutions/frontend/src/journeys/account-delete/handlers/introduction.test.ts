@@ -56,7 +56,7 @@ describe("introduction handlers", () => {
       );
 
       expect(mockStartJourneyAction).toHaveBeenCalledWith(
-        { action: "account-delete" },
+        { action: "temp-account-delete-action" },
         mockRequest,
         mockReply,
       );

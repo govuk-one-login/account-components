@@ -16,8 +16,8 @@ export async function introductionGetHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  await startJourneyAction<"accountDelete">(
-    { action: "account-delete" },
+  await startJourneyAction<"tempAccountDeleteAction">(
+    { action: "temp-account-delete-action" },
     request,
     reply,
   );

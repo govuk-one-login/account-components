@@ -60,7 +60,7 @@ Feature: Delete account
     """
     And the page contains the text:
     """
-    "action": "account-delete",
+    "action": "temp-account-delete-action",
     "details": {},
     "success": true,
     """
@@ -89,7 +89,7 @@ Feature: Delete account
     """
     And the page contains the text:
     """
-    "action": "account-delete",
+    "action": "temp-account-delete-action",
     "details": {
       "error": {
         "code": 1002,
@@ -127,7 +127,7 @@ Feature: Delete account
     """
     And the page contains the text:
     """
-    "action": "account-delete",
+    "action": "temp-account-delete-action",
     "details": {
       "error": {
         "code": 1002,

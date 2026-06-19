@@ -16,6 +16,10 @@ This repo contains the code for Account Components
 - Install Git Hooks with `npm run install-git-hooks`
 - Run `npm run run:all` to start all the local servers. The frontend will be available at `http://localhost:6002`, the stubs at `http://localhost:6003` and the API at `http://localhost:6004`. The frontend and stubs will watch for changes and rebuild on demand but the API will not and needs to be restarted for changes to take effect.
 
+## Updating the event catalogue dev dependencies from the private registry
+
+To install the latest versions of the private event catalogue dependencies run `npm install @govuk-one-login/event-catalogue-schemas@latest @govuk-one-login/event-catalogue@latest --registry https://npm.pkg.github.com`.
+
 ## Updating Node version
 
 When updating the Node version you will need to update the following:
