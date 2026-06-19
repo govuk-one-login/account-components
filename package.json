@@ -53,7 +53,7 @@
     "@eslint/js": "^10.0.1",
     "@govuk-one-login/event-catalogue": "^46.0.0",
     "@govuk-one-login/event-catalogue-schemas": "^46.0.0",
-    "@redocly/cli": "^2.31.6",
+    "@redocly/cli": "^2.34.0",
     "@tsconfig/node24": "^24.0.4",
     "@tsconfig/strictest": "^2.0.8",
     "@types/aws-lambda": "^8.10.162",
