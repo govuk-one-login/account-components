@@ -19,7 +19,7 @@ permissions:
 jobs:
   deploy-config:
     name: Deploy Config
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     timeout-minutes: 15
     environment: ${{ inputs.gh-environment }}
 

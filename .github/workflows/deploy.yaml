@@ -27,7 +27,7 @@ concurrency:
 
 jobs:
   publish-integration-tests-image:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     permissions:
       id-token: write
     timeout-minutes: 10
@@ -59,7 +59,7 @@ jobs:
 
   deploy:
     needs: publish-integration-tests-image
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     permissions:
       id-token: write
       packages: read
