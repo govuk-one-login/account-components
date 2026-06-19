@@ -36,9 +36,9 @@ export async function confirmPostHandler(
     throw new Error(result.error);
   }
 
-  await completeJourneyActionSuccessfully<"accountDelete">(
+  await completeJourneyActionSuccessfully<"tempAccountDeleteAction">(
     {
-      action: "account-delete",
+      action: "temp-account-delete-action",
       details: {},
     },
     request,

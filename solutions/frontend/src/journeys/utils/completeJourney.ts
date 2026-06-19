@@ -13,6 +13,7 @@ import {
   sendAuditEvent,
 } from "../../../../commons/utils/auditEvents/index.js";
 import { createEvent } from "@govuk-one-login/event-catalogue-utils";
+import type { JourneyActionName } from "./journeyActions.js";
 
 const dynamoDbClient = getDynamoDbClient();
 
@@ -113,10 +114,11 @@ export const completeJourney = async (
           event_name: "AMC_COMPLETED",
           client_id: claims.client_id,
           extensions: {
-            // @ts-expect-error - scope in event catalogue does not accommodate testing-journey scope
+            // @ts-expect-error
             amc_scope: claims.scope,
             "journey-type":
               reply.client?.journey_types_by_scope?.[claims.scope],
+            // @ts-expect-error
             account_actions: request.session.journeyActions.map(
               (action) => action.action,
             ),
@@ -126,8 +128,9 @@ export const completeJourney = async (
               if ("error" in action) errors.push(action.error.description);
               return errors;
             }, []),
+            // @ts-expect-error
             account_actions_failed: request.session.journeyActions.reduce<
-              string[]
+              JourneyActionName[]
             >((errors, action) => {
               if ("error" in action) errors.push(action.action);
               return errors;

@@ -205,11 +205,7 @@ export async function postHandler(
       reason: invalidRequestBodyErrorReason,
     };
 
-    await sendPasskeyRegistrationFailedAuditEvent(
-      request,
-      reply,
-      invalidRequestBodyErrorReason,
-    );
+    await sendPasskeyRegistrationFailedAuditEvent(request, reply);
 
     await render(request, reply, {
       showErrorUi: true,

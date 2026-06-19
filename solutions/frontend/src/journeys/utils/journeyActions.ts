@@ -6,6 +6,14 @@ import {
 import { createEvent } from "@govuk-one-login/event-catalogue-utils";
 import assert from "node:assert";
 
+export const journeyActionNames = {
+  testingJourneyAction: "testing-journey-action",
+  tempAccountDeleteAction: "temp-account-delete-action",
+  passkeyCreate: "passkey-create",
+} as const;
+export type JourneyActionName =
+  (typeof journeyActionNames)[keyof typeof journeyActionNames];
+
 export const unsuccessfulJourneyActionErrors = {
   userSignedOut: {
     code: 1001,
@@ -32,7 +40,7 @@ export const unsuccessfulJourneyActionErrors = {
 >;
 
 export type JourneyAction<
-  Name extends string,
+  Name extends JourneyActionName,
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   Details extends Record<string, unknown> = {},
 > =
@@ -52,17 +60,11 @@ export type JourneyAction<
       timestamp: number;
     };
 
-export const journeyActionNames = {
-  testingJourneyAction: "testing-journey-action",
-  accountDelete: "account-delete",
-  passkeyCreate: "passkey-create",
-} as const;
-
 interface JourneyActionDetails {
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
   testingJourneyAction: {};
   // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-  accountDelete: {};
+  tempAccountDeleteAction: {};
   passkeyCreate: { aaguid: string };
 }
 
@@ -73,12 +75,12 @@ type JourneyActions = {
   >;
 };
 
-type InProgressAction<T extends JourneyAction<string>> = Exclude<
+type InProgressAction<T extends JourneyAction<JourneyActionName>> = Exclude<
   T,
   { success: boolean }
 >;
 
-type SuccessfulAction<T extends JourneyAction<string>> = Omit<
+type SuccessfulAction<T extends JourneyAction<JourneyActionName>> = Omit<
   Extract<T, { success: true }>,
   "timestamp" | "success"
 >;
@@ -118,9 +120,9 @@ export const startJourneyAction = async <
           event_name: "AMC_ACTION_STARTED",
           client_id: request.session.claims.client_id,
           extensions: {
-            // @ts-expect-error - type in event catalogue seems to be incorrect
+            // @ts-expect-error
             account_action: action.action,
-            // @ts-expect-error - scope in event catalogue does not accommodate testing-journey scope
+            // @ts-expect-error
             amc_scope: request.session.claims.scope,
             "journey-type":
               reply.client?.journey_types_by_scope?.[
@@ -139,7 +141,9 @@ export const startJourneyAction = async <
 };
 
 const updateInProgressAction = (
-  action: Omit<JourneyAction<string>, "timestamp"> & { success: boolean },
+  action: Omit<JourneyAction<JourneyActionName>, "timestamp"> & {
+    success: boolean;
+  },
   request: FastifyRequest,
 ): void => {
   if (!request.session.journeyActions) {
@@ -187,11 +191,11 @@ const sendCompletedActionAuditEvent = async (
         event_name: "AMC_ACTION_COMPLETED",
         client_id: request.session.claims.client_id,
         extensions: {
-          // @ts-expect-error - type in event catalogue seems to be incorrect
+          // @ts-expect-error
           account_action: action.name,
           account_action_overall_success: action.success,
           account_action_error: action.success ? undefined : action.error,
-          // @ts-expect-error - scope in event catalogue does not accommodate testing-journey scope
+          // @ts-expect-error
           amc_scope: request.session.claims.scope,
           "journey-type":
             reply.client?.journey_types_by_scope?.[
