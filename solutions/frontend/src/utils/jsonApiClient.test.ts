@@ -25,10 +25,7 @@ class TestJsonApiClient extends JsonApiClient {
     return this.fetch;
   }
 
-  public testLogOnError<T extends { success: boolean; error?: string }>(
-    methodName: string,
-    fn: () => Promise<T>,
-  ): Promise<T> {
+  public testLogOnError(methodName: string, fn: () => Promise<any>) {
     return this.logOnError(methodName, fn);
   }
 
@@ -238,6 +235,8 @@ describe("jsonApiClient", () => {
         message: "TestService",
         error: "TestError",
         errorDetails: { foo: "bar" },
+        responseStatusCode: undefined,
+        responseStatus: undefined,
       });
     });
 
@@ -252,6 +251,38 @@ describe("jsonApiClient", () => {
         message: "TestService",
         error: undefined,
         errorDetails: undefined,
+        responseStatusCode: undefined,
+        responseStatus: undefined,
+      });
+    });
+
+    it("should log response status when rawResponse is present", async () => {
+      const mockResponse = {
+        status: 500,
+        statusText: "Internal Server Error",
+      } as Response;
+      const errorFn = vi.fn().mockResolvedValue({
+        success: false,
+        error: "ServerError",
+        errorDetails: undefined,
+        rawResponse: mockResponse,
+      });
+
+      const result = await client.testLogOnError("testMethod", errorFn);
+
+      expect(result).toStrictEqual({
+        success: false,
+        error: "ServerError",
+        errorDetails: undefined,
+        rawResponse: mockResponse,
+      });
+      expect(mockLogger.error).toHaveBeenCalledWith({
+        method: "testMethod",
+        message: "TestService",
+        error: "ServerError",
+        errorDetails: undefined,
+        responseStatusCode: 500,
+        responseStatus: "Internal Server Error",
       });
     });
   });

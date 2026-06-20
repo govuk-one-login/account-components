@@ -18,7 +18,11 @@ vi.mock(import("./jsonApiClient.js"), () => ({
 
     static processResponse = vi.fn();
     static undefinedSchema = {};
-    static unknownError = { success: false, error: "UnknownError" };
+    static unknownError = {
+      success: false,
+      error: "UnknownError",
+      rawResponse: undefined,
+    };
   },
 }));
 
@@ -93,12 +97,18 @@ describe("accountDataApiClient", () => {
 
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountDataApiClient(mockAccessToken, mockEvent);
+      const error = new Error("Network error");
 
-      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(error);
 
       const result = await client.getPasskeys("test-public-subject-id");
 
-      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
+      expect(result).toStrictEqual({
+        success: false,
+        error: "UnknownError",
+        rawResponse: undefined,
+        errorDetails: error,
+      });
     });
   });
 
@@ -138,8 +148,9 @@ describe("accountDataApiClient", () => {
 
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountDataApiClient(mockAccessToken, mockEvent);
+      const error = new Error("Network error");
 
-      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(error);
 
       const result = await client.createPasskey("test-public-subject-id", {
         credential: "test-credential",
@@ -154,7 +165,12 @@ describe("accountDataApiClient", () => {
         algorithm: -7,
       });
 
-      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
+      expect(result).toStrictEqual({
+        success: false,
+        error: "UnknownError",
+        rawResponse: undefined,
+        errorDetails: error,
+      });
     });
   });
 });

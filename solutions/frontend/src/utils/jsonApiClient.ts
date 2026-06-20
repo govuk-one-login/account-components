@@ -3,6 +3,26 @@ import { logger } from "../../../commons/utils/logger/index.js";
 import { getPropsFromAPIGatewayEvent } from "../../../commons/utils/getPropsFromAPIGatewayEvent/index.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 
+type ProcessResponseError =
+  | "ErrorParsingResponseBodyJson"
+  | "ErrorValidatingResponseBody"
+  | "ErrorParsingErrorResponseBodyJson"
+  | "ErrorValidatingErrorResponseBody"
+  | "UnknownErrorResponse";
+
+type Result<TSuccess, TErrorMap extends Record<string, string>> =
+  | {
+      readonly success: true;
+      readonly result: TSuccess;
+      readonly rawResponse: Response;
+    }
+  | {
+      readonly success: false;
+      readonly error: TErrorMap[keyof TErrorMap] | ProcessResponseError;
+      readonly errorDetails: unknown;
+      readonly rawResponse: Response;
+    };
+
 export abstract class JsonApiClient {
   private readonly errorScope: string;
   protected static readonly unknownError = {
@@ -58,8 +78,18 @@ export abstract class JsonApiClient {
   }
 
   protected async logOnError<
-    T extends { success: boolean; error?: string; errorDetails?: unknown },
-  >(methodName: string, fn: () => Promise<T>): Promise<T> {
+    TSuccess,
+    const TErrorMap extends Record<string, string>,
+  >(
+    methodName: string,
+    fn: () => Promise<
+      | Result<TSuccess, TErrorMap>
+      | (Omit<
+          Extract<Result<TSuccess, TErrorMap>, { success: false }>,
+          "rawResponse"
+        > & { readonly rawResponse?: Response | undefined })
+    >,
+  ) {
     const result = await fn();
     if (!result.success) {
       logger.error({
@@ -67,6 +97,8 @@ export abstract class JsonApiClient {
         message: this.errorScope,
         error: result.error,
         errorDetails: result.errorDetails,
+        responseStatusCode: result.rawResponse?.status,
+        responseStatus: result.rawResponse?.statusText,
       });
     }
     return result;
@@ -79,25 +111,7 @@ export abstract class JsonApiClient {
     response: Response,
     successResponseBodySchema: v.GenericSchema<unknown, TSuccess>,
     errorCodesMap: TErrorMap,
-  ): Promise<
-    | {
-        readonly success: true;
-        readonly result: TSuccess;
-        readonly rawResponse: Response;
-      }
-    | {
-        readonly success: false;
-        readonly error:
-          | TErrorMap[keyof TErrorMap]
-          | "ErrorParsingResponseBodyJson"
-          | "ErrorValidatingResponseBody"
-          | "ErrorParsingErrorResponseBodyJson"
-          | "ErrorValidatingErrorResponseBody"
-          | "UnknownErrorResponse";
-        readonly errorDetails: unknown;
-        readonly rawResponse: Response;
-      }
-  > {
+  ): Promise<Result<TSuccess, TErrorMap>> {
     if (response.ok) {
       if (
         // @ts-expect-error

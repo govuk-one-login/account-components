@@ -49,8 +49,11 @@ export class AccountManagementApiClient extends JsonApiClient {
           AccountManagementApiClient.undefinedSchema,
           errorsCodesMap,
         );
-      } catch {
-        return AccountManagementApiClient.unknownError;
+      } catch (error) {
+        return {
+          ...AccountManagementApiClient.unknownError,
+          errorDetails: error,
+        };
       }
     });
   }
@@ -76,8 +79,11 @@ export class AccountManagementApiClient extends JsonApiClient {
           AccountManagementApiClient.undefinedSchema,
           errorsCodesMap,
         );
-      } catch {
-        return AccountManagementApiClient.unknownError;
+      } catch (error) {
+        return {
+          ...AccountManagementApiClient.unknownError,
+          errorDetails: error,
+        };
       }
     });
   }
@@ -109,8 +115,11 @@ export class AccountManagementApiClient extends JsonApiClient {
           AccountManagementApiClient.undefinedSchema,
           errorsCodesMap,
         );
-      } catch {
-        return AccountManagementApiClient.unknownError;
+      } catch (error) {
+        return {
+          ...AccountManagementApiClient.unknownError,
+          errorDetails: error,
+        };
       }
     });
   }
@@ -141,8 +150,11 @@ export class AccountManagementApiClient extends JsonApiClient {
           AccountManagementApiClient.undefinedSchema,
           errorsCodesMap,
         );
-      } catch {
-        return AccountManagementApiClient.unknownError;
+      } catch (error) {
+        return {
+          ...AccountManagementApiClient.unknownError,
+          errorDetails: error,
+        };
       }
     });
   }
