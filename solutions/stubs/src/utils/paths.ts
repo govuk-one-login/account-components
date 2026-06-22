@@ -18,6 +18,6 @@ export const paths = {
       "/account-data-api/accounts/:publicSubjectId/authenticators/passkeys",
   },
   accountInterventionsServiceApi: {
-    getUserAisStatus: "/ais/:commonSubjectId",
+    getUserAisStatus: "/account-interventions-service-api/ais/:commonSubjectId",
   },
 } as const;

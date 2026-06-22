@@ -39,6 +39,7 @@ import {
   passkeyRegistrationFailureReason,
 } from "../utils/auditEvents/index.js";
 import { extractRegistrationResponseInfo } from "../utils/extractRegistrationResponseInfo/index.js";
+import { AccountInterventionsServiceApiClient } from "../../../utils/accountInterventionsServiceApiClient.js";
 
 export const postBodySchema = v.object({
   action: v.optional(v.picklist(["register", "skip"])),
@@ -177,6 +178,23 @@ export async function getHandler(
       reply,
     );
   }
+
+  assert.ok(request.session.claims);
+
+  const accountInterventionsServiceApiClient =
+    new AccountInterventionsServiceApiClient(
+      request.session.claims
+        .stubs_account_interventions_service_api_access_token,
+      request.awsLambda?.event,
+    );
+
+  const getUserAisStatusResult =
+    await accountInterventionsServiceApiClient.getUserAisStatus(
+      request.session.claims.sub,
+    );
+
+  // TODO replace this log line with the intervention handling logic
+  request.log.info(getUserAisStatusResult, "getUserAisStatusResult");
 
   await render(request, reply, {
     showErrorUi,
@@ -394,6 +412,21 @@ export async function postHandler(
   const registrationResponseInfo = extractRegistrationResponseInfo(
     body.registrationResponse,
   );
+
+  const accountInterventionsServiceApiClient =
+    new AccountInterventionsServiceApiClient(
+      request.session.claims
+        .stubs_account_interventions_service_api_access_token,
+      request.awsLambda?.event,
+    );
+
+  const getUserAisStatusResult =
+    await accountInterventionsServiceApiClient.getUserAisStatus(
+      request.session.claims.sub,
+    );
+
+  // TODO replace this log line with the intervention handling logic
+  request.log.info(getUserAisStatusResult, "getUserAisStatusResult");
 
   const savePasskeyResult = await accountDataApiClient.createPasskey(
     request.session.claims.public_sub,
