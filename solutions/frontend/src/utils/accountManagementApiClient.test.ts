@@ -18,7 +18,11 @@ vi.mock(import("./jsonApiClient.js"), () => ({
 
     static processResponse = vi.fn();
     static undefinedSchema = {};
-    static unknownError = { success: false, error: "UnknownError" };
+    static unknownError = {
+      success: false,
+      error: "UnknownError",
+      rawResponse: undefined,
+    };
   },
 }));
 
@@ -79,12 +83,18 @@ describe("accountManagementApiClient", () => {
 
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
+      const error = new Error("Network error");
 
-      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(error);
 
       const result = await client.sendOtpChallenge("test-public-subject-id");
 
-      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
+      expect(result).toStrictEqual({
+        success: false,
+        error: "UnknownError",
+        rawResponse: undefined,
+        errorDetails: error,
+      });
     });
   });
 
@@ -116,15 +126,21 @@ describe("accountManagementApiClient", () => {
 
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
+      const error = new Error("Network error");
 
-      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(error);
 
       const result = await client.authenticate(
         "test@example.com",
         "password123",
       );
 
-      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
+      expect(result).toStrictEqual({
+        success: false,
+        error: "UnknownError",
+        rawResponse: undefined,
+        errorDetails: error,
+      });
     });
   });
 
@@ -154,12 +170,18 @@ describe("accountManagementApiClient", () => {
 
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
+      const error = new Error("Network error");
 
-      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(error);
 
       const result = await client.deleteAccount("test@example.com");
 
-      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
+      expect(result).toStrictEqual({
+        success: false,
+        error: "UnknownError",
+        rawResponse: undefined,
+        errorDetails: error,
+      });
     });
   });
 
@@ -191,15 +213,21 @@ describe("accountManagementApiClient", () => {
 
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
+      const error = new Error("Network error");
 
-      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(error);
 
       const result = await client.verifyOtpChallenge(
         "test-public-subject-id",
         "123456",
       );
 
-      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
+      expect(result).toStrictEqual({
+        success: false,
+        error: "UnknownError",
+        rawResponse: undefined,
+        errorDetails: error,
+      });
     });
   });
 });
