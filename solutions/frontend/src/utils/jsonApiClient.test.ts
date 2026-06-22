@@ -603,6 +603,32 @@ describe("jsonApiClient", () => {
           },
         });
       });
+
+      it("should handle error response with no code field", async () => {
+        const errorResponse = { message: "Something went wrong" };
+        const response = {
+          ok: false,
+          json: vi.fn().mockResolvedValue(errorResponse),
+        } as unknown as Response;
+        const schema = v.string();
+        const errorMap = { "400": "BadRequest" };
+
+        const result = await TestJsonApiClient.testProcessResponse(
+          response,
+          schema,
+          errorMap,
+        );
+
+        expect(result).toStrictEqual({
+          success: false,
+          error: "UnknownErrorResponse",
+          rawResponse: response,
+          errorDetails: {
+            code: undefined,
+            message: "Something went wrong",
+          },
+        });
+      });
     });
 
     describe("edge cases", () => {
