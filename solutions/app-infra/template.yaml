@@ -3183,6 +3183,7 @@ Resources:
                   [ { "expression": "((all_responses - server_error_responses) / all_responses) * 100", "id": "availability" } ]
                 ],
                 "view": "singleValue",
+                "singleValueFullPrecision": true,
                 "title": "Availability (%)",
                 "region": "${AWS::Region}",
                 "setPeriodToTimeRange": true
@@ -3250,6 +3251,7 @@ Resources:
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\"', 'Sum'))", "id": "completed_successfully__total" } ]
                 ],
                 "view": "singleValue",
+                "singleValueFullPrecision": true,
                 "title": "Journeys successfully completed",
                 "region": "${AWS::Region}",
                 "setPeriodToTimeRange": true
@@ -3312,6 +3314,7 @@ Resources:
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AuthorizeRequestWithContext\"', 'Sum'))", "id": "with_context__total" } ]
                 ],
                 "view": "singleValue",
+                "singleValueFullPrecision": true,
                 "title": "Authorize requests",
                 "region": "${AWS::Region}",
                 "setPeriodToTimeRange": true
@@ -3374,6 +3377,7 @@ Resources:
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyRequestWithContext\"', 'Sum'))", "id": "with_context__total" } ]
                 ],
                 "view": "singleValue",
+                "singleValueFullPrecision": true,
                 "title": "Journey requests",
                 "region": "${AWS::Region}",
                 "setPeriodToTimeRange": true
@@ -3428,6 +3432,7 @@ Resources:
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"TokenRequestWithContext\"', 'Sum'))", "id": "with_context__total" } ]
                 ],
                 "view": "singleValue",
+                "singleValueFullPrecision": true,
                 "title": "Token requests",
                 "region": "${AWS::Region}",
                 "setPeriodToTimeRange": true
@@ -3486,6 +3491,7 @@ Resources:
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyOutcomeRequestWithContext\"', 'Sum'))", "id": "with_context__total" } ]
                 ],
                 "view": "singleValue",
+                "singleValueFullPrecision": true,
                 "title": "Journey outcome requests",
                 "region": "${AWS::Region}",
                 "setPeriodToTimeRange": true
@@ -3707,6 +3713,7 @@ Resources:
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"JourneyCompletedSuccessfully\" scope=\"passkey-create\"', 'Sum'))", "id": "total" } ]
                 ],
                 "view": "singleValue",
+                "singleValueFullPrecision": true,
                 "title": "Passkeys created",
                 "region": "${AWS::Region}",
                 "setPeriodToTimeRange": true
@@ -3736,6 +3743,7 @@ Resources:
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"PasskeyCreateError\"', 'Sum'))", "id": "total" } ]
                 ],
                 "view": "singleValue",
+                "singleValueFullPrecision": true,
                 "title": "Passkey creation errors",
                 "region": "${AWS::Region}",
                 "setPeriodToTimeRange": true
@@ -3765,6 +3773,7 @@ Resources:
                   [ { "expression": "SUM(SEARCH('Namespace=\"amc\" MetricName=\"AaguidNotFoundInPasskeysConvenienceMetadata\"', 'Sum'))", "id": "total" } ]                         
                 ],
                 "view": "singleValue",
+                "singleValueFullPrecision": true,
                 "title": "AAGUID not found in passkeys convenience metadata",
                 "region": "${AWS::Region}",
                 "setPeriodToTimeRange": true
