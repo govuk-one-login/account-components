@@ -162,7 +162,7 @@ export abstract class JsonApiClient {
     }
 
     const errorResponseBodySchema = v.object({
-      code: v.number(),
+      code: v.optional(v.number()),
       message: v.string(),
     });
 
@@ -198,7 +198,10 @@ export abstract class JsonApiClient {
       };
     }
 
-    if (!Object.keys(errorCodesMap).includes(body.output.code.toString())) {
+    if (
+      body.output.code === undefined ||
+      !Object.keys(errorCodesMap).includes(body.output.code.toString())
+    ) {
       return {
         success: false,
         error: "UnknownErrorResponse",
