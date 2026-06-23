@@ -119,6 +119,9 @@ jobs:
           }
           EOF
 
+      - name: Set up Docker
+        uses: docker/setup-docker-action@fad6f4094fcf005d83b753180fff3182a0317bb9
+
       - name: Run integration tests
         run: |
           cd solutions/integration-tests
