@@ -5,6 +5,7 @@ import {
 } from "../../../../commons/utils/auditEvents/index.js";
 import { createEvent } from "@govuk-one-login/event-catalogue-utils";
 import assert from "node:assert";
+import type { DistributiveOmit } from "../../../../commons/utils/commonTypes.js";
 
 export const journeyActionNames = {
   testingJourneyAction: "testing-journey-action",
@@ -141,7 +142,7 @@ export const startJourneyAction = async <
 };
 
 const updateInProgressAction = (
-  action: Omit<JourneyAction<JourneyActionName>, "timestamp"> & {
+  action: DistributiveOmit<JourneyAction<JourneyActionName>, "timestamp"> & {
     success: boolean;
   },
   request: FastifyRequest,
@@ -263,7 +264,7 @@ export const completeAllJourneyActionsUnsuccessfully = async (
         error: error.description,
       });
       updateInProgressAction(
-        { ...{ action: journeyActionName, error }, success: false },
+        { action: journeyActionName, error, success: false },
         request,
       );
     }
