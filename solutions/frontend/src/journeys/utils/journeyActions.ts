@@ -238,3 +238,34 @@ export const completeJourneyActionUnsuccessfully = async (
   });
   updateInProgressAction({ ...action, success: false }, request);
 };
+
+export const completeAllJourneyActionsUnsuccessfully = async (
+  error: (typeof unsuccessfulJourneyActionErrors)[keyof typeof unsuccessfulJourneyActionErrors],
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  assert.ok(
+    !!request.session.journeyActions?.length,
+    "There are no journey actions",
+  );
+
+  for (const journeyAction of request.session.journeyActions) {
+    if (!("success" in journeyAction)) {
+      const journeyActionName = Object.values(journeyActionNames).find(
+        (name) => name === journeyAction.action,
+      );
+
+      assert.ok(journeyActionName, "Action not found");
+
+      await sendCompletedActionAuditEvent(request, reply, {
+        name: journeyActionName,
+        success: false,
+        error: error.description,
+      });
+      updateInProgressAction(
+        { ...{ action: journeyActionName, error }, success: false },
+        request,
+      );
+    }
+  }
+};

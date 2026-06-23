@@ -25,10 +25,10 @@ import {
 import { getPasskeyConvenienceMetadataByAaguid } from "../../../../../commons/utils/passkeysConvenienceMetadata/index.js";
 import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js";
 import {
-  completeJourneyActionUnsuccessfully,
   completeJourneyActionSuccessfully,
   unsuccessfulJourneyActionErrors,
   startJourneyAction,
+  completeAllJourneyActionsUnsuccessfully,
 } from "../../utils/journeyActions.js";
 import {
   sendPasskeyRegistrationGeneratedAuditEvent,
@@ -234,11 +234,8 @@ export async function postHandler(
   }
 
   if (body.action === "skip") {
-    await completeJourneyActionUnsuccessfully(
-      {
-        action: "passkey-create",
-        error: unsuccessfulJourneyActionErrors.userAbortedJourney,
-      },
+    await completeAllJourneyActionsUnsuccessfully(
+      unsuccessfulJourneyActionErrors.userAbortedJourney,
       request,
       reply,
     );
