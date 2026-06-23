@@ -166,6 +166,21 @@ const addErrorMetric = (reason: string) => {
   metrics.addMetric("PasskeyCreateError", MetricUnit.Count, 1);
 };
 
+const getUserAisStatus = async (request: FastifyRequest) => {
+  assert.ok(request.session.claims);
+
+  const accountInterventionsServiceApiClient =
+    new AccountInterventionsServiceApiClient(
+      request.session.claims
+        .stubs_account_interventions_service_api_access_token,
+      request.awsLambda?.event,
+    );
+
+  return await accountInterventionsServiceApiClient.getUserAisStatus(
+    request.session.claims.sub,
+  );
+};
+
 export async function getHandler(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -179,22 +194,9 @@ export async function getHandler(
     );
   }
 
-  assert.ok(request.session.claims);
-
-  const accountInterventionsServiceApiClient =
-    new AccountInterventionsServiceApiClient(
-      request.session.claims
-        .stubs_account_interventions_service_api_access_token,
-      request.awsLambda?.event,
-    );
-
-  const getUserAisStatusResult =
-    await accountInterventionsServiceApiClient.getUserAisStatus(
-      request.session.claims.sub,
-    );
-
+  const userAisStatus = await getUserAisStatus(request);
   // TODO replace this log line with the intervention handling logic
-  request.log.info(getUserAisStatusResult, "getUserAisStatusResult");
+  request.log.info(userAisStatus, "userAisStatus");
 
   await render(request, reply, {
     showErrorUi,
@@ -413,20 +415,9 @@ export async function postHandler(
     body.registrationResponse,
   );
 
-  const accountInterventionsServiceApiClient =
-    new AccountInterventionsServiceApiClient(
-      request.session.claims
-        .stubs_account_interventions_service_api_access_token,
-      request.awsLambda?.event,
-    );
-
-  const getUserAisStatusResult =
-    await accountInterventionsServiceApiClient.getUserAisStatus(
-      request.session.claims.sub,
-    );
-
+  const userAisStatus = await getUserAisStatus(request);
   // TODO replace this log line with the intervention handling logic
-  request.log.info(getUserAisStatusResult, "getUserAisStatusResult");
+  request.log.info(userAisStatus, "userAisStatus");
 
   const savePasskeyResult = await accountDataApiClient.createPasskey(
     request.session.claims.public_sub,
