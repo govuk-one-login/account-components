@@ -30,9 +30,13 @@ vi.mock(import("./handlers/confirm.js"), () => ({
 vi.mock(
   import("./handlers/lockedOutSecurityCodeEnteredTooManyTimes.js"),
   () => ({
-    lockedOutSecurityCodeEnteredTooManyTimesGetHandler: vi.fn(),
+    getHandler: vi.fn(),
   }),
 );
+
+vi.mock(import("./handlers/lockedOutPasswordEnteredTooManyTimes.js"), () => ({
+  getHandler: vi.fn(),
+}));
 
 describe("accountDelete", () => {
   let mockFastify: FastifyInstance;
@@ -52,7 +56,7 @@ describe("accountDelete", () => {
   it("registers all routes", () => {
     accountDelete(mockFastify);
 
-    expect(mockGet).toHaveBeenCalledTimes(6);
+    expect(mockGet).toHaveBeenCalledTimes(7);
     expect(mockPost).toHaveBeenCalledTimes(5);
   });
 
@@ -126,6 +130,15 @@ describe("accountDelete", () => {
 
     expect(mockGet).toHaveBeenCalledWith(
       "/reset-delete/security-code-entered-exceeded",
+      expect.any(Function),
+    );
+  });
+
+  it("registers lockedOutPasswordEnteredTooManyTimes route", () => {
+    accountDelete(mockFastify);
+
+    expect(mockGet).toHaveBeenCalledWith(
+      "/reset-delete/password-entered-exceeded",
       expect.any(Function),
     );
   });
