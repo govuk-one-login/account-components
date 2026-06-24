@@ -82,6 +82,15 @@ export const paths = {
           },
         },
       },
+      [AcountDeleteJourneyState.lockedOutPasswordEnteredTooManyTimes]: {
+        lockedOutPasswordEnteredTooManyTimes: {
+          path: "/reset-delete/password-entered-exceeded",
+          analytics: {
+            ...accountDeleteAnalyticsDefaults,
+            contentId: "51520436-ac01-4c1a-8e52-99260c8da7d6",
+          },
+        },
+      },
       [AcountDeleteJourneyState.notAuthenticated]: {
         enterPassword: {
           path: "/reset-delete/enter-password",

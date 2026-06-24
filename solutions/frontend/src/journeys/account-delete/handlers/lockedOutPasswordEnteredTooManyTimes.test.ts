@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 
 const { getHandler } =
-  await import("./lockedOutSecurityCodeEnteredTooManyTimes.js");
+  await import("./lockedOutPasswordEnteredTooManyTimes.js");
 
-describe("lockedOutSecurityCodeEnteredTooManyTimes handlers", () => {
+describe("lockedOutPasswordEnteredTooManyTimes handlers", () => {
   let mockRequest: Partial<FastifyRequest>;
   let mockReply: Partial<FastifyReply>;
 
@@ -18,14 +18,14 @@ describe("lockedOutSecurityCodeEnteredTooManyTimes handlers", () => {
   });
 
   describe("getHandler", () => {
-    it("should render lockedOutSecurityCodeEnteredTooManyTimes template", async () => {
+    it("should render lockedOutPasswordEnteredTooManyTimes template", async () => {
       const result = await getHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
 
       expect(mockReply.render).toHaveBeenCalledWith(
-        "journeys/account-delete/templates/lockedOutSecurityCodeEnteredTooManyTimes.njk",
+        "journeys/account-delete/templates/lockedOutPasswordEnteredTooManyTimes.njk",
         undefined,
       );
       expect(result).toBe(mockReply);
