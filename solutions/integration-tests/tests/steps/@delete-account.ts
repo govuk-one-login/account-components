@@ -13,3 +13,7 @@ Given("I enter the correct verification code", async ({ page }) => {
 Given("I enter my password", async ({ page }) => {
   await page.getByLabel("Enter your password").fill("pa55w0rd!");
 });
+
+Given("I enter an incorrect password", async ({ page }) => {
+  await page.getByLabel("Enter your password").fill("wr0ngpa55w0rd!");
+});

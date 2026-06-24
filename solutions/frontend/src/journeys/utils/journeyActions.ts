@@ -99,12 +99,12 @@ export const startJourneyAction = async <
 ) => {
   request.session.journeyActions ??= [];
 
-  const inProgressAction = request.session.journeyActions.find(
+  const inProgressActionExists = request.session.journeyActions.some(
     (journeyAction) =>
       journeyAction.action === action.action && !("success" in journeyAction),
   );
 
-  if (!inProgressAction) {
+  if (!inProgressActionExists) {
     request.session.journeyActions.push(action);
 
     if (request.awsLambda?.event) {

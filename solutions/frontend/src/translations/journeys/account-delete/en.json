@@ -19,6 +19,14 @@
       "You can then <a href=\"{{exitLinkUrl}}\" class=\"govuk-link govuk-link--no-visited-state\">try signing in again</a>."
     ]
   },
+  "lockedOutPasswordEnteredTooManyTimes": {
+    "pageTitle": "You entered the wrong password too many times",
+    "heading": "You entered the wrong password too many times",
+    "paragraphs": [
+      "You need to wait 15 minutes.",
+      "You can then <a href=\"{{exitLinkUrl}}\" class=\"govuk-link govuk-link--no-visited-state\">try signing in again</a>."
+    ]
+  },
   "resendEmailVerificationCode": {
     "pageTitle": "Get security code",
     "heading": "Get security code",
