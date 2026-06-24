@@ -29,6 +29,22 @@ class TestJsonApiClient extends JsonApiClient {
     return this.logOnError(methodName, fn);
   }
 
+  public testLogOnErrorWithProcessResponse(response: Response) {
+    return this.logOnError("test", async () => {
+      try {
+        return await JsonApiClient.processResponse(response, v.undefined(), {
+          "400": "bad_request",
+          "404": "not_found",
+        } as const);
+      } catch (error) {
+        return {
+          ...TestJsonApiClient.testUnknownError,
+          errorDetails: error,
+        };
+      }
+    });
+  }
+
   public static testProcessResponse<
     TSuccess,
     const TErrorMap extends Record<string, string>,
@@ -284,6 +300,36 @@ describe("jsonApiClient", () => {
         responseStatusCode: 500,
         responseStatus: "Internal Server Error",
       });
+    });
+
+    it("should preserve narrow error types from processResponse", () => {
+      expect.assertions(1);
+
+      type Result = Awaited<
+        ReturnType<typeof client.testLogOnErrorWithProcessResponse>
+      >;
+      type ErrorType = Extract<Result, { success: false }>["error"];
+
+      // Verify all expected error strings are assignable
+      const _valid: ErrorType[] = [
+        "bad_request",
+        "not_found",
+        "UnknownError",
+        "ErrorParsingResponseBodyJson",
+        "ErrorValidatingResponseBody",
+        "ErrorParsingErrorResponseBodyJson",
+        "ErrorValidatingErrorResponseBody",
+        "UnknownErrorResponse",
+      ];
+      void _valid;
+
+      // If error types widen to `string`, the @ts-expect-error becomes unused
+      // and there will be a type error, catching the regression.
+      // @ts-expect-error - "not_a_real_error" should not be assignable to the narrow union
+      const _invalid: ErrorType = "not_a_real_error";
+      void _invalid;
+
+      expect(true).toBe(true);
     });
   });
 
