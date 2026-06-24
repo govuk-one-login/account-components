@@ -76,7 +76,15 @@ export async function enterPasswordPostHandler(
       });
       return reply;
     } else if (result.error === "ExceededIncorrectPasswordSubmissionLimit") {
-      // TODO https://govukverify.atlassian.net/browse/OLH-4276
+      reply.journeyStates["account-delete"].send({
+        type: "lockedOutPasswordEnteredTooManyTimes",
+      });
+      reply.redirect(
+        paths.journeys["account-delete"]
+          .LOCKED_OUT_PASSWORD_ENTERED_TOO_MANY_TIMES
+          .lockedOutPasswordEnteredTooManyTimes.path,
+      );
+      return reply;
     } else if (result.error === "UserAccountSuspended") {
       // TODO https://govukverify.atlassian.net/browse/OLH-2858
     } else if (result.error === "UserAccountBlocked") {
