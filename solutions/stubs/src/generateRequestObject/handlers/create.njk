@@ -117,8 +117,8 @@
                             <option value="successful">Successful</option>
                             <option value="incorrect_password_entered">Incorrect password entered</option>
                             <option value="too_many_incorrect_passwords_entered">Too many incorrect passwords entered</option>
-                            <option value="temporary_intervention">Account has temporary intervention</option>
-                            <option value="permanent_intervention">Account has permanent intervention</option>
+                            <option value="suspended">Account is suspended</option>
+                            <option value="blocked">Account is blocked</option>
                         </select>
                     </label>
                     <label class="api_scenario_selector">
@@ -163,6 +163,22 @@
                     </label>
                 </div>
             </fieldset>
+            <fieldset>
+                <legend>Account interventions service API scenarios</legend>
+                <div class="api_scenario_selectors">
+                    <label class="api_scenario_selector">
+                        Get user account intervention status
+                        <select name="stubs_account_interventions_service_api_access_token_getUserAisStatus_scenario">
+                            <option value="no_interventions">No interventions</option>
+                            <option value="blocked">Blocked</option>
+                            <option value="suspended_no_actions_required">Suspended, no user actions required</option>
+                            <option value="suspended_reset_password_required">Suspended, reset password required</option>
+                            <option value="suspended_reprove_identity_required">Suspended, reprove identity required</option>
+                            <option value="suspended_reset_password_and_reprove_identity_required">Suspended, reset password and reprove identity required</option>
+                        </select>
+                    </label>
+                </div>
+            </fieldset>            
             <input type="submit" value="Generate Request Object">
         </form>
     {% endif %}
