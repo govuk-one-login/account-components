@@ -25,6 +25,7 @@ const mockSendPasskeyRegistrationSuccessfulAuditEvent = vi.fn();
 const mockSendPasskeyEnrolmentFailedAuditEvent = vi.fn();
 const mockSendPasskeyEnrolmentSuccessfulAuditEvent = vi.fn();
 const mockExtractRegistrationResponseInfo = vi.fn();
+const mockGetUserAisStatus = vi.fn();
 
 vi.mock(import("@simplewebauthn/server"), () => ({
   generateRegistrationOptions: mockGenerateRegistrationOptions,
@@ -101,6 +102,16 @@ vi.mock(import("../utils/extractRegistrationResponseInfo/index.js"), () => ({
   extractRegistrationResponseInfo: mockExtractRegistrationResponseInfo,
 }));
 
+// @ts-expect-error
+vi.mock(
+  import("../../../utils/accountInterventionsServiceApiClient.js"),
+  () => ({
+    AccountInterventionsServiceApiClient: class {
+      getUserAisStatus = mockGetUserAisStatus;
+    },
+  }),
+);
+
 const { getHandler, postHandler } = await import("./create.js");
 
 describe("passkey-create handlers", () => {
@@ -136,6 +147,7 @@ describe("passkey-create handlers", () => {
       body: {},
       log: {
         warn: vi.fn(),
+        info: vi.fn(),
       } as unknown as FastifyRequest["log"],
       i18n: {
         t: vi.fn((key: string) => key),
@@ -165,6 +177,18 @@ describe("passkey-create handlers", () => {
     mockGetPasskeys.mockResolvedValue({
       success: true,
       result: { passkeys: [] },
+    });
+
+    mockGetUserAisStatus.mockResolvedValue({
+      success: true,
+      result: {
+        state: {
+          blocked: false,
+          suspended: false,
+          reproveIdentity: false,
+          resetPassword: false,
+        },
+      },
     });
 
     mockGenerateRegistrationOptions.mockResolvedValue({
