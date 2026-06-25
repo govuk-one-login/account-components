@@ -95,6 +95,9 @@ export const getClaimsSchema = (
       v.pipe(v.string(), v.nonEmpty()),
     ),
     account_data_api_access_token: v.optional(v.pipe(v.string(), v.nonEmpty())),
+    stubs_account_interventions_service_api_access_token: v.optional(
+      v.pipe(v.string(), v.nonEmpty()),
+    ),
     sub: v.pipe(v.string(), v.nonEmpty()),
     public_sub: v.pipe(v.string(), v.nonEmpty()),
     email: v.pipe(v.string(), v.email()),

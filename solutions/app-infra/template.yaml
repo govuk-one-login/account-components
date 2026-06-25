@@ -70,6 +70,7 @@ Mappings:
       ga4ContainerId: "GTM-KD86CMZ"
       analyticsEnabled: "1"
       accountManagementApiUrl: https://stubs.manage.dev.account.gov.uk/account-management-api
+      accountInterventionsServiceApiUrl: https://stubs.manage.dev.account.gov.uk/account-interventions-service-api
       contactUrl: https://home.dev.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: dev.account.gov.uk
       passkeysRpName: "GOV.UK One Login (dev)"
@@ -105,6 +106,7 @@ Mappings:
       ga4ContainerId: "GTM-KD86CMZ"
       analyticsEnabled: "1"
       accountManagementApiUrl: https://stubs.manage.build.account.gov.uk/account-management-api
+      accountInterventionsServiceApiUrl: https://stubs.manage.build.account.gov.uk/account-interventions-service-api
       contactUrl: https://home.build.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: build.account.gov.uk
       passkeysRpName: "GOV.UK One Login (build)"
@@ -142,6 +144,7 @@ Mappings:
       ga4ContainerId: "GTM-KD86CMZ"
       analyticsEnabled: "1"
       accountManagementApiUrl: "https://9ntf0mlypd-vpce-04ae8d53b32b38278.execute-api.eu-west-2.amazonaws.com/staging"
+      accountInterventionsServiceApiUrl: https://vjdj6kjrj2.execute-api.eu-west-2.amazonaws.com/v1
       contactUrl: https://home.staging.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: staging.account.gov.uk
       passkeysRpName: "GOV.UK One Login (staging)"
@@ -179,6 +182,7 @@ Mappings:
       ga4ContainerId: ""
       analyticsEnabled: "0"
       accountManagementApiUrl: "https://0boxndhikk-vpce-0553cfc8fc1aeb970.execute-api.eu-west-2.amazonaws.com/integration"
+      accountInterventionsServiceApiUrl: https://65zhj32bjb.execute-api.eu-west-2.amazonaws.com/v1
       contactUrl: https://home.integration.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: integration.account.gov.uk
       passkeysRpName: "GOV.UK One Login (integration)"
@@ -216,6 +220,7 @@ Mappings:
       ga4ContainerId: "GTM-K4PBJH3"
       analyticsEnabled: "1"
       accountManagementApiUrl: "https://p303w5w1m0-vpce-0d6fa47d5c9ae876d.execute-api.eu-west-2.amazonaws.com/production"
+      accountInterventionsServiceApiUrl: https://ruz07ekh4b.execute-api.eu-west-2.amazonaws.com/v1
       contactUrl: https://home.account.gov.uk/contact-gov-uk-one-login
       passkeysRpId: account.gov.uk
       passkeysRpName: "GOV.UK One Login"
@@ -2597,6 +2602,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               accountManagementApiUrl,
+            ]
+          ACCOUNT_INTERVENTIONS_SERVICE_API_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              accountInterventionsServiceApiUrl,
             ]
           CONTACT_URL:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, contactUrl]

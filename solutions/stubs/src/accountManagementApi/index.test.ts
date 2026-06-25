@@ -74,11 +74,11 @@ describe("accountManagementApi", () => {
     });
   });
 
-  it("should handle authenticate with temporary_intervention scenario", async () => {
+  it("should handle authenticate with suspended scenario", async () => {
     accountManagementApi(mockApp);
 
     const token = await new SignJWT({
-      authenticate_scenario: "temporary_intervention",
+      authenticate_scenario: "suspended",
     })
       .setProtectedHeader({ alg: "HS256" })
       .sign(new TextEncoder().encode("secret"));
@@ -93,15 +93,15 @@ describe("accountManagementApi", () => {
     expect(mockReply.status).toHaveBeenCalledWith(400);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: 1083,
-      message: "Account has temporary intervention",
+      message: "Account is suspended",
     });
   });
 
-  it("should handle authenticate with permanent_intervention scenario", async () => {
+  it("should handle authenticate with blocked scenario", async () => {
     accountManagementApi(mockApp);
 
     const token = await new SignJWT({
-      authenticate_scenario: "permanent_intervention",
+      authenticate_scenario: "blocked",
     })
       .setProtectedHeader({ alg: "HS256" })
       .sign(new TextEncoder().encode("secret"));
@@ -116,7 +116,7 @@ describe("accountManagementApi", () => {
     expect(mockReply.status).toHaveBeenCalledWith(400);
     expect(mockReply.send).toHaveBeenCalledWith({
       code: 1084,
-      message: "Account has permanent intervention",
+      message: "Account is blocked",
     });
   });
 
