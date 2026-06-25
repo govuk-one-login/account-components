@@ -19,6 +19,7 @@ resource "aws_cloudformation_stack" "amc_pipeline_stack" {
     TestImageRepositoryUri                  = contains(["dev", "build"], var.environment) ? aws_cloudformation_stack.test_image_repository[0].outputs["TestRunnerImageEcrRepositoryUri"] : "none"
     TestReportFormat                        = "CUCUMBERJSON"
     RunTestContainerInVPC                   = "True"
+    TestComputeType                         = "BUILD_GENERAL1_2XLARGE"
     IncludePromotion                        = contains(["build", "staging"], var.environment) ? "Yes" : "No"
     AllowedAccounts                         = join(",", var.allowed_promotion_accounts)
     BuildNotificationStackName              = "build-notifications"
