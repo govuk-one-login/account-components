@@ -57,6 +57,7 @@ jobs:
           PASSKEYS_RP_NAME="GOV.UK One Login (local)"          
           PASSKEYS_EXPECTED_ORIGIN=http://localhost:6002                    
           ACCOUNT_MANAGEMENT_API_URL=http://localhost:6003/account-management-api
+          ACCOUNT_INTERVENTIONS_SERVICE_API_URL=http://localhost:6003/account-interventions-service-api
           GA4_CONTAINER_ID=GTM-KD86CMZ
           ANALYTICS_ENABLED=1
           YOUR_SERVICES_URL=https://home.dev.account.gov.uk/your-services

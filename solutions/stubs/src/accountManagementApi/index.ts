@@ -33,22 +33,18 @@ export const accountManagementApi = function (app: FastifyInstance) {
             message: "Too many incorrect passwords entered",
           });
           return reply;
-        } else if (
-          claims["authenticate_scenario"] === "temporary_intervention"
-        ) {
+        } else if (claims["authenticate_scenario"] === "suspended") {
           reply.status(400);
           reply.send({
             code: 1083,
-            message: "Account has temporary intervention",
+            message: "Account is suspended",
           });
           return reply;
-        } else if (
-          claims["authenticate_scenario"] === "permanent_intervention"
-        ) {
+        } else if (claims["authenticate_scenario"] === "blocked") {
           reply.status(400);
           reply.send({
             code: 1084,
-            message: "Account has permanent intervention",
+            message: "Account is blocked",
           });
           return reply;
         }

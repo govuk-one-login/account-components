@@ -67,6 +67,7 @@ export interface AuthorizeRequestObject {
   exp?: string;
   account_management_api_access_token?: string;
   account_data_api_access_token?: string;
+  stubs_account_interventions_service_api_access_token?: string;
   sub?: string;
   public_sub?: string;
   email?: string;

@@ -58,17 +58,19 @@ describe("generateRequestObjectPost should process request and return encrypted 
       mockReply as FastifyReply,
     );
 
-    expect(generateAccessToken).toHaveBeenCalledTimes(2);
+    expect(generateAccessToken).toHaveBeenCalledTimes(3);
     expect(getScenario).toHaveBeenCalledExactlyOnceWith({
       ...(mockRequest.body as object),
       account_management_api_access_token: mockAccessToken,
       account_data_api_access_token: mockAccessToken,
+      stubs_account_interventions_service_api_access_token: mockAccessToken,
     });
     expect(generateJwtToken).toHaveBeenCalledExactlyOnceWith(
       {
         ...(mockRequest.body as object),
         account_management_api_access_token: mockAccessToken,
         account_data_api_access_token: mockAccessToken,
+        stubs_account_interventions_service_api_access_token: mockAccessToken,
       },
       mockScenario,
     );
