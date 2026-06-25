@@ -63,7 +63,6 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
             }),
           };
         } catch (error) {
-          console.error("MHTEST", error);
           // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
           return errorManager.handleError(error as TokenAppError | Error);
         }
