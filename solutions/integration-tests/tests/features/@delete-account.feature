@@ -5,7 +5,7 @@ Feature: Delete account
   Scenario: Successfully delete account
     Given I go to the journey initiator
     And I begin a "account-delete" journey    
-    Then the page title is prefixed with "You’ll need to delete your GOV.UK One Login"
+    Then the page title is prefixed with "You’ll need to permanently delete your GOV.UK One Login"
     And the page looks as expected
     And the page meets our accessibility standards
   
@@ -14,21 +14,27 @@ Feature: Delete account
     And the page contains the text "testuser@test.null.local"
     And the page looks as expected
     And the page meets our accessibility standards
+
+    Given I click the "Back" link
+    Then the page title is prefixed with "You’ll need to permanently delete your GOV.UK One Login"
   
+    Given I click the "Start" button    
+    Then the page title is prefixed with "Enter the code sent to your email address"
+
     Given I click the "Problems with the code?" element
     Then I click the "send the code again" link    
-    Then the page title is prefixed with "TODO resendEmailVerificationCode"
+    Then the page title is prefixed with "Get security code"
     And the page looks as expected
     And the page meets our accessibility standards
   
-    Given I click the "TODO resend" button
+    Given I click the "Get security code" button
     Then the page title is prefixed with "Enter the code sent to your email address"
 
     Given I click the "Problems with the code?" element
     Then I click the "send the code again" link
-    Then the page title is prefixed with "TODO resendEmailVerificationCode"
+    Then the page title is prefixed with "Get security code"
 
-    Given I click the "TODO verifyCode" link
+    Given I click the "Back" link
     Then the page title is prefixed with "Enter the code sent to your email address"
 
     Given I enter the correct verification code
@@ -54,7 +60,121 @@ Feature: Delete account
     """
     And the page contains the text:
     """
-    "action": "account-delete",
+    "action": "temp-account-delete-action",
     "details": {},
     "success": true,
     """
+
+  # Should fail because of known accessibility issues
+  @failMobile
+  Scenario: Too many email codes entered (start page)
+    Given I go to the journey initiator
+    And I select the option beginning with "Too many OTP codes entered" in the "Send OTP challenge" select
+    And I begin a "account-delete" journey    
+    Then the page title is prefixed with "You’ll need to permanently delete your GOV.UK One Login"
+  
+    Given I click the "Start" button    
+    Then the page title is prefixed with "You entered the wrong security code too many times"
+    And the page looks as expected
+    And the page meets our accessibility standards
+
+    Given I click the "try signing in again" link
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'
+    And the page contains the text:
+    """
+    "scope": "account-delete",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": false
+    """
+    And the page contains the text:
+    """
+    "action": "temp-account-delete-action",
+    "details": {
+      "error": {
+        "code": 1002,
+        "description": "UserAbortedJourney"
+      }      
+    },
+    "success": false,
+    """
+
+  # Should fail because of known accessibility issues
+  @failMobile
+  Scenario: Too many email codes entered (check email page)
+    Given I go to the journey initiator
+    And I select the option beginning with "Too many OTP codes entered" in the "Verify OTP challenge" select
+    And I begin a "account-delete" journey    
+    Then the page title is prefixed with "You’ll need to permanently delete your GOV.UK One Login"
+  
+    Given I click the "Start" button    
+    Then the page title is prefixed with "Enter the code sent to your email address"
+
+    Given I enter an incorrect verification code
+    And I click the "Continue" button    
+    Then the page title is prefixed with "You entered the wrong security code too many times"
+    And the page looks as expected
+    And the page meets our accessibility standards
+
+    Given I click the "try signing in again" link
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'
+    And the page contains the text:
+    """
+    "scope": "account-delete",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": false
+    """
+    And the page contains the text:
+    """
+    "action": "temp-account-delete-action",
+    "details": {
+      "error": {
+        "code": 1002,
+        "description": "UserAbortedJourney"
+      }      
+    },
+    "success": false,
+    """
+
+  # Should fail because of known accessibility issues
+  @failMobile
+  Scenario: Too many passwords entered
+    Given I go to the journey initiator
+    And I select the option beginning with "Too many incorrect passwords entered" in the "Authenticate" select
+    And I begin a "account-delete" journey    
+    Then the page title is prefixed with "You’ll need to permanently delete your GOV.UK One Login"
+  
+    Given I click the "Start" button    
+    Then the page title is prefixed with "Enter the code sent to your email address"
+
+    Given I enter the correct verification code
+    And I click the "Continue" button    
+    Then the page title is prefixed with "Enter your password"
+  
+    Given I enter an incorrect password
+    And I click the "Continue" button    
+    Then the page title is prefixed with "You entered the wrong password too many times"
+    And the page looks as expected
+    And the page meets our accessibility standards
+
+    Given I click the "try signing in again" link
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'
+    And the page contains the text:
+    """
+    "scope": "account-delete",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": false
+    """
+    And the page contains the text:
+    """
+    "action": "temp-account-delete-action",
+    "details": {
+      "error": {
+        "code": 1002,
+        "description": "UserAbortedJourney"
+      }      
+    },
+    "success": false,
+    """    

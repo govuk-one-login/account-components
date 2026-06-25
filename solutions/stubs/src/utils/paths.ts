@@ -17,7 +17,7 @@ export const paths = {
     createPasskey:
       "/account-data-api/accounts/:publicSubjectId/authenticators/passkeys",
   },
-  notify: {
-    sendEmail: "/notify/v2/notifications/email",
+  accountInterventionsServiceApi: {
+    getUserAisStatus: "/account-interventions-service-api/ais/:commonSubjectId",
   },
 } as const;

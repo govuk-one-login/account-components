@@ -60,8 +60,11 @@ export class AccountDataApiClient extends JsonApiClient {
           }),
           errorsCodesMap,
         );
-      } catch {
-        return AccountDataApiClient.unknownError;
+      } catch (error) {
+        return {
+          ...AccountDataApiClient.unknownError,
+          errorDetails: error,
+        };
       }
     });
   }
@@ -96,8 +99,11 @@ export class AccountDataApiClient extends JsonApiClient {
           AccountDataApiClient.undefinedSchema,
           errorsCodesMap,
         );
-      } catch {
-        return AccountDataApiClient.unknownError;
+      } catch (error) {
+        return {
+          ...AccountDataApiClient.unknownError,
+          errorDetails: error,
+        };
       }
     });
   }

@@ -1,7 +1,5 @@
 import * as v from "valibot";
 
-export const mockEmailAddress = "testuser@test.null.local";
-
 export const fiveMinutesInSeconds = 300;
 export const oneDayInSeconds = 86400;
 export const oneYearInSeconds = 31536000;
@@ -26,6 +24,7 @@ export const passkeyDetailsSchema = v.object({
   isBackUpEligible: v.boolean(),
   isBackedUp: v.boolean(),
   isResidentKey: v.boolean(),
+  algorithm: v.pipe(v.number(), v.integer()),
 });
 
 export const rootDomain = process.env["ROOT_DOMAIN"];

@@ -31,7 +31,7 @@
     <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
     {{ govukButton({
       text: 'journey:confirm.deleteButtonLabel' | translate,
-      classes: "govuk-button--warning",
+      classes: "govuk-button--warning govuk-!-margin-bottom-4",
       preventDoubleClick: true
     }) }}
   </form>
@@ -39,8 +39,8 @@
   {{ govukButton({
     text: 'journey:confirm.cancelButtonLabel' | translate,
     classes: "govuk-button--secondary",
-    href: '#TODO'
+    href: globals.buildCompleteFailedJourneyUri(globals.unsuccessfulJourneyActionErrors.userAbortedJourney)
   }) }}
 
-  <p class="govuk-body"><a href="{{ globals.contactUrl }}" target="_blank" class="govuk-link govuk-link--no-visited-state">{{ 'journey:confirm.contactLinkText' | translate }}</a></p>
+  <p class="govuk-body"><a href="{{ globals.contactUrl }}" target="_blank" rel="noopener noreferrer" class="govuk-link govuk-link--no-visited-state">{{ 'journey:confirm.contactLinkText' | translate }}</a></p>
 {% endblock %}

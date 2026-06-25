@@ -38,6 +38,8 @@ import {
   sendPasskeyEnrolmentSuccessfulAuditEvent,
   passkeyRegistrationFailureReason,
 } from "../utils/auditEvents/index.js";
+import { extractRegistrationResponseInfo } from "../utils/extractRegistrationResponseInfo/index.js";
+import { AccountInterventionsServiceApiClient } from "../../../utils/accountInterventionsServiceApiClient.js";
 
 export const postBodySchema = v.object({
   action: v.optional(v.picklist(["register", "skip"])),
@@ -55,7 +57,7 @@ export const supportedAlgorithmIDs = [
 const setRegistrationOptions = async (
   request: FastifyRequest,
   reply: FastifyReply,
-  //idsOfCredentialsToExclude: string[],
+  idsOfCredentialsToExclude: string[],
 ) => {
   assert.ok(request.session.claims);
   assert.ok(reply.journeyStates?.["passkey-create"]);
@@ -73,9 +75,9 @@ const setRegistrationOptions = async (
       userVerification: "required",
     },
     supportedAlgorithmIDs,
-    /*excludeCredentials: idsOfCredentialsToExclude.map((id) => ({
+    excludeCredentials: idsOfCredentialsToExclude.map((id) => ({
       id,
-    })),*/
+    })),
   });
 
   reply.journeyStates["passkey-create"].send({
@@ -124,7 +126,7 @@ const render = async (
   const registrationOptions = await setRegistrationOptions(
     request,
     reply,
-    //getPasskeysResult.result.passkeys.map((pk) => pk.id),
+    getPasskeysResult.result.passkeys.map((pk) => pk.id),
   );
 
   assert.ok(reply.render);
@@ -164,6 +166,21 @@ const addErrorMetric = (reason: string) => {
   metrics.addMetric("PasskeyCreateError", MetricUnit.Count, 1);
 };
 
+const getUserAisStatus = async (request: FastifyRequest) => {
+  assert.ok(request.session.claims);
+
+  const accountInterventionsServiceApiClient =
+    new AccountInterventionsServiceApiClient(
+      request.session.claims
+        .stubs_account_interventions_service_api_access_token,
+      request.awsLambda?.event,
+    );
+
+  return await accountInterventionsServiceApiClient.getUserAisStatus(
+    request.session.claims.sub,
+  );
+};
+
 export async function getHandler(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -176,6 +193,10 @@ export async function getHandler(
       reply,
     );
   }
+
+  const userAisStatus = await getUserAisStatus(request);
+  // TODO replace this log line with the intervention handling logic
+  request.log.info(userAisStatus, "userAisStatus");
 
   await render(request, reply, {
     showErrorUi,
@@ -204,11 +225,7 @@ export async function postHandler(
       reason: invalidRequestBodyErrorReason,
     };
 
-    await sendPasskeyRegistrationFailedAuditEvent(
-      request,
-      reply,
-      invalidRequestBodyErrorReason,
-    );
+    await sendPasskeyRegistrationFailedAuditEvent(request, reply);
 
     await render(request, reply, {
       showErrorUi: true,
@@ -394,9 +411,13 @@ export async function postHandler(
     return reply;
   }
 
-  const tempAaguidToUse = request.cookies["temp_aaguid_override"]?.length
-    ? request.cookies["temp_aaguid_override"]
-    : verification.registrationInfo.aaguid;
+  const registrationResponseInfo = extractRegistrationResponseInfo(
+    body.registrationResponse,
+  );
+
+  const userAisStatus = await getUserAisStatus(request);
+  // TODO replace this log line with the intervention handling logic
+  request.log.info(userAisStatus, "userAisStatus");
 
   const savePasskeyResult = await accountDataApiClient.createPasskey(
     request.session.claims.public_sub,
@@ -405,7 +426,7 @@ export async function postHandler(
         verification.registrationInfo.credential.publicKey,
       ).toString("base64url"),
       id: verification.registrationInfo.credential.id,
-      aaguid: tempAaguidToUse,
+      aaguid: verification.registrationInfo.aaguid,
       isAttested: attestationSignature !== undefined,
       signCount: verification.registrationInfo.credential.counter,
       transports: verification.registrationInfo.credential.transports ?? [],
@@ -413,6 +434,7 @@ export async function postHandler(
       isBackUpEligible:
         verification.registrationInfo.credentialDeviceType === "multiDevice",
       isResidentKey: true,
+      algorithm: registrationResponseInfo.publicKeyAlgorithm ?? 0,
     },
   );
 
@@ -429,7 +451,9 @@ export async function postHandler(
   }
 
   const passkeyConvenienceMetadata =
-    await getPasskeyConvenienceMetadataByAaguid(tempAaguidToUse);
+    await getPasskeyConvenienceMetadataByAaguid(
+      verification.registrationInfo.aaguid,
+    );
 
   await sendNotification(
     passkeyConvenienceMetadata
@@ -456,7 +480,7 @@ export async function postHandler(
   await completeJourneyActionSuccessfully<"passkeyCreate">(
     {
       action: "passkey-create",
-      details: { aaguid: tempAaguidToUse },
+      details: { aaguid: verification.registrationInfo.aaguid },
     },
     request,
     reply,

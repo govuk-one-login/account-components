@@ -27,6 +27,17 @@ vi.mock(import("./handlers/confirm.js"), () => ({
   confirmPostHandler: vi.fn(),
 }));
 
+vi.mock(
+  import("./handlers/lockedOutSecurityCodeEnteredTooManyTimes.js"),
+  () => ({
+    getHandler: vi.fn(),
+  }),
+);
+
+vi.mock(import("./handlers/lockedOutPasswordEnteredTooManyTimes.js"), () => ({
+  getHandler: vi.fn(),
+}));
+
 describe("accountDelete", () => {
   let mockFastify: FastifyInstance;
   let mockGet: ReturnType<typeof vi.fn>;
@@ -45,7 +56,7 @@ describe("accountDelete", () => {
   it("registers all routes", () => {
     accountDelete(mockFastify);
 
-    expect(mockGet).toHaveBeenCalledTimes(5);
+    expect(mockGet).toHaveBeenCalledTimes(7);
     expect(mockPost).toHaveBeenCalledTimes(5);
   });
 
@@ -53,11 +64,11 @@ describe("accountDelete", () => {
     accountDelete(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      "/delete-account/introduction",
+      "/reset-delete/start",
       expect.any(Function),
     );
     expect(mockPost).toHaveBeenCalledWith(
-      "/delete-account/introduction",
+      "/reset-delete/start",
       expect.any(Function),
     );
   });
@@ -66,11 +77,11 @@ describe("accountDelete", () => {
     accountDelete(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      "/delete-account/resend-verification-code",
+      "/reset-delete/resend-email-code",
       expect.any(Function),
     );
     expect(mockPost).toHaveBeenCalledWith(
-      "/delete-account/resend-verification-code",
+      "/reset-delete/resend-email-code",
       expect.any(Function),
     );
   });
@@ -79,11 +90,11 @@ describe("accountDelete", () => {
     accountDelete(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      "/delete-account/verify-email-address",
+      "/reset-delete/check-email",
       expect.any(Function),
     );
     expect(mockPost).toHaveBeenCalledWith(
-      "/delete-account/verify-email-address",
+      "/reset-delete/check-email",
       expect.any(Function),
     );
   });
@@ -92,11 +103,11 @@ describe("accountDelete", () => {
     accountDelete(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      "/delete-account/enter-password",
+      "/reset-delete/enter-password",
       expect.any(Function),
     );
     expect(mockPost).toHaveBeenCalledWith(
-      "/delete-account/enter-password",
+      "/reset-delete/enter-password",
       expect.any(Function),
     );
   });
@@ -105,11 +116,29 @@ describe("accountDelete", () => {
     accountDelete(mockFastify);
 
     expect(mockGet).toHaveBeenCalledWith(
-      "/delete-account/confirm",
+      "/reset-delete/confirm",
       expect.any(Function),
     );
     expect(mockPost).toHaveBeenCalledWith(
-      "/delete-account/confirm",
+      "/reset-delete/confirm",
+      expect.any(Function),
+    );
+  });
+
+  it("registers lockedOutSecurityCodeEnteredTooManyTimes route", () => {
+    accountDelete(mockFastify);
+
+    expect(mockGet).toHaveBeenCalledWith(
+      "/reset-delete/security-code-entered-exceeded",
+      expect.any(Function),
+    );
+  });
+
+  it("registers lockedOutPasswordEnteredTooManyTimes route", () => {
+    accountDelete(mockFastify);
+
+    expect(mockGet).toHaveBeenCalledWith(
+      "/reset-delete/password-entered-exceeded",
       expect.any(Function),
     );
   });

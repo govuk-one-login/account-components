@@ -43,6 +43,11 @@ export async function generateRequestObjectPost(
       getPasskeys_scenario: body.account_data_api_getPasskeys_scenario,
       createPasskey_scenario: body.account_data_api_createPasskey_scenario,
     });
+  authorizeRequestObject.stubs_account_interventions_service_api_access_token =
+    await generateAccessToken({
+      getUserAisStatus_scenario:
+        body.stubs_account_interventions_service_api_access_token_getUserAisStatus_scenario,
+    });
 
   const scenario = getScenario(authorizeRequestObject);
 

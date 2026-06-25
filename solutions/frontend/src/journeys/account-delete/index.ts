@@ -21,6 +21,27 @@ export const accountDelete = function (fastify: FastifyInstance) {
   );
 
   fastify.get(
+    paths.journeys["account-delete"]
+      .LOCKED_OUT_SECURITY_CODE_ENTERED_TOO_MANY_TIMES
+      .lockedOutSecurityCodeEnteredTooManyTimes.path,
+    async function (request, reply) {
+      return (
+        await import("./handlers/lockedOutSecurityCodeEnteredTooManyTimes.js")
+      ).getHandler(request, reply);
+    },
+  );
+
+  fastify.get(
+    paths.journeys["account-delete"].LOCKED_OUT_PASSWORD_ENTERED_TOO_MANY_TIMES
+      .lockedOutPasswordEnteredTooManyTimes.path,
+    async function (request, reply) {
+      return (
+        await import("./handlers/lockedOutPasswordEnteredTooManyTimes.js")
+      ).getHandler(request, reply);
+    },
+  );
+
+  fastify.get(
     paths.journeys["account-delete"].EMAIL_NOT_VERIFIED
       .resendEmailVerificationCode.path,
     async function (request, reply) {

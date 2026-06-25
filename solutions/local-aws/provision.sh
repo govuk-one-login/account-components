@@ -50,7 +50,6 @@ start_floci() {
     -p 4566:4566 \
     -v /var/run/docker.sock:/var/run/docker.sock \
     -e FLOCI_DEFAULT_REGION=$AWS_DEFAULT_REGION \
-    -u root \
     --network account-components-network \
     --name account-components-floci \
     account-components-floci

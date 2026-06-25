@@ -20,13 +20,15 @@ export async function getJwks(request: FastifyRequest, reply: FastifyReply) {
   }
 
   const clientRegistry = await getClientRegistry();
-  const client = clientRegistry.find((client: { client_name: string }) => {
-    return (
-      client.client_name.toLowerCase() === parsedRequestParams.output.client
-    );
-  });
+  const clientExists = clientRegistry.some(
+    (client: { client_name: string }) => {
+      return (
+        client.client_name.toLowerCase() === parsedRequestParams.output.client
+      );
+    },
+  );
 
-  if (!client) {
+  if (!clientExists) {
     request.log.warn(`Client '${parsedRequestParams.output.client}' not found`);
     reply.status(404).send();
     return reply;

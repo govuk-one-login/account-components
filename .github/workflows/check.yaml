@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10
         with:
           persist-credentials: false
 
@@ -35,9 +35,6 @@ jobs:
         with:
           use-installer: true
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Set up JSON Schema CLI
-        uses: sourcemeta/jsonschema@cb9ec0145533126399065ffa13d3638842c65e25
 
       - name: Set up cfn-lint
         uses: scottbrenner/cfn-lint-action@ed184e91f5085a2932501da8314e899e5e0ef5be
@@ -103,7 +100,7 @@ jobs:
           '
 
       - name: Checkov
-        uses: bridgecrewio/checkov-action@4048c972aae68d0b983a48bb3479aab2d877b898
+        uses: bridgecrewio/checkov-action@dfb51aed1b783289b0d3f255028e7a88d5e8caa1
         with:
           directory: .
           output_format: cli
@@ -122,7 +119,4 @@ jobs:
           # CKV_AWS_18 flags missing S3 access logging and CKV_AWS_111 flags IAM policies
           # without write access constraints, created OLH-4093 to implement
           # CKV_AWS_124 Intentionally ommitted as SNS topics do not exist.
-          # CKV_DOCKER_4 flags Dockerfiles using ADD instead of RUN curl and CKV_DOCKER_2
-          # flags missing HEALTHCHECK instructions, created OLH-4094 to implement.
-          # CKV_DOCKER_3: "need a non-user root user" is intentionally omitted as the integration tests container needs root permissions to run AWS CLI commands and install dependencies.
-          skip_check: CKV2_GHA_1,CKV_OPENAPI_21,CKV_OPENAPI_4,CKV_OPENAPI_5,CKV_AWS_18,CKV_AWS_111,CKV_AWS_124,CKV_DOCKER_2,CKV_DOCKER_3,CKV_DOCKER_4
+          skip_check: CKV2_GHA_1,CKV_OPENAPI_21,CKV_OPENAPI_4,CKV_OPENAPI_5,CKV_AWS_18,CKV_AWS_111,CKV_AWS_124

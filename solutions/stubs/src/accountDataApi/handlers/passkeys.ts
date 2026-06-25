@@ -18,6 +18,7 @@ const createPasskey = (
   transports: ["internal"],
   isBackUpEligible: true,
   isBackedUp: true,
+  algorithm: -7,
   ...overrides,
 });
 
@@ -31,6 +32,7 @@ const passkeys: Passkey[] = [
     transports: ["usb"],
     isBackUpEligible: false,
     isBackedUp: false,
+    algorithm: -257,
     createdAt: "2026-01-25T19:04:16.341Z",
     lastUsedAt: "2026-02-08T09:33:10.341Z",
   }),
@@ -38,6 +40,7 @@ const passkeys: Passkey[] = [
     credential: "fake-credential-2",
     id: "8518d6e1-a126-463f-b682-103b7f8b1852",
     aaguid: "00000000-0000-0000-0000-000000000000",
+    algorithm: -8,
     createdAt: "2026-01-19T19:04:16.341Z",
     lastUsedAt: "2026-02-25T20:06:19.341Z",
   }),

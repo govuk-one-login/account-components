@@ -90,9 +90,7 @@ describe("enterPassword handlers", () => {
       ).toHaveBeenCalledWith({
         type: "authenticated",
       });
-      expect(mockReply.redirect).toHaveBeenCalledWith(
-        "/delete-account/confirm",
-      );
+      expect(mockReply.redirect).toHaveBeenCalledWith("/reset-delete/confirm");
       expect(result).toBe(mockReply);
     });
 
@@ -260,20 +258,28 @@ describe("enterPassword handlers", () => {
       ).rejects.toThrow();
     });
 
-    it("should throw error when ExceededIncorrectPasswordSubmissionLimit", async () => {
-      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
+    it("should send lockedOutPasswordEnteredTooManyTimes event and redirect when ExceededIncorrectPasswordSubmissionLimit", async () => {
+      mockRequest.body = { password: "invalidPassword123" }; // pragma: allowlist secret
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockAuthenticate.mockResolvedValue({
         success: false,
         error: "ExceededIncorrectPasswordSubmissionLimit",
       });
 
-      await expect(
-        enterPasswordPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-      ).rejects.toThrow("ExceededIncorrectPasswordSubmissionLimit");
+      const result = await enterPasswordPostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(
+        mockReply.journeyStates?.["account-delete"]?.send,
+      ).toHaveBeenCalledWith({
+        type: "lockedOutPasswordEnteredTooManyTimes",
+      });
+      expect(mockReply.redirect).toHaveBeenCalledWith(
+        "/reset-delete/password-entered-exceeded",
+      );
+      expect(result).toBe(mockReply);
     });
 
     it("should throw error when AccountInterventionsUnexpectedError", async () => {

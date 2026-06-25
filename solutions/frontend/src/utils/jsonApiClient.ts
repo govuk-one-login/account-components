@@ -58,7 +58,14 @@ export abstract class JsonApiClient {
   }
 
   protected async logOnError<
-    T extends { success: boolean; error?: string; errorDetails?: unknown },
+    T extends
+      | { readonly success: true }
+      | {
+          readonly success: false;
+          readonly error: string;
+          readonly errorDetails: unknown;
+          readonly rawResponse?: Response | undefined;
+        },
   >(methodName: string, fn: () => Promise<T>): Promise<T> {
     const result = await fn();
     if (!result.success) {
@@ -67,6 +74,8 @@ export abstract class JsonApiClient {
         message: this.errorScope,
         error: result.error,
         errorDetails: result.errorDetails,
+        responseStatusCode: result.rawResponse?.status,
+        responseStatus: result.rawResponse?.statusText,
       });
     }
     return result;
@@ -148,7 +157,7 @@ export abstract class JsonApiClient {
     }
 
     const errorResponseBodySchema = v.object({
-      code: v.number(),
+      code: v.optional(v.number()),
       message: v.string(),
     });
 
@@ -184,7 +193,10 @@ export abstract class JsonApiClient {
       };
     }
 
-    if (!Object.keys(errorCodesMap).includes(body.output.code.toString())) {
+    if (
+      body.output.code === undefined ||
+      !Object.keys(errorCodesMap).includes(body.output.code.toString())
+    ) {
       return {
         success: false,
         error: "UnknownErrorResponse",

@@ -266,7 +266,9 @@ export const initFrontend = async function () {
       includeSubDomains: true,
     },
     referrerPolicy: false,
-    permittedCrossDomainPolicies: false,
+    permittedCrossDomainPolicies: {
+      permittedPolicies: "none",
+    },
   });
 
   fastify.register(async (fastify) => {

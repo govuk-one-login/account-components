@@ -18,7 +18,11 @@ vi.mock(import("./jsonApiClient.js"), () => ({
 
     static processResponse = vi.fn();
     static undefinedSchema = {};
-    static unknownError = { success: false, error: "UnknownError" };
+    static unknownError = {
+      success: false,
+      error: "UnknownError",
+      rawResponse: undefined,
+    };
   },
 }));
 
@@ -35,6 +39,7 @@ vi.mock(import("../../../commons/utils/constants.js"), async () => {
       isBackUpEligible: v.boolean(),
       isBackedUp: v.boolean(),
       isResidentKey: v.boolean(),
+      algorithm: v.pipe(v.number(), v.integer()),
     }),
   };
 });
@@ -92,12 +97,18 @@ describe("accountDataApiClient", () => {
 
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountDataApiClient(mockAccessToken, mockEvent);
+      const error = new Error("Network error");
 
-      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(error);
 
       const result = await client.getPasskeys("test-public-subject-id");
 
-      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
+      expect(result).toStrictEqual({
+        success: false,
+        error: "UnknownError",
+        rawResponse: undefined,
+        errorDetails: error,
+      });
     });
   });
 
@@ -115,6 +126,7 @@ describe("accountDataApiClient", () => {
         isBackUpEligible: true,
         isBackedUp: false,
         isResidentKey: true,
+        algorithm: -7,
       };
 
       mockThisFetch.mockResolvedValueOnce(new Response());
@@ -136,8 +148,9 @@ describe("accountDataApiClient", () => {
 
     it("should return unknown error when fetch throws", async () => {
       const client = new AccountDataApiClient(mockAccessToken, mockEvent);
+      const error = new Error("Network error");
 
-      mockThisFetch.mockRejectedValueOnce(new Error("Network error"));
+      mockThisFetch.mockRejectedValueOnce(error);
 
       const result = await client.createPasskey("test-public-subject-id", {
         credential: "test-credential",
@@ -149,9 +162,15 @@ describe("accountDataApiClient", () => {
         isBackUpEligible: true,
         isBackedUp: false,
         isResidentKey: true,
+        algorithm: -7,
       });
 
-      expect(result).toStrictEqual({ success: false, error: "UnknownError" });
+      expect(result).toStrictEqual({
+        success: false,
+        error: "UnknownError",
+        rawResponse: undefined,
+        errorDetails: error,
+      });
     });
   });
 });

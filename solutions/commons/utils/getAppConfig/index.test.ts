@@ -63,6 +63,7 @@ describe("getAppConfig", () => {
       environment: "dev",
       transform: "json",
       awsSdkV3Client: {},
+      maxAge: 300,
     });
     expect(result).toStrictEqual(mockConfig);
   });
@@ -95,6 +96,7 @@ describe("getAppConfig", () => {
       environment: "production",
       transform: "json",
       awsSdkV3Client: {},
+      maxAge: 300,
     });
   });
 });

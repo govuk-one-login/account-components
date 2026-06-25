@@ -1,5 +1,3 @@
-tap "sourcemeta/apps"
-
 brew "awscli"
 brew "aws-sam-cli"
 brew "cfn-lint"
@@ -8,4 +6,3 @@ brew "pre-commit"
 brew "tfenv"
 brew "zizmor"
 brew "detect-secrets"
-cask "sourcemeta/apps/jsonschema"

@@ -3,12 +3,19 @@ import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
 import { introductionPostHandler } from "./introduction.js";
 
-const render = async (reply: FastifyReply, options?: object) => {
+const render = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+  options?: object,
+) => {
   assert.ok(reply.render);
+  assert.ok(request.session.claims?.email);
+
   await reply.render(
     "journeys/account-delete/templates/resendEmailVerificationCode.njk",
     {
-      verifyCodeLinkUrl:
+      emailAddress: request.session.claims.email,
+      backLink:
         paths.journeys["account-delete"].EMAIL_NOT_VERIFIED.verifyEmailAddress
           .path,
       ...options,
@@ -17,10 +24,10 @@ const render = async (reply: FastifyReply, options?: object) => {
 };
 
 export async function resendEmailVerificationCodeGetHandler(
-  _request: FastifyRequest,
+  request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  await render(reply);
+  await render(request, reply);
   return reply;
 }
 

@@ -7,6 +7,7 @@ import type { JwtHeader } from "../../types/common.js";
 import {
   Algorithms,
   Channels,
+  defaultEmailAddress,
   MockRequestObjectScenarios,
   Scope,
   Users,
@@ -20,7 +21,6 @@ import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.j
 import { createHash } from "node:crypto";
 import {
   checkUserAgentCookieName,
-  mockEmailAddress,
   rootDomain,
 } from "../../../../commons/utils/constants.js";
 
@@ -42,6 +42,8 @@ export const requestBodySchema = v.object({
   account_management_api_verifyOtpChallenge_scenario: v.string(),
   account_data_api_createPasskey_scenario: v.string(),
   account_data_api_getPasskeys_scenario: v.string(),
+  stubs_account_interventions_service_api_access_token_getUserAisStatus_scenario:
+    v.string(),
 });
 
 export async function createRequestObjectGet(
@@ -71,7 +73,8 @@ export async function createRequestObjectGet(
     jwtPayload,
     jwtHeader,
     originalRequestBody,
-    mockEmailAddress,
+    defaultEmailAddress,
+    notifyDontSendEmailsTo: process.env["NOTIFY_DONT_SEND_EMAILS_TO"],
     isLocal: getEnvironment() === "local",
   });
   return reply;

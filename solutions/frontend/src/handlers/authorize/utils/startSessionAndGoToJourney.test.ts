@@ -108,7 +108,7 @@ describe("startSessionAndGoToJourney", () => {
       "https://example.com/callback",
     );
 
-    expect(mockRedirect).toHaveBeenCalledWith("/delete-account/introduction");
+    expect(mockRedirect).toHaveBeenCalledWith("/reset-delete/start");
   });
 
   it("sets session expiry based on account management API token expiry", async () => {

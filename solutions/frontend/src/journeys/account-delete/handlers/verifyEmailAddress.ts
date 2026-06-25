@@ -54,10 +54,10 @@ export async function verifyEmailAddressPostHandler(
       ),
       v.length(
         6,
-        request.i18n.t("journey:verifyEmailAddress.formErrors.tooShort"),
+        request.i18n.t("journey:verifyEmailAddress.formErrors.invalidFormat"),
       ),
       v.digits(
-        request.i18n.t("journey:verifyEmailAddress.formErrors.notAllDigits"),
+        request.i18n.t("journey:verifyEmailAddress.formErrors.invalidFormat"),
       ),
     ),
   });
@@ -102,7 +102,15 @@ export async function verifyEmailAddressPostHandler(
       });
       return reply;
     } else if (result.error === "TooManyEmailCodesEntered") {
-      // TODO need to do something in this case?
+      reply.journeyStates["account-delete"].send({
+        type: "lockedOutSecurityCodeEnteredTooManyTimes",
+      });
+      reply.redirect(
+        paths.journeys["account-delete"]
+          .LOCKED_OUT_SECURITY_CODE_ENTERED_TOO_MANY_TIMES
+          .lockedOutSecurityCodeEnteredTooManyTimes.path,
+      );
+      return reply;
     }
 
     throw new Error(result.error);

@@ -25,11 +25,24 @@ class TestJsonApiClient extends JsonApiClient {
     return this.fetch;
   }
 
-  public testLogOnError<T extends { success: boolean; error?: string }>(
-    methodName: string,
-    fn: () => Promise<T>,
-  ): Promise<T> {
+  public testLogOnError(methodName: string, fn: () => Promise<any>) {
     return this.logOnError(methodName, fn);
+  }
+
+  public testLogOnErrorWithProcessResponse(response: Response) {
+    return this.logOnError("test", async () => {
+      try {
+        return await JsonApiClient.processResponse(response, v.undefined(), {
+          "400": "bad_request",
+          "404": "not_found",
+        } as const);
+      } catch (error) {
+        return {
+          ...TestJsonApiClient.testUnknownError,
+          errorDetails: error,
+        };
+      }
+    });
   }
 
   public static testProcessResponse<
@@ -238,6 +251,8 @@ describe("jsonApiClient", () => {
         message: "TestService",
         error: "TestError",
         errorDetails: { foo: "bar" },
+        responseStatusCode: undefined,
+        responseStatus: undefined,
       });
     });
 
@@ -252,7 +267,69 @@ describe("jsonApiClient", () => {
         message: "TestService",
         error: undefined,
         errorDetails: undefined,
+        responseStatusCode: undefined,
+        responseStatus: undefined,
       });
+    });
+
+    it("should log response status when rawResponse is present", async () => {
+      const mockResponse = {
+        status: 500,
+        statusText: "Internal Server Error",
+      } as Response;
+      const errorFn = vi.fn().mockResolvedValue({
+        success: false,
+        error: "ServerError",
+        errorDetails: undefined,
+        rawResponse: mockResponse,
+      });
+
+      const result = await client.testLogOnError("testMethod", errorFn);
+
+      expect(result).toStrictEqual({
+        success: false,
+        error: "ServerError",
+        errorDetails: undefined,
+        rawResponse: mockResponse,
+      });
+      expect(mockLogger.error).toHaveBeenCalledWith({
+        method: "testMethod",
+        message: "TestService",
+        error: "ServerError",
+        errorDetails: undefined,
+        responseStatusCode: 500,
+        responseStatus: "Internal Server Error",
+      });
+    });
+
+    it("should preserve narrow error types from processResponse", () => {
+      expect.assertions(1);
+
+      type Result = Awaited<
+        ReturnType<typeof client.testLogOnErrorWithProcessResponse>
+      >;
+      type ErrorType = Extract<Result, { success: false }>["error"];
+
+      // Verify all expected error strings are assignable
+      const _valid: ErrorType[] = [
+        "bad_request",
+        "not_found",
+        "UnknownError",
+        "ErrorParsingResponseBodyJson",
+        "ErrorValidatingResponseBody",
+        "ErrorParsingErrorResponseBodyJson",
+        "ErrorValidatingErrorResponseBody",
+        "UnknownErrorResponse",
+      ];
+      void _valid;
+
+      // If error types widen to `string`, the @ts-expect-error becomes unused
+      // and there will be a type error, catching the regression.
+      // @ts-expect-error - "not_a_real_error" should not be assignable to the narrow union
+      const _invalid: ErrorType = "not_a_real_error";
+      void _invalid;
+
+      expect(true).toBe(true);
     });
   });
 
@@ -569,6 +646,32 @@ describe("jsonApiClient", () => {
                 path: "message",
               },
             ],
+          },
+        });
+      });
+
+      it("should handle error response with no code field", async () => {
+        const errorResponse = { message: "Something went wrong" };
+        const response = {
+          ok: false,
+          json: vi.fn().mockResolvedValue(errorResponse),
+        } as unknown as Response;
+        const schema = v.string();
+        const errorMap = { "400": "BadRequest" };
+
+        const result = await TestJsonApiClient.testProcessResponse(
+          response,
+          schema,
+          errorMap,
+        );
+
+        expect(result).toStrictEqual({
+          success: false,
+          error: "UnknownErrorResponse",
+          rawResponse: response,
+          errorDetails: {
+            code: undefined,
+            message: "Something went wrong",
           },
         });
       });

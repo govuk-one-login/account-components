@@ -23,7 +23,6 @@ vi.mock(import("../utils/getClientRegistryWithInvalidClient/index.js"), () => ({
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/constants.js"), () => ({
   rootDomain: "example.com",
-  mockEmailAddress: "testuser@test.null.local",
   checkUserAgentCookieName: "amc",
 }));
 
@@ -59,6 +58,8 @@ describe("createRequestObjectGet", () => {
         jwtPayload: undefined,
         jwtHeader: undefined,
         originalRequestBody: undefined,
+        defaultEmailAddress: "testuser@test.null.local",
+        notifyDontSendEmailsTo: process.env["NOTIFY_DONT_SEND_EMAILS_TO"],
       }),
     );
   });
@@ -102,6 +103,8 @@ describe("createRequestObjectPost", () => {
         account_management_api_verifyOtpChallenge_scenario: "successful",
         account_data_api_createPasskey_scenario: "successful",
         account_data_api_getPasskeys_scenario: "successful",
+        stubs_account_interventions_service_api_access_token_getUserAisStatus_scenario:
+          "no_interventions",
       },
     };
 

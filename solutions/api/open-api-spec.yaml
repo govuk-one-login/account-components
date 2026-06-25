@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components API
-  version: 0.0.17
+  version: 0.0.18
   description: |
     OAuth 2.0 provider endpoints, including:
     - POST /token (supports client assertions via private_key_jwt)
@@ -479,8 +479,7 @@ components:
             properties:
               action:
                 type: string
-                enum:
-                  ["account-delete", "testing-journey-action", "passkey-create"]
+                enum: ["testing-journey-action", "passkey-create"]
                 description: The name of the action
               timestamp:
                 type: integer
