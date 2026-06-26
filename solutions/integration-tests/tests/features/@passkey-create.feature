@@ -480,3 +480,168 @@ Feature: Passkey create
     },
     "success": false,
     """
+
+  Scenario: Interventions on account (Blocked)
+    Given I go to the journey initiator
+    And I select the option beginning with "Blocked" in the "Get user account intervention status" select
+    And I begin a "passkey-create" journey
+
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'
+    And the page contains the text:
+    """
+    "scope": "passkey-create",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": false
+    """
+    And the page contains the text:
+    """
+    "action": "passkey-create",
+    "details": {
+      "accountInterventionsStatus": {
+        "state": {
+          "blocked": true,
+          "reproveIdentity": false,
+          "resetPassword": false,
+          "suspended": false
+        }
+      },      
+      "error": {
+        "code": 1004,
+        "description": "AccountHasInterventions"
+      }      
+    },
+    "success": false,
+    """
+
+  Scenario: Interventions on account (Suspended, no user actions required)
+    Given I go to the journey initiator
+    And I select the option beginning with "Suspended, no user actions required" in the "Get user account intervention status" select
+    And I begin a "passkey-create" journey
+
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'
+    And the page contains the text:
+    """
+    "scope": "passkey-create",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": false
+    """
+    And the page contains the text:
+    """
+    "action": "passkey-create",
+    "details": {
+      "accountInterventionsStatus": {
+        "state": {
+          "blocked": false,
+          "reproveIdentity": false,
+          "resetPassword": false,
+          "suspended": true
+        }
+      },      
+      "error": {
+        "code": 1004,
+        "description": "AccountHasInterventions"
+      }      
+    },
+    "success": false,
+    """        
+
+  Scenario: Interventions on account (Suspended, reset password required)
+    Given I go to the journey initiator
+    And I select the option beginning with "Suspended, reset password required" in the "Get user account intervention status" select
+    And I begin a "passkey-create" journey
+
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'
+    And the page contains the text:
+    """
+    "scope": "passkey-create",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": false
+    """
+    And the page contains the text:
+    """
+    "action": "passkey-create",
+    "details": {
+      "accountInterventionsStatus": {
+        "state": {
+          "blocked": false,
+          "reproveIdentity": false,
+          "resetPassword": true,
+          "suspended": true
+        }
+      },      
+      "error": {
+        "code": 1004,
+        "description": "AccountHasInterventions"
+      }      
+    },
+    "success": false,
+    """    
+
+  Scenario: Interventions on account (Suspended, reprove identity required)
+    Given I go to the journey initiator
+    And I select the option beginning with "Suspended, reprove identity required" in the "Get user account intervention status" select
+    And I begin a "passkey-create" journey
+
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'
+    And the page contains the text:
+    """
+    "scope": "passkey-create",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": false
+    """
+    And the page contains the text:
+    """
+    "action": "passkey-create",
+    "details": {
+      "accountInterventionsStatus": {
+        "state": {
+          "blocked": false,
+          "reproveIdentity": true,
+          "resetPassword": false,
+          "suspended": true
+        }
+      },      
+      "error": {
+        "code": 1004,
+        "description": "AccountHasInterventions"
+      }      
+    },
+    "success": false,
+    """    
+
+  Scenario: Interventions on account (Suspended, reset password and reprove identity required)
+    Given I go to the journey initiator
+    And I select the option beginning with "Suspended, reset password and reprove identity required" in the "Get user account intervention status" select
+    And I begin a "passkey-create" journey
+
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'
+    And the page contains the text:
+    """
+    "scope": "passkey-create",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": false
+    """
+    And the page contains the text:
+    """
+    "action": "passkey-create",
+    "details": {
+      "accountInterventionsStatus": {
+        "state": {
+          "blocked": false,
+          "reproveIdentity": true,
+          "resetPassword": true,
+          "suspended": true
+        }
+      },      
+      "error": {
+        "code": 1004,
+        "description": "AccountHasInterventions"
+      }      
+    },
+    "success": false,
+    """    
