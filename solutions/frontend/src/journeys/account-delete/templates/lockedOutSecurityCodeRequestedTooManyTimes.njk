@@ -1,0 +1,17 @@
+{% extends "templates/layout/base-page.njk" %}
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set pageTitleName = 'journey:lockedOutSecurityCodeRequestedTooManyTimes.pageTitle' | translate %}
+{% set englishPageTitleName = 'journey:lockedOutSecurityCodeRequestedTooManyTimes.pageTitle' | getFixedT_en %}
+
+{% block pageContent %}
+  <h1 class="govuk-heading-l">{{ 'journey:lockedOutSecurityCodeRequestedTooManyTimes.heading' | translate }}</h1>
+
+  {% set paragraphs = 'journey:lockedOutSecurityCodeRequestedTooManyTimes.paragraphs' | translate({ returnObjects: true }) %}
+
+  {% for paragraph in paragraphs %}
+    <p class="govuk-body">{{ paragraph | translate({
+      exitLinkUrl: globals.buildCompleteFailedJourneyUri(globals.unsuccessfulJourneyActionErrors.userAbortedJourney)
+    }) | safe }}</p>
+  {% endfor %}
+{% endblock %}
