@@ -547,6 +547,38 @@ describe("passkey-create audit events", () => {
       );
     });
 
+    it("excludes passkey_enrolment_failure_reason when registrationResponse is undefined", async () => {
+      await sendPasskeyEnrolmentFailedAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        registrationOptions as PublicKeyCredentialCreationOptionsJSON,
+      );
+
+      const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(eventPayload.extensions.passkey).not.toHaveProperty(
+        "passkey_enrolment_failure_reason",
+      );
+    });
+
+    it("excludes passkey_enrolment_failure_reason when reason is undefined", async () => {
+      await sendPasskeyEnrolmentFailedAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        registrationOptions as PublicKeyCredentialCreationOptionsJSON,
+        registrationResponse,
+        undefined,
+      );
+
+      const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(eventPayload.extensions.passkey).not.toHaveProperty(
+        "passkey_enrolment_failure_reason",
+      );
+    });
+
     it("maps empty excludeCredentials to empty array", async () => {
       await sendPasskeyEnrolmentFailedAuditEvent(
         mockRequest as FastifyRequest,

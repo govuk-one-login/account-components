@@ -237,10 +237,10 @@ export const sendPasskeyEnrolmentFailedAuditEvent = async (
   request: FastifyRequest,
   reply: FastifyReply,
   registrationOptions: PublicKeyCredentialCreationOptionsJSON,
-  registrationResponse: InferOutput<
+  registrationResponse?: InferOutput<
     typeof postBodySchema
   >["registrationResponse"],
-  reason: string,
+  reason?: string,
 ) => {
   const base = getBaseEventProps(request, reply);
   if (!base) return;
@@ -261,7 +261,10 @@ export const sendPasskeyEnrolmentFailedAuditEvent = async (
         }),
         passkey: {
           ...enrolment.extensions,
-          passkey_enrolment_failure_reason: reason,
+          ...(registrationResponse !== undefined &&
+            reason !== undefined && {
+              passkey_enrolment_failure_reason: reason,
+            }),
         },
       },
       restricted: {
