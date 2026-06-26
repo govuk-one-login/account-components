@@ -503,5 +503,69 @@ describe("journeyActions", () => {
 
       expect(mockSendAuditEvent).toHaveBeenCalledTimes(2);
     });
+
+    it("should complete all in-progress actions unsuccessfully with complex error including extras", async () => {
+      mockRequest.session.journeyActions = [
+        { action: "temp-account-delete-action" },
+        { action: "passkey-create" },
+      ] as FastifySessionObject["journeyActions"];
+
+      await completeAllJourneyActionsUnsuccessfully(
+        {
+          code: 1004,
+          description: "AccountHasInterventions",
+          destroySession: false,
+          extras: {
+            accountInterventionsStatus: {
+              state: {
+                blocked: true,
+                suspended: false,
+              },
+            },
+          },
+        },
+        mockRequest as unknown as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockRequest.session.journeyActions).toStrictEqual([
+        {
+          action: "temp-account-delete-action",
+          success: false,
+          error: {
+            code: 1004,
+            description: "AccountHasInterventions",
+            destroySession: false,
+            extras: {
+              accountInterventionsStatus: {
+                state: {
+                  blocked: true,
+                  suspended: false,
+                },
+              },
+            },
+          },
+          timestamp: 3000,
+        },
+        {
+          action: "passkey-create",
+          success: false,
+          error: {
+            code: 1004,
+            description: "AccountHasInterventions",
+            destroySession: false,
+            extras: {
+              accountInterventionsStatus: {
+                state: {
+                  blocked: true,
+                  suspended: false,
+                },
+              },
+            },
+          },
+          timestamp: 3000,
+        },
+      ]);
+    });
   });
 });

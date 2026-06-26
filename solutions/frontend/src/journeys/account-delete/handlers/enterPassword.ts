@@ -8,6 +8,11 @@ import {
 } from "../../../utils/formErrorsHelpers.js";
 import * as v from "valibot";
 import { AccountManagementApiClient } from "../../../utils/accountManagementApiClient.js";
+import { completeJourney } from "../../utils/completeJourney.js";
+import {
+  completeAllJourneyActionsUnsuccessfully,
+  unsuccessfulJourneyActionErrors,
+} from "../../utils/journeyActions.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
@@ -86,9 +91,39 @@ export async function enterPasswordPostHandler(
       );
       return reply;
     } else if (result.error === "UserAccountSuspended") {
-      // TODO https://govukverify.atlassian.net/browse/OLH-2858
+      await completeAllJourneyActionsUnsuccessfully(
+        {
+          ...unsuccessfulJourneyActionErrors.accountHasInterventions,
+          extras: {
+            accountInterventionsStatus: {
+              state: {
+                blocked: false,
+                suspended: true,
+              },
+            },
+          },
+        },
+        request,
+        reply,
+      );
+      return await completeJourney(request, reply, false);
     } else if (result.error === "UserAccountBlocked") {
-      // TODO https://govukverify.atlassian.net/browse/OLH-2858
+      await completeAllJourneyActionsUnsuccessfully(
+        {
+          ...unsuccessfulJourneyActionErrors.accountHasInterventions,
+          extras: {
+            accountInterventionsStatus: {
+              state: {
+                blocked: true,
+                suspended: false,
+              },
+            },
+          },
+        },
+        request,
+        reply,
+      );
+      return await completeJourney(request, reply, false);
     }
 
     throw new Error(result.error);

@@ -74,10 +74,10 @@ export const completeJourney = async (
 
     const actions = request.session.journeyActions.map((action) => {
       if ("error" in action) {
-        const { code, description } = action.error;
+        const { code, description, extras } = action.error;
         return {
           ...action,
-          details: { error: { code, description } },
+          details: { ...extras, error: { code, description } },
           error: undefined,
         };
       }
