@@ -534,6 +534,11 @@ describe("passkey-create handlers", () => {
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
         ).toHaveBeenCalledTimes(1);
+        expect(mockSendPasskeyEnrolmentFailedAuditEvent).toHaveBeenCalledWith(
+          mockRequest,
+          mockReply,
+          { challenge: "test-challenge" },
+        );
       });
     });
 
@@ -1003,6 +1008,11 @@ describe("passkey-create handlers", () => {
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
         ).toHaveBeenCalledTimes(1);
+        expect(mockSendPasskeyEnrolmentFailedAuditEvent).toHaveBeenCalledWith(
+          mockRequest,
+          mockReply,
+          { challenge: "test-challenge" },
+        );
       });
 
       it("should throw when journey state is missing", async () => {
