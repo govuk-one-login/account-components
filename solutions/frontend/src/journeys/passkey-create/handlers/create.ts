@@ -208,6 +208,13 @@ export async function postHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
+  assert.ok(reply.journeyStates?.["passkey-create"]);
+
+  const registrationOptions =
+    reply.journeyStates["passkey-create"].getSnapshot().context
+      .registrationOptions;
+  assert.ok(registrationOptions);
+
   const stringsSuffix = getStringsSuffix(reply);
 
   const bodyParseResult = v.safeParse(postBodySchema, request.body);
@@ -226,6 +233,11 @@ export async function postHandler(
     };
 
     await sendPasskeyRegistrationFailedAuditEvent(request, reply);
+    await sendPasskeyEnrolmentFailedAuditEvent(
+      request,
+      reply,
+      registrationOptions,
+    );
 
     await render(request, reply, {
       showErrorUi: true,
@@ -290,6 +302,11 @@ export async function postHandler(
     };
 
     await sendPasskeyRegistrationFailedAuditEvent(request, reply, reason);
+    await sendPasskeyEnrolmentFailedAuditEvent(
+      request,
+      reply,
+      registrationOptions,
+    );
 
     await render(request, reply, {
       showErrorUi: true,
@@ -299,12 +316,6 @@ export async function postHandler(
 
   assert.ok(process.env["PASSKEYS_RP_ID"]);
   assert.ok(process.env["PASSKEYS_EXPECTED_ORIGIN"]);
-  assert.ok(reply.journeyStates?.["passkey-create"]);
-
-  const registrationOptions =
-    reply.journeyStates["passkey-create"].getSnapshot().context
-      .registrationOptions;
-  assert.ok(registrationOptions);
 
   await sendPasskeyRegistrationSuccessfulAuditEvent(
     request,
