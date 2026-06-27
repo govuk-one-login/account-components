@@ -116,4 +116,15 @@ export const accountDelete = function (fastify: FastifyInstance) {
       );
     },
   );
+
+  fastify.get(
+    paths.journeys["account-delete"]
+      .LOCKED_OUT_SECURITY_CODE_REQUESTED_TOO_MANY_TIMES
+      .lockedOutSecurityCodeRequestedTooManyTimes.path,
+    async function (request, reply) {
+      return (
+        await import("./handlers/lockedOutSecurityCodeRequestedTooManyTimes.js")
+      ).lockedOutSecurityCodeRequestedTooManyTimesGetHandler(request, reply);
+    },
+  );
 };

@@ -54,7 +54,15 @@ export async function introductionPostHandler(
       );
       return reply;
     } else if (result.error === "BlockedForEmailVerificationCodes") {
-      // TODO https://govukverify.atlassian.net/browse/OLH-4274
+      reply.journeyStates["account-delete"].send({
+        type: "lockedOutSecurityCodeRequestedTooManyTimes",
+      });
+      reply.redirect(
+        paths.journeys["account-delete"]
+          .LOCKED_OUT_SECURITY_CODE_REQUESTED_TOO_MANY_TIMES
+          .lockedOutSecurityCodeRequestedTooManyTimes.path,
+      );
+      return reply;
     }
 
     throw new Error(result.error);
