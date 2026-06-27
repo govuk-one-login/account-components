@@ -177,4 +177,38 @@ Feature: Delete account
       }      
     },
     "success": false,
+    """
+
+  # Should fail because of known accessibility issues
+  @failMobile
+  Scenario: Email code requested too many times
+    Given I go to the journey initiator
+    And I select the option beginning with "Too many OTP codes requested" in the "Send OTP challenge" select
+    And I begin a "account-delete" journey    
+    Then the page title is prefixed with "You’ll need to permanently delete your GOV.UK One Login"
+  
+    Given I click the "Start" button
+    Then the page title is prefixed with "You asked to resend the security code too many times"
+    And the page looks as expected
+    And the page meets our accessibility standards
+
+    Given I click the "try signing in again" link
+    Then the page contains the text "Client callback"
+    And the page contains the text '"email": "testuser@test.null.local",'
+    And the page contains the text:
+    """
+    "scope": "account-delete",
+    "sub": "urn:fdc:gov.uk:default",
+    "success": false
+    """
+    And the page contains the text:
+    """
+    "action": "temp-account-delete-action",
+    "details": {
+      "error": {
+        "code": 1002,
+        "description": "UserAbortedJourney"
+      }      
+    },
+    "success": false,
     """    
