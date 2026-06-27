@@ -135,18 +135,26 @@ describe("resendEmailVerificationCode handlers", () => {
       expect(result).toBe(mockReply);
     });
 
-    it("should throw error when BlockedForEmailVerificationCodes", async () => {
+    it("should send lockedOutSecurityCodeRequestedTooManyTimes event and redirect when BlockedForEmailVerificationCodes", async () => {
       mockSendOtpChallenge.mockResolvedValue({
         success: false,
         error: "BlockedForEmailVerificationCodes",
       });
 
-      await expect(
-        resendEmailVerificationCodePostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-      ).rejects.toThrow("BlockedForEmailVerificationCodes");
+      const result = await resendEmailVerificationCodePostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(
+        mockReply.journeyStates?.["account-delete"]?.send,
+      ).toHaveBeenCalledWith({
+        type: "lockedOutSecurityCodeRequestedTooManyTimes",
+      });
+      expect(mockReply.redirect).toHaveBeenCalledWith(
+        "/reset-delete/security-code-requested-too-many-times",
+      );
+      expect(result).toBe(mockReply);
     });
 
     it("should throw if journey states are not available", async () => {

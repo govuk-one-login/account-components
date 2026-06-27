@@ -56,7 +56,7 @@ describe("accountDelete", () => {
   it("registers all routes", () => {
     accountDelete(mockFastify);
 
-    expect(mockGet).toHaveBeenCalledTimes(7);
+    expect(mockGet).toHaveBeenCalledTimes(8);
     expect(mockPost).toHaveBeenCalledTimes(5);
   });
 
