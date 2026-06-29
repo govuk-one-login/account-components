@@ -5,6 +5,7 @@ import {
 } from "../../../../commons/utils/auditEvents/index.js";
 import { createEvent } from "@govuk-one-login/event-catalogue-utils";
 import assert from "node:assert";
+import type { DistributiveOmit } from "../../../../commons/utils/commonTypes.js";
 
 export const journeyActionNames = {
   testingJourneyAction: "testing-journey-action",
@@ -141,7 +142,7 @@ export const startJourneyAction = async <
 };
 
 const updateInProgressAction = (
-  action: Omit<JourneyAction<JourneyActionName>, "timestamp"> & {
+  action: DistributiveOmit<JourneyAction<JourneyActionName>, "timestamp"> & {
     success: boolean;
   },
   request: FastifyRequest,
@@ -237,4 +238,35 @@ export const completeJourneyActionUnsuccessfully = async (
     error: action.error.description,
   });
   updateInProgressAction({ ...action, success: false }, request);
+};
+
+export const completeAllJourneyActionsUnsuccessfully = async (
+  error: (typeof unsuccessfulJourneyActionErrors)[keyof typeof unsuccessfulJourneyActionErrors],
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  assert.ok(
+    !!request.session.journeyActions?.length,
+    "There are no journey actions",
+  );
+
+  for (const journeyAction of request.session.journeyActions) {
+    if (!("success" in journeyAction)) {
+      const journeyActionName = Object.values(journeyActionNames).find(
+        (name) => name === journeyAction.action,
+      );
+
+      assert.ok(journeyActionName, "Action not found");
+
+      await sendCompletedActionAuditEvent(request, reply, {
+        name: journeyActionName,
+        success: false,
+        error: error.description,
+      });
+      updateInProgressAction(
+        { action: journeyActionName, error, success: false },
+        request,
+      );
+    }
+  }
 };

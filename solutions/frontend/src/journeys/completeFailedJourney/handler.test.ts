@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockCompleteJourney = vi.fn();
-const mockCompleteJourneyActionUnsuccessfully = vi.fn();
+const mockCompleteAllJourneyActionsUnsuccessfully = vi.fn();
 
 vi.mock(import("../utils/completeJourney.js"), () => ({
   completeJourney: mockCompleteJourney,
@@ -10,7 +10,8 @@ vi.mock(import("../utils/completeJourney.js"), () => ({
 
 vi.mock(import("../utils/journeyActions.js"), async (importOriginal) => ({
   ...(await importOriginal()),
-  completeJourneyActionUnsuccessfully: mockCompleteJourneyActionUnsuccessfully,
+  completeAllJourneyActionsUnsuccessfully:
+    mockCompleteAllJourneyActionsUnsuccessfully,
 }));
 
 const { completeFailedJourneyHandler } = await import("./handler.js");
@@ -43,14 +44,11 @@ describe("completeFailedJourneyHandler", () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledWith(
+      expect(mockCompleteAllJourneyActionsUnsuccessfully).toHaveBeenCalledWith(
         {
-          action: "temp-account-delete-action",
-          error: {
-            code: 1001,
-            description: "UserSignedOut",
-            destroySession: true,
-          },
+          code: 1001,
+          description: "UserSignedOut",
+          destroySession: true,
         },
         mockRequest,
         mockReply,
@@ -75,14 +73,11 @@ describe("completeFailedJourneyHandler", () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledWith(
+      expect(mockCompleteAllJourneyActionsUnsuccessfully).toHaveBeenCalledWith(
         {
-          action: "temp-account-delete-action",
-          error: {
-            code: 1002,
-            description: "UserAbortedJourney",
-            destroySession: false,
-          },
+          code: 1002,
+          description: "UserAbortedJourney",
+          destroySession: false,
         },
         mockRequest,
         mockReply,
@@ -149,135 +144,6 @@ describe("completeFailedJourneyHandler", () => {
         ),
       ).rejects.toThrow("Error not found");
     });
-
-    it("should throw when there are no journey actions", async () => {
-      mockRequest = {
-        session: {
-          journeyActions: [],
-        },
-        method: "GET",
-        query: {
-          error_code: "1001",
-          error_description: "UserSignedOut",
-        },
-      } as unknown as Partial<FastifyRequest>;
-
-      await expect(
-        completeFailedJourneyHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-      ).rejects.toThrow("There are no journey actions");
-    });
-
-    it("should throw when an in-progress action name is not a known journey action", async () => {
-      mockRequest = {
-        session: {
-          journeyActions: [{ action: "unknown-action" }],
-        },
-        method: "GET",
-        query: {
-          error_code: "1001",
-          error_description: "UserSignedOut",
-        },
-      } as unknown as Partial<FastifyRequest>;
-
-      await expect(
-        completeFailedJourneyHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-      ).rejects.toThrow("Action not found");
-    });
-
-    it("should skip already-completed actions", async () => {
-      mockRequest = {
-        session: {
-          journeyActions: [
-            {
-              action: "temp-account-delete-action",
-              success: true,
-              details: {},
-              timestamp: 1000,
-            },
-            { action: "passkey-create" },
-          ],
-        },
-        method: "GET",
-        query: {
-          error_code: "1001",
-          error_description: "UserSignedOut",
-        },
-      } as unknown as Partial<FastifyRequest>;
-      mockCompleteJourney.mockResolvedValue(mockReply);
-
-      await completeFailedJourneyHandler(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-      );
-
-      expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledTimes(1);
-      expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledWith(
-        {
-          action: "passkey-create",
-          error: {
-            code: 1001,
-            description: "UserSignedOut",
-            destroySession: true,
-          },
-        },
-        mockRequest,
-        mockReply,
-      );
-    });
-
-    it("should complete all in-progress actions", async () => {
-      mockRequest = {
-        session: {
-          journeyActions: [
-            { action: "temp-account-delete-action" },
-            { action: "passkey-create" },
-          ],
-        },
-        method: "GET",
-        query: {
-          error_code: "1002",
-          error_description: "UserAbortedJourney",
-        },
-      } as unknown as Partial<FastifyRequest>;
-      mockCompleteJourney.mockResolvedValue(mockReply);
-
-      await completeFailedJourneyHandler(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-      );
-
-      expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledTimes(2);
-      expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledWith(
-        {
-          action: "temp-account-delete-action",
-          error: {
-            code: 1002,
-            description: "UserAbortedJourney",
-            destroySession: false,
-          },
-        },
-        mockRequest,
-        mockReply,
-      );
-      expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledWith(
-        {
-          action: "passkey-create",
-          error: {
-            code: 1002,
-            description: "UserAbortedJourney",
-            destroySession: false,
-          },
-        },
-        mockRequest,
-        mockReply,
-      );
-    });
   });
 
   describe("post request", () => {
@@ -302,14 +168,11 @@ describe("completeFailedJourneyHandler", () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledWith(
+      expect(mockCompleteAllJourneyActionsUnsuccessfully).toHaveBeenCalledWith(
         {
-          action: "temp-account-delete-action",
-          error: {
-            code: 1001,
-            description: "UserSignedOut",
-            destroySession: true,
-          },
+          code: 1001,
+          description: "UserSignedOut",
+          destroySession: true,
         },
         mockRequest,
         mockReply,

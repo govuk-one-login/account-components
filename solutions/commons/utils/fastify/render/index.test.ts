@@ -87,7 +87,7 @@ describe("render", () => {
       ["", "node_modules/govuk-frontend/dist", "node_modules/@govuk-one-login"],
       {
         autoescape: true,
-        noCache: true,
+        noCache: false,
       },
     );
   });
