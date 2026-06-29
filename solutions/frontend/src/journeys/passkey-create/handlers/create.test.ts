@@ -19,6 +19,7 @@ const mockGetPasskeyConvenienceMetadataByAaguid = vi.fn();
 const mockStartJourneyAction = vi.fn();
 const mockCompleteJourneyActionSuccessfully = vi.fn();
 const mockCompleteJourneyActionUnsuccessfully = vi.fn();
+const mockCompleteAllJourneyActionsUnsuccessfully = vi.fn();
 const mockSendPasskeyRegistrationGeneratedAuditEvent = vi.fn();
 const mockSendPasskeyRegistrationFailedAuditEvent = vi.fn();
 const mockSendPasskeyRegistrationSuccessfulAuditEvent = vi.fn();
@@ -49,6 +50,8 @@ vi.mock(import("../../utils/journeyActions.js"), async (importOriginal) => ({
   startJourneyAction: mockStartJourneyAction,
   completeJourneyActionSuccessfully: mockCompleteJourneyActionSuccessfully,
   completeJourneyActionUnsuccessfully: mockCompleteJourneyActionUnsuccessfully,
+  completeAllJourneyActionsUnsuccessfully:
+    mockCompleteAllJourneyActionsUnsuccessfully,
 }));
 
 vi.mock(import("../utils/auditEvents/index.js"), async (importOriginal) => ({
@@ -557,14 +560,13 @@ describe("passkey-create handlers", () => {
           mockReply as FastifyReply,
         );
 
-        expect(mockCompleteJourneyActionUnsuccessfully).toHaveBeenCalledWith(
+        expect(
+          mockCompleteAllJourneyActionsUnsuccessfully,
+        ).toHaveBeenCalledWith(
           {
-            action: "passkey-create",
-            error: {
-              code: 1002,
-              description: "UserAbortedJourney",
-              destroySession: false,
-            },
+            code: 1002,
+            description: "UserAbortedJourney",
+            destroySession: false,
           },
           mockRequest,
           mockReply,

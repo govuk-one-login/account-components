@@ -18,6 +18,7 @@ vi.mock(import("@govuk-one-login/event-catalogue-utils"), () => ({
 const {
   completeJourneyActionUnsuccessfully,
   completeJourneyActionSuccessfully,
+  completeAllJourneyActionsUnsuccessfully,
   startJourneyAction,
 } = await import("./journeyActions.js");
 
@@ -349,6 +350,158 @@ describe("journeyActions", () => {
         }),
       );
       expect(mockSendAuditEvent).toHaveBeenCalledWith(expect.anything());
+    });
+  });
+
+  describe("completeAllJourneyActionsUnsuccessfully", () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ now: 3000 });
+    });
+
+    it("should throw when there are no journey actions", async () => {
+      await expect(
+        completeAllJourneyActionsUnsuccessfully(
+          {
+            code: 1001,
+            description: "UserSignedOut",
+            destroySession: true,
+          },
+          mockRequest as unknown as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+      ).rejects.toThrow("There are no journey actions");
+    });
+
+    it("should throw when an in-progress action name is not a known journey action", async () => {
+      mockRequest.session.journeyActions = [
+        { action: "unknown-action" },
+      ] as unknown as FastifySessionObject["journeyActions"];
+
+      await expect(
+        completeAllJourneyActionsUnsuccessfully(
+          {
+            code: 1001,
+            description: "UserSignedOut",
+            destroySession: true,
+          },
+          mockRequest as unknown as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+      ).rejects.toThrow("Action not found");
+    });
+
+    it("should complete all in-progress actions unsuccessfully", async () => {
+      mockRequest.session.journeyActions = [
+        { action: "temp-account-delete-action" },
+        { action: "passkey-create" },
+      ] as FastifySessionObject["journeyActions"];
+
+      await completeAllJourneyActionsUnsuccessfully(
+        {
+          code: 1002,
+          description: "UserAbortedJourney",
+          destroySession: false,
+        },
+        mockRequest as unknown as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockRequest.session.journeyActions).toStrictEqual([
+        {
+          action: "temp-account-delete-action",
+          success: false,
+          error: {
+            code: 1002,
+            description: "UserAbortedJourney",
+            destroySession: false,
+          },
+          timestamp: 3000,
+        },
+        {
+          action: "passkey-create",
+          success: false,
+          error: {
+            code: 1002,
+            description: "UserAbortedJourney",
+            destroySession: false,
+          },
+          timestamp: 3000,
+        },
+      ]);
+    });
+
+    it("should skip already-completed actions", async () => {
+      mockRequest.session.journeyActions = [
+        {
+          action: "temp-account-delete-action",
+          success: true,
+          details: {},
+          timestamp: 1000,
+        },
+        { action: "passkey-create" },
+      ] as FastifySessionObject["journeyActions"];
+
+      await completeAllJourneyActionsUnsuccessfully(
+        {
+          code: 1001,
+          description: "UserSignedOut",
+          destroySession: true,
+        },
+        mockRequest as unknown as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockRequest.session.journeyActions).toStrictEqual([
+        {
+          action: "temp-account-delete-action",
+          success: true,
+          details: {},
+          timestamp: 1000,
+        },
+        {
+          action: "passkey-create",
+          success: false,
+          error: {
+            code: 1001,
+            description: "UserSignedOut",
+            destroySession: true,
+          },
+          timestamp: 3000,
+        },
+      ]);
+    });
+
+    it("should send audit events for each in-progress action", async () => {
+      mockRequest.awsLambda = { event: { requestContext: {} } };
+      mockRequest.session = {
+        claims: {
+          client_id: "client-123",
+          scope: "account-delete",
+          email: "test@example.com",
+          public_sub: "public-sub-123",
+        },
+        journeyActions: [
+          { action: "temp-account-delete-action" },
+          { action: "passkey-create" },
+        ],
+      } as unknown as typeof mockRequest.session;
+      mockGetCommonAuditEventProps.mockReturnValue({
+        user: { session_id: "session-123" },
+      });
+      mockCreateEvent.mockReturnValue({ event_name: "AMC_ACTION_COMPLETED" });
+      mockSendAuditEvent.mockResolvedValue(undefined);
+
+      await completeAllJourneyActionsUnsuccessfully(
+        {
+          code: 1001,
+          description: "UserSignedOut",
+          destroySession: true,
+        },
+        mockRequest as unknown as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockSendAuditEvent).toHaveBeenCalledTimes(2);
     });
   });
 });
