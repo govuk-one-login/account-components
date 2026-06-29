@@ -20,7 +20,7 @@ export const render = async function (
     ],
     {
       autoescape: true,
-      noCache: true,
+      noCache: getEnvironment() === "local",
     },
   );
 
