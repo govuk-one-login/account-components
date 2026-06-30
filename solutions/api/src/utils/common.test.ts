@@ -228,6 +228,7 @@ describe("errorManager", () => {
 
       expect(mockLogger.warn).toHaveBeenCalledWith("Invalid Request", {
         error: errors.notFound,
+        rawError: error,
       });
     });
   });

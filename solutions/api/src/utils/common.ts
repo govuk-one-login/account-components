@@ -68,8 +68,8 @@ export class ErrorManager<T extends Record<string, ErrorType>> {
 
     logger.warn("Invalid Request", {
       error,
+      rawError: e,
     });
-    logger.debug("Error", e);
 
     metrics.addMetadata("error_type", error.metric.subType);
     metrics.addMetric(error.metric.type, MetricUnit.Count, 1);
