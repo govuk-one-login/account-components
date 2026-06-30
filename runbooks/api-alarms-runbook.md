@@ -14,7 +14,7 @@ This runbook covers the following second line production alarms for the Account 
 
 Account: **di-account-components-prod** (494066295151)
 
-Dashboard: [amc-dashboard](https://uk-digital-identity.awsapps.com/start/#/console?account_id=494066295151&role_name=ApprovedServiceSupport&destination=https%3A%2F%2Feu-west-2.console.aws.amazon.com%2Fcloudwatch%2Fhome%3Fregion%3Deu-west-2%23dashboards%2Fdashboard%2Famc-dashboard)
+Dashboard: [amc-dashboard](https://uk-digital-identity.awsapps.com/start/#/console?account_id=494066295151&destination=https%3A%2F%2Feu-west-2.console.aws.amazon.com%2Fcloudwatch%2Fhome%3Fregion%3Deu-west-2%23dashboards%2Fdashboard%2Famc-dashboard)
 
 ## Context
 

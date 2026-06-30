@@ -14,7 +14,7 @@ export enum AcountDeleteJourneyState {
 export const accountDeleteStateMachine = createJourneyStateMachine<
   MachineContext,
   | {
-      type: "notAuthenticated";
+      type: "emailVerified";
     }
   | {
       type: "lockedOutSecurityCodeEnteredTooManyTimes";
@@ -33,7 +33,7 @@ export const accountDeleteStateMachine = createJourneyStateMachine<
   states: {
     [AcountDeleteJourneyState.emailNotVerified]: {
       on: {
-        notAuthenticated: AcountDeleteJourneyState.notAuthenticated,
+        emailVerified: AcountDeleteJourneyState.notAuthenticated,
         lockedOutSecurityCodeEnteredTooManyTimes:
           AcountDeleteJourneyState.lockedOutSecurityCodeEnteredTooManyTimes,
         lockedOutSecurityCodeRequestedTooManyTimes:
