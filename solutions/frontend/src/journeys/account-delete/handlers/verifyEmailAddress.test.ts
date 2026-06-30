@@ -105,7 +105,7 @@ describe("verifyEmailAddress handlers", () => {
       expect(
         mockReply.journeyStates?.["account-delete"]?.send,
       ).toHaveBeenCalledWith({
-        type: "notAuthenticated",
+        type: "emailVerified",
       });
       expect(mockReply.redirect).toHaveBeenCalledWith(
         "/reset-delete/enter-password",

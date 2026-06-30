@@ -117,7 +117,7 @@ export async function verifyEmailAddressPostHandler(
   }
 
   reply.journeyStates["account-delete"].send({
-    type: "notAuthenticated",
+    type: "emailVerified",
   });
 
   reply.redirect(

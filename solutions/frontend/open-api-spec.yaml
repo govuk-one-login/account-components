@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components OAuth Provider Public API
-  version: 0.0.15
+  version: 0.0.16
   description: |
     OAuth 2.0 provider endpoints, including:
     - GET /authorize
@@ -179,6 +179,7 @@ components:
         - `jti` (string): JWT ID, must be unique
         - `account_management_api_access_token` (string, optional): Access token for account management API
         - `account_data_api_access_token` (string, optional): Access token for account data API
+        - `stubs_account_interventions_service_api_access_token` (string, optional): Access token for stubbed account interventions API, used to determine which canned response to return. Only needed when calling the stubbed account interventions API instead of the real one.
         - `sub` (string): Internal pairwise identifier
         - `public_sub` (string): Public subject identifier
         - `email` (string): User email address
