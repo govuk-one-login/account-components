@@ -517,8 +517,8 @@ describe("journeyActions", () => {
 
     it("should complete all in-progress actions unsuccessfully with complex error including extras", async () => {
       mockRequest.session.journeyActions = [
-        { action: "temp-account-delete-action" },
-        { action: "passkey-create" },
+        { action: "temp-account-delete-action", startedAt: 500 },
+        { action: "passkey-create", startedAt: 600 },
       ] as FastifySessionObject["journeyActions"];
 
       await completeAllJourneyActionsUnsuccessfully(
@@ -556,7 +556,8 @@ describe("journeyActions", () => {
               },
             },
           },
-          timestamp: 3000,
+          startedAt: 500,
+          completedAt: 3000,
         },
         {
           action: "passkey-create",
@@ -574,7 +575,8 @@ describe("journeyActions", () => {
               },
             },
           },
-          timestamp: 3000,
+          startedAt: 600,
+          completedAt: 3000,
         },
       ]);
     });

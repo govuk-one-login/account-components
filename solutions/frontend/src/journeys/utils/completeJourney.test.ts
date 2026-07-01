@@ -323,7 +323,8 @@ describe("completeJourney", () => {
             },
           },
         },
-        timestamp: 1000,
+        startedAt: 1000,
+        completedAt: 2000,
       },
     ];
 
@@ -358,7 +359,8 @@ describe("completeJourney", () => {
           },
         },
         error: undefined,
-        timestamp: 1000,
+        startedAt: 1000,
+        completedAt: 2000,
       },
     ]);
   });
