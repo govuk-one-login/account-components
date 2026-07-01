@@ -19,7 +19,7 @@
     "@aws-sdk/lib-dynamodb": "^3.1063.0",
     "@fastify/aws-lambda": "^6.4.0",
     "@fastify/cookie": "^11.0.2",
-    "@fastify/csrf-protection": "^7.1.0",
+    "@fastify/csrf-protection": "^8.0.0",
     "@fastify/formbody": "^8.0.2",
     "@fastify/helmet": "^13.0.2",
     "@fastify/session": "^11.1.1",
