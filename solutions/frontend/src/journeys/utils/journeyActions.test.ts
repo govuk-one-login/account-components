@@ -46,13 +46,13 @@ describe("journeyActions", () => {
       );
 
       expect(mockRequest.session.journeyActions).toStrictEqual([
-        { action: "temp-account-delete-action" },
+        { action: "temp-account-delete-action", startedAt: expect.any(Number) },
       ]);
     });
 
     it("should push the action to existing journeyActions", async () => {
       mockRequest.session.journeyActions = [
-        { action: "temp-account-delete-action" },
+        { action: "temp-account-delete-action", startedAt: 500 },
       ] as FastifySessionObject["journeyActions"];
 
       await startJourneyAction<"passkeyCreate">(
@@ -62,14 +62,14 @@ describe("journeyActions", () => {
       );
 
       expect(mockRequest.session.journeyActions).toStrictEqual([
-        { action: "temp-account-delete-action" },
-        { action: "passkey-create" },
+        { action: "temp-account-delete-action", startedAt: 500 },
+        { action: "passkey-create", startedAt: expect.any(Number) },
       ]);
     });
 
     it("should not push a duplicate when the action is already in progress", async () => {
       mockRequest.session.journeyActions = [
-        { action: "temp-account-delete-action" },
+        { action: "temp-account-delete-action", startedAt: 500 },
       ] as FastifySessionObject["journeyActions"];
 
       await startJourneyAction<"tempAccountDeleteAction">(
@@ -79,7 +79,7 @@ describe("journeyActions", () => {
       );
 
       expect(mockRequest.session.journeyActions).toStrictEqual([
-        { action: "temp-account-delete-action" },
+        { action: "temp-account-delete-action", startedAt: 500 },
       ]);
     });
 
@@ -167,9 +167,9 @@ describe("journeyActions", () => {
       );
     });
 
-    it("should replace the action with a successful completed action and add a timestamp", async () => {
+    it("should complete the action successfully with startedAt preserved and completedAt set", async () => {
       mockRequest.session.journeyActions = [
-        { action: "temp-account-delete-action" },
+        { action: "temp-account-delete-action", startedAt: 500 },
       ] as FastifySessionObject["journeyActions"];
 
       await completeJourneyActionSuccessfully<"tempAccountDeleteAction">(
@@ -186,7 +186,8 @@ describe("journeyActions", () => {
           action: "temp-account-delete-action",
           success: true,
           details: {},
-          timestamp: 1000,
+          startedAt: 500,
+          completedAt: 1000,
         },
       ]);
     });
@@ -200,7 +201,9 @@ describe("journeyActions", () => {
           email: "test@example.com",
           public_sub: "public-sub-123",
         },
-        journeyActions: [{ action: "temp-account-delete-action" }],
+        journeyActions: [
+          { action: "temp-account-delete-action", startedAt: 500 },
+        ],
       } as unknown as typeof mockRequest.session;
       mockGetCommonAuditEventProps.mockReturnValue({
         user: { session_id: "session-123" },
@@ -276,9 +279,9 @@ describe("journeyActions", () => {
       );
     });
 
-    it("should replace the action with a failed completed action and add a timestamp", async () => {
+    it("should complete the action unsuccessfully with startedAt preserved and completedAt set", async () => {
       mockRequest.session.journeyActions = [
-        { action: "temp-account-delete-action" },
+        { action: "temp-account-delete-action", startedAt: 500 },
       ] as FastifySessionObject["journeyActions"];
 
       await completeJourneyActionUnsuccessfully(
@@ -303,7 +306,8 @@ describe("journeyActions", () => {
             description: "UserSignedOut",
             destroySession: true,
           },
-          timestamp: 2000,
+          startedAt: 500,
+          completedAt: 2000,
         },
       ]);
     });
@@ -317,7 +321,9 @@ describe("journeyActions", () => {
           email: "test@example.com",
           public_sub: "public-sub-123",
         },
-        journeyActions: [{ action: "temp-account-delete-action" }],
+        journeyActions: [
+          { action: "temp-account-delete-action", startedAt: 500 },
+        ],
       } as unknown as typeof mockRequest.session;
       mockGetCommonAuditEventProps.mockReturnValue({
         user: { session_id: "session-123" },
@@ -392,8 +398,8 @@ describe("journeyActions", () => {
 
     it("should complete all in-progress actions unsuccessfully", async () => {
       mockRequest.session.journeyActions = [
-        { action: "temp-account-delete-action" },
-        { action: "passkey-create" },
+        { action: "temp-account-delete-action", startedAt: 500 },
+        { action: "passkey-create", startedAt: 600 },
       ] as FastifySessionObject["journeyActions"];
 
       await completeAllJourneyActionsUnsuccessfully(
@@ -415,7 +421,8 @@ describe("journeyActions", () => {
             description: "UserAbortedJourney",
             destroySession: false,
           },
-          timestamp: 3000,
+          startedAt: 500,
+          completedAt: 3000,
         },
         {
           action: "passkey-create",
@@ -425,7 +432,8 @@ describe("journeyActions", () => {
             description: "UserAbortedJourney",
             destroySession: false,
           },
-          timestamp: 3000,
+          startedAt: 600,
+          completedAt: 3000,
         },
       ]);
     });
@@ -436,9 +444,10 @@ describe("journeyActions", () => {
           action: "temp-account-delete-action",
           success: true,
           details: {},
-          timestamp: 1000,
+          startedAt: 500,
+          completedAt: 1000,
         },
-        { action: "passkey-create" },
+        { action: "passkey-create", startedAt: 600 },
       ] as FastifySessionObject["journeyActions"];
 
       await completeAllJourneyActionsUnsuccessfully(
@@ -456,7 +465,8 @@ describe("journeyActions", () => {
           action: "temp-account-delete-action",
           success: true,
           details: {},
-          timestamp: 1000,
+          startedAt: 500,
+          completedAt: 1000,
         },
         {
           action: "passkey-create",
@@ -466,7 +476,8 @@ describe("journeyActions", () => {
             description: "UserSignedOut",
             destroySession: true,
           },
-          timestamp: 3000,
+          startedAt: 600,
+          completedAt: 3000,
         },
       ]);
     });
@@ -481,8 +492,8 @@ describe("journeyActions", () => {
           public_sub: "public-sub-123",
         },
         journeyActions: [
-          { action: "temp-account-delete-action" },
-          { action: "passkey-create" },
+          { action: "temp-account-delete-action", startedAt: 500 },
+          { action: "passkey-create", startedAt: 600 },
         ],
       } as unknown as typeof mockRequest.session;
       mockGetCommonAuditEventProps.mockReturnValue({

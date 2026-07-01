@@ -27,7 +27,7 @@
     {% endif %}
     {% if journeyOutcomeDetails %}
         <p>Journey outcome details:</p>
-        <pre>{{ journeyOutcomeDetails | dump(2) | safe }}</pre>
+        <pre id="journeyOutcomeDetails">{{ journeyOutcomeDetails | dump(2) | safe }}</pre>
     {% endif %}        
     {% if exception %}
         <p>An error occurred:</p>

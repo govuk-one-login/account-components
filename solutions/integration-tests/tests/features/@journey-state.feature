@@ -50,79 +50,79 @@ Feature: Journey state
     Then the page title is prefixed with "Testing journey confirmation"
 
     Given I click the "Complete testing journey" button
-    Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'    
-    And the page contains the text:
+    Then the page contains the text "Client callback"  
+    And the journey outcome matches the object:
     """
-    "scope": "testing-journey",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": true
+    {
+      "actions": [{
+        "action": "testing-journey-action",      
+        "success": true
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "testing-journey",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": true
+    }    
     """
-    And the page contains the text:
-    """
-    "action": "testing-journey-action",
-    "details": {},
-    "success": true,
-    """    
 
     # Shouldn't be able to access any journey pages after finishing journey
     Given I click the browser's back button
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'    
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "testing-journey",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": true
+    {
+      "actions": [{
+        "action": "testing-journey-action",      
+        "success": true
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "testing-journey",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": true
+    }    
     """
-    And the page contains the text:
-    """
-    "action": "testing-journey-action",
-    "details": {},
-    "success": true,
-    """    
     Given I go to the "Testing journey - step 1" page   
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'    
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "testing-journey",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": true
-    """
-    And the page contains the text:
-    """
-    "action": "testing-journey-action",
-    "details": {},
-    "success": true,
+    {
+      "actions": [{
+        "action": "testing-journey-action",      
+        "success": true
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "testing-journey",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": true
+    }    
     """
     Given I go to the "Testing journey - enter password" page   
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'    
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "testing-journey",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": true
+    {
+      "actions": [{
+        "action": "testing-journey-action",      
+        "success": true
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "testing-journey",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": true
+    }    
     """
-    And the page contains the text:
-    """
-    "action": "testing-journey-action",
-    "details": {},
-    "success": true,
-    """ 
     Given I go to the "Testing journey - confirmation" page   
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'    
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "testing-journey",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": true
+    {
+      "actions": [{
+        "action": "testing-journey-action",      
+        "success": true
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "testing-journey",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": true
+    }    
     """
-    And the page contains the text:
-    """
-    "action": "testing-journey-action",
-    "details": {},
-    "success": true,
-    """   

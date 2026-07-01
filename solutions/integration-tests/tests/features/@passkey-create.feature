@@ -9,23 +9,24 @@ Feature: Passkey create
 
     Given I click the "Back" link
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
-    """
-    And the page contains the text:
-    """
-    "action": "passkey-create",
-    "details": {
-      "error": {
-        "code": 1003,
-        "description": "UserBackedOutOfJourney"
-      }      
-    },
-    "success": false,
+    {
+      "actions": [{
+        "action": "passkey-create",
+        "details": {
+          "error": {
+          "code": 1003,
+          "description": "UserBackedOutOfJourney"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
     """
 
   # Should fail because of known accessibility issues
@@ -40,23 +41,24 @@ Feature: Passkey create
 
     Given I click the "Skip for now" link
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
-    """
-    And the page contains the text:
-    """
-    "action": "passkey-create",
-    "details": {
-      "error": {
-        "code": 1002,
-        "description": "UserAbortedJourney"
-      }      
-    },
-    "success": false,
+    {
+      "actions": [{
+        "action": "passkey-create",
+        "details": {
+          "error": {
+          "code": 1002,
+          "description": "UserAbortedJourney"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
     """
 
   # Should fail because of known accessibility issues
@@ -87,23 +89,24 @@ Feature: Passkey create
     Given I select the option beginning with "Skip for now" in the "What would you like to do?" radio button group
     And I click the "Continue" button
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
-    """
-    And the page contains the text:
-    """
-    "action": "passkey-create",
-    "details": {
-      "error": {
-        "code": 1002,
-        "description": "UserAbortedJourney"
-      }      
-    },
-    "success": false,
+    {
+      "actions": [{
+        "action": "passkey-create",
+        "details": {
+          "error": {
+          "code": 1002,
+          "description": "UserAbortedJourney"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
     """
 
   # Should fail because of known accessibility issues
@@ -119,23 +122,24 @@ Feature: Passkey create
 
     Given I click the "Cancel and go back" link
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
-    """
-    And the page contains the text:
-    """
-    "action": "passkey-create",
-    "details": {
-      "error": {
-        "code": 1002,
-        "description": "UserAbortedJourney"
-      }      
-    },
-    "success": false,
+    {
+      "actions": [{
+        "action": "passkey-create",
+        "details": {
+          "error": {
+          "code": 1002,
+          "description": "UserAbortedJourney"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
     """
 
   # Should fail because of known accessibility issues
@@ -167,24 +171,25 @@ Feature: Passkey create
     Given I select the option beginning with "Cancel and go back" in the "What would you like to do?" radio button group
     And I click the "Continue" button
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
-    """
-    And the page contains the text:
-    """
-    "action": "passkey-create",
-    "details": {
-      "error": {
-        "code": 1002,
-        "description": "UserAbortedJourney"
-      }      
-    },
-    "success": false,
-    """    
+    {
+      "actions": [{
+        "action": "passkey-create",
+        "details": {
+          "error": {
+          "code": 1002,
+          "description": "UserAbortedJourney"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
+    """  
     
   Scenario: Successfully create a passkey
     Given I go to the journey initiator
@@ -197,17 +202,20 @@ Feature: Passkey create
     """    
     And I click the "Continue" button
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": true
+    {
+      "actions": [{
+        "action": "passkey-create",      
+        "success": true
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": true
+    }    
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text '"action": "passkey-create",'    
-    And the page contains the text '"success": true,'     
-    And the page does not contain the text '"success": false'  
 
   Scenario: User has maximum number of passkeys
     Given I go to the journey initiator
@@ -244,17 +252,20 @@ Feature: Passkey create
     And I select the option beginning with "Try setting up a passkey again" in the "What would you like to do?" radio button group   
     And I click the "Continue" button
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": true
+    {
+      "actions": [{
+        "action": "passkey-create",      
+        "success": true
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": true
+    }    
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text '"action": "passkey-create",'    
-    And the page contains the text '"success": true,'     
-    And the page does not contain the text '"success": false'  
 
   Scenario: Invalid authenticators
     Given I go to the journey initiator
@@ -333,17 +344,20 @@ Feature: Passkey create
     """    
     And I click the "Continue" button    
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": true
+    {
+      "actions": [{
+        "action": "passkey-create",      
+        "success": true
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": true
+    }    
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text '"action": "passkey-create",'    
-    And the page contains the text '"success": true,'     
-    And the page does not contain the text '"success": false'  
 
     Given I have no authenticators
     And I go to the journey initiator
@@ -357,17 +371,20 @@ Feature: Passkey create
     """    
     And I click the "Continue" button    
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": true
+    {
+      "actions": [{
+        "action": "passkey-create",      
+        "success": true
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": true
+    }    
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text '"action": "passkey-create",'    
-    And the page contains the text '"success": true,'     
-    And the page does not contain the text '"success": false'  
 
     Given I have no authenticators
     And I go to the journey initiator
@@ -381,17 +398,20 @@ Feature: Passkey create
     """    
     And I click the "Continue" button    
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": true
+    {
+      "actions": [{
+        "action": "passkey-create",      
+        "success": true
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": true
+    }    
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text '"action": "passkey-create",'    
-    And the page contains the text '"success": true,'       
-    And the page does not contain the text '"success": false'  
 
     Given I have no authenticators
     And I go to the journey initiator
@@ -405,17 +425,20 @@ Feature: Passkey create
     """    
     And I click the "Continue" button    
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": true
+    {
+      "actions": [{
+        "action": "passkey-create",      
+        "success": true
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": true
+    }    
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text '"action": "passkey-create",'    
-    And the page contains the text '"success": true,'     
-    And the page does not contain the text '"success": false'  
 
     Given I have no authenticators
     And I go to the journey initiator
@@ -430,17 +453,20 @@ Feature: Passkey create
     """    
     And I click the "Continue" button    
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": true
+    {
+      "actions": [{
+        "action": "passkey-create",      
+        "success": true
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": true
+    }    
     """
     And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
-    And the page contains the text '"action": "passkey-create",'    
-    And the page contains the text '"success": true,'     
-    And the page does not contain the text '"success": false'  
 
   @noJs
   Scenario: JavaScript disabled
@@ -462,24 +488,25 @@ Feature: Passkey create
     Given I select the option beginning with "Skip for now" in the "What would you like to do?" radio button group
     And I click the "Continue" button
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
-    """
-    And the page contains the text:
-    """
-    "action": "passkey-create",
-    "details": {
-      "error": {
-        "code": 1002,
-        "description": "UserAbortedJourney"
-      }      
-    },
-    "success": false,
-    """
+    {
+      "actions": [{
+        "action": "passkey-create",
+        "details": {
+          "error": {
+          "code": 1002,
+          "description": "UserAbortedJourney"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
+    """ 
 
   Scenario: Interventions on account (Blocked)
     Given I go to the journey initiator
@@ -487,32 +514,33 @@ Feature: Passkey create
     And I begin a "passkey-create" journey
 
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
-    """
-    And the page contains the text:
-    """
-    "action": "passkey-create",
-    "details": {
-      "accountInterventionsStatus": {
-        "state": {
-          "blocked": true,
-          "reproveIdentity": false,
-          "resetPassword": false,
-          "suspended": false
-        }
-      },      
-      "error": {
-        "code": 1004,
-        "description": "AccountHasInterventions"
-      }      
-    },
-    "success": false,
-    """
+    {
+      "actions": [{
+        "action": "passkey-create",
+        "details": {
+          "accountInterventionsStatus": {
+            "state": {
+              "blocked": true,
+              "reproveIdentity": false,
+              "resetPassword": false,
+              "suspended": false  
+            }
+          },      
+          "error": {
+            "code": 1004,
+            "description": "AccountHasInterventions"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
+    """  
 
   Scenario: Interventions on account (Suspended, no user actions required)
     Given I go to the journey initiator
@@ -520,32 +548,33 @@ Feature: Passkey create
     And I begin a "passkey-create" journey
 
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
-    """
-    And the page contains the text:
-    """
-    "action": "passkey-create",
-    "details": {
-      "accountInterventionsStatus": {
-        "state": {
-          "blocked": false,
-          "reproveIdentity": false,
-          "resetPassword": false,
-          "suspended": true
-        }
-      },      
-      "error": {
-        "code": 1004,
-        "description": "AccountHasInterventions"
-      }      
-    },
-    "success": false,
-    """        
+    {
+      "actions": [{
+        "action": "passkey-create",
+        "details": {
+          "accountInterventionsStatus": {
+            "state": {
+              "blocked": false,
+              "reproveIdentity": false,
+              "resetPassword": false,
+              "suspended": true  
+            }
+          },      
+          "error": {
+            "code": 1004,
+            "description": "AccountHasInterventions"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
+    """       
 
   Scenario: Interventions on account (Suspended, reset password required)
     Given I go to the journey initiator
@@ -553,31 +582,32 @@ Feature: Passkey create
     And I begin a "passkey-create" journey
 
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
-    """
-    And the page contains the text:
-    """
-    "action": "passkey-create",
-    "details": {
-      "accountInterventionsStatus": {
-        "state": {
-          "blocked": false,
-          "reproveIdentity": false,
-          "resetPassword": true,
-          "suspended": true
-        }
-      },      
-      "error": {
-        "code": 1004,
-        "description": "AccountHasInterventions"
-      }      
-    },
-    "success": false,
+    {
+      "actions": [{
+        "action": "passkey-create",
+        "details": {
+          "accountInterventionsStatus": {
+            "state": {
+              "blocked": false,
+              "reproveIdentity": false,
+              "resetPassword": true,
+              "suspended": true  
+            }
+          },      
+          "error": {
+            "code": 1004,
+            "description": "AccountHasInterventions"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
     """    
 
   Scenario: Interventions on account (Suspended, reprove identity required)
@@ -586,32 +616,33 @@ Feature: Passkey create
     And I begin a "passkey-create" journey
 
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
-    """
-    And the page contains the text:
-    """
-    "action": "passkey-create",
-    "details": {
-      "accountInterventionsStatus": {
-        "state": {
-          "blocked": false,
-          "reproveIdentity": true,
-          "resetPassword": false,
-          "suspended": true
-        }
-      },      
-      "error": {
-        "code": 1004,
-        "description": "AccountHasInterventions"
-      }      
-    },
-    "success": false,
-    """    
+    {
+      "actions": [{
+        "action": "passkey-create",
+        "details": {
+          "accountInterventionsStatus": {
+            "state": {
+              "blocked": false,
+              "reproveIdentity": true,
+              "resetPassword": false,
+              "suspended": true  
+            }
+          },      
+          "error": {
+            "code": 1004,
+            "description": "AccountHasInterventions"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
+    """  
 
   Scenario: Interventions on account (Suspended, reset password and reprove identity required)
     Given I go to the journey initiator
@@ -619,29 +650,30 @@ Feature: Passkey create
     And I begin a "passkey-create" journey
 
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "passkey-create",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
+    {
+      "actions": [{
+        "action": "passkey-create",
+        "details": {
+          "accountInterventionsStatus": {
+            "state": {
+              "blocked": false,
+              "reproveIdentity": true,
+              "resetPassword": true,
+              "suspended": true  
+            }
+          },      
+          "error": {
+            "code": 1004,
+            "description": "AccountHasInterventions"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "passkey-create",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
     """
-    And the page contains the text:
-    """
-    "action": "passkey-create",
-    "details": {
-      "accountInterventionsStatus": {
-        "state": {
-          "blocked": false,
-          "reproveIdentity": true,
-          "resetPassword": true,
-          "suspended": true
-        }
-      },      
-      "error": {
-        "code": 1004,
-        "description": "AccountHasInterventions"
-      }      
-    },
-    "success": false,
-    """    

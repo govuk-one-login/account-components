@@ -75,6 +75,7 @@ export type JourneyAction<
 > =
   | {
       action: Name;
+      startedAt: number;
     }
   | {
       action: Name;
@@ -82,13 +83,15 @@ export type JourneyAction<
       error: (typeof unsuccessfulJourneyActionErrors)[keyof typeof unsuccessfulJourneyActionErrors] & {
         extras?: Record<string, unknown>;
       };
-      timestamp: number;
+      startedAt: number;
+      completedAt: number;
     }
   | {
       action: Name;
       success: true;
       details: Details;
-      timestamp: number;
+      startedAt: number;
+      completedAt: number;
     };
 
 interface JourneyActionDetails {
@@ -106,14 +109,14 @@ type JourneyActions = {
   >;
 };
 
-type InProgressAction<T extends JourneyAction<JourneyActionName>> = Exclude<
-  T,
-  { success: boolean }
+type InProgressAction<T extends JourneyAction<JourneyActionName>> = Omit<
+  Exclude<T, { success: boolean }>,
+  "startedAt"
 >;
 
 type SuccessfulAction<T extends JourneyAction<JourneyActionName>> = Omit<
   Extract<T, { success: true }>,
-  "timestamp" | "success"
+  "startedAt" | "completedAt" | "success"
 >;
 
 type FailedAction =
@@ -148,7 +151,10 @@ export const startJourneyAction = async <
   );
 
   if (!inProgressActionExists) {
-    request.session.journeyActions.push(action);
+    request.session.journeyActions.push({
+      ...action,
+      startedAt: Date.now(),
+    });
 
     if (request.awsLambda?.event) {
       assert.ok(request.session.claims);
@@ -183,8 +189,11 @@ export const startJourneyAction = async <
   }
 };
 
-const updateInProgressAction = (
-  action: DistributiveOmit<JourneyAction<JourneyActionName>, "timestamp"> & {
+const completeInProgressAction = (
+  action: DistributiveOmit<
+    JourneyAction<JourneyActionName>,
+    "startedAt" | "completedAt"
+  > & {
     success: boolean;
   },
   request: FastifyRequest,
@@ -203,8 +212,13 @@ const updateInProgressAction = (
       `In progress action of type "${action.action}" not found in journey actions`,
     );
   }
+  assert.ok(request.session.journeyActions[index]);
 
-  request.session.journeyActions[index] = { ...action, timestamp: Date.now() };
+  request.session.journeyActions[index] = {
+    ...request.session.journeyActions[index],
+    ...action,
+    completedAt: Date.now(),
+  };
 };
 
 const sendCompletedActionAuditEvent = async (
@@ -266,7 +280,7 @@ export const completeJourneyActionSuccessfully = async <
     name: action.action,
     success: true,
   });
-  updateInProgressAction({ ...action, success: true }, request);
+  completeInProgressAction({ ...action, success: true }, request);
 };
 
 export const completeJourneyActionUnsuccessfully = async (
@@ -279,7 +293,7 @@ export const completeJourneyActionUnsuccessfully = async (
     success: false,
     error: action.error.description,
   });
-  updateInProgressAction({ ...action, success: false }, request);
+  completeInProgressAction({ ...action, success: false }, request);
 };
 
 export const completeAllJourneyActionsUnsuccessfully = async (
@@ -314,7 +328,7 @@ export const completeAllJourneyActionsUnsuccessfully = async (
         success: false,
         error: error.description,
       });
-      updateInProgressAction(
+      completeInProgressAction(
         { action: journeyActionName, error, success: false },
         request,
       );

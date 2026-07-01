@@ -104,7 +104,8 @@ describe("completeJourney", () => {
         action: "testing-journey-action",
         success: true,
         details: {},
-        timestamp: 1000,
+        startedAt: 1000,
+        completedAt: 2000,
       },
     ];
 
@@ -137,7 +138,8 @@ describe("completeJourney", () => {
                   action: "testing-journey-action",
                   success: true,
                   details: {},
-                  timestamp: 1000,
+                  startedAt: 1000,
+                  completedAt: 2000,
                 },
               ],
               expires: Math.floor(mockNow / 1000) + 600,
@@ -187,7 +189,8 @@ describe("completeJourney", () => {
         action: "testing-journey-action",
         success: true,
         details: {},
-        timestamp: 1000,
+        startedAt: 1000,
+        completedAt: 2000,
       },
     ];
 
@@ -220,7 +223,8 @@ describe("completeJourney", () => {
           description: "UserSignedOut",
           destroySession: true,
         },
-        timestamp: 1000,
+        startedAt: 1000,
+        completedAt: 2000,
       },
     ];
 
@@ -259,7 +263,8 @@ describe("completeJourney", () => {
           description: "UserSignedOut",
           destroySession: true,
         },
-        timestamp: 1000,
+        startedAt: 1000,
+        completedAt: 2000,
       },
     ];
 
@@ -288,7 +293,8 @@ describe("completeJourney", () => {
           },
         },
         error: undefined,
-        timestamp: 1000,
+        startedAt: 1000,
+        completedAt: 2000,
       },
     ]);
   });
@@ -373,7 +379,8 @@ describe("completeJourney", () => {
           description: "UserAbortedJourney",
           destroySession: false,
         },
-        timestamp: 1000,
+        startedAt: 1000,
+        completedAt: 2000,
       },
     ];
 
@@ -418,7 +425,7 @@ describe("completeJourney", () => {
     const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
 
     mockRequest.session.journeyActions = [
-      { action: "temp-account-delete-action" },
+      { action: "temp-account-delete-action", startedAt: 1000 },
     ];
 
     mockRandomBytes
@@ -492,7 +499,8 @@ describe("completeJourney", () => {
         action: "testing-journey-action",
         success: true,
         details: {},
-        timestamp: 1000,
+        startedAt: 1000,
+        completedAt: 2000,
       },
     ];
     (mockRequest as unknown as { awsLambda: unknown }).awsLambda = {
@@ -553,7 +561,8 @@ describe("completeJourney", () => {
           description: "UserSignedOut",
           destroySession: true,
         },
-        timestamp: 1000,
+        startedAt: 1000,
+        completedAt: 2000,
       },
     ];
     (mockRequest as unknown as { awsLambda: unknown }).awsLambda = {
@@ -609,7 +618,8 @@ describe("completeJourney", () => {
           description: "UserSignedOut",
           destroySession: true,
         },
-        timestamp: 1000,
+        startedAt: 1000,
+        completedAt: 2000,
       },
       {
         action: "passkey-create",
@@ -619,7 +629,8 @@ describe("completeJourney", () => {
           description: "UserAbortedJourney",
           destroySession: false,
         },
-        timestamp: 2000,
+        startedAt: 1000,
+        completedAt: 2000,
       },
     ];
     (mockRequest as unknown as { awsLambda: unknown }).awsLambda = {
@@ -674,7 +685,8 @@ describe("completeJourney", () => {
         action: "testing-journey-action",
         success: true,
         details: {},
-        timestamp: 1000,
+        startedAt: 1000,
+        completedAt: 2000,
       },
     ];
 
