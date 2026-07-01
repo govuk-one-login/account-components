@@ -51,18 +51,18 @@ Feature: Delete account
   
     Given I click the "Delete your GOV.UK One Login" button
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "account-delete",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": true
-    """
-    And the page contains the text:
-    """
-    "action": "temp-account-delete-action",
-    "details": {},
-    "success": true,
+    {
+      "actions": [{
+        "action": "temp-account-delete-action",
+        "success": true
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "account-delete",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": true
+    }    
     """
 
   # Should fail because of known accessibility issues
@@ -80,23 +80,24 @@ Feature: Delete account
 
     Given I click the "try signing in again" link
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "account-delete",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
-    """
-    And the page contains the text:
-    """
-    "action": "temp-account-delete-action",
-    "details": {
-      "error": {
-        "code": 1002,
-        "description": "UserAbortedJourney"
-      }      
-    },
-    "success": false,
+    {
+      "actions": [{
+        "action": "temp-account-delete-action",
+        "details": {
+          "error": {
+            "code": 1002,
+            "description": "UserAbortedJourney"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "account-delete",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
     """
 
   # Should fail because of known accessibility issues
@@ -118,23 +119,24 @@ Feature: Delete account
 
     Given I click the "try signing in again" link
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "account-delete",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
-    """
-    And the page contains the text:
-    """
-    "action": "temp-account-delete-action",
-    "details": {
-      "error": {
-        "code": 1002,
-        "description": "UserAbortedJourney"
-      }      
-    },
-    "success": false,
+    {
+      "actions": [{
+        "action": "temp-account-delete-action",
+        "details": {
+          "error": {
+            "code": 1002,
+            "description": "UserAbortedJourney"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "account-delete",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
     """
 
   # Should fail because of known accessibility issues
@@ -160,23 +162,24 @@ Feature: Delete account
 
     Given I click the "try signing in again" link
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "account-delete",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
-    """
-    And the page contains the text:
-    """
-    "action": "temp-account-delete-action",
-    "details": {
-      "error": {
-        "code": 1002,
-        "description": "UserAbortedJourney"
-      }      
-    },
-    "success": false,
+    {
+      "actions": [{
+        "action": "temp-account-delete-action",
+        "details": {
+          "error": {
+            "code": 1002,
+            "description": "UserAbortedJourney"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "account-delete",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
     """
 
   # Should fail because of known accessibility issues
@@ -194,21 +197,22 @@ Feature: Delete account
 
     Given I click the "try signing in again" link
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "account-delete",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
+    {
+      "actions": [{
+        "action": "temp-account-delete-action",
+        "details": {
+          "error": {
+            "code": 1002,
+            "description": "UserAbortedJourney"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "account-delete",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
     """
-    And the page contains the text:
-    """
-    "action": "temp-account-delete-action",
-    "details": {
-      "error": {
-        "code": 1002,
-        "description": "UserAbortedJourney"
-      }      
-    },
-    "success": false,
-    """    

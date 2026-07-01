@@ -95,10 +95,6 @@ Then(
   },
 );
 
-Then("the page contains the text:", async ({ page }, text: string) => {
-  await expect(page.getByText(text)).toBeVisible();
-});
-
 Then("the page looks as expected", async ({ page }) => {
   // eslint-disable-next-line playwright/no-networkidle
   await page.waitForLoadState("networkidle");
@@ -283,5 +279,21 @@ Then(
     const currentUrl = new URL(page.url());
     const paramValue = currentUrl.searchParams.get(paramName);
     expect(paramValue).toBe(expectedValue);
+  },
+);
+
+Then(
+  "the journey outcome matches the object:",
+  async ({ page }, jsonObject: string) => {
+    const journeyOutcomeDetailsElement = page.locator("#journeyOutcomeDetails");
+    const journeyOutcomeDetailsJson =
+      await journeyOutcomeDetailsElement.textContent();
+    assert.ok(journeyOutcomeDetailsJson !== null);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const journeyOutcomeDetails = JSON.parse(journeyOutcomeDetailsJson);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const object = JSON.parse(jsonObject);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    expect(journeyOutcomeDetails).toMatchObject(object);
   },
 );

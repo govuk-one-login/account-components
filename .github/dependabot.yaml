@@ -90,6 +90,11 @@ updates:
       - dependencies
     commit-message:
       prefix: BAU
+    groups:
+      pre-commit-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "terraform"
     directories:
@@ -128,6 +133,11 @@ updates:
       - dependency-name: "node"
         update-types:
           - "version-update:semver-major"
+    groups:
+      docker-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "gitsubmodule" # zizmor: ignore[dependabot-cooldown]
     directories:
@@ -157,3 +167,8 @@ updates:
     labels:
       - dependabot
       - dependencies
+    groups:
+      pip-minor-patch:
+        update-types:
+          - "minor"
+          - "patch"

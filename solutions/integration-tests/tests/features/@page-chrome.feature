@@ -18,24 +18,25 @@ Feature: Page chrome
     And the account navigation is present and contains the expected links
     Given I click the sign out button in the header
     Then the page contains the text "Client callback"
-    And the page contains the text '"email": "testuser@test.null.local",'
-    And the page contains the text:
+    And the journey outcome matches the object:
     """
-    "scope": "testing-journey",
-    "sub": "urn:fdc:gov.uk:default",
-    "success": false
+    {
+      "actions": [{
+        "action": "testing-journey-action",
+        "details": {
+          "error": {
+            "code": 1001,
+            "description": "UserSignedOut"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "testing-journey",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
     """
-    And the page contains the text:
-    """
-    "action": "testing-journey-action",
-    "details": {
-      "error": {
-        "code": 1001,
-        "description": "UserSignedOut"
-      }      
-    },
-    "success": false,
-    """ 
 
   Scenario: Navigate via app channel
     Given I go to the journey initiator
