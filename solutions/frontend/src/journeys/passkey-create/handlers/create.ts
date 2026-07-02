@@ -223,7 +223,6 @@ export async function postHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  request.log.warn("MHTEST - try to get tests working with new image");
   assert.ok(reply.journeyStates?.["passkey-create"]);
 
   const registrationOptions =
