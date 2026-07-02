@@ -151,9 +151,11 @@ export const startJourneyAction = async <
   );
 
   if (!inProgressActionExists) {
+    const startedAt = new Date().getTime();
+
     request.session.journeyActions.push({
       ...action,
-      startedAt: Date.now(),
+      startedAt,
     });
 
     if (request.awsLambda?.event) {
@@ -166,6 +168,8 @@ export const startJourneyAction = async <
       await sendAuditEvent(
         createEvent("AMC_ACTION_STARTED", {
           ...commonAuditEventProps,
+          timestamp: Math.floor(startedAt / 1000),
+          event_timestamp_ms: startedAt,
           event_name: "AMC_ACTION_STARTED",
           client_id: request.session.claims.client_id,
           extensions: {
@@ -190,6 +194,7 @@ export const startJourneyAction = async <
 };
 
 const completeInProgressAction = (
+  completedAt: Date,
   action: DistributiveOmit<
     JourneyAction<JourneyActionName>,
     "startedAt" | "completedAt"
@@ -217,11 +222,12 @@ const completeInProgressAction = (
   request.session.journeyActions[index] = {
     ...request.session.journeyActions[index],
     ...action,
-    completedAt: Date.now(),
+    completedAt: completedAt.getTime(),
   };
 };
 
 const sendCompletedActionAuditEvent = async (
+  completedAt: Date,
   request: FastifyRequest,
   reply: FastifyReply,
   action:
@@ -245,6 +251,8 @@ const sendCompletedActionAuditEvent = async (
     await sendAuditEvent(
       createEvent("AMC_ACTION_COMPLETED", {
         ...commonAuditEventProps,
+        timestamp: Math.floor(completedAt.getTime() / 1000),
+        event_timestamp_ms: completedAt.getTime(),
         event_name: "AMC_ACTION_COMPLETED",
         client_id: request.session.claims.client_id,
         extensions: {
@@ -276,11 +284,12 @@ export const completeJourneyActionSuccessfully = async <
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  await sendCompletedActionAuditEvent(request, reply, {
+  const completedAt = new Date();
+  await sendCompletedActionAuditEvent(completedAt, request, reply, {
     name: action.action,
     success: true,
   });
-  completeInProgressAction({ ...action, success: true }, request);
+  completeInProgressAction(completedAt, { ...action, success: true }, request);
 };
 
 export const completeJourneyActionUnsuccessfully = async (
@@ -288,12 +297,13 @@ export const completeJourneyActionUnsuccessfully = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
-  await sendCompletedActionAuditEvent(request, reply, {
+  const completedAt = new Date();
+  await sendCompletedActionAuditEvent(completedAt, request, reply, {
     name: action.action,
     success: false,
     error: action.error.description,
   });
-  completeInProgressAction({ ...action, success: false }, request);
+  completeInProgressAction(completedAt, { ...action, success: false }, request);
 };
 
 export const completeAllJourneyActionsUnsuccessfully = async (
@@ -315,6 +325,8 @@ export const completeAllJourneyActionsUnsuccessfully = async (
     "There are no journey actions",
   );
 
+  const completedAt = new Date();
+
   for (const journeyAction of request.session.journeyActions) {
     if (!("success" in journeyAction)) {
       const journeyActionName = Object.values(journeyActionNames).find(
@@ -323,12 +335,13 @@ export const completeAllJourneyActionsUnsuccessfully = async (
 
       assert.ok(journeyActionName, "Action not found");
 
-      await sendCompletedActionAuditEvent(request, reply, {
+      await sendCompletedActionAuditEvent(completedAt, request, reply, {
         name: journeyActionName,
         success: false,
         error: error.description,
       });
       completeInProgressAction(
+        completedAt,
         { action: journeyActionName, error, success: false },
         request,
       );
