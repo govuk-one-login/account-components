@@ -37,7 +37,7 @@
     "ecdsa-sig-formatter": "^1.0.11",
     "esbuild": "^0.28.1",
     "fastify": "^5.8.5",
-    "fastify-plugin": "^5.1.0",
+    "fastify-plugin": "^6.0.0",
     "govuk-frontend": "^5.14.0",
     "i18next": "^26.3.1",
     "i18next-http-middleware": "^3.9.7",
