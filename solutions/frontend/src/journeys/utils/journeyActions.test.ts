@@ -223,6 +223,8 @@ describe("journeyActions", () => {
       expect(mockCreateEvent).toHaveBeenCalledWith(
         "AMC_ACTION_COMPLETED",
         expect.objectContaining({
+          timestamp: 1,
+          event_timestamp_ms: 1000,
           event_name: "AMC_ACTION_COMPLETED",
           extensions: expect.objectContaining({
             account_action: "temp-account-delete-action",
@@ -347,6 +349,8 @@ describe("journeyActions", () => {
       expect(mockCreateEvent).toHaveBeenCalledWith(
         "AMC_ACTION_COMPLETED",
         expect.objectContaining({
+          timestamp: 2,
+          event_timestamp_ms: 2000,
           event_name: "AMC_ACTION_COMPLETED",
           extensions: expect.objectContaining({
             account_action: "temp-account-delete-action",
@@ -482,7 +486,7 @@ describe("journeyActions", () => {
       ]);
     });
 
-    it("should send audit events for each in-progress action", async () => {
+    it("should send audit events for each in-progress action with the same timestamp", async () => {
       mockRequest.awsLambda = { event: { requestContext: {} } };
       mockRequest.session = {
         claims: {
@@ -513,6 +517,17 @@ describe("journeyActions", () => {
       );
 
       expect(mockSendAuditEvent).toHaveBeenCalledTimes(2);
+      expect(mockCreateEvent).toHaveBeenCalledTimes(2);
+      expect(mockCreateEvent).toHaveBeenNthCalledWith(
+        1,
+        "AMC_ACTION_COMPLETED",
+        expect.objectContaining({ timestamp: 3, event_timestamp_ms: 3000 }),
+      );
+      expect(mockCreateEvent).toHaveBeenNthCalledWith(
+        2,
+        "AMC_ACTION_COMPLETED",
+        expect.objectContaining({ timestamp: 3, event_timestamp_ms: 3000 }),
+      );
     });
 
     it("should complete all in-progress actions unsuccessfully with complex error including extras", async () => {
