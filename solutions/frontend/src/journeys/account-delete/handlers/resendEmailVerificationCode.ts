@@ -1,7 +1,7 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { paths } from "../../../utils/paths.js";
-import { introductionPostHandler } from "./introduction.js";
+import { sharedSendOtpHandler } from "../utils/sharedSendOtpHandler.js";
 
 const render = async (
   request: FastifyRequest,
@@ -35,10 +35,5 @@ export async function resendEmailVerificationCodePostHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  // Only make use of introductionPostHandler whilst this handler
-  // contains no different logic. If this handler needs to have
-  // different logic to introductionPostHandler then don't call
-  // introductionPostHandler and add the logic directly in this
-  // handler.
-  return await introductionPostHandler(request, reply);
+  return await sharedSendOtpHandler(request, reply);
 }
