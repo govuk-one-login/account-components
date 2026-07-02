@@ -20,7 +20,7 @@ jobs:
           persist-credentials: false
 
       - name: Check GitHub Actions
-        uses: zizmorcore/zizmor-action@5f14fd08f7cf1cb1609c1e344975f152c7ee938d
+        uses: zizmorcore/zizmor-action@192e21d79ab29983730a13d1382995c2307fbcaa
 
       - name: Set up Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
@@ -100,7 +100,7 @@ jobs:
           '
 
       - name: Checkov
-        uses: bridgecrewio/checkov-action@dfb51aed1b783289b0d3f255028e7a88d5e8caa1
+        uses: bridgecrewio/checkov-action@fa9edf8f0a491c59a924ea6accd5bdcf07752cff
         with:
           directory: .
           output_format: cli
