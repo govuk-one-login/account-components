@@ -124,7 +124,7 @@ export const accountDelete = function (fastify: FastifyInstance) {
     async function (request, reply) {
       return (
         await import("./handlers/lockedOutSecurityCodeRequestedTooManyTimes.js")
-      ).lockedOutSecurityCodeRequestedTooManyTimesGetHandler(request, reply);
+      ).getHandler(request, reply);
     },
   );
 };

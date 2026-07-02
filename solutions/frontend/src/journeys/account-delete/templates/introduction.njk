@@ -21,6 +21,6 @@
     }) }}
   </form>
 
-  {% set exitLink = globals.buildCompleteFailedJourneyUri(globals.unsuccessfulJourneyActionErrors.userBackedOutOfJourney) %}
+  {% set exitLink = globals.buildCompleteFailedJourneyUri(globals.simpleUnsuccessfulJourneyActionErrors.userBackedOutOfJourney) %}
   <p class="govuk-body"><a href="{{ exitLink }}" class="govuk-link govuk-link--no-visited-state">{{ 'journey:introduction.exitJourneyLinkText' | translate }}</a></p>
 {% endblock %}

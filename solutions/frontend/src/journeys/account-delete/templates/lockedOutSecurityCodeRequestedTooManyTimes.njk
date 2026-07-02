@@ -9,7 +9,7 @@
 
   {% set paragraphs = 'journey:lockedOutSecurityCodeRequestedTooManyTimes.paragraphs' | translate({ 
    returnObjects: true,
-   exitLinkUrl: globals.buildCompleteFailedJourneyUri(globals.unsuccessfulJourneyActionErrors.userAbortedJourney)
+   exitLinkUrl: globals.buildCompleteFailedJourneyUri(globals.simpleUnsuccessfulJourneyActionErrors.userAbortedJourney)
   }) %}
 
   {% for paragraph in paragraphs %}

@@ -3,7 +3,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { completeJourney } from "../utils/completeJourney.js";
 import {
   completeAllJourneyActionsUnsuccessfully,
-  unsuccessfulJourneyActionErrors,
+  simpleUnsuccessfulJourneyActionErrors,
 } from "../utils/journeyActions.js";
 import assert from "node:assert";
 
@@ -26,7 +26,7 @@ export const completeFailedJourneyHandler = async (
   );
 
   const unsuccessfulActionError = Object.values(
-    unsuccessfulJourneyActionErrors,
+    simpleUnsuccessfulJourneyActionErrors,
   ).find(
     (error) =>
       error.code === params.error_code &&

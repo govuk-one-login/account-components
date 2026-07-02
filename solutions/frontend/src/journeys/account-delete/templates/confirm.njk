@@ -39,7 +39,7 @@
   {{ govukButton({
     text: 'journey:confirm.cancelButtonLabel' | translate,
     classes: "govuk-button--secondary",
-    href: globals.buildCompleteFailedJourneyUri(globals.unsuccessfulJourneyActionErrors.userAbortedJourney)
+    href: globals.buildCompleteFailedJourneyUri(globals.simpleUnsuccessfulJourneyActionErrors.userAbortedJourney)
   }) }}
 
   <p class="govuk-body"><a href="{{ globals.contactUrl }}" target="_blank" rel="noopener noreferrer" class="govuk-link govuk-link--no-visited-state">{{ 'journey:confirm.contactLinkText' | translate }}</a></p>

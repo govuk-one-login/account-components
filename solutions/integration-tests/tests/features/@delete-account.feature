@@ -216,3 +216,87 @@ Feature: Delete account
       "success": false
     }    
     """
+
+  Scenario: Interventions on account (blocked)
+    Given I go to the journey initiator
+    And I select the option beginning with "Account is blocked" in the "Authenticate" select
+    And I begin a "account-delete" journey    
+    Then the page title is prefixed with "You’ll need to permanently delete your GOV.UK One Login"
+  
+    Given I click the "Start" button    
+    Then the page title is prefixed with "Enter the code sent to your email address"
+
+    Given I enter the correct verification code
+    And I click the "Continue" button    
+    Then the page title is prefixed with "Enter your password"
+  
+    Given I enter my password
+    And I click the "Continue" button    
+    Then the page contains the text "Client callback"
+    And the journey outcome matches the object:
+    """
+    {
+      "actions": [{
+        "action": "temp-account-delete-action",
+        "details": {
+          "accountInterventionsStatus": {
+            "state": {
+              "blocked": true,
+              "suspended": false
+            }
+          },      
+          "error": {
+            "code": 1004,
+            "description": "AccountHasInterventions"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "account-delete",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
+    """    
+
+  Scenario: Interventions on account (suspended)
+    Given I go to the journey initiator
+    And I select the option beginning with "Account is suspended" in the "Authenticate" select
+    And I begin a "account-delete" journey    
+    Then the page title is prefixed with "You’ll need to permanently delete your GOV.UK One Login"
+  
+    Given I click the "Start" button    
+    Then the page title is prefixed with "Enter the code sent to your email address"
+
+    Given I enter the correct verification code
+    And I click the "Continue" button    
+    Then the page title is prefixed with "Enter your password"
+  
+    Given I enter my password
+    And I click the "Continue" button    
+    Then the page contains the text "Client callback"
+    And the journey outcome matches the object:
+    """
+    {
+      "actions": [{
+        "action": "temp-account-delete-action",
+        "details": {
+          "accountInterventionsStatus": {
+            "state": {
+              "blocked": false,
+              "suspended": true
+            }
+          },      
+          "error": {
+            "code": 1004,
+            "description": "AccountHasInterventions"
+          }      
+        },        
+        "success": false
+      }],
+      "email": "testuser@test.null.local",
+      "scope": "account-delete",
+      "sub": "urn:fdc:gov.uk:default",
+      "success": false
+    }    
+    """

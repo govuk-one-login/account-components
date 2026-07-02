@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 
-const { lockedOutSecurityCodeRequestedTooManyTimesGetHandler } =
+const { getHandler } =
   await import("./lockedOutSecurityCodeRequestedTooManyTimes.js");
 
 describe("lockedOutSecurityCodeRequestedTooManyTimes handlers", () => {
@@ -19,7 +19,7 @@ describe("lockedOutSecurityCodeRequestedTooManyTimes handlers", () => {
 
   describe("getHandler", () => {
     it("should render lockedOutSecurityCodeRequestedTooManyTimes template", async () => {
-      const result = await lockedOutSecurityCodeRequestedTooManyTimesGetHandler(
+      const result = await getHandler(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
       );
@@ -35,10 +35,7 @@ describe("lockedOutSecurityCodeRequestedTooManyTimes handlers", () => {
       delete mockReply.render;
 
       await expect(
-        lockedOutSecurityCodeRequestedTooManyTimesGetHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
+        getHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
       ).rejects.toThrow();
     });
   });

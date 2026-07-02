@@ -9,7 +9,7 @@ import type { Scope } from "../commonTypes.ts";
 import type { getClaimsSchema } from "../../../frontend/src/utils/getClaimsSchema.ts";
 import type {
   JourneyAction,
-  unsuccessfulJourneyActionErrors,
+  simpleUnsuccessfulJourneyActionErrors,
   JourneyActionName,
 } from "../../../frontend/src/journeys/utils/journeyActions.ts";
 
@@ -39,11 +39,11 @@ declare module "fastify" {
       analyticsCookieDomain?: string | undefined;
       ga4ContainerId?: string | undefined;
       analyticsEnabled?: boolean | undefined;
-      unsuccessfulJourneyActionErrors?:
-        | typeof unsuccessfulJourneyActionErrors
+      simpleUnsuccessfulJourneyActionErrors?:
+        | typeof simpleUnsuccessfulJourneyActionErrors
         | undefined;
       buildCompleteFailedJourneyUri?: (
-        error: (typeof unsuccessfulJourneyActionErrors)[keyof typeof unsuccessfulJourneyActionErrors],
+        error: (typeof simpleUnsuccessfulJourneyActionErrors)[keyof typeof simpleUnsuccessfulJourneyActionErrors],
       ) => string;
       contactUrl?: string | undefined;
       yourServicesUrl?: string | undefined;
