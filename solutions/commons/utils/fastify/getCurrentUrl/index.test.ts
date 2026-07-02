@@ -39,11 +39,11 @@ describe("getCurrentUrl", () => {
   it("should handle requests with a port in the host header", () => {
     const mockRequest = {
       protocol: "http",
-      host: "localhost:8080",
+      host: "localhost:4567",
       originalUrl: "/with-port",
     } as FastifyRequest;
     const result = getCurrentUrl(mockRequest);
 
-    expect(result.href).toBe("http://localhost:8080/with-port");
+    expect(result.href).toBe("http://localhost:4567/with-port");
   });
 });

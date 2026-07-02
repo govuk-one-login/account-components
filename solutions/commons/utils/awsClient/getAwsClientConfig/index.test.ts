@@ -7,10 +7,10 @@ describe("getAwsClientConfig", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
     delete process.env["AWS_REGION"];
-    delete process.env["USE_LOCALSTACK"];
-    delete process.env["LOCALSTACK_ENDPOINT"];
-    delete process.env["LOCALSTACK_ACCESS_KEY_ID"];
-    delete process.env["LOCALSTACK_ACCESS_KEY"];
+    delete process.env["USE_LOCAL_AWS"];
+    delete process.env["LOCAL_AWS_ENDPOINT"];
+    delete process.env["LOCAL_AWS_ACCESS_KEY_ID"];
+    delete process.env["LOCAL_AWS_ACCESS_KEY"];
     delete process.env["AWS_MAX_ATTEMPTS"];
     delete process.env["AWS_CLIENT_CONNECT_TIMEOUT"];
     delete process.env["AWS_CLIENT_REQUEST_TIMEOUT"];
@@ -39,13 +39,13 @@ describe("getAwsClientConfig", () => {
     expect(config.maxAttempts).toBe(5);
   });
 
-  it("includes localstack config when USE_LOCALSTACK is true", () => {
+  it("includes local AWS config when USE_LOCAL_AWS is true", () => {
     process.env["AWS_REGION"] = "eu-west-2";
-    process.env["USE_LOCALSTACK"] = "true";
-    process.env["LOCALSTACK_ENDPOINT"] = "http://localhost:4566";
-    process.env["LOCAL_KMS_ENDPOINT"] = "http://localhost:4567";
-    process.env["LOCALSTACK_ACCESS_KEY_ID"] = "test";
-    process.env["LOCALSTACK_ACCESS_KEY"] = "test";
+    process.env["USE_LOCAL_AWS"] = "true";
+    process.env["LOCAL_AWS_ENDPOINT"] = "http://localhost:4566";
+    process.env["LOCAL_AWS_KMS_ENDPOINT"] = "http://localhost:4567";
+    process.env["LOCAL_AWS_ACCESS_KEY_ID"] = "test";
+    process.env["LOCAL_AWS_ACCESS_KEY"] = "test";
 
     const config = getAwsClientConfig();
 
@@ -56,33 +56,31 @@ describe("getAwsClientConfig", () => {
     });
   });
 
-  it("throws error when localstack is enabled but endpoint is missing", () => {
+  it("throws error when local AWS is enabled but endpoint is missing", () => {
     process.env["AWS_REGION"] = "eu-west-2";
-    process.env["USE_LOCALSTACK"] = "true";
+    process.env["USE_LOCAL_AWS"] = "true";
+
+    expect(() => getAwsClientConfig()).toThrow("LOCAL_AWS_ENDPOINT is not set");
+  });
+
+  it("throws error when local AWS is enabled but access key is missing", () => {
+    process.env["AWS_REGION"] = "eu-west-2";
+    process.env["USE_LOCAL_AWS"] = "true";
+    process.env["LOCAL_AWS_ENDPOINT"] = "http://localhost:4566";
 
     expect(() => getAwsClientConfig()).toThrow(
-      "LOCALSTACK_ENDPOINT is not set",
+      "LOCAL_AWS_ACCESS_KEY_ID is not set",
     );
   });
 
-  it("throws error when localstack is enabled but access key is missing", () => {
+  it("throws error when local AWS is enabled but secret key is missing", () => {
     process.env["AWS_REGION"] = "eu-west-2";
-    process.env["USE_LOCALSTACK"] = "true";
-    process.env["LOCALSTACK_ENDPOINT"] = "http://localhost:4566";
+    process.env["USE_LOCAL_AWS"] = "true";
+    process.env["LOCAL_AWS_ENDPOINT"] = "http://localhost:4566";
+    process.env["LOCAL_AWS_ACCESS_KEY_ID"] = "test";
 
     expect(() => getAwsClientConfig()).toThrow(
-      "LOCALSTACK_ACCESS_KEY_ID is not set",
-    );
-  });
-
-  it("throws error when localstack is enabled but secret key is missing", () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    process.env["USE_LOCALSTACK"] = "true";
-    process.env["LOCALSTACK_ENDPOINT"] = "http://localhost:4566";
-    process.env["LOCALSTACK_ACCESS_KEY_ID"] = "test";
-
-    expect(() => getAwsClientConfig()).toThrow(
-      "LOCALSTACK_ACCESS_KEY is not set",
+      "LOCAL_AWS_ACCESS_KEY is not set",
     );
   });
 });

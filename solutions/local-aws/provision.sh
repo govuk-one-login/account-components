@@ -3,38 +3,22 @@
 set -e
 
 export AWS_PAGER=""
+export AWS_ACCESS_KEY_ID="test"
+export AWS_SECRET_ACCESS_KEY="test" # pragma: allowlist secret
+export AWS_DEFAULT_REGION="eu-west-2"
+
+FLOCI_ENDPOINT="http://localhost:4566"
+KMS_ENDPOINT="http://localhost:4567"
 
 generate_keys() {
   echo "Starting to generate keys"
 
-  # 1. Generate ECDSA Private Key (NIST P-256) to string
   MOCK_CLIENT_EC_PRIVATE_KEY=$(openssl ecparam -name prime256v1 -genkey | openssl pkcs8 -topk8 -nocrypt -outform PEM)
-
-  # 2. Extract ECDSA Public Key from private key string
   MOCK_CLIENT_EC_PUBLIC_KEY=$(echo "$MOCK_CLIENT_EC_PRIVATE_KEY" | openssl ec -pubout)
-
-  # 3. Generate RSA Private Key (RSA 2048) to string
   MOCK_CLIENT_RSA_PRIVATE_KEY=$(openssl genrsa 2048 | openssl pkcs8 -topk8 -nocrypt -outform PEM)
-
-  # 4. Extract RSA Public Key from private key string
   MOCK_CLIENT_RSA_PUBLIC_KEY=$(echo "$MOCK_CLIENT_RSA_PRIVATE_KEY" | openssl rsa -pubout)
 
-  # Optional: escape newlines for SSM if needed (AWS CLI handles newlines well for string params, so usually no need)
-  # But if you're sending to JSON or a place where newlines break things, you could use:
-  # MOCK_CLIENT_EC_PRIVATE_KEY_ESCAPED=$(echo "$MOCK_CLIENT_EC_PRIVATE_KEY" | awk '{printf "%s\\n", $0}')
-
   echo "Finished generating keys"
-  return 0
-}
-
-configure_cli_for_localstack() {
-  echo "Starting to configure AWS CLI for Localstack"
-
-  aws configure set aws_access_key_id test
-  aws configure set aws_secret_access_key test
-  aws configure set region eu-west-2
-
-  echo "Finished configuring AWS CLI for Localstack"
   return 0
 }
 
@@ -51,43 +35,43 @@ build_images() {
   echo "Building Docker images"
 
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  docker build -t account-components-localstack -f "$SCRIPT_DIR/localstack/Dockerfile" "$SCRIPT_DIR"
+  docker build -t account-components-floci -f "$SCRIPT_DIR/floci/Dockerfile" "$SCRIPT_DIR"
   docker build -t account-components-local-kms -f "$SCRIPT_DIR/local-kms/Dockerfile" "$SCRIPT_DIR"
 
   echo "Finished building Docker images"
   return 0
 }
 
-start_localstack() {
-  echo "Starting Localstack"
+start_floci() {
+  echo "Starting Floci"
 
-  docker stop account-components-localstack || true && docker rm account-components-localstack || true
+  docker stop account-components-floci || true && docker rm account-components-floci || true
   docker run -d \
-    --network account-components-network \
-    --name account-components-localstack \
     -p 4566:4566 \
-    -e DYNAMODB_REMOVE_EXPIRED_ITEMS=1 \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    account-components-localstack
+    -e FLOCI_DEFAULT_REGION=$AWS_DEFAULT_REGION \
+    --network account-components-network \
+    --name account-components-floci \
+    account-components-floci
 
-  until aws --endpoint-url=http://localhost:4566 s3 ls > /dev/null 2>&1; do
-    echo "⌛ Localstack not ready yet, retrying in 2s"
+  until aws --endpoint-url="$FLOCI_ENDPOINT" s3 ls > /dev/null 2>&1; do
+    echo "⌛ Floci not ready yet, retrying in 2s"
     sleep 2
   done
 
-  echo "Localstack is ready"
+  echo "Floci is ready"
   return 0
 }
 
-# It is necessary to to use a separate KMS solution rather than relying on Localstack's.
-# Localstack's KMS solution is buggy and does not work consistently across different machines.
+# It is necessary to to use a separate KMS solution rather than relying on Floci's.
+# Floci's KMS solution is buggy and does not work consistently across different machines.
 start_kms_local() {
   echo "Starting KMS Local"
 
   docker stop account-components-local-kms || true && docker rm account-components-local-kms || true
   docker run -d -p 4567:8080 --network account-components-network --name account-components-local-kms account-components-local-kms
 
-  until aws --endpoint-url=http://localhost:4567 kms list-keys > /dev/null 2>&1; do
+  until aws --endpoint-url="$KMS_ENDPOINT" kms list-keys > /dev/null 2>&1; do
     echo "⌛ KMS Local not ready yet, retrying in 2s"
     sleep 2
   done
@@ -101,26 +85,26 @@ create_ssm_parameters() {
 
   STRING="String"
 
-  aws --endpoint-url=http://localhost:4566 ssm put-parameter \
+  aws --endpoint-url="$FLOCI_ENDPOINT" ssm put-parameter \
     --name "/amc/MockClientEcPrivateKey" \
     --value "${MOCK_CLIENT_EC_PRIVATE_KEY}" \
     --type "${STRING}"
 
-  aws --endpoint-url=http://localhost:4566 ssm put-parameter \
+  aws --endpoint-url="$FLOCI_ENDPOINT" ssm put-parameter \
     --name "/amc/MockClientEcPublicKey" \
     --value "${MOCK_CLIENT_EC_PUBLIC_KEY}" \
     --type "${STRING}"
 
-  aws --endpoint-url=http://localhost:4566 ssm put-parameter \
+  aws --endpoint-url="$FLOCI_ENDPOINT" ssm put-parameter \
     --name "/amc/MockClientRsaPrivateKey" \
     --value "${MOCK_CLIENT_RSA_PRIVATE_KEY}" \
     --type "${STRING}"
 
-  aws --endpoint-url=http://localhost:4566 ssm put-parameter \
+  aws --endpoint-url="$FLOCI_ENDPOINT" ssm put-parameter \
     --name "/amc/MockClientRsaPublicKey" \
     --value "${MOCK_CLIENT_RSA_PUBLIC_KEY}" \
     --type "${STRING}"
-  
+
   echo "Finished creating SSM parameters"
   return 0
 }
@@ -128,18 +112,18 @@ create_ssm_parameters() {
 create_kms_keys() {
   echo "Creating KMS keys"
 
-  KEY_ID=$(aws --endpoint-url=http://localhost:4567 kms create-key \
+  KEY_ID=$(aws --endpoint-url="$KMS_ENDPOINT" kms create-key \
     --key-spec RSA_2048 \
     --key-usage ENCRYPT_DECRYPT \
     --origin AWS_KMS \
     --query 'KeyMetadata.KeyId' \
     --output text)
 
-  aws --endpoint-url=http://localhost:4567 kms create-alias \
+  aws --endpoint-url="$KMS_ENDPOINT" kms create-alias \
     --alias-name alias/amc-JARRSAEncryptionKey \
     --target-key-id "$KEY_ID"
 
-  JWT_SIGNING_KEY_ID=$(aws --endpoint-url=http://localhost:4567 kms create-key \
+  JWT_SIGNING_KEY_ID=$(aws --endpoint-url="$KMS_ENDPOINT" kms create-key \
     --key-spec ECC_NIST_P256 \
     --key-usage SIGN_VERIFY \
     --origin AWS_KMS \
@@ -147,7 +131,7 @@ create_kms_keys() {
     --query 'KeyMetadata.KeyId' \
     --output text)
 
-  aws --endpoint-url=http://localhost:4567 kms create-alias \
+  aws --endpoint-url="$KMS_ENDPOINT" kms create-alias \
     --alias-name alias/amc-JWTSigningKey \
     --target-key-id "$JWT_SIGNING_KEY_ID"
 
@@ -158,8 +142,7 @@ create_kms_keys() {
 create_dynamodb_tables() {
   echo "Creating DynamoDB tables"
 
-  # JourneyOutcomeTable
-  aws --endpoint-url=http://localhost:4566 dynamodb create-table \
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
     --table-name "amc-JourneyOutcome" \
     --attribute-definitions \
       AttributeName=outcome_id,AttributeType=S \
@@ -167,12 +150,11 @@ create_dynamodb_tables() {
       AttributeName=outcome_id,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
-  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb update-time-to-live \
     --table-name "amc-JourneyOutcome" \
     --time-to-live-specification "Enabled=true,AttributeName=expires"
 
-  # SessionStore
-  aws --endpoint-url=http://localhost:4566 dynamodb create-table \
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
     --table-name "amc-SessionStore" \
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
@@ -180,12 +162,11 @@ create_dynamodb_tables() {
       AttributeName=id,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
-  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb update-time-to-live \
     --table-name "amc-SessionStore" \
-    --time-to-live-specification "Enabled=true,AttributeName=expires"    
-    
-  # AuthCodeTable
-  aws --endpoint-url=http://localhost:4566 dynamodb create-table \
+    --time-to-live-specification "Enabled=true,AttributeName=expires"
+
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
     --table-name "amc-AuthCode" \
     --attribute-definitions \
       AttributeName=code,AttributeType=S \
@@ -193,12 +174,11 @@ create_dynamodb_tables() {
       AttributeName=code,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
-  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb update-time-to-live \
     --table-name "amc-AuthCode" \
     --time-to-live-specification "Enabled=true,AttributeName=expires"
 
-  # ReplayAttackTable
-  aws --endpoint-url=http://localhost:4566 dynamodb create-table \
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
     --table-name "amc-ReplayAttack" \
     --attribute-definitions \
       AttributeName=nonce,AttributeType=S \
@@ -206,9 +186,9 @@ create_dynamodb_tables() {
       AttributeName=nonce,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
-  aws --endpoint-url=http://localhost:4566 dynamodb update-time-to-live \
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb update-time-to-live \
     --table-name "amc-ReplayAttack" \
-    --time-to-live-specification "Enabled=true,AttributeName=expires"    
+    --time-to-live-specification "Enabled=true,AttributeName=expires"
 
   echo "Finished creating DynamoDB tables"
   return 0
@@ -217,10 +197,10 @@ create_dynamodb_tables() {
 create_sqs_queues() {
   echo "Creating SQS queues"
 
-  aws --endpoint-url=http://localhost:4566 sqs create-queue \
+  aws --endpoint-url="$FLOCI_ENDPOINT" sqs create-queue \
     --queue-name "amc-NotificationsQueue"
 
-  aws --endpoint-url=http://localhost:4566 sqs create-queue \
+  aws --endpoint-url="$FLOCI_ENDPOINT" sqs create-queue \
     --queue-name "amc-TxMASQSProducerAuditEventQueue"
 
   echo "Finished creating SQS queues"
@@ -229,19 +209,17 @@ create_sqs_queues() {
 
 list_resources() {
   echo "List resources"
-  ENDPOINT_URL="http://localhost:4566"
 
-  # List all parameter names
   PARAM_NAMES=$(aws ssm describe-parameters \
-    --endpoint-url "$ENDPOINT_URL" \
+    --endpoint-url "$FLOCI_ENDPOINT" \
     --query "Parameters[*].Name" \
     --output text)
 
-  echo "Listing SSM parameters from LocalStack..."
+  echo "Listing SSM parameters..."
 
   for NAME in $PARAM_NAMES; do
     VALUE=$(aws ssm get-parameter \
-      --endpoint-url "$ENDPOINT_URL" \
+      --endpoint-url "$FLOCI_ENDPOINT" \
       --name "$NAME" \
       --with-decryption \
       --query "Parameter.Value" \
@@ -250,20 +228,18 @@ list_resources() {
     echo "$NAME = $VALUE"
   done
 
-  aws --endpoint-url=http://localhost:4566 dynamodb list-tables
-  aws --endpoint-url=http://localhost:4567 kms list-keys
-  aws --endpoint-url=http://localhost:4567 kms list-aliases
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb list-tables
+  aws --endpoint-url="$KMS_ENDPOINT" kms list-keys
+  aws --endpoint-url="$KMS_ENDPOINT" kms list-aliases
+  aws --endpoint-url="$FLOCI_ENDPOINT" sqs list-queues
 
-  aws --endpoint-url=http://localhost:4566 sqs list-queues
-  
   return 0
 }
 
 generate_keys
-configure_cli_for_localstack
 create_docker_network
 build_images
-start_localstack
+start_floci
 start_kms_local
 create_ssm_parameters
 create_kms_keys
@@ -271,4 +247,4 @@ create_dynamodb_tables
 create_sqs_queues
 list_resources
 
-echo "Localstack provisioned successfully"
+echo "Local AWS provisioned successfully"

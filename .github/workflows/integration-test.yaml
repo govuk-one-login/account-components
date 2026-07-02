@@ -38,15 +38,15 @@ jobs:
           cat > .env.integration-tests << 'EOF'
           ENVIRONMENT=local
           NODE_ENV=production
-          USE_LOCALSTACK=1
+          USE_LOCAL_AWS=1
           SESSIONS_SIGNER=localsessionsignerwhichmustbeatleast32chars  
           SESSIONS_TABLE_NAME=amc-SessionStore
           ROOT_DOMAIN_WITH_ENV=localhost
           AWS_REGION=eu-west-2
-          LOCALSTACK_ENDPOINT=http://localhost:4566
-          LOCAL_KMS_ENDPOINT=http://localhost:4567
-          LOCALSTACK_ACCESS_KEY_ID=test
-          LOCALSTACK_ACCESS_KEY=test
+          LOCAL_AWS_ENDPOINT=http://localhost:4566
+          LOCAL_AWS_KMS_ENDPOINT=http://localhost:4567
+          LOCAL_AWS_ACCESS_KEY_ID=test
+          LOCAL_AWS_ACCESS_KEY=test
           AUTHORIZE_ENDPOINT_URL=http://localhost:6002/authorize
           AUTH_CODE_TABLE_NAME=amc-AuthCode
           JOURNEY_OUTCOME_TABLE_NAME=amc-JourneyOutcome    
@@ -65,8 +65,8 @@ jobs:
           CONTACT_URL=https://home.dev.account.gov.uk/contact-gov-uk-one-login         
           JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/amc-JARRSAEncryptionKey
           REPLAY_ATTACK_TABLE_NAME=amc-ReplayAttack  
-          NOTIFICATIONS_QUEUE_URL=http://sqs.eu-west-2.localhost.localstack.cloud:4566/000000000000/amc-NotificationsQueue              
-          AUDIT_EVENTS_QUEUE_URL=http://sqs.eu-west-2.localhost.localstack.cloud:4566/000000000000/amc-TxMASQSProducerAuditEventQueue                 
+          NOTIFICATIONS_QUEUE_URL=http://localhost:4566/000000000000/amc-NotificationsQueue
+          AUDIT_EVENTS_QUEUE_URL=http://localhost:4566/000000000000/amc-TxMASQSProducerAuditEventQueue                 
           EOF
 
       - name: Configure stubs environment
@@ -75,7 +75,7 @@ jobs:
           cat > .env.integration-tests << 'EOF'
           ENVIRONMENT=local
           NODE_ENV=production
-          USE_LOCALSTACK=1
+          USE_LOCAL_AWS=1
           MOCK_CLIENT_EC_PRIVATE_KEY_SSM_NAME=/amc/MockClientEcPrivateKey  
           MOCK_CLIENT_EC_PUBLIC_KEY_SSM_NAME=/amc/MockClientEcPublicKey
           MOCK_CLIENT_RSA_PRIVATE_KEY_SSM_NAME=/amc/MockClientRsaPrivateKey  
@@ -86,11 +86,11 @@ jobs:
           ACCESS_TOKEN_ISSUER=http://localhost:6003
           AUTHORIZE_URL=http://localhost:6002/authorize
           AWS_REGION=eu-west-2
-          LOCALSTACK_ENDPOINT=http://localhost:4566
-          LOCAL_KMS_ENDPOINT=http://localhost:4567
-          LOCALSTACK_ACCESS_KEY_ID=test
-          LOCALSTACK_ACCESS_KEY=test   
-          ROOT_DOMAIN=localhost             
+          LOCAL_AWS_ENDPOINT=http://localhost:4566
+          LOCAL_AWS_KMS_ENDPOINT=http://localhost:4567
+          LOCAL_AWS_ACCESS_KEY_ID=test
+          LOCAL_AWS_ACCESS_KEY=test      
+          ROOT_DOMAIN=localhost          
           EOF
 
       - name: Configure API environment
@@ -102,11 +102,11 @@ jobs:
               "NODE_OPTIONS": "--enable-source-maps",
               "ENVIRONMENT": "local",
               "NODE_ENV": "production",
-              "USE_LOCALSTACK": "1",
-              "LOCALSTACK_ENDPOINT": "http://account-components-localstack:4566",
-              "LOCAL_KMS_ENDPOINT": "http://account-components-local-kms:8080",
-              "LOCALSTACK_ACCESS_KEY_ID": "test",
-              "LOCALSTACK_ACCESS_KEY": "test"
+              "USE_LOCAL_AWS": "1",
+              "LOCAL_AWS_ENDPOINT": "http://account-components-floci:4566",
+              "LOCAL_AWS_KMS_ENDPOINT": "http://account-components-local-kms:8080",
+              "LOCAL_AWS_ACCESS_KEY_ID": "test",
+              "LOCAL_AWS_ACCESS_KEY": "test"
             },
             "ApiTokenLambda": {
               "AUTH_TABLE_NAME": "amc-AuthCode",

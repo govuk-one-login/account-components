@@ -115,8 +115,8 @@ updates:
   - package-ecosystem: docker
     directories:
       - "/solutions/integration-tests"
-      - "/solutions/localstack/local-kms"
-      - "/solutions/localstack/localstack"
+      - "/solutions/local-aws/local-kms"
+      - "/solutions/local-aws/floci"
     schedule:
       interval: "cron"
       cronjob: "0 3 1,15 * *"
@@ -133,12 +133,6 @@ updates:
       - dependency-name: "node"
         update-types:
           - "version-update:semver-major"
-      # Can't be updated past the current major & minor version due
-      # to localstack changing the licence
-      - dependency-name: "localstack/localstack"
-        update-types:
-          - "version-update:semver-major"
-          - "version-update:semver-minor"
     groups:
       docker-minor-patch:
         update-types:
