@@ -172,7 +172,8 @@ Given(
 );
 
 Then("the {word} cookie has been set", async ({ page }, cookieName) => {
-  await page.waitForLoadState();
+  // eslint-disable-next-line playwright/no-networkidle
+  await page.waitForLoadState("networkidle");
   const cookies = await page.context().cookies();
   const expectedCookie = cookies.find((cookie) => cookie.name === cookieName);
   expect(expectedCookie).toBeDefined();
@@ -257,7 +258,8 @@ Given("I select the {string} channel", async ({ page }, channel: string) => {
 Then(
   "the {string} cookie is set to {string}",
   async ({ page }, cookieName: string, cookieValue: string) => {
-    await page.waitForLoadState();
+    // eslint-disable-next-line playwright/no-networkidle
+    await page.waitForLoadState("networkidle");
     const cookies = await page.context().cookies();
     const cookie = cookies.find((c) => c.name === cookieName);
     expect(cookie).toBeDefined();
