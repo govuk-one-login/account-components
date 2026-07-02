@@ -25,8 +25,6 @@ Then("the page meets our accessibility standards", async ({ page }) => {
   const accessibilityScanResults = await new AxeBuilder({ page })
     .withTags(["wcag22aa"])
     .analyze();
-  // eslint-disable-next-line playwright/no-networkidle
-  await page.waitForLoadState("networkidle");
   expect(accessibilityScanResults.violations).toEqual([]);
 });
 
@@ -96,8 +94,6 @@ Then(
 );
 
 Then("the page looks as expected", async ({ page }) => {
-  // eslint-disable-next-line playwright/no-networkidle
-  await page.waitForLoadState("networkidle");
   expect(
     await page.screenshot({
       fullPage: true,
@@ -176,8 +172,6 @@ Given(
 );
 
 Then("the {word} cookie has been set", async ({ page }, cookieName) => {
-  // eslint-disable-next-line playwright/no-networkidle
-  await page.waitForLoadState("networkidle");
   const cookies = await page.context().cookies();
   const expectedCookie = cookies.find((cookie) => cookie.name === cookieName);
   expect(expectedCookie).toBeDefined();
@@ -262,8 +256,6 @@ Given("I select the {string} channel", async ({ page }, channel: string) => {
 Then(
   "the {string} cookie is set to {string}",
   async ({ page }, cookieName: string, cookieValue: string) => {
-    // eslint-disable-next-line playwright/no-networkidle
-    await page.waitForLoadState("networkidle");
     const cookies = await page.context().cookies();
     const cookie = cookies.find((c) => c.name === cookieName);
     expect(cookie).toBeDefined();
@@ -274,8 +266,6 @@ Then(
 Then(
   "there is a {string} query string parameter set to {string}",
   async ({ page }, paramName: string, expectedValue: string) => {
-    // eslint-disable-next-line playwright/no-networkidle
-    await page.waitForLoadState("networkidle");
     const currentUrl = new URL(page.url());
     const paramValue = currentUrl.searchParams.get(paramName);
     expect(paramValue).toBe(expectedValue);
