@@ -195,8 +195,23 @@ export async function getHandler(
   }
 
   const userAisStatus = await getUserAisStatus(request);
-  // TODO replace this log line with the intervention handling logic
-  request.log.info(userAisStatus, "userAisStatus");
+  if (
+    userAisStatus.success &&
+    (userAisStatus.result.state.blocked || userAisStatus.result.state.suspended)
+  ) {
+    await completeAllJourneyActionsUnsuccessfully(
+      {
+        ...unsuccessfulJourneyActionErrors.accountHasInterventions,
+        extras: {
+          accountInterventionsStatus: userAisStatus.result,
+        },
+      },
+      request,
+      reply,
+    );
+
+    return await completeJourney(request, reply, false);
+  }
 
   await render(request, reply, {
     showErrorUi,
@@ -424,8 +439,23 @@ export async function postHandler(
   );
 
   const userAisStatus = await getUserAisStatus(request);
-  // TODO replace this log line with the intervention handling logic
-  request.log.info(userAisStatus, "userAisStatus");
+  if (
+    userAisStatus.success &&
+    (userAisStatus.result.state.blocked || userAisStatus.result.state.suspended)
+  ) {
+    await completeAllJourneyActionsUnsuccessfully(
+      {
+        ...unsuccessfulJourneyActionErrors.accountHasInterventions,
+        extras: {
+          accountInterventionsStatus: userAisStatus.result,
+        },
+      },
+      request,
+      reply,
+    );
+
+    return await completeJourney(request, reply, false);
+  }
 
   const savePasskeyResult = await accountDataApiClient.createPasskey(
     request.session.claims.public_sub,

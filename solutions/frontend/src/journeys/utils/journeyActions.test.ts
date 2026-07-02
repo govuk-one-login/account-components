@@ -514,5 +514,71 @@ describe("journeyActions", () => {
 
       expect(mockSendAuditEvent).toHaveBeenCalledTimes(2);
     });
+
+    it("should complete all in-progress actions unsuccessfully with complex error including extras", async () => {
+      mockRequest.session.journeyActions = [
+        { action: "temp-account-delete-action", startedAt: 500 },
+        { action: "passkey-create", startedAt: 600 },
+      ] as FastifySessionObject["journeyActions"];
+
+      await completeAllJourneyActionsUnsuccessfully(
+        {
+          code: 1004,
+          description: "AccountHasInterventions",
+          destroySession: false,
+          extras: {
+            accountInterventionsStatus: {
+              state: {
+                blocked: true,
+                suspended: false,
+              },
+            },
+          },
+        },
+        mockRequest as unknown as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockRequest.session.journeyActions).toStrictEqual([
+        {
+          action: "temp-account-delete-action",
+          success: false,
+          error: {
+            code: 1004,
+            description: "AccountHasInterventions",
+            destroySession: false,
+            extras: {
+              accountInterventionsStatus: {
+                state: {
+                  blocked: true,
+                  suspended: false,
+                },
+              },
+            },
+          },
+          startedAt: 500,
+          completedAt: 3000,
+        },
+        {
+          action: "passkey-create",
+          success: false,
+          error: {
+            code: 1004,
+            description: "AccountHasInterventions",
+            destroySession: false,
+            extras: {
+              accountInterventionsStatus: {
+                state: {
+                  blocked: true,
+                  suspended: false,
+                },
+              },
+            },
+          },
+          startedAt: 600,
+          completedAt: 3000,
+        },
+      ]);
+    });
   });
 });

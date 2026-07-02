@@ -47,7 +47,7 @@
 
     {% if not globals.isAppChannel %}
         {% if reply.client.consider_user_logged_in and globals.buildCompleteFailedJourneyUri %}
-          {% set signOutUrl = globals.buildCompleteFailedJourneyUri(globals.unsuccessfulJourneyActionErrors.userSignedOut) %}
+          {% set signOutUrl = globals.buildCompleteFailedJourneyUri(globals.simpleUnsuccessfulJourneyActionErrors.userSignedOut) %}
           {% set signOutUrlQueryParams = signOutUrl | getQueryParamsFromUrl %}
 
           <div class="govuk-header__content">

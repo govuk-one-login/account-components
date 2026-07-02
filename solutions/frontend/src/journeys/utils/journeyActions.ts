@@ -15,7 +15,16 @@ export const journeyActionNames = {
 export type JourneyActionName =
   (typeof journeyActionNames)[keyof typeof journeyActionNames];
 
-export const unsuccessfulJourneyActionErrors = {
+type JourneyActionError = Record<
+  string,
+  {
+    code: number;
+    description: string;
+    destroySession: boolean;
+  }
+>;
+
+export const simpleUnsuccessfulJourneyActionErrors = {
   userSignedOut: {
     code: 1001,
     description: "UserSignedOut",
@@ -31,14 +40,33 @@ export const unsuccessfulJourneyActionErrors = {
     description: "UserBackedOutOfJourney",
     destroySession: false,
   },
-} as const satisfies Record<
-  string,
-  {
-    code: number;
-    description: string;
-    destroySession: boolean;
-  }
->;
+} as const satisfies JourneyActionError;
+
+const complexUnsuccessfulJourneyActionErrors = {
+  accountHasInterventions: {
+    code: 1004,
+    description: "AccountHasInterventions",
+    destroySession: false,
+  },
+} as const satisfies JourneyActionError;
+
+interface UnsuccessfulJourneyActionErrorExtras {
+  accountHasInterventions: {
+    accountInterventionsStatus: {
+      state: {
+        blocked: boolean;
+        suspended: boolean;
+        resetPassword?: boolean;
+        reproveIdentity?: boolean;
+      };
+    };
+  };
+}
+
+export const unsuccessfulJourneyActionErrors = {
+  ...simpleUnsuccessfulJourneyActionErrors,
+  ...complexUnsuccessfulJourneyActionErrors,
+} as const satisfies JourneyActionError;
 
 export type JourneyAction<
   Name extends JourneyActionName,
@@ -52,7 +80,9 @@ export type JourneyAction<
   | {
       action: Name;
       success: false;
-      error: (typeof unsuccessfulJourneyActionErrors)[keyof typeof unsuccessfulJourneyActionErrors];
+      error: (typeof unsuccessfulJourneyActionErrors)[keyof typeof unsuccessfulJourneyActionErrors] & {
+        extras?: Record<string, unknown>;
+      };
       startedAt: number;
       completedAt: number;
     }
@@ -89,10 +119,22 @@ type SuccessfulAction<T extends JourneyAction<JourneyActionName>> = Omit<
   "startedAt" | "completedAt" | "success"
 >;
 
-type FailedAction = Omit<
-  Extract<JourneyActions[keyof JourneyActions], { success: false }>,
-  "startedAt" | "completedAt" | "success"
->;
+type FailedAction =
+  | {
+      [K in keyof typeof complexUnsuccessfulJourneyActionErrors]: {
+        action: JourneyActionName;
+        error: (typeof complexUnsuccessfulJourneyActionErrors)[K] &
+          (UnsuccessfulJourneyActionErrorExtras[K] extends undefined
+            ? { extras?: never }
+            : { extras: UnsuccessfulJourneyActionErrorExtras[K] });
+      };
+    }[keyof typeof complexUnsuccessfulJourneyActionErrors]
+  | {
+      [K in keyof typeof simpleUnsuccessfulJourneyActionErrors]: {
+        action: JourneyActionName;
+        error: (typeof simpleUnsuccessfulJourneyActionErrors)[K];
+      };
+    }[keyof typeof simpleUnsuccessfulJourneyActionErrors];
 
 export const startJourneyAction = async <
   K extends keyof JourneyActions = never,
@@ -255,7 +297,16 @@ export const completeJourneyActionUnsuccessfully = async (
 };
 
 export const completeAllJourneyActionsUnsuccessfully = async (
-  error: (typeof unsuccessfulJourneyActionErrors)[keyof typeof unsuccessfulJourneyActionErrors],
+  error:
+    | {
+        [K in keyof typeof complexUnsuccessfulJourneyActionErrors]: (typeof complexUnsuccessfulJourneyActionErrors)[K] &
+          (UnsuccessfulJourneyActionErrorExtras[K] extends undefined
+            ? { extras?: never }
+            : { extras: UnsuccessfulJourneyActionErrorExtras[K] });
+      }[keyof typeof complexUnsuccessfulJourneyActionErrors]
+    | {
+        [K in keyof typeof simpleUnsuccessfulJourneyActionErrors]: (typeof simpleUnsuccessfulJourneyActionErrors)[K];
+      }[keyof typeof simpleUnsuccessfulJourneyActionErrors],
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {

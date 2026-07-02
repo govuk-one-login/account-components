@@ -299,6 +299,72 @@ describe("completeJourney", () => {
     ]);
   });
 
+  it("includes extras in details when error has extras", async () => {
+    const mockAuthCode = "mock-auth-code-hex";
+    const mockOutcomeId = "mock-outcome-id-hex";
+    const mockAppConfig = { auth_code_ttl: 300, journey_outcome_ttl: 600 };
+    const mockRedirectUrl =
+      "https://example.com/callback?code=mock-auth-code-hex&state=test-state";
+
+    mockRequest.session.journeyActions = [
+      {
+        action: "temp-account-delete-action",
+        success: false,
+        error: {
+          code: 1004,
+          description: "AccountHasInterventions",
+          destroySession: false,
+          extras: {
+            accountInterventionsStatus: {
+              state: {
+                blocked: true,
+                suspended: false,
+              },
+            },
+          },
+        },
+        startedAt: 1000,
+        completedAt: 2000,
+      },
+    ];
+
+    mockRandomBytes
+      .mockReturnValueOnce({ toString: vi.fn(() => mockAuthCode) })
+      .mockReturnValueOnce({ toString: vi.fn(() => mockOutcomeId) });
+    mockGetAppConfig.mockResolvedValue(mockAppConfig);
+    mockTransactWrite.mockResolvedValue({});
+    mockBuildRedirectToClientRedirectUri.mockReturnValue(mockRedirectUrl);
+
+    const module = await import("./completeJourney.js");
+    await module.completeJourney(mockRequest, mockReply, false);
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const writtenActions = mockTransactWrite.mock.calls[0]?.[0].TransactItems[0]
+      .Put.Item.actions as unknown[];
+
+    expect(writtenActions).toStrictEqual([
+      {
+        action: "temp-account-delete-action",
+        success: false,
+        details: {
+          accountInterventionsStatus: {
+            state: {
+              blocked: true,
+              suspended: false,
+            },
+          },
+          error: {
+            code: 1004,
+            description: "AccountHasInterventions",
+          },
+        },
+        error: undefined,
+        startedAt: 1000,
+        completedAt: 2000,
+      },
+    ]);
+  });
+
   it("does not destroy session when action has error with destroySession false", async () => {
     const mockAuthCode = "mock-auth-code-hex";
     const mockOutcomeId = "mock-outcome-id-hex";

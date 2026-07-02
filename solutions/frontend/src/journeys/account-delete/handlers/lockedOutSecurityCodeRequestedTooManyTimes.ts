@@ -9,7 +9,7 @@ const render = async (reply: FastifyReply, options?: object) => {
   );
 };
 
-export async function lockedOutSecurityCodeRequestedTooManyTimesGetHandler(
+export async function getHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {

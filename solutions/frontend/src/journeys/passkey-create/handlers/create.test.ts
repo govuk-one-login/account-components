@@ -457,6 +457,139 @@ describe("passkey-create handlers", () => {
       );
     });
 
+    it("should complete journey unsuccessfully when user account is blocked", async () => {
+      mockGetUserAisStatus.mockResolvedValue({
+        success: true,
+        result: {
+          state: {
+            blocked: true,
+            suspended: false,
+            reproveIdentity: false,
+            resetPassword: false,
+          },
+        },
+      });
+      mockCompleteJourney.mockResolvedValue(mockReply);
+
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockCompleteAllJourneyActionsUnsuccessfully).toHaveBeenCalledWith(
+        {
+          code: 1004,
+          description: "AccountHasInterventions",
+          destroySession: false,
+          extras: {
+            accountInterventionsStatus: {
+              state: {
+                blocked: true,
+                suspended: false,
+                reproveIdentity: false,
+                resetPassword: false,
+              },
+            },
+          },
+        },
+        mockRequest,
+        mockReply,
+      );
+      expect(mockCompleteJourney).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+        false,
+      );
+    });
+
+    it("should complete journey unsuccessfully when user account is suspended", async () => {
+      mockGetUserAisStatus.mockResolvedValue({
+        success: true,
+        result: {
+          state: {
+            blocked: false,
+            suspended: true,
+            reproveIdentity: false,
+            resetPassword: false,
+          },
+        },
+      });
+      mockCompleteJourney.mockResolvedValue(mockReply);
+
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockCompleteAllJourneyActionsUnsuccessfully).toHaveBeenCalledWith(
+        {
+          code: 1004,
+          description: "AccountHasInterventions",
+          destroySession: false,
+          extras: {
+            accountInterventionsStatus: {
+              state: {
+                blocked: false,
+                suspended: true,
+                reproveIdentity: false,
+                resetPassword: false,
+              },
+            },
+          },
+        },
+        mockRequest,
+        mockReply,
+      );
+      expect(mockCompleteJourney).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+        false,
+      );
+    });
+
+    it("should proceed normally when AIS status has no interventions", async () => {
+      mockGetUserAisStatus.mockResolvedValue({
+        success: true,
+        result: {
+          state: {
+            blocked: false,
+            suspended: false,
+            reproveIdentity: false,
+            resetPassword: false,
+          },
+        },
+      });
+
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(
+        mockCompleteAllJourneyActionsUnsuccessfully,
+      ).not.toHaveBeenCalled();
+      // eslint-disable-next-line vitest/prefer-called-with
+      expect(mockReply.render).toHaveBeenCalled();
+    });
+
+    it("should proceed normally when AIS status check fails", async () => {
+      mockGetUserAisStatus.mockResolvedValue({
+        success: false,
+        error: "SomeError",
+      });
+
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(
+        mockCompleteAllJourneyActionsUnsuccessfully,
+      ).not.toHaveBeenCalled();
+      // eslint-disable-next-line vitest/prefer-called-with
+      expect(mockReply.render).toHaveBeenCalled();
+    });
+
     it("should throw when session claims are missing", async () => {
       mockRequest.session = {} as FastifySessionObject;
 
@@ -1047,6 +1180,100 @@ describe("passkey-create handlers", () => {
         await expect(
           postHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
         ).rejects.toThrow();
+      });
+
+      it("should complete journey unsuccessfully when user account is blocked after registration", async () => {
+        mockGetUserAisStatus.mockResolvedValue({
+          success: true,
+          result: {
+            state: {
+              blocked: true,
+              suspended: false,
+              reproveIdentity: false,
+              resetPassword: false,
+            },
+          },
+        });
+        mockCompleteJourney.mockResolvedValue(mockReply);
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(
+          mockCompleteAllJourneyActionsUnsuccessfully,
+        ).toHaveBeenCalledWith(
+          {
+            code: 1004,
+            description: "AccountHasInterventions",
+            destroySession: false,
+            extras: {
+              accountInterventionsStatus: {
+                state: {
+                  blocked: true,
+                  suspended: false,
+                  reproveIdentity: false,
+                  resetPassword: false,
+                },
+              },
+            },
+          },
+          mockRequest,
+          mockReply,
+        );
+        expect(mockCompleteJourney).toHaveBeenCalledWith(
+          mockRequest,
+          mockReply,
+          false,
+        );
+      });
+
+      it("should complete journey unsuccessfully when user account is suspended after registration", async () => {
+        mockGetUserAisStatus.mockResolvedValue({
+          success: true,
+          result: {
+            state: {
+              blocked: false,
+              suspended: true,
+              reproveIdentity: false,
+              resetPassword: false,
+            },
+          },
+        });
+        mockCompleteJourney.mockResolvedValue(mockReply);
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(
+          mockCompleteAllJourneyActionsUnsuccessfully,
+        ).toHaveBeenCalledWith(
+          {
+            code: 1004,
+            description: "AccountHasInterventions",
+            destroySession: false,
+            extras: {
+              accountInterventionsStatus: {
+                state: {
+                  blocked: false,
+                  suspended: true,
+                  reproveIdentity: false,
+                  resetPassword: false,
+                },
+              },
+            },
+          },
+          mockRequest,
+          mockReply,
+        );
+        expect(mockCompleteJourney).toHaveBeenCalledWith(
+          mockRequest,
+          mockReply,
+          false,
+        );
       });
     });
 

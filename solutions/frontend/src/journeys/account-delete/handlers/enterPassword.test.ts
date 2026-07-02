@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 
 const mockAuthenticate = vi.fn();
+const mockCompleteJourney = vi.fn();
+const mockCompleteAllJourneyActionsUnsuccessfully = vi.fn();
 
 // @ts-expect-error
 vi.mock(import("../../../utils/accountManagementApiClient.js"), () => ({
@@ -10,6 +12,16 @@ vi.mock(import("../../../utils/accountManagementApiClient.js"), () => ({
       authenticate: mockAuthenticate,
     };
   }),
+}));
+
+vi.mock(import("../../utils/completeJourney.js"), () => ({
+  completeJourney: mockCompleteJourney,
+}));
+
+vi.mock(import("../../utils/journeyActions.js"), async (importOriginal) => ({
+  ...(await importOriginal()),
+  completeAllJourneyActionsUnsuccessfully:
+    mockCompleteAllJourneyActionsUnsuccessfully,
 }));
 
 const { enterPasswordGetHandler, enterPasswordPostHandler } =
@@ -298,36 +310,82 @@ describe("enterPassword handlers", () => {
       ).rejects.toThrow("AccountInterventionsUnexpectedError");
     });
 
-    it("should throw error when UserAccountSuspended", async () => {
+    it("should complete journey unsuccessfully when UserAccountSuspended", async () => {
       mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockAuthenticate.mockResolvedValue({
         success: false,
         error: "UserAccountSuspended",
       });
+      mockCompleteJourney.mockResolvedValue(mockReply);
 
-      await expect(
-        enterPasswordPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-      ).rejects.toThrow("UserAccountSuspended");
+      const result = await enterPasswordPostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockCompleteAllJourneyActionsUnsuccessfully).toHaveBeenCalledWith(
+        {
+          code: 1004,
+          description: "AccountHasInterventions",
+          destroySession: false,
+          extras: {
+            accountInterventionsStatus: {
+              state: {
+                blocked: false,
+                suspended: true,
+              },
+            },
+          },
+        },
+        mockRequest,
+        mockReply,
+      );
+      expect(mockCompleteJourney).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+        false,
+      );
+      expect(result).toBe(mockReply);
     });
 
-    it("should throw error when UserAccountBlocked", async () => {
+    it("should complete journey unsuccessfully when UserAccountBlocked", async () => {
       mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
       mockAuthenticate.mockResolvedValue({
         success: false,
         error: "UserAccountBlocked",
       });
+      mockCompleteJourney.mockResolvedValue(mockReply);
 
-      await expect(
-        enterPasswordPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-      ).rejects.toThrow("UserAccountBlocked");
+      const result = await enterPasswordPostHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockCompleteAllJourneyActionsUnsuccessfully).toHaveBeenCalledWith(
+        {
+          code: 1004,
+          description: "AccountHasInterventions",
+          destroySession: false,
+          extras: {
+            accountInterventionsStatus: {
+              state: {
+                blocked: true,
+                suspended: false,
+              },
+            },
+          },
+        },
+        mockRequest,
+        mockReply,
+      );
+      expect(mockCompleteJourney).toHaveBeenCalledWith(
+        mockRequest,
+        mockReply,
+        false,
+      );
+      expect(result).toBe(mockReply);
     });
   });
 });
