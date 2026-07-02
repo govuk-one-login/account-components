@@ -38,6 +38,10 @@ describe("journeyActions", () => {
   });
 
   describe("startAction", () => {
+    beforeEach(() => {
+      vi.useFakeTimers({ now: 1500 });
+    });
+
     it("should initialise journeyActions and push the action when journeyActions is undefined", async () => {
       await startJourneyAction<"tempAccountDeleteAction">(
         { action: "temp-account-delete-action" },
@@ -46,7 +50,7 @@ describe("journeyActions", () => {
       );
 
       expect(mockRequest.session.journeyActions).toStrictEqual([
-        { action: "temp-account-delete-action", startedAt: expect.any(Number) },
+        { action: "temp-account-delete-action", startedAt: 1500 },
       ]);
     });
 
@@ -63,7 +67,7 @@ describe("journeyActions", () => {
 
       expect(mockRequest.session.journeyActions).toStrictEqual([
         { action: "temp-account-delete-action", startedAt: 500 },
-        { action: "passkey-create", startedAt: expect.any(Number) },
+        { action: "passkey-create", startedAt: 1500 },
       ]);
     });
 
@@ -108,6 +112,8 @@ describe("journeyActions", () => {
       expect(mockCreateEvent).toHaveBeenCalledWith(
         "AMC_ACTION_STARTED",
         expect.objectContaining({
+          timestamp: 1,
+          event_timestamp_ms: 1500,
           event_name: "AMC_ACTION_STARTED",
           client_id: "client-123",
           extensions: expect.objectContaining({

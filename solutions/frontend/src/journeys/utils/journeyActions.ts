@@ -151,9 +151,11 @@ export const startJourneyAction = async <
   );
 
   if (!inProgressActionExists) {
+    const startedAt = new Date().getTime();
+
     request.session.journeyActions.push({
       ...action,
-      startedAt: Date.now(),
+      startedAt,
     });
 
     if (request.awsLambda?.event) {
@@ -166,6 +168,8 @@ export const startJourneyAction = async <
       await sendAuditEvent(
         createEvent("AMC_ACTION_STARTED", {
           ...commonAuditEventProps,
+          timestamp: Math.floor(startedAt / 1000),
+          event_timestamp_ms: startedAt,
           event_name: "AMC_ACTION_STARTED",
           client_id: request.session.claims.client_id,
           extensions: {
