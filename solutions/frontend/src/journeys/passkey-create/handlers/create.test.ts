@@ -347,7 +347,7 @@ describe("passkey-create handlers", () => {
       );
     });
 
-    it("should set timeout to remaining session time", async () => {
+    it("should set timeout to remaining session time minus the completion buffer", async () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date("2025-01-01T00:00:00.000Z"));
       const now = Math.floor(Date.now() / 1000);
@@ -360,13 +360,13 @@ describe("passkey-create handlers", () => {
       );
 
       expect(mockGenerateRegistrationOptions).toHaveBeenCalledWith(
-        expect.objectContaining({ timeout: 300_000 }),
+        expect.objectContaining({ timeout: 295_000 }),
       );
 
       vi.useRealTimers();
     });
 
-    it("should clamp timeout to 0 when session has already expired", async () => {
+    it("should clamp timeout to 1 when session has already expired", async () => {
       vi.useFakeTimers();
       vi.setSystemTime(new Date("2025-01-01T00:00:00.000Z"));
       const now = Math.floor(Date.now() / 1000);
@@ -379,7 +379,7 @@ describe("passkey-create handlers", () => {
       );
 
       expect(mockGenerateRegistrationOptions).toHaveBeenCalledWith(
-        expect.objectContaining({ timeout: 0 }),
+        expect.objectContaining({ timeout: 1 }),
       );
 
       vi.useRealTimers();
