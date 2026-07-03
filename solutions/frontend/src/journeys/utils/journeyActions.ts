@@ -151,7 +151,7 @@ export const startJourneyAction = async <
   );
 
   if (!inProgressActionExists) {
-    const startedAt = new Date().getTime();
+    const startedAt = Date.now();
 
     request.session.journeyActions.push({
       ...action,

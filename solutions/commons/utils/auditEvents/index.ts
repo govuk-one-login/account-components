@@ -8,14 +8,14 @@ export const getCommonAuditEventProps = (
   apiGatewayProxyEvent?: APIGatewayProxyEvent,
 ) => {
   const noValue = "NO_VALUE";
-  const now = new Date();
+  const now = Date.now();
   const propsFromEvent = apiGatewayProxyEvent
     ? getPropsFromAPIGatewayEvent(apiGatewayProxyEvent)
     : undefined;
 
   return {
-    timestamp: Math.floor(now.getTime() / 1000),
-    event_timestamp_ms: now.getTime(),
+    timestamp: Math.floor(now / 1000),
+    event_timestamp_ms: now,
     component_id: "AMC" as const,
     user: {
       session_id: propsFromEvent?.sessionId ?? noValue,
