@@ -360,7 +360,7 @@ describe("passkey-create handlers", () => {
       );
 
       expect(mockGenerateRegistrationOptions).toHaveBeenCalledWith(
-        expect.objectContaining({ timeout: 300 }),
+        expect.objectContaining({ timeout: 300_000 }),
       );
 
       vi.useRealTimers();
