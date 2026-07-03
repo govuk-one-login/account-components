@@ -146,7 +146,8 @@ describe("passkey-create handlers", () => {
     mockRequest = {
       session: {
         claims: mockClaims,
-      } as FastifySessionObject,
+        expires: Math.floor(Date.now() / 1000) + 3600,
+      } as unknown as FastifySessionObject,
       body: {},
       log: {
         warn: vi.fn(),
@@ -344,6 +345,44 @@ describe("passkey-create handlers", () => {
           contentId: "e71140bc-bd4d-4ea2-9716-5bbb36c696dd",
         }),
       );
+    });
+
+    it("should set timeout to remaining session time", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2025-01-01T00:00:00.000Z"));
+      const now = Math.floor(Date.now() / 1000);
+      // @ts-expect-error
+      mockRequest.session.expires = now + 300;
+
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockGenerateRegistrationOptions).toHaveBeenCalledWith(
+        expect.objectContaining({ timeout: 300 }),
+      );
+
+      vi.useRealTimers();
+    });
+
+    it("should clamp timeout to 0 when session has already expired", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2025-01-01T00:00:00.000Z"));
+      const now = Math.floor(Date.now() / 1000);
+      // @ts-expect-error
+      mockRequest.session.expires = now - 60;
+
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockGenerateRegistrationOptions).toHaveBeenCalledWith(
+        expect.objectContaining({ timeout: 0 }),
+      );
+
+      vi.useRealTimers();
     });
 
     it("should fetch existing passkeys and exclude them", async () => {
