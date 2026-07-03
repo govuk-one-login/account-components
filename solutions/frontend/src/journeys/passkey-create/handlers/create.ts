@@ -79,9 +79,7 @@ const setRegistrationOptions = async (
     excludeCredentials: idsOfCredentialsToExclude.map((id) => ({
       id,
     })),
-    timeout:
-      Math.max(request.session.expires - Math.floor(Date.now() / 1000), 0) *
-      1000,
+    timeout: Math.max(request.session.expires * 1000 - Date.now(), 0),
   });
 
   reply.journeyStates["passkey-create"].send({
