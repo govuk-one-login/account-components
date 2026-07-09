@@ -670,7 +670,7 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
       LoggingConfiguration:
-        DestinationBucketName: !Ref AccessLogsBucket
+        DestinationBucketName: !Sub "di-s3-access-logs-${AWS::AccountId}-${AWS::Region}"
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -707,53 +707,6 @@ Resources:
               Service: apigateway.amazonaws.com
             Action:
               - s3:GetObject
-
-  AccessLogsBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      VersioningConfiguration:
-        Status: Enabled
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: aws:kms
-              KMSMasterKeyID: !Ref S3SSEKey
-
-  AccessLogBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref AccessLogsBucket
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Sid: EnforceHTTPSOnly
-            Effect: Deny
-            Principal: "*"
-            Action: "s3:*"
-            Resource:
-              - !Sub "${AccessLogsBucket.Arn}"
-              - !Sub "${AccessLogsBucket.Arn}/*"
-            Condition:
-              Bool:
-                aws:SecureTransport: false
-              NumericLessThan:
-                s3:TlsVersion: "1.2"
-          - Sid: AllowS3LoggingService
-            Effect: Allow
-            Principal:
-              Service: "logging.s3.amazonaws.com"
-            Action: "s3:PutObject"
-            Resource: !Sub "${AccessLogsBucket.Arn}/AWSLogs/${AWS::AccountId}/*"
-            Condition:
-              StringEquals:
-                aws:SourceAccount: !Ref AWS::AccountId
 
   JwksGeneratorLambda:
     Type: AWS::Serverless::Function
