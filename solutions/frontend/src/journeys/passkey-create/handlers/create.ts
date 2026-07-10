@@ -65,6 +65,8 @@ const setRegistrationOptions = async (
   assert.ok(process.env["PASSKEYS_RP_NAME"]);
   assert.ok(request.session.expires);
 
+  const timeoutBuffer = 5000; // Buffer to allow enough time for the registration to be completed
+
   const registrationOptions = await generateRegistrationOptions({
     rpName: process.env["PASSKEYS_RP_NAME"],
     rpID: process.env["PASSKEYS_RP_ID"],
@@ -80,9 +82,7 @@ const setRegistrationOptions = async (
       id,
     })),
     timeout: Math.max(
-      request.session.expires * 1000 -
-        5000 - // Buffer to allow enough time for the request to be sent after the client registration ceremony
-        Date.now(),
+      request.session.expires * 1000 - timeoutBuffer - Date.now(),
       1, // 1 not 0, just in case some authenticators interpret 0 as unlimited
     ),
   });
