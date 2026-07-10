@@ -5,93 +5,93 @@ graph TB
     %% ===== EXTERNAL ACTORS =====
     User([User / Browser])
     RP([Relying Party Client])
-    TxMA([TxMA\nAudit Platform])
-    GOVUKNotify([GOV.UK Notify\nEmail Service])
+    TxMA([TxMA<br/>Audit Platform])
+    GOVUKNotify([GOV.UK Notify<br/>Email Service])
 
     %% ===== EDGE LAYER =====
     subgraph Edge["Edge Layer (us-east-1)"]
         WAF_CF[WAF WebACL]
-        CloudFront[CloudFront\nDistribution]
-        ACM_Virginia[ACM Certificate\nus-east-1]
+        CloudFront[CloudFront<br/>Distribution]
+        ACM_Virginia[ACM Certificate<br/>us-east-1]
     end
 
     %% ===== FRONTEND PATH =====
     subgraph FrontendPath["Frontend (eu-west-2)"]
         CloakingWAF[Cloaking WAF]
-        FrontendAPIGW[API Gateway\nRegional / Public]
-        FrontendLambda[Frontend Lambda\nFastify + Nunjucks]
+        FrontendAPIGW[API Gateway<br/>Regional / Public]
+        FrontendLambda[Frontend Lambda<br/>Fastify + Nunjucks]
     end
 
     %% ===== PRIVATE API PATH =====
     subgraph APIPath["Private API (eu-west-2)"]
-        PrivateAPIGW[API Gateway\nPrivate / VPC Endpoint]
-        TokenLambda[Token Lambda\nPOST /token]
-        JourneyOutcomeLambda[Journey Outcome Lambda\nGET /journeyoutcome]
-        HealthcheckLambda[Healthcheck Lambda\nGET /healthcheck]
-        JWKS_S3_Integration[S3 Integration\nGET /.well-known/jwks.json]
-        OAuthDiscovery[Mock Integration\nGET /.well-known/oauth-authorization-server]
+        PrivateAPIGW[API Gateway<br/>Private / VPC Endpoint]
+        TokenLambda[Token Lambda<br/>POST /token]
+        JourneyOutcomeLambda[Journey Outcome Lambda<br/>GET /journeyoutcome]
+        HealthcheckLambda[Healthcheck Lambda<br/>GET /healthcheck]
+        JWKS_S3_Integration[S3 Integration<br/>GET /.well-known/jwks.json]
+        OAuthDiscovery[Mock Integration<br/>GET /.well-known/oauth-authorization-server]
     end
 
     %% ===== CORE LAMBDAS =====
     subgraph Core["Core Lambdas (eu-west-2)"]
-        NotificationsLambda[Notifications Service\nLambda]
-        JWKSCreatorLambda[JWKS Creator\nLambda\nCloudFormation Custom Resource]
+        NotificationsLambda[Notifications Service<br/>Lambda]
+        JWKSCreatorLambda[JWKS Creator<br/>Lambda<br/>CloudFormation Custom Resource]
     end
 
     %% ===== DATA STORES =====
     subgraph DataStores["Data Stores"]
-        DDB_Sessions[(DynamoDB\nSessions)]
-        DDB_AuthCode[(DynamoDB\nAuth Codes)]
-        DDB_JourneyOutcome[(DynamoDB\nJourney Outcomes)]
-        DDB_ReplayAttack[(DynamoDB\nReplay Attack)]
+        DDB_Sessions[(DynamoDB<br/>Sessions)]
+        DDB_AuthCode[(DynamoDB<br/>Auth Codes)]
+        DDB_JourneyOutcome[(DynamoDB<br/>Journey Outcomes)]
+        DDB_ReplayAttack[(DynamoDB<br/>Replay Attack)]
     end
 
     %% ===== MESSAGING =====
     subgraph Messaging["SQS Queues"]
-        AuditQueue[Audit Events Queue\n+ DLQ]
-        NotificationsQueue[Notifications Queue\n+ DLQ]
+        AuditQueue[Audit Events Queue<br/>+ DLQ]
+        NotificationsQueue[Notifications Queue<br/>+ DLQ]
     end
 
     %% ===== KMS KEYS =====
     subgraph KMS["KMS Keys"]
-        JARKey[JAR RSA Encryption Key\nRSA-2048 / ENCRYPT_DECRYPT]
-        JWTKey[JWT Signing Key\nECC P-256 / SIGN_VERIFY]
-        DDBKey[DynamoDB SSE Key\nSymmetric]
-        SQSKey[SQS Encryption Key\nSymmetric]
-        LambdaEnvKey[Lambda Env Var Key\nSymmetric]
-        S3Key[S3 SSE Key\nSymmetric]
-        CWKey[CloudWatch Key\nSymmetric]
-        TxMAKey[TxMA Queue Key\nSymmetric]
+        JARKey[JAR RSA Encryption Key<br/>RSA-2048 / ENCRYPT_DECRYPT]
+        JWTKey[JWT Signing Key<br/>ECC P-256 / SIGN_VERIFY]
+        DDBKey[DynamoDB SSE Key<br/>Symmetric]
+        SQSKey[SQS Encryption Key<br/>Symmetric]
+        LambdaEnvKey[Lambda Env Var Key<br/>Symmetric]
+        S3Key[S3 SSE Key<br/>Symmetric]
+        CWKey[CloudWatch Key<br/>Symmetric]
+        TxMAKey[TxMA Queue Key<br/>Symmetric]
     end
 
     %% ===== OTHER AWS SERVICES =====
     subgraph Config["Configuration"]
-        AppConfig[AppConfig\nOperational Profile]
-        SSM[SSM Parameters\nMock Client Keys]
-        SecretsManager[Secrets Manager\nNotify API Key\nSession Secret]
+        AppConfig[AppConfig<br/>Operational Profile]
+        SSM[SSM Parameters<br/>Mock Client Keys]
+        SecretsManager[Secrets Manager<br/>Notify API Key<br/>Session Secret]
     end
 
     subgraph Storage["Storage"]
-        JWKSBucket[S3 Bucket\nJWKS Store]
-        AccessLogsBucket[S3 Bucket\nAccess Logs]
+        JWKSBucket[S3 Bucket<br/>JWKS Store]
+        AccessLogsBucket[S3 Bucket<br/>Access Logs]
     end
 
     subgraph Observability["Observability"]
-        CloudWatch[CloudWatch\nLogs + Metrics + Alarms]
-        XRay[X-Ray\nTracing]
+        CloudWatch[CloudWatch<br/>Logs + Metrics + Alarms]
+        XRay[X-Ray<br/>Tracing]
         Dashboard[CloudWatch Dashboard]
-        Dynatrace[Dynatrace\nOneAgent Layer + RUM]
+        Dynatrace[Dynatrace<br/>OneAgent Layer + RUM]
     end
 
     subgraph Networking["Networking"]
-        VPC[VPC\nPrivate/Protected Subnets]
-        R53[Route 53\nHosted Zone]
-        ACM_London[ACM Certificate\neu-west-2]
+        VPC[VPC<br/>Private/Protected Subnets]
+        R53[Route 53<br/>Hosted Zone]
+        ACM_London[ACM Certificate<br/>eu-west-2]
     end
 
     subgraph CICD["CI/CD"]
-        CodeDeploy[CodeDeploy\nCanary Deployments]
-        CodeSigning[Code Signing\nLambda Integrity]
+        CodeDeploy[CodeDeploy<br/>Canary Deployments]
+        CodeSigning[Code Signing<br/>Lambda Integrity]
     end
 
     %% ===== EXTERNAL APIs =====

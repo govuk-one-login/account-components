@@ -292,53 +292,6 @@ Resources:
       AliasName: !Sub "alias/${AWS::StackName}-ConfigS3SSEKey"
       TargetKeyId: !GetAtt ConfigS3SSEKey.Arn
 
-  ConfigAccessLogsBucket:
-    Type: AWS::S3::Bucket
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Properties:
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: true
-        BlockPublicPolicy: true
-        IgnorePublicAcls: true
-        RestrictPublicBuckets: true
-      VersioningConfiguration:
-        Status: Enabled
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: aws:kms
-              KMSMasterKeyID: !Ref ConfigS3SSEKey
-
-  ConfigAccessLogBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref ConfigAccessLogsBucket
-      PolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Sid: EnforceHTTPSOnly
-            Effect: Deny
-            Principal: "*"
-            Action: "s3:*"
-            Resource:
-              - !Sub "${ConfigAccessLogsBucket.Arn}"
-              - !Sub "${ConfigAccessLogsBucket.Arn}/*"
-            Condition:
-              Bool:
-                aws:SecureTransport: false
-              NumericLessThan:
-                s3:TlsVersion: "1.2"
-          - Sid: AllowS3LoggingService
-            Effect: Allow
-            Principal:
-              Service: "logging.s3.amazonaws.com"
-            Action: "s3:PutObject"
-            Resource: !Sub "${ConfigAccessLogsBucket.Arn}/AWSLogs/${AWS::AccountId}/*"
-            Condition:
-              StringEquals:
-                aws:SourceAccount: !Ref AWS::AccountId
-
   GitHubArtifactSourceBucket:
     Type: AWS::S3::Bucket
     Condition: CreateSourceBucket
@@ -351,7 +304,7 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
       LoggingConfiguration:
-        DestinationBucketName: !Ref ConfigAccessLogsBucket
+        DestinationBucketName: !Sub "di-s3-access-logs-${AWS::AccountId}-${AWS::Region}"
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
@@ -590,7 +543,7 @@ Resources:
       VersioningConfiguration:
         Status: Enabled
       LoggingConfiguration:
-        DestinationBucketName: !Ref ConfigAccessLogsBucket
+        DestinationBucketName: !Sub "di-s3-access-logs-${AWS::AccountId}-${AWS::Region}"
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
