@@ -728,6 +728,7 @@ Resources:
         Variables:
           BUCKET_NAME: !Ref JWKSStoreBucket
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Ref JARRSAEncryptionKeyAlias
+          JWT_SIGNING_KEY_ALIAS: !Ref JWTSigningKeyAlias
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -735,7 +736,9 @@ Resources:
               Action:
                 - kms:GetPublicKey
                 - kms:DescribeKey
-              Resource: !GetAtt JARRSAEncryptionKey.Arn
+              Resource:
+                - !GetAtt JARRSAEncryptionKey.Arn
+                - !GetAtt JWTSigningKey.Arn
             - Effect: Allow
               Action:
                 - kms:GenerateDataKey
