@@ -63,6 +63,9 @@ const setRegistrationOptions = async (
   assert.ok(reply.journeyStates?.["passkey-create"]);
   assert.ok(process.env["PASSKEYS_RP_ID"]);
   assert.ok(process.env["PASSKEYS_RP_NAME"]);
+  assert.ok(request.session.expires);
+
+  const timeoutBuffer = 5000; // Buffer to allow enough time for the registration to be completed
 
   const registrationOptions = await generateRegistrationOptions({
     rpName: process.env["PASSKEYS_RP_NAME"],
@@ -78,6 +81,10 @@ const setRegistrationOptions = async (
     excludeCredentials: idsOfCredentialsToExclude.map((id) => ({
       id,
     })),
+    timeout: Math.max(
+      request.session.expires * 1000 - timeoutBuffer - Date.now(),
+      1, // 1 not 0, just in case some authenticators interpret 0 as unlimited
+    ),
   });
 
   reply.journeyStates["passkey-create"].send({
