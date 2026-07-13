@@ -44,6 +44,7 @@ vi.mock(import("../../../commons/utils/awsClient/s3Client/index.js"), () => ({
 // @ts-expect-error
 vi.mock(import("../../../commons/utils/constants.js"), () => ({
   jarKeyEncryptionAlgorithm: "RSA-OAEP-256",
+  jwtSigningAlgorithm: "ES256",
 }));
 
 vi.mock(import("jose"), () => ({
@@ -104,20 +105,26 @@ describe("handler", () => {
     mockFetch.mockReset();
     process.env["BUCKET_NAME"] = "test-bucket";
     process.env["JAR_RSA_ENCRYPTION_KEY_ALIAS"] = "alias/test-key";
+    process.env["JWT_SIGNING_KEY_ALIAS"] = "alias/test-signing-key";
     mockFetch.mockResolvedValue({ ok: true, statusText: "OK" });
   });
 
   it("successfully generates JWKS and uploads to S3 on Create", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
     const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
-    const fakeJwk = { kty: "RSA" };
+    const fakeEncJwk = { kty: "RSA" };
+    const fakeSigJwk = { kty: "EC" };
 
-    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
-    mockDescribeKey.mockResolvedValueOnce({
-      KeyMetadata: { KeyId: "test-key-id" },
-    });
+    mockGetPublicKey
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey })
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey
+      .mockResolvedValueOnce({ KeyMetadata: { KeyId: "test-key-id" } })
+      .mockResolvedValueOnce({ KeyMetadata: { KeyId: "test-signing-key-id" } });
     (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
-    (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
+    (exportJWK as unknown as MockInstance)
+      .mockResolvedValueOnce(fakeEncJwk)
+      .mockResolvedValueOnce(fakeSigJwk);
     mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
 
     const event = createEvent("Create");
@@ -126,14 +133,28 @@ describe("handler", () => {
     expect(mockGetPublicKey).toHaveBeenCalledWith({
       KeyId: "alias/test-key",
     });
+    expect(mockGetPublicKey).toHaveBeenCalledWith({
+      KeyId: "alias/test-signing-key",
+    });
     expect(mockDescribeKey).toHaveBeenCalledWith({
       KeyId: "alias/test-key",
+    });
+    expect(mockDescribeKey).toHaveBeenCalledWith({
+      KeyId: "alias/test-signing-key",
     });
     expect(mockPutObject).toHaveBeenCalledWith({
       Bucket: "test-bucket",
       Key: "jwks.json",
       Body: expect.stringMatching(
         /"kid":"test-key-id".*"alg":"RSA-OAEP-256".*"use":"enc"/,
+      ),
+      ContentType: "application/json",
+    });
+    expect(mockPutObject).toHaveBeenCalledWith({
+      Bucket: "test-bucket",
+      Key: "jwks.json",
+      Body: expect.stringMatching(
+        /"kid":"test-signing-key-id".*"alg":"ES256".*"use":"sig"/,
       ),
       ContentType: "application/json",
     });
@@ -150,14 +171,19 @@ describe("handler", () => {
   it("successfully generates JWKS and uploads to S3 on Update", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
     const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
-    const fakeJwk = { kty: "RSA" };
+    const fakeEncJwk = { kty: "RSA" };
+    const fakeSigJwk = { kty: "EC" };
 
-    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
-    mockDescribeKey.mockResolvedValueOnce({
-      KeyMetadata: { KeyId: "test-key-id" },
-    });
+    mockGetPublicKey
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey })
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey
+      .mockResolvedValueOnce({ KeyMetadata: { KeyId: "test-key-id" } })
+      .mockResolvedValueOnce({ KeyMetadata: { KeyId: "test-signing-key-id" } });
     (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
-    (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
+    (exportJWK as unknown as MockInstance)
+      .mockResolvedValueOnce(fakeEncJwk)
+      .mockResolvedValueOnce(fakeSigJwk);
     mockPutObject.mockResolvedValueOnce({ $metadata: { httpStatusCode: 200 } });
 
     const event = createEvent("Update");
@@ -166,11 +192,22 @@ describe("handler", () => {
     expect(mockGetPublicKey).toHaveBeenCalledWith({
       KeyId: "alias/test-key",
     });
+    expect(mockGetPublicKey).toHaveBeenCalledWith({
+      KeyId: "alias/test-signing-key",
+    });
     expect(mockPutObject).toHaveBeenCalledWith({
       Bucket: "test-bucket",
       Key: "jwks.json",
       Body: expect.stringMatching(
         /"kid":"test-key-id".*"alg":"RSA-OAEP-256".*"use":"enc"/,
+      ),
+      ContentType: "application/json",
+    });
+    expect(mockPutObject).toHaveBeenCalledWith({
+      Bucket: "test-bucket",
+      Key: "jwks.json",
+      Body: expect.stringMatching(
+        /"kid":"test-signing-key-id".*"alg":"ES256".*"use":"sig"/,
       ),
       ContentType: "application/json",
     });
@@ -203,10 +240,12 @@ describe("handler", () => {
     const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
     const fakeJwk = { kty: "RSA" };
 
-    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
-    mockDescribeKey.mockResolvedValueOnce({
-      KeyMetadata: { KeyId: "test-key-id" },
-    });
+    mockGetPublicKey
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey })
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey
+      .mockResolvedValueOnce({ KeyMetadata: { KeyId: "test-key-id" } })
+      .mockResolvedValueOnce({ KeyMetadata: { KeyId: "test-signing-key-id" } });
     (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
 
@@ -239,8 +278,24 @@ describe("handler", () => {
     );
   });
 
+  it("sends FAILED response if JWT_SIGNING_KEY_ALIAS is not set", async () => {
+    delete process.env["JWT_SIGNING_KEY_ALIAS"];
+
+    const event = createEvent("Create");
+    await handler(event, context);
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      event.ResponseURL,
+      expect.objectContaining({
+        method: "PUT",
+        body: expect.stringContaining('"Status":"FAILED"'),
+      }),
+    );
+  });
+
   it("sends FAILED response if public key is missing", async () => {
     mockGetPublicKey.mockResolvedValueOnce({ PublicKey: undefined });
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: new Uint8Array([1]) });
 
     const event = createEvent("Create");
     await handler(event, context);
@@ -257,8 +312,11 @@ describe("handler", () => {
   it("sends FAILED response if key metadata is missing", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
 
-    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockGetPublicKey
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey })
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey });
     mockDescribeKey.mockResolvedValueOnce({ KeyMetadata: undefined });
+    mockDescribeKey.mockResolvedValueOnce({ KeyMetadata: { KeyId: "id" } });
 
     const event = createEvent("Create");
     await handler(event, context);
@@ -277,8 +335,12 @@ describe("handler", () => {
     const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
     const fakeJwk = { kty: "RSA" };
 
-    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
-    mockDescribeKey.mockResolvedValueOnce({ KeyMetadata: {} }); // Missing KeyId
+    mockGetPublicKey
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey })
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey
+      .mockResolvedValueOnce({ KeyMetadata: {} }) // Missing KeyId
+      .mockResolvedValueOnce({ KeyMetadata: { KeyId: "id" } });
     (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
 
@@ -296,6 +358,7 @@ describe("handler", () => {
 
   it("sends FAILED response on KMS getPublicKey error", async () => {
     mockGetPublicKey.mockRejectedValueOnce(new Error("KMS failure"));
+    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: new Uint8Array([1]) });
 
     const event = createEvent("Create");
     await handler(event, context);
@@ -312,8 +375,11 @@ describe("handler", () => {
   it("sends FAILED response on KMS describeKey error", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
 
-    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockGetPublicKey
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey })
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey });
     mockDescribeKey.mockRejectedValueOnce(new Error("KMS describe failure"));
+    mockDescribeKey.mockResolvedValueOnce({ KeyMetadata: { KeyId: "id" } });
 
     const event = createEvent("Create");
     await handler(event, context);
@@ -330,10 +396,12 @@ describe("handler", () => {
   it("sends FAILED response on JOSE operations error", async () => {
     const fakePublicKey = new Uint8Array([1, 2, 3, 4]);
 
-    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
-    mockDescribeKey.mockResolvedValueOnce({
-      KeyMetadata: { KeyId: "test-key-id" },
-    });
+    mockGetPublicKey
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey })
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey
+      .mockResolvedValueOnce({ KeyMetadata: { KeyId: "test-key-id" } })
+      .mockResolvedValueOnce({ KeyMetadata: { KeyId: "test-signing-key-id" } });
     (importSPKI as unknown as MockInstance).mockRejectedValue(
       new Error("JOSE failure"),
     );
@@ -355,10 +423,12 @@ describe("handler", () => {
     const fakeCryptoKey = { fake: true } as unknown as CryptoKey;
     const fakeJwk = { kty: "RSA" };
 
-    mockGetPublicKey.mockResolvedValueOnce({ PublicKey: fakePublicKey });
-    mockDescribeKey.mockResolvedValueOnce({
-      KeyMetadata: { KeyId: "test-key-id" },
-    });
+    mockGetPublicKey
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey })
+      .mockResolvedValueOnce({ PublicKey: fakePublicKey });
+    mockDescribeKey
+      .mockResolvedValueOnce({ KeyMetadata: { KeyId: "test-key-id" } })
+      .mockResolvedValueOnce({ KeyMetadata: { KeyId: "test-signing-key-id" } });
     (importSPKI as unknown as MockInstance).mockResolvedValue(fakeCryptoKey);
     (exportJWK as unknown as MockInstance).mockResolvedValue(fakeJwk);
     mockPutObject.mockRejectedValueOnce(new Error("S3 upload failed"));
