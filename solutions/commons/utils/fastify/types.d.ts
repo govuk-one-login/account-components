@@ -40,8 +40,7 @@ declare module "fastify" {
       ga4ContainerId?: string | undefined;
       analyticsEnabled?: boolean | undefined;
       simpleUnsuccessfulJourneyActionErrors?:
-        | typeof simpleUnsuccessfulJourneyActionErrors
-        | undefined;
+        typeof simpleUnsuccessfulJourneyActionErrors | undefined;
       buildCompleteFailedJourneyUri?: (
         error: (typeof simpleUnsuccessfulJourneyActionErrors)[keyof typeof simpleUnsuccessfulJourneyActionErrors],
       ) => string;
