@@ -1,7 +1,7 @@
 # Despite what SonarQube says both the tag and sha digest are needed:
 # the digest pins the exact image for reproducibility,
 # the tag allows Dependabot to evaluate version constraints
-FROM node:24.16.0-bookworm@sha256:40ad9f3064e67d6860b4bc3fe1880b2953934fd6320ada990e45fe0efa6badd7
+FROM node:24.17.0-bookworm@sha256:733e1c06ada118ed9f6133a31aa1290be6929664026fb28821500437c61f2c6f
 
 RUN curl --proto =https -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o awscliv2.zip \
     && unzip awscliv2.zip \
