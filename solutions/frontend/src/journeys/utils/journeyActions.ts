@@ -309,13 +309,17 @@ export const completeJourneyActionUnsuccessfully = async (
 export const completeAllJourneyActionsUnsuccessfully = async (
   error:
     | {
-        [K in keyof typeof complexUnsuccessfulJourneyActionErrors]: (typeof complexUnsuccessfulJourneyActionErrors)[K] &
+        [
+          K in keyof typeof complexUnsuccessfulJourneyActionErrors
+        ]: (typeof complexUnsuccessfulJourneyActionErrors)[K] &
           (UnsuccessfulJourneyActionErrorExtras[K] extends undefined
             ? { extras?: never }
             : { extras: UnsuccessfulJourneyActionErrorExtras[K] });
       }[keyof typeof complexUnsuccessfulJourneyActionErrors]
     | {
-        [K in keyof typeof simpleUnsuccessfulJourneyActionErrors]: (typeof simpleUnsuccessfulJourneyActionErrors)[K];
+        [
+          K in keyof typeof simpleUnsuccessfulJourneyActionErrors
+        ]: (typeof simpleUnsuccessfulJourneyActionErrors)[K];
       }[keyof typeof simpleUnsuccessfulJourneyActionErrors],
   request: FastifyRequest,
   reply: FastifyReply,
