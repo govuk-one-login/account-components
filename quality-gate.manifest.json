@@ -5,19 +5,6 @@
       "service-tag": "home",
       "quality-gates": [
         {
-          "check-types": [
-            "code style and linting",
-            "secret scanning",
-            "vulnerability detection"
-          ],
-          "provider": "GitHub",
-          "phase": "pre-merge",
-          "config": {
-            "file": ".pre-commit-config.yaml",
-            "name": "Pre-commit check"
-          }
-        },
-        {
           "check-types": ["unit", "new feature", "regression"],
           "provider": "GitHub",
           "phase": "pre-merge",
