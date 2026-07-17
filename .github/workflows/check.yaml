@@ -57,35 +57,15 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npm run build:all
 
-      - name: Check types
-        run: npm run check-types
+      - name: Cache pre-commit environments
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: pre-commit-
 
-      - name: ESLint
-        run: npm run eslint
-
-      - name: Lint Terraform
-        run: npm run tflint
-
-      - name: SAM validate
-        run: npm run sam-validate
-
-      - name: Lint CloudFormation
-        run: npm run cfnlint
-
-      - name: Check formatting
-        run: npm run format
-
-      - name: Knip
-        run: npm run knip
-
-      - name: Validate config
-        run: npm run config:validate
-
-      - name: Validate API Specs
-        run: npm run api-specs:validate
-
-      - name: Detect secrets
-        run: npm run detect-secrets-ci
+      - name: Run pre-commit
+        run: pre-commit run --all-files --show-diff-on-failure
 
       - name: Validate passkeys convenience metadata
         run: |
