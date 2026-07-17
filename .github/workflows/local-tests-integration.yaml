@@ -1,4 +1,4 @@
-name: Integration test
+name: Local tests (integration)
 
 permissions: {}
 
@@ -7,7 +7,7 @@ on:
   merge_group:
 
 jobs:
-  integration-test:
+  local-tests-integration:
     runs-on: ubuntu-latest
     permissions:
       packages: read
