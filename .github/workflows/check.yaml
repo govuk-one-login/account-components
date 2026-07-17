@@ -36,9 +36,6 @@ jobs:
           use-installer: true
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up cfn-lint
-        uses: scottbrenner/cfn-lint-action@ed184e91f5085a2932501da8314e899e5e0ef5be
-
       - name: Set up Python
         uses: actions/setup-python@c8813ba1bc76ebf779b911ad8ffccbf2e449cb48
         with:
