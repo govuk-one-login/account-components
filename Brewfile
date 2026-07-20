@@ -1,7 +1,7 @@
 brew "awscli"
 brew "aws-sam-cli"
 brew "cfn-lint"
-brew "tflint"
+cask "terraform-linters/tap/tflint"
 brew "pre-commit"
 brew "tfenv"
 brew "zizmor"
