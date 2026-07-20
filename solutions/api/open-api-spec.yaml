@@ -245,12 +245,12 @@ paths:
                           error:
                             code: 1004
                             description: AccountHasInterventions
-                            accountInterventionsStatus:
-                              state:
-                                blocked: false
-                                suspended: true
-                                resetPassword: false
-                                reproveIdentity: true
+                          accountInterventionsStatus:
+                            state:
+                              blocked: false
+                              suspended: true
+                              resetPassword: false
+                              reproveIdentity: true
 
         "400":
           description: Bad request - invalid authorization header, access token, or outcome mismatch
