@@ -1,4 +1,4 @@
-name: Test
+name: Local tests (unit)
 
 permissions: {}
 
@@ -7,7 +7,7 @@ on:
   merge_group:
 
 jobs:
-  test:
+  local-tests-unit:
     runs-on: ubuntu-latest
     permissions:
       packages: read

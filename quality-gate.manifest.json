@@ -9,9 +9,9 @@
           "provider": "GitHub",
           "phase": "pre-merge",
           "config": {
-            "file": ".github/workflows/test.yaml",
-            "path": "jobs.test",
-            "name": "Test"
+            "file": ".github/workflows/local-tests-unit.yaml",
+            "path": "jobs.local-tests-unit",
+            "name": "Local tests (unit)"
           }
         },
         {
@@ -24,9 +24,9 @@
           "provider": "GitHub",
           "phase": "pre-merge",
           "config": {
-            "file": ".github/workflows/check.yaml",
-            "path": "jobs.check",
-            "name": "Check"
+            "file": ".github/workflows/lint.yaml",
+            "path": "jobs.lint",
+            "name": "Lint"
           }
         },
         {
@@ -34,9 +34,9 @@
           "provider": "GitHub",
           "phase": "pre-merge",
           "config": {
-            "file": ".github/workflows/integration-test.yaml",
-            "path": "jobs.integration-test",
-            "name": "Integration test"
+            "file": ".github/workflows/local-tests-integration.yaml",
+            "path": "jobs.local-tests-integration",
+            "name": "Local tests (integration)"
           }
         },
         {
@@ -84,9 +84,9 @@
           "provider": "GitHub",
           "phase": "pre-upload",
           "config": {
-            "file": ".github/workflows/test.yaml",
-            "path": "jobs.test",
-            "name": "Test"
+            "file": ".github/workflows/local-tests-unit.yaml",
+            "path": "jobs.local-tests-unit",
+            "name": "Local tests (unit)"
           }
         }
       ]
