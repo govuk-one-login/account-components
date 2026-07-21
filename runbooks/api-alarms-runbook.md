@@ -2,7 +2,7 @@
 
 ## Overview
 
-This runbook covers the following second line production alarms for the Account Management Components (AMC) private API:
+This runbook covers the following second line production alarms for the Account Management Components (AMC) private API in the AWS account **di-account-components-prod** (494066295151):
 
 - [ApiApiGateway5XXErrorsAlarm](#apiapigateway5xxerrorsalarm)
 - [ApiTokenLambdaErrorsAlarm](#apitokenlambdaerrorsalarm)
@@ -10,11 +10,9 @@ This runbook covers the following second line production alarms for the Account 
 - [ApiJourneyOutcomeLambdaErrorsAlarm](#apijourneyoutcomelambdaerrorsalarm)
 - [ApiJourneyOutcomeLambdaLogErrorAlarm](#apijourneyoutcomelambdalogerroralarm)
 
-## AWS Account
+These alarms are owned by the **Home team** in the **Accounts pod**.
 
-Account: **di-account-components-prod** (494066295151)
-
-Dashboard: [amc-dashboard](https://uk-digital-identity.awsapps.com/start/#/console?account_id=494066295151&destination=https%3A%2F%2Feu-west-2.console.aws.amazon.com%2Fcloudwatch%2Fhome%3Fregion%3Deu-west-2%23dashboards%2Fdashboard%2Famc-dashboard)
+Slack channel: **[#di-one-login-home-tech](https://gds.slack.com/archives/C011Y5SAY3U)**
 
 ## Context
 
@@ -33,17 +31,40 @@ These endpoints form the private API and are consumed by the Auth and Home clien
 Journeys supported:
 
 - Passkey creation during sign in
-- Passkey creation from account management
+- Passkey creation in Home
 
-## Owning Team
+## Investigation
 
-These alarms are owned by the **Home team** in the **Accounts pod**.
+### Check the Dashboard
 
-Slack channel: **[#di-one-login-home-tech](https://gds.slack.com/archives/C011Y5SAY3U)**
+Check the [AMC Dynatrace dashboard](https://bhe21058.live.dynatrace.com/#dashboard;gtf=-72h%20to%20now;gf=all;id=3766f168-e883-45fb-a55e-7ee13f222d42). This dashboard gives a high-level overview of the number of responses and errors within AMC and can be used to spot anomalies from usual patterns.
 
-Resolution will likely need to be done by the Home team.
+The [AMC CloudWatch dashboard](https://uk-digital-identity.awsapps.com/start/#/console?account_id=494066295151&destination=https%3A%2F%2Feu-west-2.console.aws.amazon.com%2Fcloudwatch%2Fhome%3Fregion%3Deu-west-2%23dashboards%2Fdashboard%2Famc-dashboard) can also be checked. This dashboard provides more informaton than the Dynatrace dashboard but requires a TEAM request to access.
 
-## Alarms
+Anomalies in the dashboards constitute a P3 incident. The Home team should be informed by tagging `@one-login-home-developers` in Slack. As it is a P3 it does not need to be escalated to out-of-hours support.
+
+### Test the Journeys
+
+When any of the alarms have been triggered then the following journeys may be experiencing degradation:
+
+#### Passkey creation during sign in
+
+The steps for testing passkey creation during sign in are available in the [Authentication teams's runbook for passkey alarms](https://govukverify.atlassian.net/wiki/spaces/LO/pages/6754762776/Runbook+Handling+passkey+alarms#Set-up-a-passkey.1).
+
+If you are unable to create a passkey during sign in then this constitutes a P3 incident. The Home team should be informed by tagging `@one-login-home-developers` in Slack. As it is a P3 it does not need to be escalated to out-of-hours support.
+
+#### Passkey creation in Home
+
+- Sign into [Home](https://home.account.gov.uk) using an account which has fewer than five passkeys
+- Click "Security"
+- Click "Manage your sign in details"
+- Click "Set up a passkey"
+- Follow the steps to add a passkey using an authenticator which does not already have passkeys on this account (e.g. if the account already has a "Chrome for Mac" passkey then use a different authenticator e.g. "iCloud Keychain")
+- After adding a passkey it should appear in the list of passkeys on the "Manage your sign in details" page
+
+If you are unable to create a passkey in Home then this constitutes a P3 incident. The Home team should be informed by tagging `@one-login-home-developers` in Slack. As it is a P3 it does not need to be escalated to out-of-hours support.
+
+## Alarm Specific Investigations (for escalations)
 
 ### ApiApiGateway5XXErrorsAlarm
 
@@ -104,16 +125,3 @@ Resolution will likely need to be done by the Home team.
 3. Check whether errors relate to token validation or journey outcome retrieval.
 4. Check downstream service health (DynamoDB, KMS).
 5. Check whether a recent deployment correlates with the start of errors.
-
-## Testing the Passkey Creation Journey
-
-To verify the API is functioning correctly end-to-end, you can manually test the passkey creation journey:
-
-1. Sign in to Home (account management) at https://home.account.gov.uk
-2. Create a passkey from the account management area.
-
-This exercises the full flow including the OAuth handoff, the frontend journey, and the subsequent `/token` and `/journeyoutcome` requests made by the client.
-
-## Escalation
-
-Contact the Home team via Slack at **[#di-one-login-home-tech](https://gds.slack.com/archives/C011Y5SAY3U)** for resolution.
