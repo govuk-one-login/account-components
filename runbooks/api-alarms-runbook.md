@@ -33,13 +33,15 @@ Journeys supported:
 - Passkey creation during sign in
 - Passkey creation in Home
 
+Because AMC serves multiple journeys to different clients, the specific cause of an alarm may vary. The investigation steps below are general guidance.
+
 ## Investigation
 
 ### Check the Dashboard
 
 Check the [AMC Dynatrace dashboard](https://bhe21058.live.dynatrace.com/#dashboard;gtf=-72h%20to%20now;gf=all;id=3766f168-e883-45fb-a55e-7ee13f222d42). This dashboard gives a high-level overview of the number of responses and errors within AMC and can be used to spot anomalies from usual patterns.
 
-The [AMC CloudWatch dashboard](https://uk-digital-identity.awsapps.com/start/#/console?account_id=494066295151&destination=https%3A%2F%2Feu-west-2.console.aws.amazon.com%2Fcloudwatch%2Fhome%3Fregion%3Deu-west-2%23dashboards%2Fdashboard%2Famc-dashboard) can also be checked. This dashboard provides more informaton than the Dynatrace dashboard but requires a TEAM request to access.
+The [AMC CloudWatch dashboard](https://uk-digital-identity.awsapps.com/start/#/console?account_id=494066295151&destination=https%3A%2F%2Feu-west-2.console.aws.amazon.com%2Fcloudwatch%2Fhome%3Fregion%3Deu-west-2%23dashboards%2Fdashboard%2Famc-dashboard) can also be checked. This dashboard provides more information than the Dynatrace dashboard but requires a TEAM request to access.
 
 Anomalies in the dashboards constitute a P3 incident. The Home team should be informed by tagging `@one-login-home-developers` in Slack. As it is a P3 it does not need to be escalated to out-of-hours support.
 
@@ -49,7 +51,7 @@ When any of the alarms have been triggered then the following journeys may be ex
 
 #### Passkey creation during sign in
 
-The steps for testing passkey creation during sign in are available in the [Authentication teams's runbook for passkey alarms](https://govukverify.atlassian.net/wiki/spaces/LO/pages/6754762776/Runbook+Handling+passkey+alarms#Set-up-a-passkey.1).
+The steps for testing passkey creation during sign in are available in the [Authentication team's runbook for passkey alarms](https://govukverify.atlassian.net/wiki/spaces/LO/pages/6754762776/Runbook+Handling+passkey+alarms#Set-up-a-passkey.1).
 
 If you are unable to create a passkey during sign in then this constitutes a P3 incident. The Home team should be informed by tagging `@one-login-home-developers` in Slack. As it is a P3 it does not need to be escalated to out-of-hours support.
 
