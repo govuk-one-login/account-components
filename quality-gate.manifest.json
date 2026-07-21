@@ -5,20 +5,9 @@
       "service-tag": "home",
       "quality-gates": [
         {
-          "check-types": ["unit", "new feature", "regression"],
-          "provider": "GitHub",
-          "phase": "pre-merge",
-          "config": {
-            "file": ".github/workflows/local-tests-unit.yaml",
-            "path": "jobs.local-tests-unit",
-            "name": "Local tests (unit)"
-          }
-        },
-        {
           "check-types": [
-            "code style and linting",
-            "vulnerability detection",
             "code quality",
+            "code style and linting",
             "secret scanning"
           ],
           "provider": "GitHub",
@@ -30,27 +19,21 @@
           }
         },
         {
-          "check-types": ["integration", "accessibility", "regression"],
+          "check-types": ["vulnerability detection"],
           "provider": "GitHub",
           "phase": "pre-merge",
           "config": {
-            "file": ".github/workflows/local-tests-integration.yaml",
-            "path": "jobs.local-tests-integration",
-            "name": "Local tests (integration)"
+            "file": ".github/workflows/dependency-review.yaml",
+            "path": "jobs.dependency-review",
+            "name": "Dependency Review"
           }
         },
         {
-          "check-types": ["integration", "accessibility", "regression"],
-          "provider": "Stack Orchestrator",
-          "phase": "build",
-          "config": {
-            "file": ".github/workflows/deploy.yaml",
-            "path": "jobs.publish-integration-tests-image",
-            "name": "Integration test"
-          }
-        },
-        {
-          "check-types": ["code quality", "unit test coverage"],
+          "check-types": [
+            "code quality",
+            "unit test coverage",
+            "vulnerability detection"
+          ],
           "provider": "GitHub",
           "phase": "pre-merge",
           "config": {
@@ -60,33 +43,41 @@
           }
         },
         {
-          "check-types": ["canary"],
-          "provider": "Stack Orchestrator",
-          "phase": "integration",
-          "config": {
-            "file": ".github/workflows/deploy.yaml",
-            "path": "jobs.deploy",
-            "name": "Deploy"
-          }
-        },
-        {
-          "check-types": ["canary"],
-          "provider": "Stack Orchestrator",
-          "phase": "production",
-          "config": {
-            "file": ".github/workflows/deploy.yaml",
-            "path": "jobs.deploy",
-            "name": "Deploy"
-          }
-        },
-        {
-          "check-types": ["unit", "new feature", "regression"],
+          "check-types": ["new feature", "regression", "unit"],
           "provider": "GitHub",
-          "phase": "pre-upload",
+          "phase": "pre-merge",
           "config": {
             "file": ".github/workflows/local-tests-unit.yaml",
             "path": "jobs.local-tests-unit",
             "name": "Local tests (unit)"
+          }
+        },
+        {
+          "check-types": ["accessibility", "integration", "regression"],
+          "provider": "GitHub",
+          "phase": "pre-merge",
+          "config": {
+            "file": ".github/workflows/local-tests-integration.yaml",
+            "path": "jobs.local-tests-integration",
+            "name": "integration-test-results"
+          }
+        },
+        {
+          "check-types": ["new feature", "regression", "unit"],
+          "provider": "GitHub",
+          "phase": "pre-upload",
+          "config": {
+            "file": ".github/workflows/deploy.yaml",
+            "path": "jobs.deploy",
+            "name": "Deploy"
+          }
+        },
+        {
+          "check-types": ["accessibility", "integration", "regression"],
+          "provider": "Stack Orchestrator",
+          "phase": "build",
+          "config": {
+            "file": "solutions/integration-tests/Dockerfile"
           }
         }
       ]
