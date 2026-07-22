@@ -2898,6 +2898,35 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  FrontendApiGatewayTrafficAnomalyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: IsProduction
+    Properties:
+      AlarmDescription: "AMC frontend API Gateway traffic has dropped significantly below expected levels. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
+      Metrics:
+        - Id: traffic
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: ApiName
+                  Value: !Ref FrontendApiGateway
+            Period: 300
+            Stat: Sum
+          ReturnData: true
+        - Id: band
+          Expression: ANOMALY_DETECTION_BAND(traffic, 2)
+          ReturnData: true
+      ComparisonOperator: LessThanLowerThreshold
+      ThresholdMetricId: band
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      ActionsEnabled: false
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+
   StubsMockClientECPrivateKeySSM:
     Type: AWS::SSM::Parameter
     Condition: IsDevOrBuild
