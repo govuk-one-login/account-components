@@ -42,6 +42,7 @@ import { FastifyPowertoolsLogger } from "../../commons/utils/fastify/powertoolsL
 import { resolveEnvVarToBool } from "../../commons/utils/resolveEnvVarToBool/index.js";
 import { simpleUnsuccessfulJourneyActionErrors } from "./journeys/utils/journeyActions.js";
 import { setAnalyticsForPath } from "./utils/setAnalyticsForPath/index.js";
+import { FastifyLogController } from "../../commons/utils/fastify/logController/index.js";
 
 await configureI18n({
   [Lang.English]: {
@@ -60,7 +61,7 @@ export const initFrontend = async function () {
   const fastify = Fastify.default({
     trustProxy: true, // Required as HTTPS is terminated before the Lambda
     loggerInstance: new FastifyPowertoolsLogger(),
-    disableRequestLogging: true,
+    logController: new FastifyLogController(),
   });
 
   fastify.addHook("onRequest", removeTrailingSlash);

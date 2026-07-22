@@ -19,12 +19,13 @@ import { getEnvironment } from "../../commons/utils/getEnvironment/index.js";
 import { accountManagementApi } from "./accountManagementApi/index.js";
 import { accountDataApi } from "./accountDataApi/index.js";
 import { accountInterventionsServiceApi } from "./accountInterventionsServiceApi/index.js";
+import { FastifyLogController } from "../../commons/utils/fastify/logController/index.js";
 
 export const initStubs = async function () {
   const fastify = Fastify.default({
     trustProxy: true, // Required as HTTPS is terminated before the Lambda
     loggerInstance: new FastifyPowertoolsLogger(),
-    disableRequestLogging: true,
+    logController: new FastifyLogController(),
   });
 
   fastify.addHook("onRequest", removeTrailingSlash);
