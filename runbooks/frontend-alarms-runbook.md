@@ -5,6 +5,7 @@
 This runbook covers the following second line production alarms for the Account Management Components (AMC) frontend in the AWS account **di-account-components-prod** (494066295151):
 
 - [FrontendApiGateway5XXErrorsAlarm](#frontendapigateway5xxerrorsalarm)
+- [FrontendApiGatewayTrafficAnomalyAlarm](#frontendapigatewaytrafficanomalyalarm)
 - [FrontendLambdaErrorsAlarm](#frontendlambdaerrorsalarm)
 - [FrontendLambdaLogErrorAlarm](#frontendlambdalogerroralarm)
 
@@ -72,6 +73,19 @@ These alarms may indicate a P3 incident. Out-of-hours escalation and support is 
 3. Check for any AWS regional service issues.
 4. Check whether a recent deployment correlates with the start of errors.
 5. Correlate with other AMC alarms — if `FrontendLambdaErrorsAlarm` or `FrontendLambdaLogErrorAlarm` are also firing, the root cause is likely in the Lambda itself.
+
+### FrontendApiGatewayTrafficAnomalyAlarm
+
+**What it means:** The Frontend API Gateway is receiving significantly less traffic than the ML-modelled baseline for the time of day and day of week. This may indicate an upstream issue preventing users from reaching AMC, a DNS or routing problem, or a significant drop in user activity.
+
+**Investigation steps:**
+
+1. Check the `amc-dashboard` CloudWatch dashboard for an overview of request counts and compare against typical patterns.
+2. Check for any AWS regional service issues affecting API Gateway or CloudFront.
+3. Check upstream services (Auth, Home) for availability issues that may be preventing users from reaching AMC.
+4. Check DNS and routing — verify the CloudFront distribution and API Gateway domain are resolving correctly.
+5. Check whether a recent deployment correlates with the start of the traffic drop.
+6. Consider whether the drop may be expected (e.g. a planned maintenance window or a known reduction in upstream traffic).
 
 ### FrontendLambdaErrorsAlarm
 
