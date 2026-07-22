@@ -27,6 +27,17 @@ interface RegistrationResponseInfo {
   fmt: AttestationFormat | undefined;
 }
 
+const defaultReturnValue = {
+  credentialId: undefined,
+  aaguid: undefined,
+  counter: undefined,
+  credentialBackedUp: undefined,
+  userVerified: undefined,
+  publicKeyAlgorithm: undefined,
+  credentialDeviceType: undefined,
+  credentialTransports: undefined,
+  fmt: undefined,
+} as const;
 /*
 Unfortunately this function is required because SimpleWebAuthn does not
 provide a way get registration response info without first successfully
@@ -37,6 +48,10 @@ to extract it.
 export function extractRegistrationResponseInfo(
   registrationResponse: unknown,
 ): RegistrationResponseInfo {
+  if (registrationResponse === undefined) {
+    return defaultReturnValue;
+  }
+
   try {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const response = (registrationResponse as RegistrationResponseJSON)
@@ -79,16 +94,6 @@ export function extractRegistrationResponseInfo(
     logger.error("Error extracting passkey registration response info", {
       error,
     });
-    return {
-      credentialId: undefined,
-      aaguid: undefined,
-      counter: undefined,
-      credentialBackedUp: undefined,
-      userVerified: undefined,
-      publicKeyAlgorithm: undefined,
-      credentialDeviceType: undefined,
-      credentialTransports: undefined,
-      fmt: undefined,
-    };
+    return defaultReturnValue;
   }
 }
