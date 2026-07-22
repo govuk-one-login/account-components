@@ -36,7 +36,11 @@ to extract it.
 */
 export function extractRegistrationResponseInfo(
   registrationResponse: unknown,
-): RegistrationResponseInfo {
+): RegistrationResponseInfo | undefined {
+  if (registrationResponse === undefined) {
+    return undefined;
+  }
+
   try {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const response = (registrationResponse as RegistrationResponseJSON)

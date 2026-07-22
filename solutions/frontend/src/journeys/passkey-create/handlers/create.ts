@@ -479,7 +479,7 @@ export async function postHandler(
       isBackUpEligible:
         verification.registrationInfo.credentialDeviceType === "multiDevice",
       isResidentKey: true,
-      algorithm: registrationResponseInfo.publicKeyAlgorithm ?? 0,
+      algorithm: registrationResponseInfo?.publicKeyAlgorithm ?? 0,
     },
   );
 
