@@ -143,7 +143,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.credentialId).toBe("abc123");
+      expect(result.credentialId).toBe("abc123");
     });
 
     it("returns undefined when credentialID is not present in auth data", () => {
@@ -152,7 +152,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.credentialId).toBeUndefined();
+      expect(result.credentialId).toBeUndefined();
     });
   });
 
@@ -166,7 +166,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.aaguid).toBe("adce0002-35bc-c60a-648b-0b25f1f05503");
+      expect(result.aaguid).toBe("adce0002-35bc-c60a-648b-0b25f1f05503");
     });
 
     it("returns undefined when aaguid is not present in auth data", () => {
@@ -175,7 +175,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.aaguid).toBeUndefined();
+      expect(result.aaguid).toBeUndefined();
     });
   });
 
@@ -186,7 +186,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.counter).toBe(42);
+      expect(result.counter).toBe(42);
     });
 
     it("returns 0 when counter is zero", () => {
@@ -195,7 +195,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.counter).toBe(0);
+      expect(result.counter).toBe(0);
     });
   });
 
@@ -206,7 +206,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.credentialBackedUp).toBe(true);
+      expect(result.credentialBackedUp).toBe(true);
     });
 
     it("returns false when bs flag is false", () => {
@@ -215,7 +215,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.credentialBackedUp).toBe(false);
+      expect(result.credentialBackedUp).toBe(false);
     });
   });
 
@@ -226,7 +226,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.userVerified).toBe(true);
+      expect(result.userVerified).toBe(true);
     });
 
     it("returns false when uv flag is false", () => {
@@ -235,7 +235,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.userVerified).toBe(false);
+      expect(result.userVerified).toBe(false);
     });
   });
 
@@ -246,7 +246,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.publicKeyAlgorithm).toBe(-7);
+      expect(result.publicKeyAlgorithm).toBe(-7);
     });
 
     it("returns -257 for RS256", () => {
@@ -255,7 +255,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.publicKeyAlgorithm).toBe(-257);
+      expect(result.publicKeyAlgorithm).toBe(-257);
     });
 
     it("returns undefined when alg is not a number", () => {
@@ -264,7 +264,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.publicKeyAlgorithm).toBeUndefined();
+      expect(result.publicKeyAlgorithm).toBeUndefined();
     });
 
     it("returns undefined when alg is undefined", () => {
@@ -273,7 +273,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.publicKeyAlgorithm).toBeUndefined();
+      expect(result.publicKeyAlgorithm).toBeUndefined();
     });
 
     it("returns undefined when credentialPublicKey is not present", () => {
@@ -282,7 +282,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.publicKeyAlgorithm).toBeUndefined();
+      expect(result.publicKeyAlgorithm).toBeUndefined();
       expect(mockDecodeCredentialPublicKey).not.toHaveBeenCalled();
     });
   });
@@ -294,7 +294,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.credentialDeviceType).toBe("multi-device");
+      expect(result.credentialDeviceType).toBe("multi-device");
     });
 
     it("returns 'single-device' when be flag is false", () => {
@@ -303,7 +303,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.credentialDeviceType).toBe("single-device");
+      expect(result.credentialDeviceType).toBe("single-device");
     });
   });
 
@@ -320,7 +320,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.credentialTransports).toStrictEqual(["usb", "nfc", "ble"]);
+      expect(result.credentialTransports).toStrictEqual(["usb", "nfc", "ble"]);
     });
 
     it("returns undefined when transports are not present", () => {
@@ -334,7 +334,7 @@ describe("extractRegistrationResponseInfo", () => {
 
       const result = extractRegistrationResponseInfo(response);
 
-      expect(result?.credentialTransports).toBeUndefined();
+      expect(result.credentialTransports).toBeUndefined();
     });
   });
 
@@ -347,7 +347,7 @@ describe("extractRegistrationResponseInfo", () => {
 
         const result = extractRegistrationResponseInfo(response);
 
-        expect(result?.fmt).toBe(format);
+        expect(result.fmt).toBe(format);
       },
     );
   });

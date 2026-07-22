@@ -64,28 +64,28 @@ const buildExcludedCredentials = (
 const buildResponseInfoPasskeyFields = (
   responseInfo: ReturnType<typeof extractRegistrationResponseInfo>,
 ) => ({
-  ...(responseInfo?.aaguid !== undefined && {
+  ...(responseInfo.aaguid !== undefined && {
     passkey_aaguid: responseInfo.aaguid,
   }),
-  ...(responseInfo?.counter !== undefined && {
+  ...(responseInfo.counter !== undefined && {
     passkey_counter: responseInfo.counter,
   }),
-  ...(responseInfo?.credentialBackedUp !== undefined && {
+  ...(responseInfo.credentialBackedUp !== undefined && {
     passkey_credential_backed_up: responseInfo.credentialBackedUp,
   }),
-  ...(responseInfo?.credentialDeviceType !== undefined && {
+  ...(responseInfo.credentialDeviceType !== undefined && {
     passkey_credential_device_type: responseInfo.credentialDeviceType,
   }),
-  ...(responseInfo?.credentialTransports !== undefined && {
+  ...(responseInfo.credentialTransports !== undefined && {
     passkey_credential_transports: responseInfo.credentialTransports,
   }),
-  ...(responseInfo?.fmt !== undefined && {
+  ...(responseInfo.fmt !== undefined && {
     passkey_fmt: responseInfo.fmt,
   }),
-  ...(responseInfo?.publicKeyAlgorithm !== undefined && {
+  ...(responseInfo.publicKeyAlgorithm !== undefined && {
     passkey_public_key_algorithm: responseInfo.publicKeyAlgorithm,
   }),
-  ...(responseInfo?.userVerified !== undefined && {
+  ...(responseInfo.userVerified !== undefined && {
     passkey_user_verified: responseInfo.userVerified,
   }),
 });
@@ -128,7 +128,7 @@ const buildEnrolmentEventPayload = (
         buildRegistrationRequest(registrationOptions),
     },
     restricted: {
-      ...(responseInfo?.credentialId !== undefined && {
+      ...(responseInfo.credentialId !== undefined && {
         passkey_credential_id: responseInfo.credentialId,
       }),
       passkey_excluded_credentials:
@@ -223,7 +223,7 @@ export const sendPasskeyRegistrationSuccessfulAuditEvent = async (
       restricted: {
         ...base.commonAuditEventProps.restricted,
         passkey: {
-          ...(responseInfo?.credentialId !== undefined && {
+          ...(responseInfo.credentialId !== undefined && {
             passkey_credential_id: responseInfo.credentialId,
           }),
         },
