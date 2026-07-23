@@ -352,23 +352,6 @@ describe("extractRegistrationResponseInfo", () => {
     );
   });
 
-  it("returns undefined when registrationResponse is undefined", () => {
-    const result = extractRegistrationResponseInfo(undefined);
-
-    expect(result).toStrictEqual({
-      credentialId: undefined,
-      aaguid: undefined,
-      counter: undefined,
-      credentialBackedUp: undefined,
-      userVerified: undefined,
-      publicKeyAlgorithm: undefined,
-      credentialDeviceType: undefined,
-      credentialTransports: undefined,
-      fmt: undefined,
-    });
-    expect(mockDecodeAttestationObject).not.toHaveBeenCalled();
-  });
-
   describe("error handling", () => {
     it("returns all undefined values when decodeAttestationObject throws", () => {
       setupMocks();

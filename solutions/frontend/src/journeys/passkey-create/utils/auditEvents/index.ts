@@ -114,21 +114,24 @@ const getBaseEventProps = (request: FastifyRequest, reply: FastifyReply) => {
 
 const buildEnrolmentEventPayload = (
   registrationOptions: PublicKeyCredentialCreationOptionsJSON,
-  registrationResponse: InferOutput<
+  registrationResponse?: InferOutput<
     typeof postBodySchema
   >["registrationResponse"],
 ) => {
-  const responseInfo = extractRegistrationResponseInfo(registrationResponse);
+  const responseInfo =
+    registrationResponse === undefined
+      ? undefined
+      : extractRegistrationResponseInfo(registrationResponse);
 
   return {
     responseInfo,
     extensions: {
-      ...buildResponseInfoPasskeyFields(responseInfo),
+      ...(responseInfo && buildResponseInfoPasskeyFields(responseInfo)),
       passkey_registration_request:
         buildRegistrationRequest(registrationOptions),
     },
     restricted: {
-      ...(responseInfo.credentialId !== undefined && {
+      ...(responseInfo?.credentialId !== undefined && {
         passkey_credential_id: responseInfo.credentialId,
       }),
       passkey_excluded_credentials:
