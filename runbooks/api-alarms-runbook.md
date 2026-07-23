@@ -104,18 +104,6 @@ These alarms may indicate a P3 incident. Out-of-hours escalation and support is 
 4. Check downstream service health (DynamoDB, KMS).
 5. Check whether a recent deployment correlates with the start of errors.
 
-### ApiJourneyOutcomeLambdaErrorsAlarm
-
-**What it means:** The Journey Outcome Lambda function is producing invocation errors (unhandled exceptions or timeouts).
-
-**Investigation steps:**
-
-1. Check the `amc-dashboard` CloudWatch dashboard.
-2. Check the Journey Outcome Lambda logs at `/aws/lambda/amc/ApiJourneyOutcomeLambda` for stack traces or timeout messages.
-3. Check Lambda metrics (duration, memory usage, concurrent executions) for resource exhaustion.
-4. Check downstream dependencies (e.g. DynamoDB, KMS) for availability issues.
-5. Check whether a recent deployment correlates with the start of errors.
-
 ### ApiTokenLambdaColdStartDurationAnomalyAlarm
 
 **What it means:** The p90 cold start duration (`InitDuration`) of the Token Lambda has exceeded the anomaly detection band — i.e. it is significantly higher than the ML-modelled baseline. This may indicate a dependency being initialised during cold starts is slower than usual, or that a recent deployment has increased initialisation time.
