@@ -2010,6 +2010,35 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  ApiTokenLambdaColdStartDurationAnomalyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: IsProduction
+    Properties:
+      AlarmDescription: "AMC token lambda cold start durations have increased significantly above what is expected. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Metrics:
+        - Id: initDuration
+          MetricStat:
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: InitDuration
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref ApiTokenLambda
+            Period: 300
+            Stat: p90
+          ReturnData: true
+        - Id: band
+          Expression: ANOMALY_DETECTION_BAND(initDuration, 2)
+          ReturnData: true
+      ComparisonOperator: GreaterThanUpperThreshold
+      ThresholdMetricId: band
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      ActionsEnabled: false
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
   ApiTokenLambdaLogWarnByContextMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -2194,6 +2223,35 @@ Resources:
       Threshold: 1000
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiJourneyOutcomeLambdaColdStartDurationAnomalyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: IsProduction
+    Properties:
+      AlarmDescription: "AMC journey outcome lambda cold start durations have increased significantly above what is expected. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Metrics:
+        - Id: initDuration
+          MetricStat:
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: InitDuration
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref ApiJourneyOutcomeLambda
+            Period: 300
+            Stat: p90
+          ReturnData: true
+        - Id: band
+          Expression: ANOMALY_DETECTION_BAND(initDuration, 2)
+          ReturnData: true
+      ComparisonOperator: GreaterThanUpperThreshold
+      ThresholdMetricId: band
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      ActionsEnabled: false
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
@@ -2895,6 +2953,35 @@ Resources:
       Threshold: 1000
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  FrontendLambdaColdStartDurationAnomalyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: IsProduction
+    Properties:
+      AlarmDescription: "AMC frontend lambda cold start durations have increased significantly above what is expected. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
+      Metrics:
+        - Id: initDuration
+          MetricStat:
+            Metric:
+              Namespace: AWS/Lambda
+              MetricName: InitDuration
+              Dimensions:
+                - Name: FunctionName
+                  Value: !Ref FrontendLambda
+            Period: 300
+            Stat: p90
+          ReturnData: true
+        - Id: band
+          Expression: ANOMALY_DETECTION_BAND(initDuration, 2)
+          ReturnData: true
+      ComparisonOperator: GreaterThanUpperThreshold
+      ThresholdMetricId: band
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      ActionsEnabled: false
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 

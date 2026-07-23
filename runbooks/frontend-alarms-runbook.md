@@ -8,6 +8,7 @@ This runbook covers the following second line production alarms for the Account 
 - [FrontendApiGatewayTrafficAnomalyAlarm](#frontendapigatewaytrafficanomalyalarm)
 - [FrontendLambdaErrorsAlarm](#frontendlambdaerrorsalarm)
 - [FrontendLambdaLogErrorAlarm](#frontendlambdalogerroralarm)
+- [FrontendLambdaColdStartDurationAnomalyAlarm](#frontendlambdacoldstartdurationanomalyalarm)
 
 These alarms are owned by the **Home team** in the **Accounts pod**.
 
@@ -111,3 +112,14 @@ These alarms may indicate a P3 incident. Out-of-hours escalation and support is 
 4. Check whether the errors correlate with a specific route or journey step.
 5. Check downstream service health (Auth, Home, external APIs).
 6. Check whether a recent deployment correlates with the start of errors.
+
+### FrontendLambdaColdStartDurationAnomalyAlarm
+
+**What it means:** The p90 cold start duration (`InitDuration`) of the Frontend Lambda has exceeded the anomaly detection band — i.e. it is significantly higher than the ML-modelled baseline. This may indicate a dependency being initialised during cold starts is slower than usual, or that a recent deployment has increased initialisation time.
+
+**Investigation steps:**
+
+1. Check the `amc-dashboard` CloudWatch dashboard — the "Frontend lambda cold start duration (p90) in milliseconds" widget shows the trend over time.
+2. Check whether a recent deployment correlates with the increase — a larger bundle size or new initialisation-time dependencies can increase cold start duration.
+3. Check Lambda metrics for memory pressure or CPU throttling which could slow initialisation.
+4. If cold start durations are consistently elevated after a deployment, consider whether the change can be optimised to reduce initialisation work.

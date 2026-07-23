@@ -7,8 +7,10 @@ This runbook covers the following second line production alarms for the Account 
 - [ApiApiGateway5XXErrorsAlarm](#apiapigateway5xxerrorsalarm)
 - [ApiTokenLambdaErrorsAlarm](#apitokenlambdaerrorsalarm)
 - [ApiTokenLambdaLogErrorAlarm](#apitokenlambdalogerroralarm)
+- [ApiTokenLambdaColdStartDurationAnomalyAlarm](#apitokenlambdacoldstartdurationanomalyalarm)
 - [ApiJourneyOutcomeLambdaErrorsAlarm](#apijourneyoutcomelambdaerrorsalarm)
 - [ApiJourneyOutcomeLambdaLogErrorAlarm](#apijourneyoutcomelambdalogerroralarm)
+- [ApiJourneyOutcomeLambdaColdStartDurationAnomalyAlarm](#apijourneyoutcomelambdacoldstartdurationanomalyalarm)
 
 These alarms are owned by the **Home team** in the **Accounts pod**.
 
@@ -114,6 +116,29 @@ These alarms may indicate a P3 incident. Out-of-hours escalation and support is 
 4. Check downstream dependencies (e.g. DynamoDB, KMS) for availability issues.
 5. Check whether a recent deployment correlates with the start of errors.
 
+### ApiTokenLambdaColdStartDurationAnomalyAlarm
+
+**What it means:** The p90 cold start duration (`InitDuration`) of the Token Lambda has exceeded the anomaly detection band — i.e. it is significantly higher than the ML-modelled baseline. This may indicate a dependency being initialised during cold starts is slower than usual, or that a recent deployment has increased initialisation time.
+
+**Investigation steps:**
+
+1. Check the `amc-dashboard` CloudWatch dashboard — the "Token lambda cold start duration (p90) in milliseconds" widget shows the trend over time.
+2. Check whether a recent deployment correlates with the increase — a larger bundle size or new initialisation-time dependencies can increase cold start duration.
+3. Check Lambda metrics for memory pressure or CPU throttling which could slow initialisation.
+4. If cold start durations are consistently elevated after a deployment, consider whether the change can be optimised to reduce initialisation work.
+
+### ApiJourneyOutcomeLambdaErrorsAlarm
+
+**What it means:** The Journey Outcome Lambda function is producing invocation errors (unhandled exceptions or timeouts).
+
+**Investigation steps:**
+
+1. Check the `amc-dashboard` CloudWatch dashboard.
+2. Check the Journey Outcome Lambda logs at `/aws/lambda/amc/ApiJourneyOutcomeLambda` for stack traces or timeout messages.
+3. Check Lambda metrics (duration, memory usage, concurrent executions) for resource exhaustion.
+4. Check downstream dependencies (e.g. DynamoDB, KMS) for availability issues.
+5. Check whether a recent deployment correlates with the start of errors.
+
 ### ApiJourneyOutcomeLambdaLogErrorAlarm
 
 **What it means:** The Journey Outcome Lambda is logging ERROR or CRITICAL level messages at an elevated rate.
@@ -125,3 +150,14 @@ These alarms may indicate a P3 incident. Out-of-hours escalation and support is 
 3. Check whether errors relate to token validation or journey outcome retrieval.
 4. Check downstream service health (DynamoDB, KMS).
 5. Check whether a recent deployment correlates with the start of errors.
+
+### ApiJourneyOutcomeLambdaColdStartDurationAnomalyAlarm
+
+**What it means:** The p90 cold start duration (`InitDuration`) of the Journey Outcome Lambda has exceeded the anomaly detection band — i.e. it is significantly higher than the ML-modelled baseline. This may indicate a dependency being initialised during cold starts is slower than usual, or that a recent deployment has increased initialisation time.
+
+**Investigation steps:**
+
+1. Check the `amc-dashboard` CloudWatch dashboard — the "Journey outcome lambda cold start duration (p90) in milliseconds" widget shows the trend over time.
+2. Check whether a recent deployment correlates with the increase — a larger bundle size or new initialisation-time dependencies can increase cold start duration.
+3. Check Lambda metrics for memory pressure or CPU throttling which could slow initialisation.
+4. If cold start durations are consistently elevated after a deployment, consider whether the change can be optimised to reduce initialisation work.
