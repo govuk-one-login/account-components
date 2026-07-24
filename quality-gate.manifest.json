@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.14.0/schemas/schema.json",
+  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.15.0/schemas/schema.json",
   "services": [
     {
       "product": "One-Login-Home",
@@ -7,116 +7,162 @@
       "promotionType": "securePipelines",
       "automated": [
         {
-          "checkTypes": [
-            "code style and linting",
-            "secret scanning",
-            "vulnerability detection"
-          ],
           "phase": "pre-merge",
           "provider": "GitHub",
           "config": {
             "file": ".pre-commit-config.yaml"
-          }
+          },
+          "checks": [
+            {
+              "name": "code style and linting"
+            },
+            {
+              "name": "secret scanning"
+            },
+            {
+              "name": "vulnerability detection"
+            }
+          ]
         },
         {
-          "checkTypes": [
-            "unit",
-            "new feature",
-            "regression"
-          ],
           "phase": "pre-merge",
           "provider": "GitHub",
           "config": {
             "file": ".github/workflows/test.yaml",
             "path": "$.jobs.test"
-          }
+          },
+          "checks": [
+            {
+              "name": "unit"
+            },
+            {
+              "name": "new feature"
+            },
+            {
+              "name": "regression"
+            }
+          ]
         },
         {
-          "checkTypes": [
-            "code style and linting",
-            "vulnerability detection",
-            "code quality",
-            "secret scanning"
-          ],
           "phase": "pre-merge",
           "provider": "GitHub",
           "config": {
             "file": ".github/workflows/check.yaml",
             "path": "$.jobs.check"
-          }
+          },
+          "checks": [
+            {
+              "name": "code style and linting"
+            },
+            {
+              "name": "vulnerability detection"
+            },
+            {
+              "name": "code quality"
+            },
+            {
+              "name": "secret scanning"
+            }
+          ]
         },
         {
-          "checkTypes": [
-            "integration",
-            "accessibility",
-            "regression"
-          ],
           "phase": "pre-merge",
           "provider": "GitHub",
           "config": {
             "file": ".github/workflows/integration-test.yaml",
             "path": "$.jobs.integration-test"
-          }
+          },
+          "checks": [
+            {
+              "name": "integration"
+            },
+            {
+              "name": "accessibility"
+            },
+            {
+              "name": "regression"
+            }
+          ]
         },
         {
-          "checkTypes": [
-            "integration",
-            "accessibility",
-            "regression"
-          ],
           "phase": "build",
           "provider": "Stack Orchestration Tool",
           "config": {
             "file": ".github/workflows/deploy.yaml",
             "path": "$.jobs.publish-integration-tests-image"
-          }
+          },
+          "checks": [
+            {
+              "name": "integration"
+            },
+            {
+              "name": "accessibility"
+            },
+            {
+              "name": "regression"
+            }
+          ]
         },
         {
-          "checkTypes": [
-            "code quality",
-            "unit test coverage"
-          ],
           "phase": "pre-merge",
           "provider": "GitHub",
           "config": {
             "file": ".github/workflows/sonarcloud.yaml",
             "path": "$.jobs.sonarcloud"
-          }
+          },
+          "checks": [
+            {
+              "name": "code quality"
+            },
+            {
+              "name": "unit test coverage"
+            }
+          ]
         },
         {
-          "checkTypes": [
-            "canary"
-          ],
           "phase": "integration",
           "provider": "Stack Orchestration Tool",
           "config": {
             "file": ".github/workflows/deploy.yaml",
             "path": "$.jobs.deploy"
-          }
+          },
+          "checks": [
+            {
+              "name": "canary"
+            }
+          ]
         },
         {
-          "checkTypes": [
-            "canary"
-          ],
           "phase": "production",
           "provider": "Stack Orchestration Tool",
           "config": {
             "file": ".github/workflows/deploy.yaml",
             "path": "$.jobs.deploy"
-          }
+          },
+          "checks": [
+            {
+              "name": "canary"
+            }
+          ]
         },
         {
-          "checkTypes": [
-            "unit",
-            "new feature",
-            "regression"
-          ],
           "phase": "pre-upload",
           "provider": "GitHub",
           "config": {
             "file": ".github/workflows/test.yaml",
             "path": "$.jobs.test"
-          }
+          },
+          "checks": [
+            {
+              "name": "unit"
+            },
+            {
+              "name": "new feature"
+            },
+            {
+              "name": "regression"
+            }
+          ]
         }
       ]
     }
