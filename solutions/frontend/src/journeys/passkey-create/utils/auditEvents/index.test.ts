@@ -547,18 +547,28 @@ describe("passkey-create audit events", () => {
       );
     });
 
-    it("excludes passkey_enrolment_failure_reason when registrationResponse is undefined", async () => {
+    it("excludes passkey_enrolment_failure_reason and response info fields when registrationResponse is undefined", async () => {
       await sendPasskeyEnrolmentFailedAuditEvent(
         mockRequest as FastifyRequest,
         mockReply as FastifyReply,
         registrationOptions as PublicKeyCredentialCreationOptionsJSON,
       );
 
+      expect(mockExtractRegistrationResponseInfo).not.toHaveBeenCalled();
+
       const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       expect(eventPayload.extensions.passkey).not.toHaveProperty(
         "passkey_enrolment_failure_reason",
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(eventPayload.extensions.passkey).not.toHaveProperty(
+        "passkey_aaguid",
+      );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(eventPayload.restricted.passkey).not.toHaveProperty(
+        "passkey_credential_id",
       );
     });
 
