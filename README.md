@@ -46,7 +46,7 @@ There are various commands which can be run manually and which may also be run b
 - `npm run build:all` to build everything
 - `npm run test` to run [Vitest](https://vitest.dev/) tests
 - `npm run test:watch` to run [Vitest](https://vitest.dev/) tests in watch mode
-- `npm run test:coverage` to run [Vitest](https://vitest.dev/) tests and report coverage
+- `npm run test:coverage` to run [Vitest](https://vitest.dev/) tests and check coverage
 - `npm run check-types` to run [TypeScript](https://www.typescriptlang.org/) type checking
 - `npm run format` to run [Prettier](https://prettier.io/) formatting
 - `npm run eslint` to run [ESLint](https://eslint.org/)

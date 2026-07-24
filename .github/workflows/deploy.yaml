@@ -98,7 +98,7 @@ jobs:
         run: npm run build:all
 
       - name: Test
-        run: npm run test
+        run: npm run test:coverage
 
       - name: Deploy
         uses: govuk-one-login/devplatform-upload-action@64e46134b4108ebfa1cf2a64fee00782f8e2e8cf
