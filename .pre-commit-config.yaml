@@ -133,7 +133,7 @@ repos:
     hooks:
       - id: test
         name: Test
-        entry: npm run test
+        entry: npm run test:coverage
         language: system
         exclude: .*
         always_run: true

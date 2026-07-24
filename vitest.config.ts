@@ -10,6 +10,12 @@ export default defineConfig({
     coverage: {
       include: ["solutions/**/*.ts"],
       reporter: ["lcov", "text"],
+      thresholds: {
+        lines: 90,
+        functions: 90,
+        branches: 90,
+        statements: 90,
+      },
     },
     server: {
       deps: {
