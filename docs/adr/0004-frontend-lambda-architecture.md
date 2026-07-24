@@ -78,7 +78,7 @@ The following strategies are used to keep cold start times low:
 - **Dependency discipline.** Care is taken not to introduce large dependencies unnecessarily. Where dependencies are used, preference is given to packages that use ES modules and are written in a tree-shakable way, so that Rolldown can eliminate unused code.
 - **Monitoring.** A CloudWatch dashboard tracks cold start rate (%) and cold start p90 duration for the frontend Lambda. A p90 duration alarm fires if request duration (including cold starts) exceeds 1000 ms over a sustained period. An anomaly detection alarm fires if the p90 cold start duration rises significantly above its expected baseline, providing an early warning of any regression caused by changes to the application or its dependencies.
 
-Current cold start times are in the region of ~750 ms, with approximately half of this attributable to the required Dynatrace instrumentation layer. This is well within the programme's NFRs, as confirmed by performance testing.
+Current cold start times are in the region of ~1000 ms, with approximately half of this attributable to the required Dynatrace instrumentation layer. This is well within the programme's NFRs, as confirmed by performance testing.
 
 ## Lessons learnt
 
