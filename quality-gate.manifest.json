@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.16.0/schemas/schema.json",
+  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.17.0/schemas/schema.json",
   "services": [
     {
       "product": "One-Login-Home",
@@ -9,9 +9,6 @@
         {
           "phase": "pre-merge",
           "provider": "GitHub",
-          "config": {
-            "file": ".pre-commit-config.yaml"
-          },
           "checks": [
             {
               "name": "code style and linting"
@@ -22,15 +19,12 @@
             {
               "name": "vulnerability detection"
             }
-          ]
+          ],
+          "file": ".pre-commit-config.yaml"
         },
         {
           "phase": "pre-merge",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/test.yaml",
-            "path": "$.jobs.test"
-          },
           "checks": [
             {
               "name": "unit",
@@ -39,15 +33,13 @@
                 "regression"
               ]
             }
-          ]
+          ],
+          "file": ".github/workflows/test.yaml",
+          "path": "$.jobs.test"
         },
         {
           "phase": "pre-merge",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/check.yaml",
-            "path": "$.jobs.check"
-          },
           "checks": [
             {
               "name": "code style and linting"
@@ -61,15 +53,13 @@
             {
               "name": "secret scanning"
             }
-          ]
+          ],
+          "file": ".github/workflows/check.yaml",
+          "path": "$.jobs.check"
         },
         {
           "phase": "pre-merge",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/integration-test.yaml",
-            "path": "$.jobs.integration-test"
-          },
           "checks": [
             {
               "name": "integration",
@@ -80,15 +70,13 @@
             {
               "name": "accessibility"
             }
-          ]
+          ],
+          "file": ".github/workflows/integration-test.yaml",
+          "path": "$.jobs.integration-test"
         },
         {
           "phase": "build",
           "provider": "Stack Orchestration Tool",
-          "config": {
-            "file": ".github/workflows/deploy.yaml",
-            "path": "$.jobs.publish-integration-tests-image"
-          },
           "checks": [
             {
               "name": "integration",
@@ -99,15 +87,13 @@
             {
               "name": "accessibility"
             }
-          ]
+          ],
+          "file": ".github/workflows/deploy.yaml",
+          "path": "$.jobs.publish-integration-tests-image"
         },
         {
           "phase": "pre-merge",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/sonarcloud.yaml",
-            "path": "$.jobs.sonarcloud"
-          },
           "checks": [
             {
               "name": "code quality"
@@ -115,41 +101,35 @@
             {
               "name": "unit test coverage"
             }
-          ]
+          ],
+          "file": ".github/workflows/sonarcloud.yaml",
+          "path": "$.jobs.sonarcloud"
         },
         {
           "phase": "integration",
           "provider": "Stack Orchestration Tool",
-          "config": {
-            "file": ".github/workflows/deploy.yaml",
-            "path": "$.jobs.deploy"
-          },
           "checks": [
             {
               "name": "canary"
             }
-          ]
+          ],
+          "file": ".github/workflows/deploy.yaml",
+          "path": "$.jobs.deploy"
         },
         {
           "phase": "production",
           "provider": "Stack Orchestration Tool",
-          "config": {
-            "file": ".github/workflows/deploy.yaml",
-            "path": "$.jobs.deploy"
-          },
           "checks": [
             {
               "name": "canary"
             }
-          ]
+          ],
+          "file": ".github/workflows/deploy.yaml",
+          "path": "$.jobs.deploy"
         },
         {
           "phase": "pre-upload",
           "provider": "GitHub",
-          "config": {
-            "file": ".github/workflows/test.yaml",
-            "path": "$.jobs.test"
-          },
           "checks": [
             {
               "name": "unit",
@@ -158,7 +138,9 @@
                 "regression"
               ]
             }
-          ]
+          ],
+          "file": ".github/workflows/test.yaml",
+          "path": "$.jobs.test"
         }
       ]
     }
