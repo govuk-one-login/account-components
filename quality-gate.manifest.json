@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.15.0/schemas/schema.json",
+  "$schema": "https://raw.githubusercontent.com/govuk-one-login/quality-gates/refs/tags/v0.16.0/schemas/schema.json",
   "services": [
     {
       "product": "One-Login-Home",
@@ -33,13 +33,11 @@
           },
           "checks": [
             {
-              "name": "unit"
-            },
-            {
-              "name": "new feature"
-            },
-            {
-              "name": "regression"
+              "name": "unit",
+              "purpose": [
+                "new feature",
+                "regression"
+              ]
             }
           ]
         },
@@ -74,13 +72,13 @@
           },
           "checks": [
             {
-              "name": "integration"
+              "name": "integration",
+              "purpose": [
+                "regression"
+              ]
             },
             {
               "name": "accessibility"
-            },
-            {
-              "name": "regression"
             }
           ]
         },
@@ -93,13 +91,13 @@
           },
           "checks": [
             {
-              "name": "integration"
+              "name": "integration",
+              "purpose": [
+                "regression"
+              ]
             },
             {
               "name": "accessibility"
-            },
-            {
-              "name": "regression"
             }
           ]
         },
@@ -154,13 +152,11 @@
           },
           "checks": [
             {
-              "name": "unit"
-            },
-            {
-              "name": "new feature"
-            },
-            {
-              "name": "regression"
+              "name": "unit",
+              "purpose": [
+                "new feature",
+                "regression"
+              ]
             }
           ]
         }
