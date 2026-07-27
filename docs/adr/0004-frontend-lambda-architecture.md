@@ -39,11 +39,11 @@ Lambda's on-demand scaling model is a natural fit for this traffic profile. This
 
 ### Scaling
 
-Lambda scales instantaneously and independently of any other application in the programme. Each incoming request can be served by a separate Lambda execution environment. This means Account Components does not need to be sized or scaled to match the traffic profile of its upstream callers. There is a much lower risk of a traffic spike from Auth causing failed requests in Account Components due to insufficient capacity.
+Lambda scales in near real-time and independently of any other application in the programme. Each incoming request can be served by a separate Lambda execution environment. This means Account Components does not need to be sized or scaled to match the traffic profile of its upstream callers. There is a much lower risk of a traffic spike from Auth causing failed requests in Account Components due to insufficient capacity.
 
 Performance testing has been run at ~80 requests/second with a 100% success rate. Notably, the performance profile improves under load: as traffic increases, more warm Lambda execution environments are available to serve requests, reducing the proportion of cold starts.
 
-Where traffic is very low and cold starts are a concern, provisioned concurrency can be used to keep a minimum number of execution environments warm. The frontend is currently configured with one unit of provisioned concurrency.
+Where traffic is very low and cold starts are a concern, provisioned concurrency can be used to keep a minimum number of execution environments warm, but this is discouraged in the programme due to cost. A cheaper alternative that has proven effective in practice is to use a scheduled EventBridge rule to invoke the Lambda concurrently on a cron schedule — sending enough simultaneous requests to keep the desired number of execution environments warm. This approach can maintain more warm environments at a fraction of the cost of provisioned concurrency.
 
 ### Cost
 
@@ -53,14 +53,37 @@ The Lambda memory is currently configured at 1769 MB, which provides approximate
 
 ### Fastify
 
-Fastify was chosen over Express for two reasons:
+Fastify was chosen over Express for the follow reasons:
 
-1. It has a first-party Lambda adapter (`@fastify/aws-lambda`) that is actively maintained.
-2. It is significantly faster than Express.
+#### First-party lambda support
+
+The most popular Express Lambda adapter (`@codegenie/serverless-express`) has changed hands twice since its origins as `aws-serverless-express` under AWS Labs, moving first to Vendia and then to CodeGenie, with downloads split across two package names (`@vendia/serverless-express` and `@codegenie/serverless-express`). By contrast, `@fastify/aws-lambda` is actively maintained directly by the Fastify organisation itself.
+
+#### Performance
+
+The [Fastify benchmarks](https://github.com/fastify/benchmarks) — run automatically on GitHub Actions against Node.js v24 — show Fastify handling ~46,850 requests/second compared to ~27,794 for Express and ~22,402 for Express with a typical middleware stack. That is Express running at roughly 40–52% fewer requests per second under the same conditions. In a Lambda context this matters directly: higher throughput per execution environment means shorter durations and lower cost per request. Express also bundles many concerns — body parsing, static file serving, cookie handling — directly into its core (28 direct dependencies, 39 transitive), whereas Fastify provides these as opt-in plugins, keeping the core leaner (15 direct dependencies, 30 transitive) and reducing the attack surface to only what is explicitly registered.
+
+#### Familiar development experience
 
 Fastify retains the familiar monolithic application structure of Express — plugins, hooks, route handlers — so the learning curve for developers already familiar with Express is low. That said, Fastify has its own conventions and it is worth reading the [Fastify documentation](https://fastify.dev/docs/latest/) to understand the fundamentals before starting, as it is not a drop-in replacement.
 
 Fastify has a rich first-party plugin ecosystem that covers all of the important concerns for a GOV.UK frontend application without needing to rely on third-party plugins: session management, CSRF protection, security headers (Helmet), cookie management, serving static assets, and parsing form bodies. Where Express-compatible plugins are needed, Fastify is often able to use them directly.
+
+#### Active maintenance
+
+Fastify is under active development. Version 5 has seen approximately 15 releases since its launch in late 2024, with the latest being v5.10.0 published on 5 July 2026 ([npm](https://www.npmjs.com/package/fastify?activeTab=versions)). New features are added regularly and security vulnerabilities are patched and disclosed following a coordinated disclosure process, with a documented [responsible disclosure policy](https://github.com/fastify/fastify/blob/main/SECURITY.md) and [GitHub Security Advisories](https://github.com/fastify/fastify/security/advisories).
+
+#### Security
+
+Security is a first-class concern in Fastify's design, evidenced by several concrete commitments. Fastify holds the [OpenSSF CII Best Practices](https://www.bestpractices.dev/en/projects/7585) passing badge (100% of passing criteria met, 87% of silver), a recognised industry standard for open source project security hygiene. It has a [dedicated security team](https://github.com/fastify/fastify/blob/main/SECURITY.md#the-fastify-security-team) with a documented threat model, triage SLA, and responsible disclosure process. CVE assignment is handled through the [OpenJS Foundation CNA](https://cna.openjsf.org/), giving Fastify formal standing in the vulnerability disclosure ecosystem. Security-conscious defaults are built into the core — for example, [`secure-json-parse`](https://github.com/nicolo-ribaudo/secure-json-parse) is used to protect against prototype pollution when parsing JSON, and [`fast-json-stringify`](https://github.com/fastify/fast-json-stringify) schema-bound serialisation prevents accidental leakage of undeclared response properties. The Fastify organisation also maintains the security-focused plugins used in this project — `@fastify/helmet`, `@fastify/csrf-protection`, and `@fastify/session` — keeping security concerns under a single, accountable maintainer group.
+
+#### Adoption
+
+Fastify is downloaded over 10 million times per week on npm ([npmjs.com](https://www.npmjs.com/package/fastify)), making it one of the most widely used Node.js HTTP frameworks. Adoption is growing rapidly: monthly downloads have increased from ~3.7 million in January 2023 to ~17 million in January 2026 — a more than 4× increase in three years ([npm download stats](https://api.npmjs.org/downloads/point/2023-01-01:2026-01-31/fastify)). This level of adoption provides confidence that the framework is battle-tested at scale and that the ecosystem of plugins and tooling will remain healthy.
+
+#### Plugin model and dependency footprint
+
+Fastify's architecture keeps the core small and focused. Functionality such as cookie parsing, static file serving, and form body parsing is provided by opt-in plugins rather than being bundled into the core. This reduces the attack surface: only the capabilities explicitly registered are present in the running application. The core package itself has just 15 direct dependencies ([npm](https://www.npmjs.com/package/fastify?activeTab=dependencies)), all of which are either maintained by the Fastify organisation (e.g. [`@fastify/error`](https://github.com/fastify/fastify-error), [`fast-json-stringify`](https://github.com/fastify/fast-json-stringify)) or by Fastify core team members (e.g. [`find-my-way`](https://github.com/delvedor/find-my-way)), or are well-established, widely-used packages (e.g. `pino` for logging, `semver` for version handling). The full transitive dependency tree contains just 30 packages in total, all of which are well-established and widely used in the Node.js ecosystem — for example, `ajv` (~350 million weekly downloads), `semver` (~810 million), `pino` (~40 million), and `fast-deep-equal` (~185 million).
 
 ### Other operational benefits
 
@@ -78,7 +101,7 @@ The following strategies are used to keep cold start times low:
 - **Dependency discipline.** Care is taken not to introduce large dependencies unnecessarily. Where dependencies are used, preference is given to packages that use ES modules and are written in a tree-shakable way, so that Rolldown can eliminate unused code.
 - **Monitoring.** A CloudWatch dashboard tracks cold start rate (%) and cold start p90 duration for the frontend Lambda. A p90 duration alarm fires if request duration (including cold starts) exceeds 1000 ms over a sustained period. An anomaly detection alarm fires if the p90 cold start duration rises significantly above its expected baseline, providing an early warning of any regression caused by changes to the application or its dependencies.
 
-Current cold start times are in the region of ~1000 ms, with approximately half of this attributable to the required Dynatrace instrumentation layer. This is well within the programme's NFRs, as confirmed by performance testing.
+Current cold start times are in the region of ~1000 ms, with approximately half of this attributable to the required Dynatrace instrumentation layer. This is well within [the programme's non-functional requirements](https://govukverify.atlassian.net/wiki/spaces/DID/pages/3295084564/Performance+Performance+Efficiency+Incident+Management+Recovery#Performance-baselineD) (NFRs), as confirmed by performance testing.
 
 ## Lessons learnt
 
