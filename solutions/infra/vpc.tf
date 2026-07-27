@@ -19,7 +19,7 @@ resource "aws_cloudformation_stack" "spoke_vpc_stack" {
   parameters = {
     TransitGatewayId                 = var.transit_gateway_id
     DisasterRecoveryTransitGatewayId = var.disaster_recovery_transit_gateway_id
-    UseDisasterRecovery              = var.disaster_recovery_transit_gateway_id != null ? "Yes" : "No"
+    UseDisasterRecovery              = var.disaster_recovery_transit_gateway_hub_account_id != null && var.disaster_recovery_transit_gateway_id != null && var.transit_gateway_use_disaster_recovery ? "Yes" : "No"
     CloudWatchApiEnabled             = "Yes"
     CloudFormationEndpointEnabled    = contains(["dev", "build"], var.environment) ? "Yes" : "No" # Required for integration tests to run when inside the VPC
     CloudWatchLogsApiEnabled         = contains(["dev", "build"], var.environment) ? "Yes" : "No" # Required for integration tests to run when inside the VPC
