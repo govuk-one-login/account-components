@@ -9,7 +9,7 @@ vi.mock(import("../../getEnvironment/index.js"), () => ({
 describe("addStaticAssetsCachingHeaders", () => {
   const mockSetHeader = vi.fn();
   const mockRes = {
-    setHeader: mockSetHeader,
+    header: mockSetHeader,
   } as unknown as FastifyReply;
 
   beforeEach(() => {
