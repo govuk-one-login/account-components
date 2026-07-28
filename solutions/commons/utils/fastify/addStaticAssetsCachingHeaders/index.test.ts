@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { addStaticAssetsCachingHeaders } from "./index.js";
-import type fastifyStatic from "@fastify/static";
+import type { FastifyReply } from "fastify";
 
 vi.mock(import("../../getEnvironment/index.js"), () => ({
   getEnvironment: vi.fn(),
@@ -10,7 +10,7 @@ describe("addStaticAssetsCachingHeaders", () => {
   const mockSetHeader = vi.fn();
   const mockRes = {
     setHeader: mockSetHeader,
-  } as unknown as fastifyStatic.SetHeadersResponse;
+  } as unknown as FastifyReply;
 
   beforeEach(() => {
     vi.clearAllMocks();
