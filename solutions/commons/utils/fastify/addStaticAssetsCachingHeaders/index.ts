@@ -1,13 +1,13 @@
 import { getEnvironment } from "../../getEnvironment/index.js";
 import { fiveMinutesInSeconds, oneDayInSeconds } from "../../constants.js";
-import type fastifyStatic from "@fastify/static";
+import type { FastifyReply } from "fastify";
 
 export const addStaticAssetsCachingHeaders = (
-  res: fastifyStatic.SetHeadersResponse,
+  res: FastifyReply,
   allUrlsAreImmutable = false,
 ) => {
   if (getEnvironment() !== "local") {
-    res.setHeader(
+    res.header(
       "cache-control",
       allUrlsAreImmutable
         ? `public, max-age=${oneDayInSeconds.toString()}, immutable`
