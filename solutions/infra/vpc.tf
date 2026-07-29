@@ -1,7 +1,7 @@
 resource "aws_cloudformation_stack" "transit_gateway_cross_account_role" {
   # See https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/5746426210/Transit+Gateway+Infrastructure+Reference#Latest-published-templates
   name         = "transit-gateway-cross-account-role"
-  template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.eu-west-2.amazonaws.com/tgw-cross-account-role/template.yaml"
+  template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.eu-west-2.amazonaws.com/tgw-cross-account-role/template-v2.yaml"
 
   parameters = {
     HubAccountId                 = var.transit_gateway_hub_account_id
@@ -14,7 +14,7 @@ resource "aws_cloudformation_stack" "transit_gateway_cross_account_role" {
 resource "aws_cloudformation_stack" "spoke_vpc_stack" {
   # See https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/5746426210/Transit+Gateway+Infrastructure+Reference#Latest-published-templates
   name         = "vpc"
-  template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.eu-west-2.amazonaws.com/spoke-vpc/template.yaml"
+  template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.eu-west-2.amazonaws.com/spoke-vpc/template-v2.yaml"
 
   parameters = {
     TransitGatewayId                 = var.transit_gateway_id
