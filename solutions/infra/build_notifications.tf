@@ -1,7 +1,7 @@
 resource "aws_cloudformation_stack" "build_notifications_stack" {
   # See https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/3377168419/Slack+build+notifications+-+via+AWS+Chatbot
   name         = "build-notifications"
-  template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/build-notifications/template.yaml"
+  template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/build-notifications/template-v2.yaml"
 
   parameters = {
     BuildNotificationSlackChannelId = var.environment == "production" ? "C0ALMLUAZE3" : "C0AMXCUQEQG"

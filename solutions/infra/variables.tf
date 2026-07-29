@@ -168,6 +168,12 @@ variable "transit_gateway_hub_account_id" {
   description = "Transit Gateway Hub AWS Account ID where the Lambda execution role lives."
 }
 
+variable "transit_gateway_use_disaster_recovery" {
+  type        = bool
+  description = "Whether to use Transit Gateway disaster recovery."
+  default     = false
+}
+
 variable "disaster_recovery_transit_gateway_hub_account_id" {
   type        = string
   description = "Disaster recovery Transit Gateway Hub AWS Account ID where the Lambda execution role lives."
