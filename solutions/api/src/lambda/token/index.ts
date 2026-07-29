@@ -11,7 +11,10 @@ import { assertTokenRequest } from "./utils/assertTokenRequest.js";
 import * as querystring from "node:querystring";
 import { getAuthRequest } from "./utils/getAuthRequest.js";
 import { verifyJti } from "./utils/verifyJti.js";
-import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
+import {
+  logger,
+  loggerAPIGatewayProxyHandlerWrapper,
+} from "../../../../commons/utils/logger/index.js";
 import { createAccessToken } from "./utils/createAccessToken.js";
 import { getApiBaseUrlWithStage } from "../../utils/common.js";
 import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
@@ -22,6 +25,17 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+        if (e.headers["x-healthcheck"] === "1") {
+          logger.info("Token endpoint healthcheck");
+          return {
+            statusCode: 200,
+            headers: {
+              "Content-Type": "text/plain",
+            },
+            body: "ok",
+          };
+        }
+
         metrics.addMetric("TokenRequestWithoutContext", MetricUnit.Count, 1);
 
         try {

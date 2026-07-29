@@ -112,6 +112,22 @@ describe("journeyoutcome handler", () => {
     });
   });
 
+  it("returns 200 for healthcheck request", async () => {
+    const mockEvent = {
+      headers: { "x-healthcheck": "1" },
+      requestContext: { stage: "v1", domainName: "api.example.com" },
+    } as unknown as APIGatewayProxyEvent;
+
+    const result = await handler(mockEvent, mockContext);
+
+    expect(result).toStrictEqual({
+      statusCode: 200,
+      headers: { "Content-Type": "text/plain" },
+      body: "ok",
+    });
+    expect(mockverifySignatureAndGetPayload).not.toHaveBeenCalled();
+  });
+
   it("returns 200 status with outcome object for valid Authorization header with valid access_token containing a valid outcome_id", async () => {
     const mockPayload = {
       outcome_id: "test-outcome-id",
