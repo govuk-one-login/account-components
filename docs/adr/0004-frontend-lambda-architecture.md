@@ -53,7 +53,7 @@ The Lambda memory is currently configured at 1769 MB, which provides approximate
 
 ### Fastify
 
-Fastify was chosen over Express for the follow reasons:
+Fastify was chosen over Express for the following reasons:
 
 #### First-party lambda support
 
