@@ -254,11 +254,17 @@ export async function postHandler(
       reason: invalidRequestBodyErrorReason,
     };
 
-    await sendPasskeyRegistrationFailedAuditEvent(request, reply);
+    await sendPasskeyRegistrationFailedAuditEvent(
+      request,
+      reply,
+      "UnknownError",
+    );
     await sendPasskeyEnrolmentFailedAuditEvent(
       request,
       reply,
       registrationOptions,
+      undefined,
+      "UnknownError",
     );
 
     await render(request, reply, {
@@ -325,6 +331,8 @@ export async function postHandler(
       request,
       reply,
       registrationOptions,
+      undefined,
+      reason,
     );
 
     await render(request, reply, {
@@ -362,6 +370,7 @@ export async function postHandler(
       reply,
       registrationOptions,
       body.registrationResponse,
+      undefined,
       `VerificationError${error instanceof Error ? " - " + error.message : ""}`,
     );
 
@@ -380,6 +389,7 @@ export async function postHandler(
       reply,
       registrationOptions,
       body.registrationResponse,
+      undefined,
       "VerificationFailed",
     );
 
@@ -412,6 +422,7 @@ export async function postHandler(
       reply,
       registrationOptions,
       body.registrationResponse,
+      undefined,
       "ErrorGettingExistingPasskeysForUser",
     );
 
@@ -431,6 +442,7 @@ export async function postHandler(
       reply,
       registrationOptions,
       body.registrationResponse,
+      undefined,
       "UserHasMaximumNumberOfPasskeys",
     );
 
@@ -489,6 +501,7 @@ export async function postHandler(
       reply,
       registrationOptions,
       body.registrationResponse,
+      undefined,
       "ErrorSavingPasskey",
     );
 

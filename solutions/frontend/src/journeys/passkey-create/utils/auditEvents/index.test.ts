@@ -482,6 +482,7 @@ describe("passkey-create audit events", () => {
         mockReply as FastifyReply,
         registrationOptions as PublicKeyCredentialCreationOptionsJSON,
         registrationResponse,
+        undefined,
         "UserVerificationError",
       );
 
@@ -579,6 +580,7 @@ describe("passkey-create audit events", () => {
         registrationOptions as PublicKeyCredentialCreationOptionsJSON,
         registrationResponse,
         undefined,
+        undefined,
       );
 
       const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
@@ -598,6 +600,7 @@ describe("passkey-create audit events", () => {
           excludeCredentials: undefined,
         } as unknown as PublicKeyCredentialCreationOptionsJSON,
         registrationResponse,
+        undefined,
         "UserVerificationError",
       );
 
@@ -622,6 +625,7 @@ describe("passkey-create audit events", () => {
         mockReply as FastifyReply,
         registrationOptions as PublicKeyCredentialCreationOptionsJSON,
         registrationResponse,
+        undefined,
         "UserVerificationError",
       );
 
@@ -637,6 +641,7 @@ describe("passkey-create audit events", () => {
           mockReply as FastifyReply,
           registrationOptions as PublicKeyCredentialCreationOptionsJSON,
           registrationResponse,
+          undefined,
           "UserVerificationError",
         ),
       ).rejects.toThrow();
