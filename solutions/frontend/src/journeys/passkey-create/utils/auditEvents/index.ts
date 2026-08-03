@@ -177,7 +177,7 @@ export const sendPasskeyRegistrationGeneratedAuditEvent = async (
 export const sendPasskeyRegistrationFailedAuditEvent = async (
   request: FastifyRequest,
   reply: FastifyReply,
-  reason: (typeof passkeyRegistrationFailureReason)[number] = "UnknownError",
+  reason: (typeof passkeyRegistrationFailureReason)[number],
 ) => {
   const base = getBaseEventProps(request, reply);
   if (!base) return;
@@ -243,7 +243,8 @@ export const sendPasskeyEnrolmentFailedAuditEvent = async (
   registrationResponse?: InferOutput<
     typeof postBodySchema
   >["registrationResponse"],
-  reason?: string,
+  registrationFailureReason?: (typeof passkeyRegistrationFailureReason)[number],
+  enrolmentFailureReason?: string,
 ) => {
   const base = getBaseEventProps(request, reply);
   if (!base) return;
@@ -264,10 +265,12 @@ export const sendPasskeyEnrolmentFailedAuditEvent = async (
         }),
         passkey: {
           ...enrolment.extensions,
-          ...(registrationResponse !== undefined &&
-            reason !== undefined && {
-              passkey_enrolment_failure_reason: reason,
-            }),
+          ...(enrolmentFailureReason !== undefined && {
+            passkey_enrolment_failure_reason: enrolmentFailureReason,
+          }),
+          ...(registrationFailureReason !== undefined && {
+            passkey_registration_failure_reason: registrationFailureReason,
+          }),
         },
       },
       restricted: {
