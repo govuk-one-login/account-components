@@ -143,6 +143,18 @@
           "path": "$.jobs.test"
         }
       ]
+    },
+    {
+      "product":"One-Login-Home",
+      "component": "amc_config",
+      "promotionType":"securePipelines",
+      "notApplicable": [
+        {
+          "checks": [
+            {"name": "accessibility", "details": ["No UI"]}
+          ]
+        }
+      ]
     }
   ]
 }
