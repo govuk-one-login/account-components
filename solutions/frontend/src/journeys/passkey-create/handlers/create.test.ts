@@ -492,6 +492,7 @@ describe("passkey-create handlers", () => {
           },
           type: "public-key",
         },
+        undefined,
         "ErrorGettingExistingPasskeysForUser",
       );
     });
@@ -705,7 +706,7 @@ describe("passkey-create handlers", () => {
         );
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
-        ).toHaveBeenCalledWith(mockRequest, mockReply);
+        ).toHaveBeenCalledWith(mockRequest, mockReply, "UnknownError");
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
         ).toHaveBeenCalledTimes(1);
@@ -713,6 +714,8 @@ describe("passkey-create handlers", () => {
           mockRequest,
           mockReply,
           { challenge: "test-challenge" },
+          undefined,
+          "UnknownError",
         );
       });
     });
@@ -983,6 +986,7 @@ describe("passkey-create handlers", () => {
             },
             type: "public-key",
           },
+          undefined,
           "VerificationError - Verification error",
         );
         expect(mockReply.render).toHaveBeenCalledWith(
@@ -1040,6 +1044,7 @@ describe("passkey-create handlers", () => {
             },
             type: "public-key",
           },
+          undefined,
           "VerificationFailed",
         );
         expect(mockReply.render).toHaveBeenCalledWith(
@@ -1126,6 +1131,7 @@ describe("passkey-create handlers", () => {
             },
             type: "public-key",
           },
+          undefined,
           "ErrorSavingPasskey",
         );
       });
@@ -1186,6 +1192,8 @@ describe("passkey-create handlers", () => {
           mockRequest,
           mockReply,
           { challenge: "test-challenge" },
+          undefined,
+          "UnknownError",
         );
       });
 
@@ -1346,6 +1354,7 @@ describe("passkey-create handlers", () => {
           mockReply,
           { challenge: "test-challenge" },
           {},
+          undefined,
           "UserHasMaximumNumberOfPasskeys",
         );
         expect(mockReply.render).toHaveBeenCalledWith(
