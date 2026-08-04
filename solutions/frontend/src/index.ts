@@ -244,10 +244,7 @@ export const initFrontend = async function () {
           "https://*.ruxit.com",
           "https://*.dynatrace.com",
         ],
-        formAction:
-          getEnvironment() === "local"
-            ? ["'self'", "http://localhost:*"]
-            : ["'self'", "https://*.account.gov.uk"],
+        formAction: null,
         ...(getEnvironment() === "local"
           ? {
               upgradeInsecureRequests: null,
