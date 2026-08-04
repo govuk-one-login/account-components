@@ -3,9 +3,7 @@
     {
       "client_id": "auth",
       "scope": "testing-journey account-delete passkey-create",
-      "redirect_uris": [
-        "https://stubs.manage.dev.account.gov.uk/auth/callback"
-      ],
+      "redirect_uris": ["https://www.bbc.co.uk"],
       "client_name": "Auth",
       "jwks_uri": "https://stubs.manage.dev.account.gov.uk/auth/.well-known/jwks.json",
       "consider_user_logged_in": false,
