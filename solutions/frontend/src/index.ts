@@ -12,11 +12,7 @@ import cy from "./translations/cy.json" with { type: "json" };
 import { getSessionOptions } from "./utils/session.js";
 import fastifyStatic from "@fastify/static";
 import * as path from "node:path";
-import {
-  channelCookieName,
-  Lang,
-  oneYearInSeconds,
-} from "../../commons/utils/constants.js";
+import { channelCookieName, Lang } from "../../commons/utils/constants.js";
 import staticHash from "./utils/static-hash.json" with { type: "json" };
 import simpleWebAuthNBrowserStaticHash from "./utils/static-hash-simplewebauthn-browser.json" with { type: "json" };
 import staticHashGovUkFrontendAssets from "./utils/static-hash-govuk-frontend-assets.json" with { type: "json" };
@@ -43,6 +39,7 @@ import { resolveEnvVarToBool } from "../../commons/utils/resolveEnvVarToBool/ind
 import { simpleUnsuccessfulJourneyActionErrors } from "./journeys/utils/journeyActions.js";
 import { setAnalyticsForPath } from "./utils/setAnalyticsForPath/index.js";
 import { FastifyLogController } from "../../commons/utils/fastify/logController/index.js";
+import { getHelmetConfig } from "./utils/getHelmetConfig.js";
 
 await configureI18n({
   [Lang.English]: {
@@ -214,60 +211,7 @@ export const initFrontend = async function () {
   });
 
   fastify.register(fastifyFormbody);
-  fastify.register(fastifyHelmet, {
-    enableCSPNonces: true,
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: [
-          "'self'",
-          "https://*.googletagmanager.com",
-          "https://*.google-analytics.com",
-          "https://*.analytics.google.com",
-          "https://*.ruxit.com",
-          "https://*.dynatrace.com",
-        ],
-        imgSrc: [
-          "'self'",
-          "data:",
-          "https://*.googletagmanager.com",
-          "https://*.google-analytics.com",
-          "https://*.analytics.google.com",
-          "https://*.g.doubleclick.net",
-        ],
-        objectSrc: ["'none'"],
-        connectSrc: [
-          "'self'",
-          "https://*.google-analytics.com",
-          "https://*.analytics.google.com",
-          "https://*.g.doubleclick.net",
-          "https://*.ruxit.com",
-          "https://*.dynatrace.com",
-        ],
-        formAction: null,
-        ...(getEnvironment() === "local"
-          ? {
-              upgradeInsecureRequests: null,
-            }
-          : {}),
-      },
-    },
-    dnsPrefetchControl: {
-      allow: false,
-    },
-    frameguard: {
-      action: "deny",
-    },
-    hsts: {
-      maxAge: oneYearInSeconds,
-      preload: true,
-      includeSubDomains: true,
-    },
-    referrerPolicy: false,
-    permittedCrossDomainPolicies: {
-      permittedPolicies: "none",
-    },
-  });
+  fastify.register(fastifyHelmet, getHelmetConfig());
 
   fastify.register(async (fastify) => {
     fastify.register(fastifySession, await getSessionOptions());
