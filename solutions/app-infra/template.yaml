@@ -59,7 +59,8 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
       authorizeEndpointUrl: https://manage.dev.account.gov.uk/authorize
       issuerUrl: https://manage.dev.account.gov.uk
-      apiAllowedVpceIds: []
+      apiAllowedVpceIds:
+        - "vpce-02e58cfe4fc07f3e1" # di-account-components-dev (this account)
       LambdaLogLevel: DEBUG
       UseCanary: false
       frontendUrl: https://manage.dev.account.gov.uk
@@ -95,7 +96,8 @@ Mappings:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
       authorizeEndpointUrl: https://manage.build.account.gov.uk/authorize
       issuerUrl: https://manage.build.account.gov.uk
-      apiAllowedVpceIds: []
+      apiAllowedVpceIds:
+        - "vpce-062098a48411e69b2" # di-account-components-build (this account)
       LambdaLogLevel: INFO
       UseCanary: false
       frontendUrl: https://manage.build.account.gov.uk
@@ -132,6 +134,7 @@ Mappings:
       authorizeEndpointUrl: https://manage.staging.account.gov.uk/authorize
       issuerUrl: https://manage.staging.account.gov.uk
       apiAllowedVpceIds:
+        - "vpce-04ae8d53b32b38278" # di-account-components-staging (this account)
         - "vpce-0c9ce65be09f99db7" # di-account-staging
         - "vpce-07078f5f005fe5efc" # di-authentication-staging
       LambdaLogLevel: INFO
@@ -170,6 +173,7 @@ Mappings:
       authorizeEndpointUrl: https://manage.integration.account.gov.uk/authorize
       issuerUrl: https://manage.integration.account.gov.uk
       apiAllowedVpceIds:
+        - "vpce-0553cfc8fc1aeb970" # di-account-components-integration (this account)
         - "vpce-0e594accb3d775457" # di-account-integration
         - "vpce-0df10df14d851e1c9" # di-authentication-integration
       LambdaLogLevel: INFO
@@ -208,6 +212,7 @@ Mappings:
       authorizeEndpointUrl: https://manage.account.gov.uk/authorize
       issuerUrl: https://manage.account.gov.uk
       apiAllowedVpceIds:
+        - "vpce-0d6fa47d5c9ae876d" # di-account-components-prod (this account)
         - "vpce-0d7972874707185a0" # di-account-production
         - "vpce-0db136878c87bf2d0" # di-authentication-production
       LambdaLogLevel: INFO
@@ -707,6 +712,67 @@ Resources:
               Service: apigateway.amazonaws.com
             Action:
               - s3:GetObject
+
+  LambdaWarmerLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 60
+      MemorySize: 128
+      Handler: lambda-warmer.handler
+      VpcConfig:
+        SubnetIds:
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdA
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdB
+          - Fn::ImportValue: !Sub ${VpcStackName}-ProtectedSubnetIdC
+      DeploymentPreference:
+        Enabled: false
+      LoggingConfig:
+        LogGroup: !Ref LambdaWarmerLambdaLogGroup
+      Environment:
+        Variables:
+          REQUESTS_CONFIG: !Sub
+            - '[{"method":"GET","headers":{},"url":"${FrontendUrl}/healthcheck","requestCount":100},{"method":"POST","headers":{"x-healthcheck":"1"},"url":"${ApiUrl}/token","requestCount":15},{"method":"GET","headers":{"x-healthcheck":"1"},"url":"${ApiUrl}/journeyoutcome","requestCount":15}]'
+            - FrontendUrl:
+                !FindInMap [
+                  EnvironmentConfiguration,
+                  !Ref Environment,
+                  frontendUrl,
+                ]
+              ApiUrl: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+      Events:
+        ScheduledEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(5 minutes)
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: !GetAtt LambdaWarmerLambdaLogGroup.Arn
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: esm
+        OutExtension:
+          - .js=.mjs
+        Target: es2024
+        Sourcemap: true
+        EntryPoints:
+          - solutions/core/src/lambda/lambda-warmer.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+
+  LambdaWarmerLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/LambdaWarmerLambda"
+      RetentionInDays: 30
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
   JwksGeneratorLambda:
     Type: AWS::Serverless::Function
@@ -1429,13 +1495,10 @@ Resources:
             Resource: "*"
             Condition:
               StringEquals:
-                aws:sourceVpce: !If
-                  - IsDevOrBuild
-                  - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
-                  - !FindInMap
-                    - EnvironmentConfiguration
-                    - !Ref Environment
-                    - apiAllowedVpceIds
+                aws:sourceVpce: !FindInMap
+                  - EnvironmentConfiguration
+                  - !Ref Environment
+                  - apiAllowedVpceIds
       Variables:
         ApiDomain: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
         AuthorizeEndpointUrl:
@@ -1630,8 +1693,6 @@ Resources:
           - !Ref ApiTokenLambdaThrottlesAlarm
           - !Ref ApiTokenLambdaAvailabilityAlarm
           - !Ref ApiTokenLambdaLogErrorAlarm
-      ProvisionedConcurrencyConfig:
-        ProvisionedConcurrentExecutions: 1
       LoggingConfig:
         LogGroup: !Ref ApiTokenLambdaLogGroup
       Handler: index.handler
@@ -1706,8 +1767,6 @@ Resources:
           - !Ref ApiJourneyOutcomeLambdaThrottlesAlarm
           - !Ref ApiJourneyOutcomeLambdaAvailabilityAlarm
           - !Ref ApiJourneyOutcomeLambdaLogErrorAlarm
-      ProvisionedConcurrencyConfig:
-        ProvisionedConcurrentExecutions: 1
       LoggingConfig:
         LogGroup: !Ref ApiJourneyOutcomeLambdaLogGroup
       Handler: index.handler
@@ -2556,8 +2615,6 @@ Resources:
           - !Ref FrontendLambdaThrottlesAlarm
           - !Ref FrontendLambdaAvailabilityAlarm
           - !Ref FrontendLambdaLogErrorAlarm
-      ProvisionedConcurrencyConfig:
-        ProvisionedConcurrentExecutions: 1
       LoggingConfig:
         LogGroup: !Ref FrontendLambdaLogGroup
       Events:

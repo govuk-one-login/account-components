@@ -33,7 +33,7 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
 
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
-  logger: { error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+  logger: { info: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() },
   loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
@@ -104,6 +104,23 @@ describe("token handler", () => {
         domainName: "api.example.com",
       },
     }) as unknown as APIGatewayProxyEvent;
+
+  it("returns 200 for healthcheck request", async () => {
+    const mockEvent = {
+      body: "",
+      headers: { "x-healthcheck": "1" },
+      requestContext: { stage: "v1", domainName: "api.example.com" },
+    } as unknown as APIGatewayProxyEvent;
+
+    const result = await handler(mockEvent, mockContext);
+
+    expect(result).toStrictEqual({
+      statusCode: 200,
+      headers: { "Content-Type": "text/plain" },
+      body: "ok",
+    });
+    expect(mockVerifyClientAssertion).not.toHaveBeenCalled();
+  });
 
   it("returns 200 status with hello world body", async () => {
     mockVerifyClientAssertion.mockResolvedValue({
