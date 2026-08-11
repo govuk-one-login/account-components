@@ -1,8 +1,8 @@
 import type { APIGatewayProxyEvent } from "aws-lambda";
-import { parse } from "cookie";
+import { parseCookie } from "cookie";
 
 export const getPropsFromAPIGatewayEvent = (event: APIGatewayProxyEvent) => {
-  const cookies = parse(event.headers["cookie"] ?? "");
+  const cookies = parseCookie(event.headers["cookie"] ?? "");
   const gsCookie = cookies["gs"];
   const gsCookieParts = gsCookie ? gsCookie.split(".") : [];
 
