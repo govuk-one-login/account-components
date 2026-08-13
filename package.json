@@ -33,7 +33,7 @@
     "@smithy/node-http-handler": "^4.7.1",
     "aws-xray-sdk": "^3.12.0",
     "axios": "^1.18.1",
-    "cookie": "^1.1.1",
+    "cookie": "^2.0.1",
     "ecdsa-sig-formatter": "^1.0.11",
     "esbuild": "^0.28.1",
     "fastify": "^5.10.0",
