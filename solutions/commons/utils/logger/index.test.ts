@@ -21,6 +21,7 @@ vi.mock(import("../getPropsFromAPIGatewayEvent/index.js"), () => ({
     clientSessionId: "client-789",
     userLanguage: "fr",
     sourceIp: "192.168.1.1",
+    userAgent: "Mozilla/5.0",
   }),
 }));
 
@@ -69,6 +70,7 @@ describe("loggerAPIGatewayProxyHandlerWrapper", () => {
       path: "/test-path",
       referer: "https://example.com",
       trace: "session-456",
+      userAgent: "Mozilla/5.0",
     });
     expect(mockHandler).toHaveBeenCalledWith(mockEvent, mockContext);
     expect(logger.info).toHaveBeenCalledWith("Response", { statusCode: 200 });
