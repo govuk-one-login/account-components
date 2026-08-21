@@ -93,7 +93,7 @@
     "eslint:fix": "eslint . --fix --report-unused-disable-directives --cache --max-warnings 0",
     "tflint": "tflint --init && tflint --recursive --format compact --chdir solutions/infra",
     "tflint:fix": "tflint --init && tflint --recursive --format compact --chdir solutions/infra --fix",
-    "cfnlint": "git ls-files \"*.cf.yaml\" | xargs cfn-lint",
+    "cfnlint": "git ls-files \"*.cf.yaml\" | xargs -I? cfn-lint ? -r eu-west-2",
     "format": "prettier . --check",
     "format:fix": "prettier . --write",
     "knip": "knip",
