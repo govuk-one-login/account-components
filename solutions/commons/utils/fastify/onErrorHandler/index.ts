@@ -15,7 +15,7 @@ export const onError = async (
 ): Promise<ReturnType<ErrorHandler>> => {
   const msg = "ERROR_CAUGHT_BY_GLOBAL_ERROR_HANDLER";
 
-  let logger: (...args: unknown[]) => void = request.log.error;
+  let logger = request.log.error;
   let statusCode = 500;
 
   if (isFastifyError(error) && error.code.startsWith("FST_CSRF_")) {
