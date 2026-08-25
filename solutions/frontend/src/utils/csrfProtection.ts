@@ -12,6 +12,7 @@ export const csrfProtection = fp(async function (fastify) {
       );
       return body.success ? body.output._csrf : undefined;
     },
+    logLevel: "warn",
   });
   fastify.addHook("preHandler", (request, reply, done) => {
     reply.globals.csrfToken = reply.generateCsrf();
