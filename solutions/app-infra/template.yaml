@@ -2114,6 +2114,17 @@ Resources:
           - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  ApiTokenLambda4XXAndAboveResponseMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.message = "Response" && $.statusCode >= 400 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+          MetricName: 4XXAndAboveResponseCount
+          MetricValue: "1"
+          DefaultValue: 0
+
   ApiTokenLambda5XXResponseMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -2165,6 +2176,31 @@ Resources:
       EvaluationPeriods: 3
       DatapointsToAlarm: 3
       TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiTokenLambdaResponseStatusCodeAnomalyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: IsProduction
+    Properties:
+      Metrics:
+        - Id: errorResponseCount
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+              MetricName: 4XXAndAboveResponseCount
+            Period: 300
+            Stat: Sum
+          ReturnData: true
+        - Id: band
+          Expression: ANOMALY_DETECTION_BAND(errorResponseCount, 2)
+          ReturnData: true
+      ComparisonOperator: GreaterThanUpperThreshold
+      ThresholdMetricId: band
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      ActionsEnabled: false
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
@@ -2330,6 +2366,17 @@ Resources:
           - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  ApiJourneyOutcomeLambda4XXAndAboveResponseMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.message = "Response" && $.statusCode >= 400 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+          MetricName: 4XXAndAboveResponseCount
+          MetricValue: "1"
+          DefaultValue: 0
+
   ApiJourneyOutcomeLambda5XXResponseMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -2381,6 +2428,31 @@ Resources:
       EvaluationPeriods: 3
       DatapointsToAlarm: 3
       TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiJourneyOutcomeLambdaResponseStatusCodeAnomalyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: IsProduction
+    Properties:
+      Metrics:
+        - Id: errorResponseCount
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+              MetricName: 4XXAndAboveResponseCount
+            Period: 300
+            Stat: Sum
+          ReturnData: true
+        - Id: band
+          Expression: ANOMALY_DETECTION_BAND(errorResponseCount, 2)
+          ReturnData: true
+      ComparisonOperator: GreaterThanUpperThreshold
+      ThresholdMetricId: band
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      ActionsEnabled: false
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
@@ -2884,6 +2956,17 @@ Resources:
           - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  FrontendLambda4XXAndAboveResponseMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.message = "Response" && $.statusCode >= 400 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: 4XXAndAboveResponseCount
+          MetricValue: "1"
+          DefaultValue: 0
+
   FrontendLambda5XXResponseMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -2935,6 +3018,31 @@ Resources:
       EvaluationPeriods: 3
       DatapointsToAlarm: 3
       TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  FrontendLambdaResponseStatusCodeAnomalyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Condition: IsProduction
+    Properties:
+      Metrics:
+        - Id: errorResponseCount
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+              MetricName: 4XXAndAboveResponseCount
+            Period: 300
+            Stat: Sum
+          ReturnData: true
+        - Id: band
+          Expression: ANOMALY_DETECTION_BAND(errorResponseCount, 2)
+          ReturnData: true
+      ComparisonOperator: GreaterThanUpperThreshold
+      ThresholdMetricId: band
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      ActionsEnabled: false
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 

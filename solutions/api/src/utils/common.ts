@@ -42,7 +42,6 @@ export class ErrorManager<T extends Record<string, ErrorType>> {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     const error: AppError<keyof T> = new Error(message) as AppError<keyof T>;
     error.code = type;
-    logger.error("Error", { cause: error });
     throw error;
   }
 
@@ -66,10 +65,13 @@ export class ErrorManager<T extends Record<string, ErrorType>> {
       throw new Error("Unhandled error type");
     }
 
-    logger.warn("Invalid Request", {
-      error,
-      rawError: e,
-    });
+    logger[error.statusCode >= 500 ? "error" : "warn"](
+      `${error.code} ${error.description}`,
+      {
+        error,
+        rawError: e,
+      },
+    );
 
     metrics.addMetadata("error_type", error.metric.subType);
     metrics.addMetric(error.metric.type, MetricUnit.Count, 1);
