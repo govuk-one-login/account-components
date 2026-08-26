@@ -1,0 +1,20 @@
+{
+  "extends": [
+    "@tsconfig/node24/tsconfig.json",
+    "@tsconfig/strictest/tsconfig.json"
+  ],
+  "compilerOptions": {
+    // From @tsconfig/node24/tsconfig.json:
+    "types": ["node"],
+    "lib": [
+      "dom",
+      // From @tsconfig/node24/tsconfig.json:
+      "es2024",
+      "ESNext.Array",
+      "ESNext.Collection",
+      "ESNext.Error",
+      "ESNext.Iterator",
+      "ESNext.Promise"
+    ]
+  }
+}
