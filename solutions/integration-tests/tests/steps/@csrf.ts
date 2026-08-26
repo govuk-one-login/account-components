@@ -9,8 +9,8 @@ async function submitFormWithModifiedCsrf(
   csrfValue: string | null,
 ): Promise<number> {
   if (csrfValue === null) {
-    await page.evaluate(() => {
-      document.querySelector('input[name="_csrf"]')?.remove();
+    await page.locator('input[name="_csrf"]').evaluate((el) => {
+      el.remove();
     });
   } else {
     await page.locator('input[name="_csrf"]').evaluate((el, value) => {
@@ -20,7 +20,7 @@ async function submitFormWithModifiedCsrf(
 
   const [response] = await Promise.all([
     page.waitForResponse((r) => r.request().method() === "POST"),
-    page.locator("form button[type=submit]").click(),
+    page.getByRole("button", { name: "Go to next step", exact: true }).click(),
   ]);
 
   return response.status();
