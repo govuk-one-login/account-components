@@ -24,6 +24,7 @@ export const loggerAPIGatewayProxyHandlerWrapper = (
         path: event.path,
         referer: event.headers["referer"],
         trace: propsFromEvent.sessionId,
+        userAgent: propsFromEvent.userAgent,
       });
 
       logger.info("Request");

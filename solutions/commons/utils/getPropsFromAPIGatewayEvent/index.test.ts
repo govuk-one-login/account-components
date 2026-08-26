@@ -24,6 +24,7 @@ describe("getPropsFromAPIGatewayEvent", () => {
       "user-language": "en",
       "x-forwarded-for": "192.168.1.1",
       "txma-audit-encoded": "encoded-txma-data",
+      "user-agent": "Mozilla/5.0",
     });
 
     const result = getPropsFromAPIGatewayEvent(event);
@@ -35,6 +36,7 @@ describe("getPropsFromAPIGatewayEvent", () => {
       userLanguage: "en",
       sourceIp: "192.168.1.1",
       txmaAuditEncoded: "encoded-txma-data",
+      userAgent: "Mozilla/5.0",
     });
   });
 
@@ -53,6 +55,7 @@ describe("getPropsFromAPIGatewayEvent", () => {
       userLanguage: "fr",
       sourceIp: "127.0.0.1",
       txmaAuditEncoded: undefined,
+      userAgent: undefined,
     });
   });
 
@@ -76,6 +79,7 @@ describe("getPropsFromAPIGatewayEvent", () => {
       userLanguage: "en",
       sourceIp: "192.168.1.1",
       txmaAuditEncoded: undefined,
+      userAgent: undefined,
     });
   });
 
@@ -93,6 +97,7 @@ describe("getPropsFromAPIGatewayEvent", () => {
       userLanguage: undefined,
       sourceIp: "192.168.1.1",
       txmaAuditEncoded: undefined,
+      userAgent: undefined,
     });
   });
 
@@ -108,6 +113,7 @@ describe("getPropsFromAPIGatewayEvent", () => {
       userLanguage: undefined,
       sourceIp: "10.0.0.1",
       txmaAuditEncoded: undefined,
+      userAgent: undefined,
     });
   });
 
@@ -123,6 +129,7 @@ describe("getPropsFromAPIGatewayEvent", () => {
       userLanguage: undefined,
       sourceIp: "127.0.0.1",
       txmaAuditEncoded: undefined,
+      userAgent: undefined,
     });
   });
 
@@ -140,6 +147,7 @@ describe("getPropsFromAPIGatewayEvent", () => {
       userLanguage: undefined,
       sourceIp: "127.0.0.1",
       txmaAuditEncoded: undefined,
+      userAgent: undefined,
     });
   });
 
@@ -157,6 +165,7 @@ describe("getPropsFromAPIGatewayEvent", () => {
       userLanguage: undefined,
       sourceIp: "127.0.0.1",
       txmaAuditEncoded: undefined,
+      userAgent: undefined,
     });
   });
 
@@ -174,6 +183,7 @@ describe("getPropsFromAPIGatewayEvent", () => {
       userLanguage: "es",
       sourceIp: "127.0.0.1",
       txmaAuditEncoded: undefined,
+      userAgent: undefined,
     });
   });
 });

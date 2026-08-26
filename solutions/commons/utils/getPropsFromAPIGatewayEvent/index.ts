@@ -17,5 +17,6 @@ export const getPropsFromAPIGatewayEvent = (event: APIGatewayProxyEvent) => {
       event.headers["x-forwarded-for"]?.split(",")[0]?.trim() ??
       event.requestContext.identity.sourceIp,
     txmaAuditEncoded: event.headers["txma-audit-encoded"],
+    userAgent: event.headers["user-agent"],
   };
 };

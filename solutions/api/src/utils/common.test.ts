@@ -138,13 +138,10 @@ describe("errorManager", () => {
       );
     });
 
-    it("logs the error", () => {
+    it("sets the error code on the thrown error", () => {
       expect(() => errorManager.throwError("notFound", "not found")).toThrow(
-        "not found",
+        expect.objectContaining({ code: "notFound" }),
       );
-      expect(mockLogger.error).toHaveBeenCalledWith("Error", {
-        cause: expect.objectContaining({ message: "not found" }) as Error,
-      });
     });
   });
 
@@ -226,10 +223,22 @@ describe("errorManager", () => {
       error.code = "notFound";
       errorManager.handleError(error);
 
-      expect(mockLogger.warn).toHaveBeenCalledWith("Invalid Request", {
+      expect(mockLogger.warn).toHaveBeenCalledWith("E404 not_found", {
         error: errors.notFound,
         rawError: error,
       });
+    });
+
+    it("logs an error for 5xx status codes", () => {
+      errorManager.handleError(new Error("unknown"));
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        "E500 internal_server_error",
+        {
+          error: errors.genericError,
+          rawError: expect.any(Error) as Error,
+        },
+      );
     });
   });
 });
