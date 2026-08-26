@@ -771,7 +771,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/JwksGeneratorLambda"
-      RetentionInDays: 30
+      RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
   JwksGeneratorLambdaPermission:
@@ -1035,7 +1035,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/NotificationsService"
-      RetentionInDays: 30
+      RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
   NotificationsServiceLambdaThrottlesAlarm:
@@ -1563,14 +1563,14 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/apigateway/${ApiApiGateway}/${ApiStageName}"
-      RetentionInDays: 30
+      RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
   ApiHealthcheckLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiHealthcheckLambda"
-      RetentionInDays: 30
+      RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
   ApiHealthcheckLambda:
@@ -1613,7 +1613,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiTokenLambda"
-      RetentionInDays: 30
+      RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
   ApiTokenLambda:
@@ -1694,7 +1694,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda"
-      RetentionInDays: 30
+      RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
   ApiJourneyOutcomeLambda:
@@ -2607,7 +2607,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/apigateway/${FrontendApiGateway}/${Environment}"
-      RetentionInDays: 30
+      RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
   FrontendLambda:
@@ -2794,7 +2794,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/FrontendLambda"
-      RetentionInDays: 30
+      RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
   FrontendApiGateway5XXErrorsAlarm:
@@ -3258,7 +3258,7 @@ Resources:
     Condition: IsDevOrBuild
     Properties:
       LogGroupName: !Sub "/aws/apigateway/${StubsApiGateway}/${Environment}"
-      RetentionInDays: 30
+      RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
   StubsLambda:
@@ -3332,7 +3332,7 @@ Resources:
     Condition: IsDevOrBuild
     Properties:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/StubsLambda"
-      RetentionInDays: 30
+      RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
   Dashboard:

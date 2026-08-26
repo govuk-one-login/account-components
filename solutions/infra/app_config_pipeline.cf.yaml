@@ -737,7 +737,7 @@ Resources:
     Properties:
       KmsKeyId: !GetAtt LogsKmsKey.Arn
       LogGroupName: !Sub "/aws/codepipeline/${AWS::StackName}-${ProfileName}-Pipeline"
-      RetentionInDays: 30
+      RetentionInDays: 90
       Tags:
         - Key: "Name"
           Value: !Join
