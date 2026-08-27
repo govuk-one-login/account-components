@@ -771,7 +771,7 @@ Resources:
     Type: AWS::Logs::LogGroup
     Properties:
       LogGroupName: !Sub "/aws/lambda/JwksGeneratorLambda"
-      RetentionInDays: 90
+      RetentionInDays: 90 
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
   JwksGeneratorLambdaPermission:
