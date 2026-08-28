@@ -45,7 +45,12 @@ export const startSessionAndGoToJourney = async (
     const tokenExpiries = [
       accountManagementApiAccessTokenExpiry,
       accountDataApiAccessTokenExpiry,
-    ].filter((item) => typeof item === "number");
+    ]
+      .filter((item) => typeof item === "number")
+      // Take time off of the token lengths to allow
+      // any requests using the tokens to complete before
+      // they expire
+      .map((item) => item - 10);
 
     if (tokenExpiries.length) {
       sessionExpiry = Math.min(

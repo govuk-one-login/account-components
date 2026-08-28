@@ -137,7 +137,7 @@ describe("startSessionAndGoToJourney", () => {
     );
 
     expect(mockDecodeJwt).toHaveBeenCalledWith("token-123");
-    expect(request.session.expires).toBe(tokenExpiry);
+    expect(request.session.expires).toBe(tokenExpiry - 10);
   });
 
   it("sets session expiry based on account data API token expiry", async () => {
@@ -166,7 +166,7 @@ describe("startSessionAndGoToJourney", () => {
     );
 
     expect(mockDecodeJwt).toHaveBeenCalledWith("token-456");
-    expect(request.session.expires).toBe(tokenExpiry);
+    expect(request.session.expires).toBe(tokenExpiry - 10);
   });
 
   it("uses minimum expiry when both tokens present", async () => {
@@ -199,7 +199,7 @@ describe("startSessionAndGoToJourney", () => {
       "https://example.com/callback",
     );
 
-    expect(request.session.expires).toBe(earlierExpiry);
+    expect(request.session.expires).toBe(earlierExpiry - 10);
   });
 
   it("caps session expiry at 2 hours", async () => {
