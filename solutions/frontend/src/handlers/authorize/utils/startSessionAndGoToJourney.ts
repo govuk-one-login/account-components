@@ -47,9 +47,10 @@ export const startSessionAndGoToJourney = async (
       accountDataApiAccessTokenExpiry,
     ]
       .filter((item) => typeof item === "number")
-      // Take time off of the token lengths to allow
-      // any requests using the tokens to complete before
-      // they expire
+      // Take time off of the token lengths so that the session expires
+      // before the tokens. This should prevent the edge case where
+      // the session hasn't expired so we make a request but the token
+      // expires by the time it gets to the destination.
       .map((item) => item - 10);
 
     if (tokenExpiries.length) {
