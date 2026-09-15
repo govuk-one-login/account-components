@@ -39,14 +39,14 @@ jobs:
           persist-credentials: false
 
       - name: Assume AWS role
-        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c
+        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c
         with:
           role-to-assume: ${{ secrets.PIPELINE_GH_ACTIONS_ROLE_ARN }}
           aws-region: "eu-west-2"
 
       - name: Login to Amazon ECR
         id: login-ecr
-        uses: aws-actions/amazon-ecr-login@d539f0932e70871a027e9d5a9d8fc38589180a64
+        uses: aws-actions/amazon-ecr-login@03f1aad4c6c7ffd436567f42f9384779290529bd
 
       - name: Build & publish Docker image
         working-directory: solutions/integration-tests
@@ -82,7 +82,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Assume AWS role
-        uses: aws-actions/configure-aws-credentials@e6de054238d6b7531b4efff3b6587d9aade6a06c
+        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c
         with:
           role-to-assume: ${{ secrets.PIPELINE_GH_ACTIONS_ROLE_ARN }}
           aws-region: "eu-west-2"
@@ -101,7 +101,7 @@ jobs:
         run: npm run test:coverage
 
       - name: Deploy
-        uses: govuk-one-login/devplatform-upload-action@ec09f4b1f8648fe21dd18a40a2d8e2fa94d0ad41
+        uses: govuk-one-login/devplatform-upload-action@9320b8e71484f79c1b48139a86d214473d0f2709
         with:
           artifact-bucket-name: ${{ secrets.PIPELINE_SOURCE_BUCKET_NAME }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
