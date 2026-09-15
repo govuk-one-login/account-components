@@ -304,6 +304,10 @@ Globals:
           - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdC
       SecurityGroupIds:
         - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+    LoggingConfig:
+      LogFormat: JSON
+      ApplicationLogLevel:
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, LambdaLogLevel]
     Timeout: 10
     MemorySize: 1769 # so that we get ~1 VCPU
     Architectures:
@@ -1866,7 +1870,7 @@ Resources:
       Period: 60
       EvaluationPeriods: 15
       DatapointsToAlarm: 15
-      Threshold: 1500
+      Threshold: 1000
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
@@ -2004,11 +2008,22 @@ Resources:
       Period: 60
       EvaluationPeriods: 15
       DatapointsToAlarm: 15
-      Threshold: 1500
+      Threshold: 1000
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiTokenLambdaColdStartInitDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.type = "platform.report" && $.record.metrics.initDurationMs > 0 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+          MetricName: ColdStartInitDurationMs
+          MetricValue: $.record.metrics.initDurationMs
+          Unit: Milliseconds
 
   ApiTokenLambdaColdStartDurationAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2019,16 +2034,13 @@ Resources:
         - Id: initDuration
           MetricStat:
             Metric:
-              Namespace: AWS/Lambda
-              MetricName: InitDuration
-              Dimensions:
-                - Name: FunctionName
-                  Value: !Ref ApiTokenLambda
+              Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+              MetricName: ColdStartInitDurationMs
             Period: 300
             Stat: p90
           ReturnData: true
         - Id: band
-          Expression: ANOMALY_DETECTION_BAND(initDuration, 4)
+          Expression: ANOMALY_DETECTION_BAND(initDuration, 3)
           ReturnData: true
       ComparisonOperator: GreaterThanUpperThreshold
       ThresholdMetricId: band
@@ -2220,11 +2232,22 @@ Resources:
       Period: 60
       EvaluationPeriods: 15
       DatapointsToAlarm: 15
-      Threshold: 1500
+      Threshold: 1000
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiJourneyOutcomeLambdaColdStartInitDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.type = "platform.report" && $.record.metrics.initDurationMs > 0 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+          MetricName: ColdStartInitDurationMs
+          MetricValue: $.record.metrics.initDurationMs
+          Unit: Milliseconds
 
   ApiJourneyOutcomeLambdaColdStartDurationAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2235,16 +2258,13 @@ Resources:
         - Id: initDuration
           MetricStat:
             Metric:
-              Namespace: AWS/Lambda
-              MetricName: InitDuration
-              Dimensions:
-                - Name: FunctionName
-                  Value: !Ref ApiJourneyOutcomeLambda
+              Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+              MetricName: ColdStartInitDurationMs
             Period: 300
             Stat: p90
           ReturnData: true
         - Id: band
-          Expression: ANOMALY_DETECTION_BAND(initDuration, 4)
+          Expression: ANOMALY_DETECTION_BAND(initDuration, 3)
           ReturnData: true
       ComparisonOperator: GreaterThanUpperThreshold
       ThresholdMetricId: band
@@ -2951,11 +2971,22 @@ Resources:
       Period: 60
       EvaluationPeriods: 15
       DatapointsToAlarm: 15
-      Threshold: 1500
+      Threshold: 1000
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  FrontendLambdaColdStartInitDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.type = "platform.report" && $.record.metrics.initDurationMs > 0 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: ColdStartInitDurationMs
+          MetricValue: $.record.metrics.initDurationMs
+          Unit: Milliseconds
 
   FrontendLambdaColdStartDurationAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
@@ -2966,16 +2997,13 @@ Resources:
         - Id: initDuration
           MetricStat:
             Metric:
-              Namespace: AWS/Lambda
-              MetricName: InitDuration
-              Dimensions:
-                - Name: FunctionName
-                  Value: !Ref FrontendLambda
+              Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+              MetricName: ColdStartInitDurationMs
             Period: 300
             Stat: p90
           ReturnData: true
         - Id: band
-          Expression: ANOMALY_DETECTION_BAND(initDuration, 4)
+          Expression: ANOMALY_DETECTION_BAND(initDuration, 3)
           ReturnData: true
       ComparisonOperator: GreaterThanUpperThreshold
       ThresholdMetricId: band
@@ -3655,7 +3683,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter @type = \"REPORT\" | fields coalesce(@initDuration, 0) as InitDuration | stats pct(InitDuration + @duration, 90) as P90TotalDuration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
                 "view": "bar",
                 "title": "Frontend lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
@@ -3666,7 +3694,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter @type = \"REPORT\" | stats (count(@initDuration)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
                 "view": "bar",
                 "title": "Frontend lambda cold start rate (%)",
                 "region": "${AWS::Region}"
@@ -3677,7 +3705,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter @type = \"REPORT\" | stats pct(@initDuration, 90) as ColdStartP90Duration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
                 "view": "bar",
                 "title": "Frontend lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
@@ -3703,7 +3731,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter @type = \"REPORT\" | fields coalesce(@initDuration, 0) as InitDuration | stats pct(InitDuration + @duration, 90) as P90TotalDuration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
                 "view": "bar",
                 "title": "Token lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
@@ -3714,7 +3742,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter @type = \"REPORT\" | stats (count(@initDuration)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
                 "view": "bar",
                 "title": "Token lambda cold start rate (%)",
                 "region": "${AWS::Region}"
@@ -3725,7 +3753,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter @type = \"REPORT\" | stats pct(@initDuration, 90) as ColdStartP90Duration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
                 "view": "bar",
                 "title": "Token lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
@@ -3751,7 +3779,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter @type = \"REPORT\" | fields coalesce(@initDuration, 0) as InitDuration | stats pct(InitDuration + @duration, 90) as P90TotalDuration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
                 "view": "bar",
                 "title": "Journey outcome lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
@@ -3762,7 +3790,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter @type = \"REPORT\" | stats (count(@initDuration)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
                 "view": "bar",
                 "title": "Journey outcome lambda cold start rate (%)",
                 "region": "${AWS::Region}"
@@ -3773,7 +3801,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter @type = \"REPORT\" | stats pct(@initDuration, 90) as ColdStartP90Duration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
                 "view": "bar",
                 "title": "Journey outcome lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
