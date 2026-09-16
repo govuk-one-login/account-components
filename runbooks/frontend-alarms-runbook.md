@@ -5,10 +5,8 @@
 This runbook covers the following second line production alarms for the Account Management Components (AMC) frontend in the AWS account **di-account-components-prod** (494066295151):
 
 - [FrontendApiGateway5XXErrorsAlarm](#frontendapigateway5xxerrorsalarm)
-- [FrontendApiGatewayTrafficAnomalyAlarm](#frontendapigatewaytrafficanomalyalarm)
 - [FrontendLambdaErrorsAlarm](#frontendlambdaerrorsalarm)
 - [FrontendLambdaLogErrorAlarm](#frontendlambdalogerroralarm)
-- [FrontendLambdaColdStartDurationAnomalyAlarm](#frontendlambdacoldstartdurationanomalyalarm)
 
 These alarms are owned by the **Home team** in the **Accounts pod**.
 
@@ -75,19 +73,6 @@ These alarms may indicate a P3 incident. Out-of-hours escalation and support is 
 4. Check whether a recent deployment correlates with the start of errors.
 5. Correlate with other AMC alarms — if `FrontendLambdaErrorsAlarm` or `FrontendLambdaLogErrorAlarm` are also firing, the root cause is likely in the Lambda itself.
 
-### FrontendApiGatewayTrafficAnomalyAlarm
-
-**What it means:** The Frontend API Gateway is receiving significantly less traffic than the ML-modelled baseline for the time of day and day of week. This may indicate an upstream issue preventing users from reaching AMC, a DNS or routing problem, or a significant drop in user activity.
-
-**Investigation steps:**
-
-1. Check the `amc-dashboard` CloudWatch dashboard for an overview of request counts and compare against typical patterns.
-2. Check for any AWS regional service issues affecting API Gateway or CloudFront.
-3. Check upstream services (Auth, Home) for availability issues that may be preventing users from reaching AMC.
-4. Check DNS and routing — verify the CloudFront distribution and API Gateway domain are resolving correctly.
-5. Check whether a recent deployment correlates with the start of the traffic drop.
-6. Consider whether the drop may be expected (e.g. a planned maintenance window or a known reduction in upstream traffic).
-
 ### FrontendLambdaErrorsAlarm
 
 **What it means:** The Frontend Lambda function is producing invocation errors (unhandled exceptions or timeouts).
@@ -112,14 +97,3 @@ These alarms may indicate a P3 incident. Out-of-hours escalation and support is 
 4. Check whether the errors correlate with a specific route or journey step.
 5. Check downstream service health (Auth, Home, external APIs).
 6. Check whether a recent deployment correlates with the start of errors.
-
-### FrontendLambdaColdStartDurationAnomalyAlarm
-
-**What it means:** The p90 cold start duration (`InitDuration`) of the Frontend Lambda has exceeded the anomaly detection band — i.e. it is significantly higher than the ML-modelled baseline. This may indicate a dependency being initialised during cold starts is slower than usual, or that a recent deployment has increased initialisation time.
-
-**Investigation steps:**
-
-1. Check the `amc-dashboard` CloudWatch dashboard — the "Frontend lambda cold start duration (p90) in milliseconds" widget shows the trend over time.
-2. Check whether a recent deployment correlates with the increase — a larger bundle size or new initialisation-time dependencies can increase cold start duration.
-3. Check Lambda metrics for memory pressure or CPU throttling which could slow initialisation.
-4. If cold start durations are consistently elevated after a deployment, consider whether the change can be optimised to reduce initialisation work.
