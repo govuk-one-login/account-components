@@ -304,6 +304,10 @@ Globals:
           - Fn::ImportValue: !Sub ${VpcStackName}-PrivateSubnetIdC
       SecurityGroupIds:
         - Fn::ImportValue: !Sub ${VpcStackName}-AWSServicesEndpointSecurityGroupId
+    LoggingConfig:
+      LogFormat: JSON
+      ApplicationLogLevel:
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, LambdaLogLevel]
     Timeout: 10
     MemorySize: 1769 # so that we get ~1 VCPU
     Architectures:
@@ -996,6 +1000,7 @@ Resources:
       DeploymentPreference:
         Alarms:
           - !Ref NotificationsServiceFunctionSuccessRate
+          - !Ref NotificationsServiceLambdaLogErrorAlarm
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -1041,7 +1046,7 @@ Resources:
   NotificationsServiceLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+      Namespace: AWS/Lambda
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
@@ -1128,7 +1133,7 @@ Resources:
         - Id: errors
           MetricStat:
             Metric:
-              Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+              Namespace: AWS/Lambda
               MetricName: Errors
               Dimensions:
                 - Name: FunctionName
@@ -1139,7 +1144,7 @@ Resources:
         - Id: invocations
           MetricStat:
             Metric:
-              Namespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
+              Namespace: AWS/Lambda
               MetricName: Invocations
               Dimensions:
                 - Name: FunctionName
@@ -1148,7 +1153,7 @@ Resources:
             Stat: Sum
           ReturnData: false
         - Id: successRate
-          Expression: "1 - (errors / invocations)"
+          Expression: "IF(invocations > 0, 1 - (errors / invocations))"
           Label: "Success Rate"
           ReturnData: true
       Threshold: 0.95
@@ -1161,7 +1166,6 @@ Resources:
   NotificationsQueueProcessingTooSlow:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      ActionsEnabled: true
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
       ComparisonOperator: GreaterThanThreshold
@@ -1179,7 +1183,6 @@ Resources:
   NotificationsDLQHasMessages:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      ActionsEnabled: true
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
       ComparisonOperator: GreaterThanThreshold
@@ -1301,7 +1304,6 @@ Resources:
   TxMASQSProducerAuditEventQueueProcessingTooSlow:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      ActionsEnabled: true
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
       ComparisonOperator: GreaterThanThreshold
@@ -1319,7 +1321,6 @@ Resources:
   TxMAAuditEventDeadLetterQueueHasMessages:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      ActionsEnabled: true
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
       ComparisonOperator: GreaterThanThreshold
@@ -1341,8 +1342,8 @@ Resources:
       MetricName: ClaimedAccountConcurrency
       Statistic: Maximum
       Period: 60
-      EvaluationPeriods: 10
-      DatapointsToAlarm: 10
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
       Threshold: 900
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
@@ -1380,7 +1381,7 @@ Resources:
   ApiApiGateway:
     Type: AWS::Serverless::Api
     Properties:
-      Description: Account Components API
+      Name: !Sub "${AWS::StackName}-api"
       StageName: !Ref ApiStageName
       AlwaysDeploy: true
       DisableExecuteApiEndpoint: false
@@ -1449,7 +1450,7 @@ Resources:
       DefinitionBody:
         openapi: 3.0.3
         info:
-          title: Account Components API
+          title: !Sub "${AWS::StackName}-api"
           version: 1.0.0
         paths:
           /healthcheck:
@@ -1576,12 +1577,6 @@ Resources:
   ApiHealthcheckLambda:
     Type: AWS::Serverless::Function
     Properties:
-      DeploymentPreference:
-        Alarms:
-          - !Ref ApiHealthcheckLambdaErrorsAlarm
-          - !Ref ApiHealthcheckLambdaThrottlesAlarm
-          - !Ref ApiHealthcheckLambdaAvailabilityAlarm
-          - !Ref ApiHealthcheckLambdaLogErrorAlarm
       LoggingConfig:
         LogGroup: !Ref ApiHealthcheckLambdaLogGroup
       Handler: healthcheck.handler
@@ -1627,7 +1622,6 @@ Resources:
       DeploymentPreference:
         Alarms:
           - !Ref ApiTokenLambdaErrorsAlarm
-          - !Ref ApiTokenLambdaThrottlesAlarm
           - !Ref ApiTokenLambdaAvailabilityAlarm
           - !Ref ApiTokenLambdaLogErrorAlarm
       ProvisionedConcurrencyConfig:
@@ -1703,7 +1697,6 @@ Resources:
       DeploymentPreference:
         Alarms:
           - !Ref ApiJourneyOutcomeLambdaErrorsAlarm
-          - !Ref ApiJourneyOutcomeLambdaThrottlesAlarm
           - !Ref ApiJourneyOutcomeLambdaAvailabilityAlarm
           - !Ref ApiJourneyOutcomeLambdaLogErrorAlarm
       ProvisionedConcurrencyConfig:
@@ -1788,7 +1781,7 @@ Resources:
       MetricName: 5XXError
       Dimensions:
         - Name: ApiName
-          Value: !Ref ApiApiGateway
+          Value: !Sub "${AWS::StackName}-api"
       Statistic: Sum
       Period: 300
       EvaluationPeriods: 1
@@ -1808,146 +1801,12 @@ Resources:
       MetricName: Latency
       Dimensions:
         - Name: ApiName
-          Value: !Ref ApiApiGateway
+          Value: !Sub "${AWS::StackName}-api"
       Statistic: Average
       Period: 300
-      EvaluationPeriods: 2
-      Threshold: 5000
-      ComparisonOperator: GreaterThanThreshold
-      TreatMissingData: notBreaching
-      AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
-
-  ApiHealthcheckLambdaErrorsAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
-      MetricName: Errors
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref ApiHealthcheckLambda
-      Statistic: Sum
-      Period: 60
       EvaluationPeriods: 3
-      DatapointsToAlarm: 3
-      Threshold: 3
+      Threshold: 3000
       ComparisonOperator: GreaterThanThreshold
-      TreatMissingData: notBreaching
-      AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
-
-  ApiHealthcheckLambdaThrottlesAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
-      MetricName: Throttles
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref ApiHealthcheckLambda
-      Statistic: Sum
-      Period: 60
-      EvaluationPeriods: 5
-      DatapointsToAlarm: 5
-      Threshold: 0
-      ComparisonOperator: GreaterThanThreshold
-      TreatMissingData: notBreaching
-      AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
-
-  ApiHealthcheckLambdaDurationAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
-      MetricName: Duration
-      Dimensions:
-        - Name: FunctionName
-          Value: !Ref ApiHealthcheckLambda
-      ExtendedStatistic: p90
-      Period: 60
-      EvaluationPeriods: 15
-      DatapointsToAlarm: 15
-      Threshold: 1000
-      ComparisonOperator: GreaterThanThreshold
-      TreatMissingData: notBreaching
-      AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
-
-  ApiHealthcheckLambdaLogErrorMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiHealthcheckLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
-          MetricName: ErrorAndCriticalLogCount
-          MetricValue: "1"
-          DefaultValue: 0
-
-  ApiHealthcheckLambdaLogErrorAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
-      MetricName: ErrorAndCriticalLogCount
-      Statistic: Sum
-      Period: 60
-      EvaluationPeriods: 3
-      DatapointsToAlarm: 3
-      Threshold: 3
-      ComparisonOperator: GreaterThanThreshold
-      TreatMissingData: notBreaching
-      AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
-
-  ApiHealthcheckLambda5XXResponseMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiHealthcheckLambdaLogGroup
-      FilterPattern: '{ $.message = "Response" && $.statusCode >= 500 }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
-          MetricName: 5XXResponseCount
-          MetricValue: "1"
-          DefaultValue: 0
-
-  ApiHealthcheckLambdaResponseCountMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiHealthcheckLambdaLogGroup
-      FilterPattern: '{ $.message = "Response" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
-          MetricName: ResponseCount
-          MetricValue: "1"
-          DefaultValue: 0
-
-  ApiHealthcheckLambdaAvailabilityAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Properties:
-      Metrics:
-        - Id: errors
-          MetricStat:
-            Metric:
-              Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
-              MetricName: 5XXResponseCount
-            Period: 60
-            Stat: Sum
-          ReturnData: false
-        - Id: total
-          MetricStat:
-            Metric:
-              Namespace: !Sub "${AWS::StackName}/ApiHealthcheckLambda"
-              MetricName: ResponseCount
-            Period: 60
-            Stat: Sum
-          ReturnData: false
-        - Id: availability
-          Expression: "1 - (errors / total)"
-          Label: "Availability"
-          ReturnData: true
-      Threshold: 0.999
-      ComparisonOperator: LessThanThreshold
-      EvaluationPeriods: 3
-      DatapointsToAlarm: 3
       TreatMissingData: notBreaching
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
@@ -1956,7 +1815,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmDescription: "AMC token lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
-      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+      Namespace: AWS/Lambda
       MetricName: Errors
       Dimensions:
         - Name: FunctionName
@@ -1977,7 +1836,7 @@ Resources:
   ApiTokenLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+      Namespace: AWS/Lambda
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
@@ -1995,7 +1854,7 @@ Resources:
   ApiTokenLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+      Namespace: AWS/Lambda
       MetricName: Duration
       Dimensions:
         - Name: FunctionName
@@ -2010,20 +1869,27 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  ApiTokenLambdaColdStartInitDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.type = "platform.report" && $.record.metrics.initDurationMs > 0 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+          MetricName: ColdStartInitDurationMs
+          MetricValue: $.record.metrics.initDurationMs
+          Unit: Milliseconds
+
   ApiTokenLambdaColdStartDurationAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
-    Condition: IsProduction
     Properties:
       AlarmDescription: "AMC token lambda cold start durations have increased significantly above what is expected. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Metrics:
         - Id: initDuration
           MetricStat:
             Metric:
-              Namespace: AWS/Lambda
-              MetricName: InitDuration
-              Dimensions:
-                - Name: FunctionName
-                  Value: !Ref ApiTokenLambda
+              Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+              MetricName: ColdStartInitDurationMs
             Period: 300
             Stat: p90
           ReturnData: true
@@ -2032,12 +1898,15 @@ Resources:
           ReturnData: true
       ComparisonOperator: GreaterThanUpperThreshold
       ThresholdMetricId: band
-      EvaluationPeriods: 3
-      DatapointsToAlarm: 3
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
       TreatMissingData: notBreaching
       ActionsEnabled: false
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+          - !Ref AWS::NoValue
 
   ApiTokenLambdaLogWarnByContextMetricFilter:
     Type: AWS::Logs::MetricFilter
@@ -2114,17 +1983,6 @@ Resources:
           - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiTokenLambda4XXAndAboveResponseMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiTokenLambdaLogGroup
-      FilterPattern: '{ $.message = "Response" && $.statusCode >= 400 }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
-          MetricName: 4XXAndAboveResponseCount
-          MetricValue: "1"
-          DefaultValue: 0
-
   ApiTokenLambda5XXResponseMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -2168,7 +2026,7 @@ Resources:
             Stat: Sum
           ReturnData: false
         - Id: availability
-          Expression: "1 - (errors / total)"
+          Expression: "IF(total > 0, 1 - (errors / total))"
           Label: "Availability"
           ReturnData: true
       Threshold: 0.999
@@ -2179,36 +2037,11 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiTokenLambdaResponseStatusCodeAnomalyAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Condition: IsProduction
-    Properties:
-      Metrics:
-        - Id: errorResponseCount
-          MetricStat:
-            Metric:
-              Namespace: !Sub "${AWS::StackName}/ApiTokenLambda"
-              MetricName: 4XXAndAboveResponseCount
-            Period: 300
-            Stat: Sum
-          ReturnData: true
-        - Id: band
-          Expression: ANOMALY_DETECTION_BAND(errorResponseCount, 2)
-          ReturnData: true
-      ComparisonOperator: GreaterThanUpperThreshold
-      ThresholdMetricId: band
-      EvaluationPeriods: 3
-      DatapointsToAlarm: 3
-      TreatMissingData: notBreaching
-      ActionsEnabled: false
-      AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
-
   ApiJourneyOutcomeLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmDescription: "AMC journey outcome lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
-      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+      Namespace: AWS/Lambda
       MetricName: Errors
       Dimensions:
         - Name: FunctionName
@@ -2229,7 +2062,7 @@ Resources:
   ApiJourneyOutcomeLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+      Namespace: AWS/Lambda
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
@@ -2247,7 +2080,7 @@ Resources:
   ApiJourneyOutcomeLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+      Namespace: AWS/Lambda
       MetricName: Duration
       Dimensions:
         - Name: FunctionName
@@ -2262,20 +2095,27 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  ApiJourneyOutcomeLambdaColdStartInitDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.type = "platform.report" && $.record.metrics.initDurationMs > 0 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+          MetricName: ColdStartInitDurationMs
+          MetricValue: $.record.metrics.initDurationMs
+          Unit: Milliseconds
+
   ApiJourneyOutcomeLambdaColdStartDurationAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
-    Condition: IsProduction
     Properties:
       AlarmDescription: "AMC journey outcome lambda cold start durations have increased significantly above what is expected. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Metrics:
         - Id: initDuration
           MetricStat:
             Metric:
-              Namespace: AWS/Lambda
-              MetricName: InitDuration
-              Dimensions:
-                - Name: FunctionName
-                  Value: !Ref ApiJourneyOutcomeLambda
+              Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+              MetricName: ColdStartInitDurationMs
             Period: 300
             Stat: p90
           ReturnData: true
@@ -2284,12 +2124,15 @@ Resources:
           ReturnData: true
       ComparisonOperator: GreaterThanUpperThreshold
       ThresholdMetricId: band
-      EvaluationPeriods: 3
-      DatapointsToAlarm: 3
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
       TreatMissingData: notBreaching
       ActionsEnabled: false
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+          - !Ref AWS::NoValue
 
   ApiJourneyOutcomeLambdaLogWarnByContextMetricFilter:
     Type: AWS::Logs::MetricFilter
@@ -2366,17 +2209,6 @@ Resources:
           - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiJourneyOutcomeLambda4XXAndAboveResponseMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
-      FilterPattern: '{ $.message = "Response" && $.statusCode >= 400 }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
-          MetricName: 4XXAndAboveResponseCount
-          MetricValue: "1"
-          DefaultValue: 0
-
   ApiJourneyOutcomeLambda5XXResponseMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -2420,7 +2252,7 @@ Resources:
             Stat: Sum
           ReturnData: false
         - Id: availability
-          Expression: "1 - (errors / total)"
+          Expression: "IF(total > 0, 1 - (errors / total))"
           Label: "Availability"
           ReturnData: true
       Threshold: 0.999
@@ -2428,31 +2260,6 @@ Resources:
       EvaluationPeriods: 3
       DatapointsToAlarm: 3
       TreatMissingData: notBreaching
-      AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
-
-  ApiJourneyOutcomeLambdaResponseStatusCodeAnomalyAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Condition: IsProduction
-    Properties:
-      Metrics:
-        - Id: errorResponseCount
-          MetricStat:
-            Metric:
-              Namespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
-              MetricName: 4XXAndAboveResponseCount
-            Period: 300
-            Stat: Sum
-          ReturnData: true
-        - Id: band
-          Expression: ANOMALY_DETECTION_BAND(errorResponseCount, 2)
-          ReturnData: true
-      ComparisonOperator: GreaterThanUpperThreshold
-      ThresholdMetricId: band
-      EvaluationPeriods: 3
-      DatapointsToAlarm: 3
-      TreatMissingData: notBreaching
-      ActionsEnabled: false
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
@@ -2558,6 +2365,7 @@ Resources:
   FrontendApiGateway:
     Type: AWS::Serverless::Api
     Properties:
+      Name: !Sub "${AWS::StackName}-frontend"
       Description: Account Components Frontend API
       StageName: !Ref Environment
       AlwaysDeploy: true
@@ -2625,7 +2433,6 @@ Resources:
       DeploymentPreference:
         Alarms:
           - !Ref FrontendLambdaErrorsAlarm
-          - !Ref FrontendLambdaThrottlesAlarm
           - !Ref FrontendLambdaAvailabilityAlarm
           - !Ref FrontendLambdaLogErrorAlarm
       ProvisionedConcurrencyConfig:
@@ -2805,7 +2612,7 @@ Resources:
       MetricName: 5XXError
       Dimensions:
         - Name: ApiName
-          Value: !Ref FrontendApiGateway
+          Value: !Sub "${AWS::StackName}-frontend"
       Statistic: Sum
       Period: 300
       EvaluationPeriods: 1
@@ -2825,11 +2632,11 @@ Resources:
       MetricName: Latency
       Dimensions:
         - Name: ApiName
-          Value: !Ref FrontendApiGateway
+          Value: !Sub "${AWS::StackName}-frontend"
       Statistic: Average
       Period: 300
-      EvaluationPeriods: 2
-      Threshold: 5000
+      EvaluationPeriods: 3
+      Threshold: 3000
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
@@ -2839,7 +2646,7 @@ Resources:
     Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmDescription: "AMC frontend lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
-      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+      Namespace: AWS/Lambda
       MetricName: Errors
       Dimensions:
         - Name: FunctionName
@@ -2860,7 +2667,7 @@ Resources:
   FrontendLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+      Namespace: AWS/Lambda
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
@@ -2956,17 +2763,6 @@ Resources:
           - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  FrontendLambda4XXAndAboveResponseMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref FrontendLambdaLogGroup
-      FilterPattern: '{ $.message = "Response" && $.statusCode >= 400 }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
-          MetricName: 4XXAndAboveResponseCount
-          MetricValue: "1"
-          DefaultValue: 0
-
   FrontendLambda5XXResponseMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -3010,7 +2806,7 @@ Resources:
             Stat: Sum
           ReturnData: false
         - Id: availability
-          Expression: "1 - (errors / total)"
+          Expression: "IF(total > 0, 1 - (errors / total))"
           Label: "Availability"
           ReturnData: true
       Threshold: 0.999
@@ -3021,35 +2817,10 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  FrontendLambdaResponseStatusCodeAnomalyAlarm:
-    Type: AWS::CloudWatch::Alarm
-    Condition: IsProduction
-    Properties:
-      Metrics:
-        - Id: errorResponseCount
-          MetricStat:
-            Metric:
-              Namespace: !Sub "${AWS::StackName}/FrontendLambda"
-              MetricName: 4XXAndAboveResponseCount
-            Period: 300
-            Stat: Sum
-          ReturnData: true
-        - Id: band
-          Expression: ANOMALY_DETECTION_BAND(errorResponseCount, 2)
-          ReturnData: true
-      ComparisonOperator: GreaterThanUpperThreshold
-      ThresholdMetricId: band
-      EvaluationPeriods: 3
-      DatapointsToAlarm: 3
-      TreatMissingData: notBreaching
-      ActionsEnabled: false
-      AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
-
   FrontendLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+      Namespace: AWS/Lambda
       MetricName: Duration
       Dimensions:
         - Name: FunctionName
@@ -3064,20 +2835,27 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  FrontendLambdaColdStartInitDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.type = "platform.report" && $.record.metrics.initDurationMs > 0 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: ColdStartInitDurationMs
+          MetricValue: $.record.metrics.initDurationMs
+          Unit: Milliseconds
+
   FrontendLambdaColdStartDurationAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
-    Condition: IsProduction
     Properties:
       AlarmDescription: "AMC frontend lambda cold start durations have increased significantly above what is expected. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
       Metrics:
         - Id: initDuration
           MetricStat:
             Metric:
-              Namespace: AWS/Lambda
-              MetricName: InitDuration
-              Dimensions:
-                - Name: FunctionName
-                  Value: !Ref FrontendLambda
+              Namespace: !Sub "${AWS::StackName}/FrontendLambda"
+              MetricName: ColdStartInitDurationMs
             Period: 300
             Stat: p90
           ReturnData: true
@@ -3086,16 +2864,49 @@ Resources:
           ReturnData: true
       ComparisonOperator: GreaterThanUpperThreshold
       ThresholdMetricId: band
-      EvaluationPeriods: 3
-      DatapointsToAlarm: 3
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
       TreatMissingData: notBreaching
       ActionsEnabled: false
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+          - !Ref AWS::NoValue
 
-  FrontendApiGatewayTrafficAnomalyAlarm:
+  FrontendApiGatewayHighTrafficAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
-    Condition: IsProduction
+    Properties:
+      AlarmDescription: "AMC frontend API Gateway traffic has risen significantly above expected levels. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
+      Metrics:
+        - Id: traffic
+          MetricStat:
+            Metric:
+              Namespace: AWS/ApiGateway
+              MetricName: Count
+              Dimensions:
+                - Name: ApiName
+                  Value: !Sub "${AWS::StackName}-frontend"
+            Period: 300
+            Stat: Sum
+          ReturnData: true
+        - Id: band
+          Expression: ANOMALY_DETECTION_BAND(traffic, 2)
+          ReturnData: true
+      ComparisonOperator: GreaterThanUpperThreshold
+      ThresholdMetricId: band
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      TreatMissingData: notBreaching
+      ActionsEnabled: false
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+          - !Ref AWS::NoValue
+
+  FrontendApiGatewayLowTrafficAnomalyAlarm:
+    Type: AWS::CloudWatch::Alarm
     Properties:
       AlarmDescription: "AMC frontend API Gateway traffic has dropped significantly below expected levels. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
       Metrics:
@@ -3106,7 +2917,7 @@ Resources:
               MetricName: Count
               Dimensions:
                 - Name: ApiName
-                  Value: !Ref FrontendApiGateway
+                  Value: !Sub "${AWS::StackName}-frontend"
             Period: 300
             Stat: Sum
           ReturnData: true
@@ -3115,12 +2926,15 @@ Resources:
           ReturnData: true
       ComparisonOperator: LessThanLowerThreshold
       ThresholdMetricId: band
-      EvaluationPeriods: 3
-      DatapointsToAlarm: 3
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
       TreatMissingData: notBreaching
       ActionsEnabled: false
       AlarmActions:
-        - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+          - !Ref AWS::NoValue
 
   StubsMockClientECPrivateKeySSM:
     Type: AWS::SSM::Parameter
@@ -3762,7 +3576,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter @type = \"REPORT\" | fields coalesce(@initDuration, 0) as InitDuration | stats pct(InitDuration + @duration, 90) as P90TotalDuration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
                 "view": "bar",
                 "title": "Frontend lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
@@ -3773,7 +3587,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter @type = \"REPORT\" | stats (count(@initDuration)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
                 "view": "bar",
                 "title": "Frontend lambda cold start rate (%)",
                 "region": "${AWS::Region}"
@@ -3784,7 +3598,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter @type = \"REPORT\" | stats pct(@initDuration, 90) as ColdStartP90Duration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
                 "view": "bar",
                 "title": "Frontend lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
@@ -3810,7 +3624,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter @type = \"REPORT\" | fields coalesce(@initDuration, 0) as InitDuration | stats pct(InitDuration + @duration, 90) as P90TotalDuration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
                 "view": "bar",
                 "title": "Token lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
@@ -3821,7 +3635,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter @type = \"REPORT\" | stats (count(@initDuration)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
                 "view": "bar",
                 "title": "Token lambda cold start rate (%)",
                 "region": "${AWS::Region}"
@@ -3832,7 +3646,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter @type = \"REPORT\" | stats pct(@initDuration, 90) as ColdStartP90Duration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
                 "view": "bar",
                 "title": "Token lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
@@ -3858,7 +3672,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter @type = \"REPORT\" | fields coalesce(@initDuration, 0) as InitDuration | stats pct(InitDuration + @duration, 90) as P90TotalDuration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
                 "view": "bar",
                 "title": "Journey outcome lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
@@ -3869,7 +3683,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter @type = \"REPORT\" | stats (count(@initDuration)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
                 "view": "bar",
                 "title": "Journey outcome lambda cold start rate (%)",
                 "region": "${AWS::Region}"
@@ -3880,7 +3694,7 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter @type = \"REPORT\" | stats pct(@initDuration, 90) as ColdStartP90Duration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
                 "view": "bar",
                 "title": "Journey outcome lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
