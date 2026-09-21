@@ -311,7 +311,7 @@ describe("jsonApiClient", () => {
       type ErrorType = Extract<Result, { success: false }>["error"];
 
       // Verify all expected error strings are assignable
-      const _valid: ErrorType[] = [
+      [
         "bad_request",
         "not_found",
         "UnknownError",
@@ -320,14 +320,12 @@ describe("jsonApiClient", () => {
         "ErrorParsingErrorResponseBodyJson",
         "ErrorValidatingErrorResponseBody",
         "UnknownErrorResponse",
-      ];
-      void _valid;
+      ] satisfies ErrorType[];
 
       // If error types widen to `string`, the @ts-expect-error becomes unused
       // and there will be a type error, catching the regression.
       // @ts-expect-error - "not_a_real_error" should not be assignable to the narrow union
-      const _invalid: ErrorType = "not_a_real_error";
-      void _invalid;
+      "not_a_real_error" satisfies ErrorType;
 
       expect(true).toBe(true);
     });
