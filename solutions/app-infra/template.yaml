@@ -1805,7 +1805,8 @@ Resources:
       Statistic: Average
       Period: 300
       EvaluationPeriods: 3
-      Threshold: 500
+      # Threshold is higher in lower environments because very low traffic means cold starts are much more likely
+      Threshold: !If [IsProduction, 500, 1500]
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
@@ -2636,7 +2637,8 @@ Resources:
       Statistic: Average
       Period: 300
       EvaluationPeriods: 3
-      Threshold: 500
+      # Threshold is higher in lower environments because very low traffic means cold starts are much more likely
+      Threshold: !If [IsProduction, 500, 1500]
       ComparisonOperator: GreaterThanThreshold
       TreatMissingData: notBreaching
       AlarmActions:
