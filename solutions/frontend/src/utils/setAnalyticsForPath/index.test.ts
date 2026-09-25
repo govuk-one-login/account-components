@@ -65,11 +65,11 @@ describe("setAnalyticsForPath", () => {
   let reply: Partial<FastifyReply>;
 
   beforeEach(() => {
-    reply = {};
+    reply = { globals: {} };
   });
 
   it("should set analytics on reply when path in paths.journeys.others has analytics defined", async () => {
-    const request = { url: "/journey/other-with-analytics", session: {} };
+    const request = { url: "/journey/other-with-analytics" };
 
     await setAnalyticsForPath(
       request as unknown as FastifyRequest,
@@ -80,7 +80,7 @@ describe("setAnalyticsForPath", () => {
   });
 
   it("should set analytics on reply when path in paths.others has analytics defined", async () => {
-    const request = { url: "/with-analytics", session: {} };
+    const request = { url: "/with-analytics" };
 
     await setAnalyticsForPath(
       request as unknown as FastifyRequest,
@@ -94,7 +94,7 @@ describe("setAnalyticsForPath", () => {
   });
 
   it("should not set analytics on reply when path in paths.others has no analytics defined", async () => {
-    const request = { url: "/without-analytics", session: {} };
+    const request = { url: "/without-analytics" };
 
     await setAnalyticsForPath(
       request as unknown as FastifyRequest,
@@ -105,7 +105,7 @@ describe("setAnalyticsForPath", () => {
   });
 
   it("should set analytics on reply when journey path has analytics defined", async () => {
-    const request = { url: "/journey/with-analytics", session: {} };
+    const request = { url: "/journey/with-analytics" };
 
     await setAnalyticsForPath(
       request as unknown as FastifyRequest,
@@ -119,7 +119,7 @@ describe("setAnalyticsForPath", () => {
   });
 
   it("should not set analytics on reply when journey path has no analytics defined", async () => {
-    const request = { url: "/journey/without-analytics", session: {} };
+    const request = { url: "/journey/without-analytics" };
 
     await setAnalyticsForPath(
       request as unknown as FastifyRequest,
@@ -130,7 +130,7 @@ describe("setAnalyticsForPath", () => {
   });
 
   it("should not set analytics on reply when path does not match any known path", async () => {
-    const request = { url: "/unknown-path", session: {} };
+    const request = { url: "/unknown-path" };
 
     await setAnalyticsForPath(
       request as unknown as FastifyRequest,
@@ -141,7 +141,7 @@ describe("setAnalyticsForPath", () => {
   });
 
   it("should match path ignoring query parameters", async () => {
-    const request = { url: "/journey/query-params?foo=bar", session: {} };
+    const request = { url: "/journey/query-params?foo=bar" };
 
     await setAnalyticsForPath(
       request as unknown as FastifyRequest,
@@ -151,13 +151,11 @@ describe("setAnalyticsForPath", () => {
     expect(reply.analytics).toStrictEqual({ taxonomyLevel1: "accounts" });
   });
 
-  it("should resolve split test contentId from session bucket assignment", async () => {
-    const request = {
-      url: "/journey/split-test",
-      session: {
-        splitTestBucketAssignments: { testSplitTest: "bucket1" },
-      },
-    };
+  it("should resolve split test contentId from reply.globals bucket assignment", async () => {
+    const request = { url: "/journey/split-test" };
+    reply.globals = {
+      splitTestBucketAssignments: { testSplitTest: "bucket1" },
+    } as unknown as FastifyReply["globals"];
 
     await setAnalyticsForPath(
       request as unknown as FastifyRequest,
@@ -170,8 +168,8 @@ describe("setAnalyticsForPath", () => {
     });
   });
 
-  it("should throw when split test path has no splitTestBucketAssignments in session", async () => {
-    const request = { url: "/journey/split-test", session: {} };
+  it("should throw when split test path has no splitTestBucketAssignments in reply.globals", async () => {
+    const request = { url: "/journey/split-test" };
 
     await expect(
       setAnalyticsForPath(

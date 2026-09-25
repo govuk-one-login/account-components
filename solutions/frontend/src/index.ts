@@ -40,6 +40,7 @@ import { simpleUnsuccessfulJourneyActionErrors } from "./journeys/utils/journeyA
 import { setAnalyticsForPath } from "./utils/setAnalyticsForPath/index.js";
 import { FastifyLogController } from "../../commons/utils/fastify/logController/index.js";
 import { getHelmetConfig } from "./utils/getHelmetConfig.js";
+import { getAndSetSplitTestBucketAssignments } from "./utils/splitTests.js";
 
 await configureI18n({
   [Lang.English]: {
@@ -94,6 +95,10 @@ export const initFrontend = async function () {
       isAppChannel:
         request.cookies[channelCookieName] === "strategic_app" ||
         request.cookies[channelCookieName] === "generic_app",
+      splitTestBucketAssignments: getAndSetSplitTestBucketAssignments(
+        request,
+        reply,
+      ),
     };
   });
   fastify.addHook("onRequest", setAnalyticsForPath);

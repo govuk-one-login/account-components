@@ -28,10 +28,7 @@ export const startSessionAndGoToJourney = async (
   state?: string,
 ) => {
   try {
-    const splitTestBucketAssignments =
-      request.session.splitTestBucketAssignments;
     await request.session.regenerate();
-    request.session.splitTestBucketAssignments = splitTestBucketAssignments;
 
     const now = Math.floor(Date.now() / 1000);
     let sessionExpiry = now + 1800; // Default session length of 30 mins

@@ -1,5 +1,23 @@
+import type { FastifyReply, FastifyRequest } from "fastify";
 import { describe, expect, it, vi } from "vitest";
-import { getSplitTestBucketAssignments, splitTests } from "./splitTests.js";
+import {
+  getAndSetSplitTestBucketAssignments,
+  splitTests,
+} from "./splitTests.js";
+import { logger } from "../../../commons/utils/logger/index.js";
+
+// @ts-expect-error
+vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
+  logger: { appendKeys: vi.fn() },
+}));
+
+const makeRequest = (cookieValue?: string): FastifyRequest =>
+  ({
+    cookies: { splitTestBucketAssignments: cookieValue },
+  }) as unknown as FastifyRequest;
+
+const makeReply = (): FastifyReply =>
+  ({ setCookie: vi.fn() }) as unknown as FastifyReply;
 
 describe("splitTests", () => {
   it.each(Object.entries(splitTests))(
@@ -15,7 +33,7 @@ describe("splitTests", () => {
   );
 });
 
-describe("getSplitTestBucketAssignments", () => {
+describe("getAndSetSplitTestBucketAssignments", () => {
   it.each([
     [0, "bucket1"],
     [0.29, "bucket1"],
@@ -31,9 +49,84 @@ describe("getSplitTestBucketAssignments", () => {
     (random, expectedBucket) => {
       vi.spyOn(Math, "random").mockReturnValue(random);
 
-      expect(getSplitTestBucketAssignments()).toStrictEqual({
+      expect(
+        getAndSetSplitTestBucketAssignments(makeRequest(), makeReply()),
+      ).toStrictEqual({
         testingJourneySplitTest: expectedBucket,
       });
     },
   );
+
+  it("uses valid bucket assignment from cookie over randomly assigned bucket", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
+    expect(
+      getAndSetSplitTestBucketAssignments(
+        makeRequest(JSON.stringify({ testingJourneySplitTest: "bucket3" })),
+        makeReply(),
+      ),
+    ).toStrictEqual({ testingJourneySplitTest: "bucket3" });
+  });
+
+  it("ignores invalid bucket value in cookie and uses randomly assigned bucket", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
+    expect(
+      getAndSetSplitTestBucketAssignments(
+        makeRequest(
+          JSON.stringify({ testingJourneySplitTest: "invalidBucket" }),
+        ),
+        makeReply(),
+      ),
+    ).toStrictEqual({ testingJourneySplitTest: "bucket1" });
+  });
+
+  it("ignores invalid cookie and uses randomly assigned bucket", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
+    expect(
+      getAndSetSplitTestBucketAssignments(
+        makeRequest("not-valid-json"),
+        makeReply(),
+      ),
+    ).toStrictEqual({ testingJourneySplitTest: "bucket1" });
+  });
+
+  it("sets the cookie when no cookie is present", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const reply = makeReply();
+
+    getAndSetSplitTestBucketAssignments(makeRequest(), reply);
+
+    expect(reply.setCookie).toHaveBeenCalledWith(
+      "splitTestBucketAssignments",
+      JSON.stringify({ testingJourneySplitTest: "bucket1" }),
+      expect.objectContaining({
+        httpOnly: true,
+        secure: true,
+        sameSite: "lax",
+        maxAge: 365 * 24 * 60 * 60,
+      }),
+    );
+  });
+
+  it("appends split test bucket assignments to the logger", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+
+    getAndSetSplitTestBucketAssignments(makeRequest(), makeReply());
+
+    expect(logger.appendKeys).toHaveBeenCalledWith({
+      splitTestBucketAssignments: { testingJourneySplitTest: "bucket1" },
+    });
+  });
+
+  it("does not set the cookie when it already matches the assignments", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const reply = makeReply();
+    const cookieValue = JSON.stringify({ testingJourneySplitTest: "bucket1" });
+
+    getAndSetSplitTestBucketAssignments(makeRequest(cookieValue), reply);
+
+    expect(reply.setCookie).not.toHaveBeenCalled();
+  });
 });

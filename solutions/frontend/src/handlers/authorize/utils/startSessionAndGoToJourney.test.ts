@@ -63,13 +63,7 @@ describe("startSessionAndGoToJourney", () => {
   it("redirects to testing journey path with default session expiry", async () => {
     const mockRegenerate = vi.fn().mockResolvedValue(undefined);
     const mockRedirect = vi.fn().mockReturnThis();
-    const mockSplitTestBucketAssignments = {
-      testingJourneySplitTest: "bucket1",
-    };
-    const mockSession = {
-      regenerate: mockRegenerate,
-      splitTestBucketAssignments: mockSplitTestBucketAssignments,
-    };
+    const mockSession = { regenerate: mockRegenerate };
 
     const request = { session: mockSession } as unknown as FastifyRequest;
     const reply = { redirect: mockRedirect } as unknown as FastifyReply;
@@ -88,9 +82,6 @@ describe("startSessionAndGoToJourney", () => {
     );
 
     expect(mockRegenerate).toHaveBeenCalledTimes(1);
-    expect(request.session.splitTestBucketAssignments).toBe(
-      mockSplitTestBucketAssignments,
-    );
     expect(request.session.claims).toBe(claims);
     expect(request.session.expires).toBe(1704110400 + 1800);
     expect(mockRedirect).toHaveBeenCalledWith("/testing-journey/step-1");
@@ -99,10 +90,7 @@ describe("startSessionAndGoToJourney", () => {
   it("redirects to account delete journey path", async () => {
     const mockRegenerate = vi.fn().mockResolvedValue(undefined);
     const mockRedirect = vi.fn().mockReturnThis();
-    const mockSession = {
-      regenerate: mockRegenerate,
-      splitTestBucketAssignments: undefined,
-    };
+    const mockSession = { regenerate: mockRegenerate };
 
     const request = { session: mockSession } as unknown as FastifyRequest;
     const reply = { redirect: mockRedirect } as unknown as FastifyReply;

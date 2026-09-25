@@ -10,7 +10,7 @@ const findAnalytics = (pathsMap: PathsMap, pathname: string) =>
   )?.analytics;
 
 const getAnalyticsConfig = (
-  sessionSplitTestBuckets: FastifyRequest["session"]["splitTestBucketAssignments"],
+  splitTestBucketAssignments: FastifyReply["globals"]["splitTestBucketAssignments"],
   analytics: NonNullable<ReturnType<typeof findAnalytics>>,
 ): FastifyReply["analytics"] => {
   const { contentId, ...analyticsWithoutContentId } = analytics;
@@ -22,9 +22,9 @@ const getAnalyticsConfig = (
     };
   }
 
-  assert.ok(sessionSplitTestBuckets);
+  assert.ok(splitTestBucketAssignments);
 
-  const bucket = sessionSplitTestBuckets[contentId[0]];
+  const bucket = splitTestBucketAssignments[contentId[0]];
   const splitTestContentId = contentId[1][bucket];
 
   return {
@@ -44,7 +44,7 @@ export const setAnalyticsForPath = async (
     findAnalytics(paths.others, url.pathname);
   if (analytics) {
     reply.analytics = getAnalyticsConfig(
-      request.session.splitTestBucketAssignments,
+      reply.globals.splitTestBucketAssignments,
       analytics,
     );
   }
@@ -55,7 +55,7 @@ export const setAnalyticsForPath = async (
       const analytics = findAnalytics(state as PathsMap, url.pathname);
       if (analytics) {
         reply.analytics = getAnalyticsConfig(
-          request.session.splitTestBucketAssignments,
+          reply.globals.splitTestBucketAssignments,
           analytics,
         );
         return;

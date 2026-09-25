@@ -50,6 +50,7 @@ declare module "fastify" {
       dynatraceRumUrl?: string | undefined;
       env?: string;
       fingerprintHash?: string;
+      splitTestBucketAssignments?: SplitTestBucketAssignments;
     };
     journeyStates?: {
       [Scope.testingJourney]?: Actor<typeof testingJourneyStateMachine>;
@@ -82,6 +83,5 @@ declare module "fastify" {
     journeyStateSnapshot?: AnyMachineSnapshot;
     journeyActions?: JourneyAction<JourneyActionName>[];
     completedJourneyOutcomeId?: string;
-    splitTestBucketAssignments?: SplitTestBucketAssignments | undefined;
   }
 }
