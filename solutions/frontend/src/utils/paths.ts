@@ -4,11 +4,29 @@ import { PasskeyCreateState } from "../journeys/utils/stateMachines/passkey-crea
 import { TestingJourneyState } from "../journeys/utils/stateMachines/testing-journey.js";
 import { Scope } from "../../../commons/utils/commonTypes.js";
 import { analyticsDefaults } from "./constants.js";
+import type { splitTests } from "./splitTests.js";
 
 export type PathsMap = Record<
   string,
-  { path: `/${string}`; analytics?: FastifyReply["analytics"] }
+  {
+    path: `/${string}`;
+    analytics?: Omit<FastifyReply["analytics"], "contentId"> & {
+      contentId?:
+        | NonNullable<FastifyReply["analytics"]>["contentId"]
+        | {
+            [Test in keyof typeof splitTests]: [
+              Test,
+              { [Bucket in keyof (typeof splitTests)[Test]]: string },
+            ];
+          }[keyof typeof splitTests];
+    };
+  }
 >;
+
+const testingJourneyAnalyticsDefaults: FastifyReply["analytics"] = {
+  ...analyticsDefaults,
+  taxonomyLevel2: "testing-journey",
+};
 
 const accountDeleteAnalyticsDefaults: FastifyReply["analytics"] = {
   ...analyticsDefaults,
@@ -27,14 +45,27 @@ export const paths = {
       [TestingJourneyState.passwordNotProvided]: {
         step1: {
           path: "/testing-journey/step-1",
+          analytics: {
+            ...testingJourneyAnalyticsDefaults,
+            contentId: [
+              "testingJourneySplitTest",
+              {
+                bucket1: "testingJourneySplitTest-bucket1-contentId",
+                bucket2: "testingJourneySplitTest-bucket2-contentId",
+                bucket3: "testingJourneySplitTest-bucket3-contentId",
+              },
+            ],
+          },
         },
         enterPassword: {
           path: "/testing-journey/enter-password",
+          analytics: testingJourneyAnalyticsDefaults,
         },
       },
       [TestingJourneyState.passwordProvided]: {
         confirm: {
           path: "/testing-journey/confirm",
+          analytics: testingJourneyAnalyticsDefaults,
         },
       },
     },
