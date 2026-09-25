@@ -39,7 +39,9 @@ export const setAnalyticsForPath = async (
 ) => {
   const url = new URL(request.url, "http://localhost");
 
-  const analytics = findAnalytics(paths.others, url.pathname);
+  const analytics =
+    findAnalytics(paths.others, url.pathname) ??
+    findAnalytics(paths.journeys.others, url.pathname);
   if (analytics) {
     reply.analytics = getAnalyticsConfig(
       request.session.splitTestBucketAssignments,
