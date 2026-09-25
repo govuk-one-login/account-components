@@ -12,7 +12,7 @@ import type {
   simpleUnsuccessfulJourneyActionErrors,
   JourneyActionName,
 } from "../../../frontend/src/journeys/utils/journeyActions.ts";
-
+import type { SplitTestBucketAssignments } from "../../../frontend/src/utils/splitTests.ts";
 declare module "fastify" {
   interface FastifyRequest {
     awsLambda?: {
@@ -82,5 +82,6 @@ declare module "fastify" {
     journeyStateSnapshot?: AnyMachineSnapshot;
     journeyActions?: JourneyAction<JourneyActionName>[];
     completedJourneyOutcomeId?: string;
+    splitTestBucketAssignments?: SplitTestBucketAssignments | undefined;
   }
 }
