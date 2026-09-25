@@ -59,11 +59,13 @@ export const paths = {
         },
         enterPassword: {
           path: "/testing-journey/enter-password",
+          analytics: testingJourneyAnalyticsDefaults,
         },
       },
       [TestingJourneyState.passwordProvided]: {
         confirm: {
           path: "/testing-journey/confirm",
+          analytics: testingJourneyAnalyticsDefaults,
         },
       },
     },
