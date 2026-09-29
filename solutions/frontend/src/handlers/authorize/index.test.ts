@@ -346,6 +346,7 @@ describe("getHandler", () => {
       secure: true,
       httpOnly: true,
       sameSite: "lax",
+      path: "/",
     });
     expect(result).toBe(mockReply);
   });
@@ -415,6 +416,7 @@ describe("getHandler", () => {
       secure: true,
       httpOnly: true,
       sameSite: "lax",
+      path: "/",
     });
     expect(metrics.addDimensions).toHaveBeenCalledWith({
       client_id: "test-client",

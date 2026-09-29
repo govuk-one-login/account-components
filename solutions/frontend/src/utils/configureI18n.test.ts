@@ -78,6 +78,7 @@ describe("configureI18n", () => {
         caches: ["cookie"],
         cookieSecure: false,
         cookieDomain: "account.gov.uk",
+        cookiePath: "/",
         cookieSameSite: "none",
       },
     });
