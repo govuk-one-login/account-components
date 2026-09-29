@@ -64,7 +64,7 @@ Mappings:
       UseCanary: false
       frontendUrl: https://manage.dev.account.gov.uk
       cacheHeaderMaxAge: 5
-      frontendDomain: manage.dev.account.gov.uk
+      amcRootDomain: manage.dev.account.gov.uk
       authFrontendUrl: https://signin.dev.account.gov.uk
       analyticsCookieDomain: dev.account.gov.uk
       ga4ContainerId: "GTM-KD86CMZ"
@@ -91,6 +91,7 @@ Mappings:
       stubsDomain: stubs.manage.dev.account.gov.uk
       rootDomain: account.gov.uk
       rootDomainWithEnv: dev.account.gov.uk
+      splitTestsCookieOverride: "1"
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
       authorizeEndpointUrl: https://manage.build.account.gov.uk/authorize
@@ -100,7 +101,7 @@ Mappings:
       UseCanary: false
       frontendUrl: https://manage.build.account.gov.uk
       cacheHeaderMaxAge: 5
-      frontendDomain: manage.build.account.gov.uk
+      amcRootDomain: manage.build.account.gov.uk
       authFrontendUrl: https://signin.build.account.gov.uk
       analyticsCookieDomain: build.account.gov.uk
       ga4ContainerId: "GTM-KD86CMZ"
@@ -127,6 +128,7 @@ Mappings:
       stubsDomain: stubs.manage.build.account.gov.uk
       rootDomain: account.gov.uk
       rootDomainWithEnv: build.account.gov.uk
+      splitTestsCookieOverride: "1"
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
       authorizeEndpointUrl: https://manage.staging.account.gov.uk/authorize
@@ -138,7 +140,7 @@ Mappings:
       UseCanary: true
       frontendUrl: https://manage.staging.account.gov.uk
       cacheHeaderMaxAge: 60
-      frontendDomain: manage.staging.account.gov.uk
+      amcRootDomain: manage.staging.account.gov.uk
       authFrontendUrl: https://signin.staging.account.gov.uk
       analyticsCookieDomain: staging.account.gov.uk
       ga4ContainerId: "GTM-KD86CMZ"
@@ -165,6 +167,7 @@ Mappings:
       stubsDomain: ""
       rootDomain: account.gov.uk
       rootDomainWithEnv: staging.account.gov.uk
+      splitTestsCookieOverride: "1"
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
       authorizeEndpointUrl: https://manage.integration.account.gov.uk/authorize
@@ -176,7 +179,7 @@ Mappings:
       UseCanary: true
       frontendUrl: https://manage.integration.account.gov.uk
       cacheHeaderMaxAge: 60
-      frontendDomain: manage.integration.account.gov.uk
+      amcRootDomain: manage.integration.account.gov.uk
       authFrontendUrl: https://signin.integration.account.gov.uk
       analyticsCookieDomain: integration.account.gov.uk
       ga4ContainerId: ""
@@ -203,6 +206,7 @@ Mappings:
       stubsDomain: ""
       rootDomain: account.gov.uk
       rootDomainWithEnv: integration.account.gov.uk
+      splitTestsCookieOverride: "0"
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist secret
       authorizeEndpointUrl: https://manage.account.gov.uk/authorize
@@ -214,7 +218,7 @@ Mappings:
       UseCanary: true
       frontendUrl: https://manage.account.gov.uk
       cacheHeaderMaxAge: 60
-      frontendDomain: manage.account.gov.uk
+      amcRootDomain: manage.account.gov.uk
       authFrontendUrl: https://signin.account.gov.uk
       analyticsCookieDomain: account.gov.uk
       ga4ContainerId: "GTM-K4PBJH3"
@@ -241,6 +245,7 @@ Mappings:
       stubsDomain: ""
       rootDomain: account.gov.uk
       rootDomainWithEnv: account.gov.uk
+      splitTestsCookieOverride: "0"
 
 Conditions:
   UseCodeSigning:
@@ -2303,7 +2308,7 @@ Resources:
     Type: AWS::ApiGateway::DomainName
     Properties:
       DomainName:
-        !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendDomain]
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, amcRootDomain]
       RegionalCertificateArn:
         Fn::ImportValue: certificate-CertificateARN
       EndpointConfiguration:
@@ -2321,7 +2326,7 @@ Resources:
             !FindInMap [
               EnvironmentConfiguration,
               !Ref Environment,
-              frontendDomain,
+              amcRootDomain,
             ]
       Type: A
       HostedZoneId:
@@ -2344,7 +2349,7 @@ Resources:
     Type: AWS::Route53::RecordSet
     Properties:
       Name:
-        !FindInMap [EnvironmentConfiguration, !Ref Environment, frontendDomain]
+        !FindInMap [EnvironmentConfiguration, !Ref Environment, amcRootDomain]
       Type: A
       HostedZoneId:
         Fn::ImportValue: hosted-zone-HostedZoneID
@@ -2551,6 +2556,12 @@ Resources:
             ]
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Ref JARRSAEncryptionKeyAlias
           REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
+          SPLIT_TESTS_COOKIE_OVERRIDE:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              splitTestsCookieOverride,
+            ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -3113,6 +3124,12 @@ Resources:
           API_BASE_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
           ROOT_DOMAIN:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
+          AMC_ROOT_DOMAIN:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              amcRootDomain,
+            ]
           NOTIFY_DONT_SEND_EMAILS_TO:
             !FindInMap [
               EnvironmentConfiguration,

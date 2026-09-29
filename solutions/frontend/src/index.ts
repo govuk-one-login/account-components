@@ -40,6 +40,7 @@ import { simpleUnsuccessfulJourneyActionErrors } from "./journeys/utils/journeyA
 import { setAnalyticsForPath } from "./utils/setAnalyticsForPath/index.js";
 import { FastifyLogController } from "../../commons/utils/fastify/logController/index.js";
 import { getHelmetConfig } from "./utils/getHelmetConfig.js";
+import { setSplitTestBucketAssignments } from "../../commons/utils/fastify/splitTests/index.js";
 
 await configureI18n({
   [Lang.English]: {
@@ -63,8 +64,9 @@ export const initFrontend = async function () {
 
   fastify.addHook("onRequest", removeTrailingSlash);
   fastify.addHook("onSend", (_request, reply) => addDefaultCaching(reply));
-
   fastify.register(fastifyCookie);
+  fastify.register(fastifyFormbody);
+  fastify.register(fastifyHelmet, getHelmetConfig());
   fastify.register(i18nextMiddlewarePlugin, { i18next });
   // @ts-expect-error
   fastify.addHook("onRequest", i18nextMiddlewareHandle(i18next));
@@ -96,7 +98,6 @@ export const initFrontend = async function () {
         request.cookies[channelCookieName] === "generic_app",
     };
   });
-  fastify.addHook("onRequest", setAnalyticsForPath);
   fastify.decorateReply("render", render);
 
   fastify.setNotFoundHandler(async function (request, reply) {
@@ -181,41 +182,46 @@ export const initFrontend = async function () {
     },
   });
 
-  fastify.get("/healthcheck", async function (_request, reply) {
-    await reply.send("ok");
-    return reply;
-  });
+  fastify.register(async (fastify) => {
+    fastify.register(fastifySession, await getSessionOptions());
+    fastify.addHook("onRequest", setSplitTestBucketAssignments);
+    fastify.addHook("onRequest", setAnalyticsForPath);
+    fastify.register(csrfProtection);
 
-  fastify.get("/robots.txt", async function (request, reply) {
-    return (await import("./handlers/robots.txt/index.js")).handler(
-      request,
-      reply,
+    fastify.get(
+      paths.others.healthcheck.path,
+      async function (_request, reply) {
+        await reply.send("ok");
+        return reply;
+      },
     );
-  });
 
-  fastify.get(
-    paths.others.authorizeError.path,
-    async function (request, reply) {
-      return (await import("./handlers/authorizeError/index.js")).handler(
+    fastify.get(
+      paths.others.robotsDotTxt.path,
+      async function (request, reply) {
+        return (await import("./handlers/robots.txt/index.js")).handler(
+          request,
+          reply,
+        );
+      },
+    );
+
+    fastify.get(
+      paths.others.authorizeError.path,
+      async function (request, reply) {
+        return (await import("./handlers/authorizeError/index.js")).handler(
+          request,
+          reply,
+        );
+      },
+    );
+
+    fastify.get(paths.others.pageExpired.path, async function (request, reply) {
+      return (await import("./handlers/pageExpired/index.js")).handler(
         request,
         reply,
       );
-    },
-  );
-
-  fastify.get(paths.others.pageExpired.path, async function (request, reply) {
-    return (await import("./handlers/pageExpired/index.js")).handler(
-      request,
-      reply,
-    );
-  });
-
-  fastify.register(fastifyFormbody);
-  fastify.register(fastifyHelmet, getHelmetConfig());
-
-  fastify.register(async (fastify) => {
-    fastify.register(fastifySession, await getSessionOptions());
-    fastify.register(csrfProtection);
+    });
 
     fastify.get(paths.others.authorize.path, async function (request, reply) {
       return (await import("./handlers/authorize/index.js")).getHandler(

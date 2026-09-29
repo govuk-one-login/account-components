@@ -175,6 +175,19 @@ Given(
   },
 );
 
+Given(
+  "I fill the input with the label beginning with {string} with the text:",
+  async ({ page }, inputPartialLabel: string, text: string) => {
+    const input = page.getByRole("textbox", {
+      name: new RegExp(`^${inputPartialLabel}`),
+    });
+
+    await expect(input).toHaveCount(1);
+
+    await input.fill(text);
+  },
+);
+
 Then("the {word} cookie has been set", async ({ page }, cookieName) => {
   // eslint-disable-next-line playwright/no-networkidle
   await page.waitForLoadState("networkidle");

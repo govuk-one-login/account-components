@@ -5,7 +5,15 @@
 {% set englishPageTitleName = 'journey:step1.pageTitle' | getFixedT_en %}
 
 {% block pageContent %}
-  <h1 class="govuk-heading-l">{{ 'journey:step1.heading' | translate }}</h1>
+  <h1 class="govuk-heading-l">
+    {%- if globals.splitTestBucketAssignments.testingJourneySplitTest === "bucket3" -%}
+      {{ 'journey:step1.heading.bucket3' | translate }}
+    {%- elif globals.splitTestBucketAssignments.testingJourneySplitTest === "bucket2" -%}
+      {{ 'journey:step1.heading.bucket2' | translate }}      
+    {%- else -%}
+      {{ 'journey:step1.heading.bucket1' | translate }}
+    {%- endif -%}    
+  </h1>
   <p class="govuk-body">{{ 'journey:step1.paragraph' | translate }}</p>
   <form method="post">
     <input type="hidden" name="_csrf" value="{{ globals.csrfToken }}">
