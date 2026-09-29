@@ -25,6 +25,7 @@ export const getSessionOptions = async (): Promise<FastifySessionOptions> => {
       httpOnly: true,
       // Scoped to the root (with env) cookie domain to allow it to be deleted on logout in the account management frontend
       domain: rootDomainWithEnv,
+      path: "/",
     },
     cookieName: "amc_sess",
     rolling: false,

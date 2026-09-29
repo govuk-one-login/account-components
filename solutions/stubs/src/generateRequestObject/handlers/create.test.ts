@@ -151,6 +151,7 @@ describe("createRequestObjectPost", () => {
         httpOnly: true,
         domain: "example.com",
         sameSite: "strict",
+        path: "/",
       }),
     );
 
@@ -182,6 +183,7 @@ describe("createRequestObjectPost", () => {
         httpOnly: true,
         domain: "example.com",
         sameSite: "strict",
+        path: "/",
       }),
     );
   });

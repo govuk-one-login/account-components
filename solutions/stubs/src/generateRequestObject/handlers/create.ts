@@ -141,6 +141,7 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
         httpOnly: true,
         domain: rootDomain,
         sameSite: "strict",
+        path: "/",
       },
     );
 

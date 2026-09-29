@@ -96,6 +96,7 @@ export async function getHandler(request: FastifyRequest, reply: FastifyReply) {
       secure: getEnvironment() !== "local",
       httpOnly: true,
       sameSite: "lax",
+      path: "/",
     });
 
     const startSessionAndGoToJourneyResult = await startSessionAndGoToJourney(
