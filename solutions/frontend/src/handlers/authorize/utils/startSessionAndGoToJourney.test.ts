@@ -63,7 +63,10 @@ describe("startSessionAndGoToJourney", () => {
   it("redirects to testing journey path with default session expiry", async () => {
     const mockRegenerate = vi.fn().mockResolvedValue(undefined);
     const mockRedirect = vi.fn().mockReturnThis();
-    const mockSession = { regenerate: mockRegenerate };
+    const mockSession = {
+      regenerate: mockRegenerate,
+      splitTestBucketAssignments: undefined,
+    };
 
     const request = { session: mockSession } as unknown as FastifyRequest;
     const reply = { redirect: mockRedirect } as unknown as FastifyReply;
@@ -90,7 +93,10 @@ describe("startSessionAndGoToJourney", () => {
   it("redirects to account delete journey path", async () => {
     const mockRegenerate = vi.fn().mockResolvedValue(undefined);
     const mockRedirect = vi.fn().mockReturnThis();
-    const mockSession = { regenerate: mockRegenerate };
+    const mockSession = {
+      regenerate: mockRegenerate,
+      splitTestBucketAssignments: undefined,
+    };
 
     const request = { session: mockSession } as unknown as FastifyRequest;
     const reply = { redirect: mockRedirect } as unknown as FastifyReply;
@@ -114,7 +120,10 @@ describe("startSessionAndGoToJourney", () => {
   it("sets session expiry based on account management API token expiry", async () => {
     const mockRegenerate = vi.fn().mockResolvedValue(undefined);
     const mockRedirect = vi.fn().mockReturnThis();
-    const mockSession = { regenerate: mockRegenerate };
+    const mockSession = {
+      regenerate: mockRegenerate,
+      splitTestBucketAssignments: undefined,
+    };
 
     const request = { session: mockSession } as unknown as FastifyRequest;
     const reply = { redirect: mockRedirect } as unknown as FastifyReply;
@@ -143,7 +152,10 @@ describe("startSessionAndGoToJourney", () => {
   it("sets session expiry based on account data API token expiry", async () => {
     const mockRegenerate = vi.fn().mockResolvedValue(undefined);
     const mockRedirect = vi.fn().mockReturnThis();
-    const mockSession = { regenerate: mockRegenerate };
+    const mockSession = {
+      regenerate: mockRegenerate,
+      splitTestBucketAssignments: undefined,
+    };
 
     const request = { session: mockSession } as unknown as FastifyRequest;
     const reply = { redirect: mockRedirect } as unknown as FastifyReply;
@@ -172,7 +184,10 @@ describe("startSessionAndGoToJourney", () => {
   it("uses minimum expiry when both tokens present", async () => {
     const mockRegenerate = vi.fn().mockResolvedValue(undefined);
     const mockRedirect = vi.fn().mockReturnThis();
-    const mockSession = { regenerate: mockRegenerate };
+    const mockSession = {
+      regenerate: mockRegenerate,
+      splitTestBucketAssignments: undefined,
+    };
 
     const request = { session: mockSession } as unknown as FastifyRequest;
     const reply = { redirect: mockRedirect } as unknown as FastifyReply;
@@ -205,7 +220,10 @@ describe("startSessionAndGoToJourney", () => {
   it("caps session expiry at 2 hours", async () => {
     const mockRegenerate = vi.fn().mockResolvedValue(undefined);
     const mockRedirect = vi.fn().mockReturnThis();
-    const mockSession = { regenerate: mockRegenerate };
+    const mockSession = {
+      regenerate: mockRegenerate,
+      splitTestBucketAssignments: undefined,
+    };
 
     const request = { session: mockSession } as unknown as FastifyRequest;
     const reply = { redirect: mockRedirect } as unknown as FastifyReply;
@@ -235,7 +253,10 @@ describe("startSessionAndGoToJourney", () => {
       .fn()
       .mockRejectedValue(new Error("Session error"));
     const mockRedirect = vi.fn().mockReturnThis();
-    const mockSession = { regenerate: mockRegenerate };
+    const mockSession = {
+      regenerate: mockRegenerate,
+      splitTestBucketAssignments: undefined,
+    };
 
     const request = { session: mockSession } as unknown as FastifyRequest;
     const reply = { redirect: mockRedirect } as unknown as FastifyReply;
@@ -263,7 +284,10 @@ describe("startSessionAndGoToJourney", () => {
   it("sends AMC_STARTED audit event when awsLambda event is present", async () => {
     const mockRegenerate = vi.fn().mockResolvedValue(undefined);
     const mockRedirect = vi.fn().mockReturnThis();
-    const mockSession = { regenerate: mockRegenerate };
+    const mockSession = {
+      regenerate: mockRegenerate,
+      splitTestBucketAssignments: undefined,
+    };
 
     const request = {
       session: mockSession,
@@ -320,7 +344,10 @@ describe("startSessionAndGoToJourney", () => {
   it("does not send audit event when awsLambda event is not present", async () => {
     const mockRegenerate = vi.fn().mockResolvedValue(undefined);
     const mockRedirect = vi.fn().mockReturnThis();
-    const mockSession = { regenerate: mockRegenerate };
+    const mockSession = {
+      regenerate: mockRegenerate,
+      splitTestBucketAssignments: undefined,
+    };
 
     const request = { session: mockSession } as unknown as FastifyRequest;
     const reply = { redirect: mockRedirect } as unknown as FastifyReply;
@@ -339,5 +366,40 @@ describe("startSessionAndGoToJourney", () => {
     );
 
     expect(mockSendAuditEvent).not.toHaveBeenCalled();
+  });
+
+  it("preserves splitTestBucketAssignments across session regeneration", async () => {
+    const splitTestBucketAssignments = { testingJourneySplitTest: "bucket2" };
+    const mockRegenerate = vi.fn().mockImplementation(function (this: {
+      splitTestBucketAssignments: unknown;
+    }) {
+      this.splitTestBucketAssignments = undefined;
+      return Promise.resolve();
+    });
+    const mockRedirect = vi.fn().mockReturnThis();
+    const mockSession = {
+      regenerate: mockRegenerate,
+      splitTestBucketAssignments,
+    };
+
+    const request = { session: mockSession } as unknown as FastifyRequest;
+    const reply = { redirect: mockRedirect } as unknown as FastifyReply;
+
+    const claims = {
+      sub: "user-123",
+      scope: Scope.testingJourney,
+    } as Claims;
+
+    await startSessionAndGoToJourney(
+      reply,
+      request,
+      claims,
+      "client-id",
+      "https://example.com/callback",
+    );
+
+    expect(request.session.splitTestBucketAssignments).toStrictEqual(
+      splitTestBucketAssignments,
+    );
   });
 });

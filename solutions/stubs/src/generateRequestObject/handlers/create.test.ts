@@ -11,6 +11,18 @@ vi.mock(import("node:crypto"), () => ({
   })),
 }));
 
+vi.mock(import("../../../../commons/utils/getAppConfig/index.js"), () => ({
+  getAppConfig: vi.fn().mockResolvedValue({
+    split_tests: {
+      testingJourneySplitTest: {
+        bucket1: { percentage: 50 },
+        bucket2: { percentage: 30 },
+        bucket3: { percentage: 20 },
+      },
+    },
+  }),
+}));
+
 vi.mock(import("../utils/getClientRegistryWithInvalidClient/index.js"), () => ({
   getClientRegistryWithInvalidClient: vi.fn().mockResolvedValue([
     {
@@ -23,6 +35,7 @@ vi.mock(import("../utils/getClientRegistryWithInvalidClient/index.js"), () => ({
 // @ts-expect-error
 vi.mock(import("../../../../commons/utils/constants.js"), () => ({
   rootDomain: "example.com",
+  amcRootDomain: "amc.example.com",
   checkUserAgentCookieName: "amc",
 }));
 
@@ -105,6 +118,7 @@ describe("createRequestObjectPost", () => {
         account_data_api_getPasskeys_scenario: "successful",
         stubs_account_interventions_service_api_access_token_getUserAisStatus_scenario:
           "no_interventions",
+        split_test_bucket_assignments: "splitTestName: bucketName",
       },
     };
 

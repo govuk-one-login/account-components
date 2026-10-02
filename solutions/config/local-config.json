@@ -33,5 +33,18 @@
   "jwks_http_timeout": 2500,
   "access_token_max_age": 300,
   "journey_outcome_ttl": 7200,
-  "max_number_of_passkeys": 5
+  "max_number_of_passkeys": 5,
+  "split_tests": {
+    "testingJourneySplitTest": {
+      "bucket1": {
+        "percentage": 50
+      },
+      "bucket2": {
+        "percentage": 30
+      },
+      "bucket3": {
+        "percentage": 20
+      }
+    }
+  }
 }

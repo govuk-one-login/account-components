@@ -20,9 +20,15 @@ import type { JWTPayload } from "jose";
 import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.js";
 import { createHash } from "node:crypto";
 import {
+  amcRootDomain,
   checkUserAgentCookieName,
   rootDomain,
 } from "../../../../commons/utils/constants.js";
+import {
+  getSplitTestBucketAssignmentsSchema,
+  splitTestOverridesCookieName,
+} from "../../../../commons/utils/fastify/splitTests/index.js";
+import * as yaml from "yaml";
 
 export const requestBodySchema = v.object({
   client_id: v.string(),
@@ -44,6 +50,7 @@ export const requestBodySchema = v.object({
   account_data_api_getPasskeys_scenario: v.string(),
   stubs_account_interventions_service_api_access_token_getUserAisStatus_scenario:
     v.string(),
+  split_test_bucket_assignments: v.string(),
 });
 
 export async function createRequestObjectGet(
@@ -124,6 +131,7 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
     }
 
     assert.ok(rootDomain);
+    assert.ok(amcRootDomain);
 
     reply.setCookie(
       checkUserAgentCookieName,
@@ -136,6 +144,35 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
         path: "/",
       },
     );
+
+    const splitTestBucketAssignmentsSchema =
+      await getSplitTestBucketAssignmentsSchema();
+
+    const splitTestBucketAssignments = v.safeParse(
+      v.pipe(
+        v.string(),
+        v.transform((splitTestBucketAssignmentsString) =>
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+          yaml.parse(splitTestBucketAssignmentsString),
+        ),
+        splitTestBucketAssignmentsSchema,
+      ),
+      requestBody.split_test_bucket_assignments,
+    );
+
+    if (splitTestBucketAssignments.success) {
+      reply.setCookie(
+        splitTestOverridesCookieName,
+        JSON.stringify(splitTestBucketAssignments.output),
+        {
+          secure: getEnvironment() !== "local",
+          httpOnly: true,
+          domain: amcRootDomain,
+          sameSite: "strict",
+          path: "/",
+        },
+      );
+    }
 
     await createRequestObjectGet(
       request,
