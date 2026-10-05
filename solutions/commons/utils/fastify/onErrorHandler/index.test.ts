@@ -93,6 +93,33 @@ describe("onError handler", () => {
     expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(customTemplate);
   });
 
+  describe("when error is an empty JSON body FastifyError", () => {
+    const emptyBodyError = {
+      code: "FST_ERR_CTP_EMPTY_JSON_BODY",
+      message: "Body cannot be empty",
+    };
+
+    beforeEach(() => {
+      mockIsFastifyError.mockReturnValue(true);
+    });
+
+    it("logs with warn", async () => {
+      await onError(emptyBodyError, mockRequest, mockReply);
+
+      expect(mockLog.warn).toHaveBeenCalledExactlyOnceWith(
+        emptyBodyError,
+        "ERROR_CAUGHT_BY_GLOBAL_ERROR_HANDLER",
+      );
+      expect(mockLog.error).not.toHaveBeenCalled();
+    });
+
+    it("sets status code to 400", async () => {
+      await onError(emptyBodyError, mockRequest, mockReply);
+
+      expect(mockReply.statusCode).toBe(400);
+    });
+  });
+
   describe("when error is a CSRF FastifyError", () => {
     const csrfError = {
       code: "FST_CSRF_INVALID_TOKEN",
