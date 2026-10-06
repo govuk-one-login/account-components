@@ -44,10 +44,10 @@ Resources:
               - Effect: Allow
                 Action:
                   - "logs:DescribeLogGroups"
-                  - "logs:DescribeLogStreams"
                 Resource: "*"
               - Effect: Allow
                 Action:
+                  - "logs:DescribeLogStreams"
                   - "logs:StartQuery"
                   - "logs:GetQueryResults"
                   - "logs:StopQuery"
