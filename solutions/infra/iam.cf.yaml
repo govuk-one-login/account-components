@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Custom IAM roles and policies"
+
+Parameters:
+  SAMStackName:
+    Type: String
+    Description: The name of the SAM stack which is deployed using the pipeline
+
+Resources:
+  # See https://govukverify.atlassian.net/wiki/spaces/PLAT/pages/5346197696/Support+User+Workflow#Creating-your-Own-Support-Role-for-L2
+  # Ideally this would be added in solutions/app-infra/template.yaml but instead
+  # it must be created manually outside of the SAM deployment because it requires the
+  # /runbooks/ path, which the pipeline's execution role cannot create due to
+  # permissions boundary restrictions.
+  ApprovedServiceSupportRunbooksRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /runbooks/
+      RoleName: ApprovedServiceSupportRunbooksRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:root"
+            Action: sts:AssumeRole
+            Condition:
+              ArnLike:
+                "aws:PrincipalARN": !Sub "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/aws-reserved/sso.amazonaws.com/*/AWSReservedSSO_ApprovedServiceSupport*"
+      Policies:
+        - PolicyName: ApprovedServiceSupportRunbooksDashboardPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "cloudwatch:GetMetricData"
+                  - "cloudwatch:GetMetricStatistics"
+                  - "cloudwatch:ListMetrics"
+                Resource: "*"
+              - Effect: Allow
+                Action: "cloudwatch:GetDashboard"
+                Resource: !Sub "arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:dashboard/${SAMStackName}-dashboard"
+              - Effect: Allow
+                Action:
+                  - "logs:DescribeLogGroups"
+                  - "logs:DescribeLogStreams"
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - "logs:StartQuery"
+                  - "logs:GetQueryResults"
+                  - "logs:StopQuery"
+                Resource:
+                  - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${SAMStackName}/FrontendLambda:*"
+                  - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${SAMStackName}/ApiTokenLambda:*"
+                  - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${SAMStackName}/ApiJourneyOutcomeLambda:*"
