@@ -39,8 +39,11 @@ Resources:
                   - "cloudwatch:ListMetrics"
                 Resource: "*"
               - Effect: Allow
+                Action: "cloudwatch:ListDashboards"
+                Resource: !Sub "arn:${AWS::Partition}:cloudwatch::${AWS::AccountId}:dashboard/*"
+              - Effect: Allow
                 Action: "cloudwatch:GetDashboard"
-                Resource: !Sub "arn:${AWS::Partition}:cloudwatch:${AWS::Region}:${AWS::AccountId}:dashboard/${SAMStackName}-dashboard"
+                Resource: !Sub "arn:${AWS::Partition}:cloudwatch::${AWS::AccountId}:dashboard/${SAMStackName}-dashboard"
               - Effect: Allow
                 Action:
                   - "logs:DescribeLogGroups"
