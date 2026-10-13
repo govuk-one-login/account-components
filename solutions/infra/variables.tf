@@ -7,6 +7,12 @@ variable "environment" {
   }
 }
 
+variable "sam_stack_name" {
+  type        = string
+  description = "The name of the SAM stack which is deployed using the pipeline"
+  default     = "amc"
+}
+
 variable "hosted_zone_domain" {
   type        = string
   description = "The base domain to use for the account's hosted zone"
