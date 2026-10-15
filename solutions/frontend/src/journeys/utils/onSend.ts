@@ -7,6 +7,7 @@ export const onSend = async (request: FastifyRequest, reply: FastifyReply) => {
   reply.headers({ "cache-control": "no-store" });
 
   if (request.session.claims) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-assignment
     const journeyState = reply.journeyStates?.[request.session.claims.scope];
 
     if (journeyState) {

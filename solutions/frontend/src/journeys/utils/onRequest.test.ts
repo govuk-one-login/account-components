@@ -10,7 +10,7 @@ import { createActor } from "xstate";
 import { getClientRegistry } from "../../../../commons/utils/getClientRegistry/index.js";
 import type { ClientEntry } from "../../../../config/schema/types.js";
 import { logger } from "../../../../commons/utils/logger/index.js";
-import type { Scope } from "../../../../commons/utils/commonTypes.js";
+import { Scope } from "../../../../commons/utils/commonTypes.js";
 
 const mockCompleteJourney = vi.hoisted(() => vi.fn());
 
@@ -143,7 +143,7 @@ describe("onRequest", () => {
       { client_id: "test-client-id" } as ClientEntry,
     ]);
     // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    vi.mocked(journeys["test-scope" as Scope]).mockResolvedValue({
+    vi.mocked(journeys[Scope.testingJourney]).mockResolvedValue({
       translations: { en: { key: "value" } },
       stateMachine: { resolveState: vi.fn().mockReturnValue({}) },
     } as any);
@@ -233,7 +233,7 @@ describe("onRequest", () => {
       expect(mockReply.globals?.buildCompleteFailedJourneyUri).toBeTypeOf(
         "function",
       );
-      expect(journeys["test-scope" as Scope]).toHaveBeenCalledWith();
+      expect(journeys[Scope.testingJourney]).toHaveBeenCalledWith();
       expect(mockRequest.i18n?.addResourceBundle).toHaveBeenCalledWith(
         "en",
         "journey",
