@@ -71,7 +71,7 @@ jobs:
           persist-credentials: false
 
       - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         with:
           node-version-file: .nvmrc
 
@@ -101,7 +101,7 @@ jobs:
         run: npm run test:coverage
 
       - name: Deploy
-        uses: govuk-one-login/devplatform-upload-action@9320b8e71484f79c1b48139a86d214473d0f2709
+        uses: govuk-one-login/devplatform-upload-action@7076683de6e38a0ecdfbcd273b510a47c7b9489c
         with:
           artifact-bucket-name: ${{ secrets.PIPELINE_SOURCE_BUCKET_NAME }}
           signing-profile-name: ${{ secrets.SIGNING_PROFILE_NAME }}
