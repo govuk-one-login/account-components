@@ -3,6 +3,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import { onSend } from "./onSend.js";
 import type { FastifySessionObject } from "@fastify/session";
 import type { Claims } from "../../utils/getClaimsSchema.js";
+import { Scope } from "../../../../commons/utils/commonTypes.js";
 
 describe("onSend", () => {
   let mockRequest: Partial<FastifyRequest>;
@@ -48,7 +49,7 @@ describe("onSend", () => {
   });
 
   it("should not process journey state when journeyStates is undefined", async () => {
-    mockSession.claims = { scope: "testing-journey" } as Claims;
+    mockSession.claims = { scope: Scope.testingJourney } as Claims;
     delete mockReply.journeyStates;
 
     await onSend(mockRequest as FastifyRequest, mockReply as FastifyReply);
@@ -59,6 +60,7 @@ describe("onSend", () => {
   it("should not process journey state when scope not found in journeyStates", async () => {
     mockSession.claims = { scope: "non-existent-scope" } as unknown as Claims;
     mockReply.journeyStates = {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-assignment
       ["other-scope" as Claims["scope"]]: mockJourneyState,
     };
 
@@ -69,7 +71,7 @@ describe("onSend", () => {
   });
 
   it("should save journey state snapshot when all conditions are met", async () => {
-    const testScope = "test-scope";
+    const testScope = Scope.testingJourney;
     const mockSnapshot = { state: "test-state", data: "test-data" };
 
     mockSession.claims = { scope: testScope } as unknown as Claims;

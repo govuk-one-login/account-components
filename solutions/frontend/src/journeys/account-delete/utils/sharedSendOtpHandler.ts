@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 import assert from "node:assert";
 import { AccountManagementApiClient } from "../../../utils/accountManagementApiClient.js";
 import { paths } from "../../../utils/paths.js";
+import { Scope } from "../../../../../commons/utils/commonTypes.js";
 
 export async function sharedSendOtpHandler(
   request: FastifyRequest,
@@ -9,7 +10,7 @@ export async function sharedSendOtpHandler(
 ) {
   assert.ok(request.session.claims);
   assert.ok(request.session.claims.account_management_api_access_token);
-  assert.ok(reply.journeyStates?.["account-delete"]);
+  assert.ok(reply.journeyStates?.[Scope.accountDelete]);
 
   const accountManagementApiClient = new AccountManagementApiClient(
     request.session.claims.account_management_api_access_token,
@@ -22,7 +23,7 @@ export async function sharedSendOtpHandler(
 
   if (!result.success) {
     if (result.error === "TooManyEmailCodesEntered") {
-      reply.journeyStates["account-delete"].send({
+      reply.journeyStates[Scope.accountDelete].send({
         type: "lockedOutSecurityCodeEnteredTooManyTimes",
       });
       reply.redirect(
@@ -32,7 +33,7 @@ export async function sharedSendOtpHandler(
       );
       return reply;
     } else if (result.error === "BlockedForEmailVerificationCodes") {
-      reply.journeyStates["account-delete"].send({
+      reply.journeyStates[Scope.accountDelete].send({
         type: "lockedOutSecurityCodeRequestedTooManyTimes",
       });
       reply.redirect(

@@ -35,6 +35,7 @@ describe("generateRequestObjectPost should process request and return encrypted 
     vi.clearAllMocks();
     vi.mocked(generateAccessToken).mockResolvedValue(mockAccessToken);
     vi.mocked(getScenario).mockReturnValue(
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-assignment
       mockScenario as MockRequestObjectScenarios,
     );
     vi.mocked(generateJwtToken).mockResolvedValue({

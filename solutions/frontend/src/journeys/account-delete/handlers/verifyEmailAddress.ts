@@ -8,6 +8,7 @@ import {
 } from "../../../utils/formErrorsHelpers.js";
 import * as v from "valibot";
 import { AccountManagementApiClient } from "../../../utils/accountManagementApiClient.js";
+import { Scope } from "../../../../../commons/utils/commonTypes.js";
 
 const render = async (
   request: FastifyRequest,
@@ -43,7 +44,7 @@ export async function verifyEmailAddressPostHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(reply.journeyStates?.["account-delete"]);
+  assert.ok(reply.journeyStates?.[Scope.accountDelete]);
 
   const bodySchema = v.object({
     code: v.pipe(
@@ -102,7 +103,7 @@ export async function verifyEmailAddressPostHandler(
       });
       return reply;
     } else if (result.error === "TooManyEmailCodesEntered") {
-      reply.journeyStates["account-delete"].send({
+      reply.journeyStates[Scope.accountDelete].send({
         type: "lockedOutSecurityCodeEnteredTooManyTimes",
       });
       reply.redirect(
@@ -116,7 +117,7 @@ export async function verifyEmailAddressPostHandler(
     throw new Error(result.error);
   }
 
-  reply.journeyStates["account-delete"].send({
+  reply.journeyStates[Scope.accountDelete].send({
     type: "emailVerified",
   });
 

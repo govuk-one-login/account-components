@@ -40,6 +40,7 @@ import {
 } from "../utils/auditEvents/index.js";
 import { extractRegistrationResponseInfo } from "../utils/extractRegistrationResponseInfo/index.js";
 import { AccountInterventionsServiceApiClient } from "../../../utils/accountInterventionsServiceApiClient.js";
+import { Scope } from "../../../../../commons/utils/commonTypes.js";
 
 export const postBodySchema = v.object({
   action: v.optional(v.picklist(["register", "skip"])),
@@ -60,7 +61,7 @@ const setRegistrationOptions = async (
   idsOfCredentialsToExclude: string[],
 ) => {
   assert.ok(request.session.claims);
-  assert.ok(reply.journeyStates?.["passkey-create"]);
+  assert.ok(reply.journeyStates?.[Scope.passkeyCreate]);
   assert.ok(process.env["PASSKEYS_RP_ID"]);
   assert.ok(process.env["PASSKEYS_RP_NAME"]);
   assert.ok(request.session.expires);
@@ -87,7 +88,7 @@ const setRegistrationOptions = async (
     ),
   });
 
-  reply.journeyStates["passkey-create"].send({
+  reply.journeyStates[Scope.passkeyCreate].send({
     type: "updateRegistrationOptions",
     registrationOptions,
   });
@@ -230,10 +231,10 @@ export async function postHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(reply.journeyStates?.["passkey-create"]);
+  assert.ok(reply.journeyStates?.[Scope.passkeyCreate]);
 
   const registrationOptions =
-    reply.journeyStates["passkey-create"].getSnapshot().context
+    reply.journeyStates[Scope.passkeyCreate].getSnapshot().context
       .registrationOptions;
   assert.ok(registrationOptions);
 

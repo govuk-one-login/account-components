@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
+import { Scope } from "../../../../../commons/utils/commonTypes.js";
 
 const mockVerifyOtpChallenge = vi.fn();
 
@@ -103,7 +104,7 @@ describe("verifyEmailAddress handlers", () => {
         "123456",
       );
       expect(
-        mockReply.journeyStates?.["account-delete"]?.send,
+        mockReply.journeyStates?.[Scope.accountDelete]?.send,
       ).toHaveBeenCalledWith({
         type: "emailVerified",
       });
@@ -432,7 +433,7 @@ describe("verifyEmailAddress handlers", () => {
       );
 
       expect(
-        mockReply.journeyStates?.["account-delete"]?.send,
+        mockReply.journeyStates?.[Scope.accountDelete]?.send,
       ).toHaveBeenCalledWith({
         type: "lockedOutSecurityCodeEnteredTooManyTimes",
       });

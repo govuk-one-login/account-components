@@ -52,7 +52,7 @@ export function getScenario(
 ): MockRequestObjectScenarios {
   const retrievedScenario = Object.values(MockRequestObjectScenarios).find(
     (scenario): scenario is MockRequestObjectScenarios =>
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-assignment, @typescript-eslint/consistent-type-assertions
       scenario === (body.scenario as MockRequestObjectScenarios),
   );
   delete body.scenario;
