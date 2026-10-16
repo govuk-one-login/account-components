@@ -50,14 +50,14 @@ describe("session utils", () => {
       delete process.env["SESSIONS_SIGNER"];
       process.env["SESSIONS_TABLE_NAME"] = "test-table";
 
-      expect(getSessionOptions()).toThrow();
+      expect(() => getSessionOptions()).toThrow();
     });
 
     it("throws when SESSIONS_TABLE_NAME is missing", () => {
       process.env["SESSIONS_SIGNER"] = "test-signer";
       delete process.env["SESSIONS_TABLE_NAME"];
 
-      expect(getSessionOptions()).toThrow();
+      expect(() => getSessionOptions()).toThrow();
     });
 
     it("returns session options with secure cookie for non-local environment", () => {
