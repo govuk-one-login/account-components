@@ -214,7 +214,7 @@ export const initFrontend = async function () {
   fastify.register(fastifyHelmet, getHelmetConfig());
 
   fastify.register(async (fastify) => {
-    fastify.register(fastifySession, await getSessionOptions());
+    fastify.register(fastifySession, getSessionOptions());
     fastify.register(csrfProtection);
 
     fastify.get(paths.others.authorize.path, async function (request, reply) {

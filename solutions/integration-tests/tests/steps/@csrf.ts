@@ -48,7 +48,7 @@ Given(
 
 Then(
   "the response status code should be {int}",
-  async ({ scenarioData }, statusCode: number) => {
+  ({ scenarioData }, statusCode: number) => {
     expect(scenarioData["csrfResponseStatus"]).toBe(statusCode);
   },
 );
