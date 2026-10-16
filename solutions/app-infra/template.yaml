@@ -265,6 +265,16 @@ Conditions:
   IsBuildEnvironment: !Equals [!Ref Environment, "build"]
   IsDevOrBuild: !Or [Condition: IsDevEnvironment, Condition: IsBuildEnvironment]
   IsLocalOrDev: !Or [Condition: IsDevEnvironment, Condition: IsLocal]
+  HasAllowedVpceIds: !Not
+    - !Equals
+      - !Join
+        - ""
+        - !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            apiAllowedVpceIds,
+          ]
+      - ""
   HasTxmaAccountArn: !Not
     - !Equals
       - !FindInMap [EnvironmentConfiguration, !Ref Environment, txmaAccountArn]
@@ -878,6 +888,146 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-replay_attack"
 
+  LockoutsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub ${AWS::StackName}-Lockouts
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: publicSubjectId
+          AttributeType: S
+        - AttributeName: lockedOutAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: PublicSubjectIdIndex
+          KeySchema:
+            - AttributeName: publicSubjectId
+              KeyType: HASH
+            - AttributeName: lockedOutAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+
+  OTPsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub ${AWS::StackName}-OTPs
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: publicSubjectId
+          AttributeType: S
+        - AttributeName: generatedAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: PublicSubjectIdIndex
+          KeySchema:
+            - AttributeName: publicSubjectId
+              KeyType: HASH
+            - AttributeName: generatedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+
+  OTPChecksTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub ${AWS::StackName}-OTP-Checks
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: publicSubjectId
+          AttributeType: S
+        - AttributeName: checkedAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: PublicSubjectIdIndex
+          KeySchema:
+            - AttributeName: publicSubjectId
+              KeyType: HASH
+            - AttributeName: checkedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+
+  PasswordChecksTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub ${AWS::StackName}-Password-Checks
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: publicSubjectId
+          AttributeType: S
+        - AttributeName: checkedAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: PublicSubjectIdIndex
+          KeySchema:
+            - AttributeName: publicSubjectId
+              KeyType: HASH
+            - AttributeName: checkedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+
   SecretsKmsKey:
     Type: AWS::KMS::Key
     DeletionPolicy: Retain
@@ -1433,10 +1583,33 @@ Resources:
                 aws:sourceVpce: !If
                   - IsDevOrBuild
                   - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
-                  - !FindInMap
-                    - EnvironmentConfiguration
-                    - !Ref Environment
-                    - apiAllowedVpceIds
+                  - !If
+                    - HasAllowedVpceIds
+                    - !Split
+                      - ","
+                      - !Sub
+                        - "${CurrentVpce},${AllowedVpceIds}"
+                        - CurrentVpce:
+                            Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+                          AllowedVpceIds: !Join
+                            - ","
+                            - !FindInMap
+                              - EnvironmentConfiguration
+                              - !Ref Environment
+                              - apiAllowedVpceIds
+                    - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+          - Effect: Deny
+            Principal: "*"
+            Action: execute-api:Invoke
+            Resource:
+              - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/generate-otp/*"
+              - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/check-otp/*"
+              - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/check-password/*"
+              - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/GET/lockout-status/*"
+            Condition:
+              StringNotEquals:
+                aws:sourceVpce:
+                  Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
       Variables:
         ApiDomain: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
         AuthorizeEndpointUrl:
@@ -1471,6 +1644,54 @@ Resources:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiJourneyOutcomeLambda.Alias}/invocations"
+          /generate-otp/{publicSubjectId}:
+            post:
+              parameters:
+                - name: publicSubjectId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiGenerateOTPLambda.Alias}/invocations"
+          /check-otp/{publicSubjectId}:
+            post:
+              parameters:
+                - name: publicSubjectId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiCheckOTPLambda.Alias}/invocations"
+          /check-password/{publicSubjectId}:
+            post:
+              parameters:
+                - name: publicSubjectId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiCheckPasswordLambda.Alias}/invocations"
+          /lockout-status/{publicSubjectId}:
+            get:
+              parameters:
+                - name: publicSubjectId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiLockoutStatusLambda.Alias}/invocations"
           /.well-known/jwks.json:
             get:
               responses:
@@ -1749,6 +1970,75 @@ Resources:
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
 
+  ApiGenerateOTPLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiGenerateOTPLambda"
+      RetentionInDays: 90
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  ApiGenerateOTPLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      DeploymentPreference:
+        Alarms:
+          - !Ref ApiGenerateOTPLambdaErrorsAlarm
+          - !Ref ApiGenerateOTPLambdaAvailabilityAlarm
+          - !Ref ApiGenerateOTPLambdaLogErrorAlarm
+      LoggingConfig:
+        LogGroup: !Ref ApiGenerateOTPLambdaLogGroup
+      Handler: index.handler
+      Environment:
+        Variables:
+          OTPS_TABLE_NAME: !Ref OTPsTable
+          LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt LockoutsTable.Arn
+                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+              Resource:
+                - !GetAtt OTPsTable.Arn
+                - !Sub "${OTPsTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Resource: !GetAtt DynamoDbSSEKey.Arn
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
+      Events:
+        GenerateOTP:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiApiGateway
+            Path: /generate-otp/{publicSubjectId}
+            Method: POST
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2024"
+        Sourcemap: true
+        EntryPoints:
+          - solutions/api/src/lambda/generate-otp/index.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+
   ApiHealthcheckLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -1769,6 +2059,14 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref ApiJourneyOutcomeLambda.Alias
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
+
+  ApiGenerateOTPLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiGenerateOTPLambda.Alias
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
@@ -2551,6 +2849,7 @@ Resources:
             ]
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Ref JARRSAEncryptionKeyAlias
           REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
+          INTERNAL_API_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -3110,7 +3409,7 @@ Resources:
           DEFAULT_AUDIENCE: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
           AUTHORIZE_URL: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
-          API_BASE_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+          INTERNAL_API_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
           ROOT_DOMAIN:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
           NOTIFY_DONT_SEND_EMAILS_TO:
