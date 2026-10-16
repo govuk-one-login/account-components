@@ -226,7 +226,7 @@ Given(
 
 Then(
   "the response status code should be {string}",
-  async ({ scenarioData }, responseStatusCode: string) => {
+  ({ scenarioData }, responseStatusCode: string) => {
     // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
     expect((scenarioData["httpResponse"] as Response).status).toBe(
       Number(responseStatusCode),
