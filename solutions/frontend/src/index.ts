@@ -213,7 +213,7 @@ export const initFrontend = async function () {
   fastify.register(fastifyFormbody);
   fastify.register(fastifyHelmet, getHelmetConfig());
 
-  fastify.register(async (fastify) => {
+  fastify.register((fastify) => {
     fastify.register(fastifySession, getSessionOptions());
     fastify.register(csrfProtection);
 
