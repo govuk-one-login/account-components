@@ -4227,6 +4227,15 @@ Resources:
               "height": 6
             },  
             {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },             
+            {
               "type": "log",
               "properties": {
                 "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | fields method, path, total | filter message = 'Request' | stats count(*) as total by method, path | sort total desc",
@@ -4243,7 +4252,16 @@ Resources:
                 "title": "Frontend responses"
               },
               "width": 12
-            },                          
+            },    
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },                                   
             {
               "type": "metric",
               "properties": {
@@ -4314,6 +4332,15 @@ Resources:
               "height": 4
             },
             {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },             
+            {
               "type": "metric",
               "properties": {
                 "metrics": [
@@ -4376,6 +4403,15 @@ Resources:
               "width": 5,              
               "height": 4
             },
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },             
             {
               "type": "metric",
               "properties": {
@@ -4440,6 +4476,15 @@ Resources:
               "height": 4
             },
             {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },             
+            {
               "type": "metric",
               "properties": {
                 "metrics": [
@@ -4490,6 +4535,15 @@ Resources:
               "width": 5,              
               "height": 4
             },
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },             
             {
               "type": "metric",
               "properties": {
@@ -4764,7 +4818,16 @@ Resources:
               },
               "width": 12,
               "height": 4
-            },   
+            },
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },            
             {
               "type": "metric",
               "properties": {
@@ -4827,6 +4890,15 @@ Resources:
               "height": 3
             },   
             {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },               
+            {
               "type": "metric",
               "properties": {
                 "metrics": [
@@ -4886,7 +4958,16 @@ Resources:
               },
               "width": 8,
               "height": 3
-            },       
+            },      
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },                
             {
               "type": "metric",
               "properties": {
@@ -4949,6 +5030,15 @@ Resources:
               "height": 3
             },
             {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },               
+            {
               "type": "metric",
               "properties": {
                 "metrics": [
@@ -5009,6 +5099,15 @@ Resources:
               "width": 8,
               "height": 3
             },
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },               
             {
               "type": "metric",
               "properties": {
@@ -5071,6 +5170,15 @@ Resources:
               "height": 3
             },
             {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },               
+            {
               "type": "metric",
               "properties": {
                 "metrics": [
@@ -5131,6 +5239,15 @@ Resources:
               "width": 8,
               "height": 3
             },
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },               
             {
               "type": "metric",
               "properties": {
