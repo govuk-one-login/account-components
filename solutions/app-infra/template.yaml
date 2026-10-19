@@ -3065,186 +3065,6 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiGenerateOTPLambdaLogCriticalByContextMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
-      FilterPattern: '{ $.level = "CRITICAL" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
-          MetricName: CriticalLogCountByContext
-          MetricValue: "1"
-          Dimensions:
-            - Key: scope
-              Value: $.scope
-            - Key: client_id
-              Value: $.client_id
-
-  ApiCheckOTPLambdaLogCriticalByContextMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
-      FilterPattern: '{ $.level = "CRITICAL" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
-          MetricName: CriticalLogCountByContext
-          MetricValue: "1"
-          Dimensions:
-            - Key: scope
-              Value: $.scope
-            - Key: client_id
-              Value: $.client_id
-
-  ApiCheckPasswordLambdaLogCriticalByContextMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
-      FilterPattern: '{ $.level = "CRITICAL" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
-          MetricName: CriticalLogCountByContext
-          MetricValue: "1"
-          Dimensions:
-            - Key: scope
-              Value: $.scope
-            - Key: client_id
-              Value: $.client_id
-
-  ApiLockoutStatusLambdaLogCriticalByContextMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
-      FilterPattern: '{ $.level = "CRITICAL" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
-          MetricName: CriticalLogCountByContext
-          MetricValue: "1"
-          Dimensions:
-            - Key: scope
-              Value: $.scope
-            - Key: client_id
-              Value: $.client_id
-
-  ApiGenerateOTPLambdaLogErrorByContextMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
-          MetricName: ErrorLogCountByContext
-          MetricValue: "1"
-          Dimensions:
-            - Key: scope
-              Value: $.scope
-            - Key: client_id
-              Value: $.client_id
-
-  ApiCheckOTPLambdaLogErrorByContextMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
-          MetricName: ErrorLogCountByContext
-          MetricValue: "1"
-          Dimensions:
-            - Key: scope
-              Value: $.scope
-            - Key: client_id
-              Value: $.client_id
-
-  ApiCheckPasswordLambdaLogErrorByContextMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
-          MetricName: ErrorLogCountByContext
-          MetricValue: "1"
-          Dimensions:
-            - Key: scope
-              Value: $.scope
-            - Key: client_id
-              Value: $.client_id
-
-  ApiLockoutStatusLambdaLogErrorByContextMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
-          MetricName: ErrorLogCountByContext
-          MetricValue: "1"
-          Dimensions:
-            - Key: scope
-              Value: $.scope
-            - Key: client_id
-              Value: $.client_id
-
-  ApiGenerateOTPLambdaLogWarnByContextMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
-      FilterPattern: '{ $.level = "WARN" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
-          MetricName: WarnLogCountByContext
-          MetricValue: "1"
-          Dimensions:
-            - Key: scope
-              Value: $.scope
-            - Key: client_id
-              Value: $.client_id
-
-  ApiCheckOTPLambdaLogWarnByContextMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
-      FilterPattern: '{ $.level = "WARN" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
-          MetricName: WarnLogCountByContext
-          MetricValue: "1"
-          Dimensions:
-            - Key: scope
-              Value: $.scope
-            - Key: client_id
-              Value: $.client_id
-
-  ApiCheckPasswordLambdaLogWarnByContextMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
-      FilterPattern: '{ $.level = "WARN" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
-          MetricName: WarnLogCountByContext
-          MetricValue: "1"
-          Dimensions:
-            - Key: scope
-              Value: $.scope
-            - Key: client_id
-              Value: $.client_id
-
-  ApiLockoutStatusLambdaLogWarnByContextMetricFilter:
-    Type: AWS::Logs::MetricFilter
-    Properties:
-      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
-      FilterPattern: '{ $.level = "WARN" }'
-      MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
-          MetricName: WarnLogCountByContext
-          MetricValue: "1"
-          Dimensions:
-            - Key: scope
-              Value: $.scope
-            - Key: client_id
-              Value: $.client_id
-
   ApiLockoutStatusLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
@@ -3263,6 +3083,126 @@ Resources:
           - IsProduction
           - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiGenerateOTPLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+
+  ApiCheckOTPLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+
+  ApiCheckPasswordLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+
+  ApiLockoutStatusLambdaLogCriticalByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+          MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+
+  ApiGenerateOTPLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+
+  ApiCheckOTPLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+
+  ApiCheckPasswordLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+
+  ApiLockoutStatusLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+
+  ApiGenerateOTPLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+
+  ApiCheckOTPLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+
+  ApiCheckPasswordLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
+
+  ApiLockoutStatusLambdaLogWarnByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+          MetricName: WarnLogCountByContext
+          MetricValue: "1"
 
   SessionSecret:
     Type: AWS::SecretsManager::Secret
@@ -4750,9 +4690,18 @@ Resources:
                 "title": "Frontend lambda warnings/errors",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6            
+              "width": 12,
+              "height": 3            
             },
+            {
+              "type": "text",
+              "properties": {
+                "markdown": "TODO",
+                "background": "transparent"
+              },
+              "width": 12,
+              "height": 3
+            },             
             {
               "type": "log",
               "properties": {
@@ -4761,8 +4710,8 @@ Resources:
                 "title": "Frontend lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6
+              "width": 8,
+              "height": 3
             },             
             {
               "type": "log",
@@ -4772,7 +4721,7 @@ Resources:
                 "title": "Frontend lambda cold start rate (%)",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             },   
             {
@@ -4783,7 +4732,7 @@ Resources:
                 "title": "Frontend lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             },             
             {
@@ -4798,9 +4747,18 @@ Resources:
                 "title": "Token lambda warnings/errors",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6             
+              "width": 12,
+              "height": 3             
             }, 
+            {
+              "type": "text",
+              "properties": {
+                "markdown": "TODO",
+                "background": "transparent"
+              },
+              "width": 12,
+              "height": 3
+            },              
             {
               "type": "log",
               "properties": {
@@ -4809,8 +4767,8 @@ Resources:
                 "title": "Token lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6
+              "width": 8,
+              "height": 3
             },              
             {
               "type": "log",
@@ -4820,7 +4778,7 @@ Resources:
                 "title": "Token lambda cold start rate (%)",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             },   
             {
@@ -4831,7 +4789,7 @@ Resources:
                 "title": "Token lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             },             
             {
@@ -4846,9 +4804,18 @@ Resources:
                 "title": "Journey outcome lambda warnings/errors",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6            
+              "width": 12,
+              "height": 3            
             }, 
+            {
+              "type": "text",
+              "properties": {
+                "markdown": "TODO",
+                "background": "transparent"
+              },
+              "width": 12,
+              "height": 3
+            },              
             {
               "type": "log",
               "properties": {
@@ -4857,8 +4824,8 @@ Resources:
                 "title": "Journey outcome lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6
+              "width": 8,
+              "height": 3
             },             
             {
               "type": "log",
@@ -4868,7 +4835,7 @@ Resources:
                 "title": "Journey outcome lambda cold start rate (%)",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             },   
             {
@@ -4879,7 +4846,7 @@ Resources:
                 "title": "Journey outcome lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             },
             {
@@ -4894,9 +4861,18 @@ Resources:
                 "title": "Generate OTP lambda warnings/errors",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6           
+              "width": 12,
+              "height": 3           
             }, 
+            {
+              "type": "text",
+              "properties": {
+                "markdown": "TODO",
+                "background": "transparent"
+              },
+              "width": 12,
+              "height": 3
+            },              
             {
               "type": "log",
               "properties": {
@@ -4905,8 +4881,8 @@ Resources:
                 "title": "Generate OTP lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6
+              "width": 8,
+              "height": 3
             },             
             {
               "type": "log",
@@ -4916,7 +4892,7 @@ Resources:
                 "title": "Generate OTP lambda cold start rate (%)",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             },   
             {
@@ -4927,7 +4903,7 @@ Resources:
                 "title": "Generate OTP lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             },
             {
@@ -4942,9 +4918,18 @@ Resources:
                 "title": "Check OTP lambda warnings/errors",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6             
+              "width": 12,
+              "height": 3             
             }, 
+            {
+              "type": "text",
+              "properties": {
+                "markdown": "TODO",
+                "background": "transparent"
+              },
+              "width": 12,
+              "height": 3
+            },              
             {
               "type": "log",
               "properties": {
@@ -4953,8 +4938,8 @@ Resources:
                 "title": "Check OTP lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6
+              "width": 8,
+              "height": 3
             },             
             {
               "type": "log",
@@ -4964,7 +4949,7 @@ Resources:
                 "title": "Check OTP lambda cold start rate (%)",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             },   
             {
@@ -4975,7 +4960,7 @@ Resources:
                 "title": "Check OTP lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             },
             {
@@ -4990,9 +4975,18 @@ Resources:
                 "title": "Check password lambda warnings/errors",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6            
+              "width": 12,
+              "height": 3            
             }, 
+            {
+              "type": "text",
+              "properties": {
+                "markdown": "TODO",
+                "background": "transparent"
+              },
+              "width": 12,
+              "height": 3
+            },              
             {
               "type": "log",
               "properties": {
@@ -5001,8 +4995,8 @@ Resources:
                 "title": "Check password lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6
+              "width": 8,
+              "height": 3
             },             
             {
               "type": "log",
@@ -5012,7 +5006,7 @@ Resources:
                 "title": "Check password lambda cold start rate (%)",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             },   
             {
@@ -5023,7 +5017,7 @@ Resources:
                 "title": "Check password lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             },
             {
@@ -5038,9 +5032,18 @@ Resources:
                 "title": "Lockout status lambda warnings/errors",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6             
+              "width": 12,
+              "height": 3             
             }, 
+            {
+              "type": "text",
+              "properties": {
+                "markdown": "TODO",
+                "background": "transparent"
+              },
+              "width": 12,
+              "height": 3
+            },              
             {
               "type": "log",
               "properties": {
@@ -5049,8 +5052,8 @@ Resources:
                 "title": "Lockout status lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
-              "height": 6
+              "width": 8,
+              "height": 3
             },             
             {
               "type": "log",
@@ -5060,7 +5063,7 @@ Resources:
                 "title": "Lockout status lambda cold start rate (%)",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             },   
             {
@@ -5071,7 +5074,7 @@ Resources:
                 "title": "Lockout status lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
-              "width": 6,
+              "width": 8,
               "height": 3
             }                                                
           ]
