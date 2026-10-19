@@ -3084,124 +3084,124 @@ Resources:
           - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiGenerateOTPLambdaLogCriticalByContextMetricFilter:
+  ApiGenerateOTPLambdaLogCriticalMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
       FilterPattern: '{ $.level = "CRITICAL" }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
-          MetricName: CriticalLogCountByContext
+          MetricName: CriticalLogCount
           MetricValue: "1"
 
-  ApiCheckOTPLambdaLogCriticalByContextMetricFilter:
+  ApiCheckOTPLambdaLogCriticalMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
       FilterPattern: '{ $.level = "CRITICAL" }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
-          MetricName: CriticalLogCountByContext
+          MetricName: CriticalLogCount
           MetricValue: "1"
 
-  ApiCheckPasswordLambdaLogCriticalByContextMetricFilter:
+  ApiCheckPasswordLambdaLogCriticalMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
       FilterPattern: '{ $.level = "CRITICAL" }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
-          MetricName: CriticalLogCountByContext
+          MetricName: CriticalLogCount
           MetricValue: "1"
 
-  ApiLockoutStatusLambdaLogCriticalByContextMetricFilter:
+  ApiLockoutStatusLambdaLogCriticalMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
       FilterPattern: '{ $.level = "CRITICAL" }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
-          MetricName: CriticalLogCountByContext
+          MetricName: CriticalLogCount
           MetricValue: "1"
 
-  ApiGenerateOTPLambdaLogErrorByContextMetricFilter:
+  ApiGenerateOTPLambdaLogErrorMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
-          MetricName: ErrorLogCountByContext
+          MetricName: ErrorLogCount
           MetricValue: "1"
 
-  ApiCheckOTPLambdaLogErrorByContextMetricFilter:
+  ApiCheckOTPLambdaLogErrorMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
-          MetricName: ErrorLogCountByContext
+          MetricName: ErrorLogCount
           MetricValue: "1"
 
-  ApiCheckPasswordLambdaLogErrorByContextMetricFilter:
+  ApiCheckPasswordLambdaLogErrorMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
-          MetricName: ErrorLogCountByContext
+          MetricName: ErrorLogCount
           MetricValue: "1"
 
-  ApiLockoutStatusLambdaLogErrorByContextMetricFilter:
+  ApiLockoutStatusLambdaLogErrorMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
-          MetricName: ErrorLogCountByContext
+          MetricName: ErrorLogCount
           MetricValue: "1"
 
-  ApiGenerateOTPLambdaLogWarnByContextMetricFilter:
+  ApiGenerateOTPLambdaLogWarnMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
       FilterPattern: '{ $.level = "WARN" }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
-          MetricName: WarnLogCountByContext
+          MetricName: WarnLogCount
           MetricValue: "1"
 
-  ApiCheckOTPLambdaLogWarnByContextMetricFilter:
+  ApiCheckOTPLambdaLogWarnMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
       FilterPattern: '{ $.level = "WARN" }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
-          MetricName: WarnLogCountByContext
+          MetricName: WarnLogCount
           MetricValue: "1"
 
-  ApiCheckPasswordLambdaLogWarnByContextMetricFilter:
+  ApiCheckPasswordLambdaLogWarnMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
       FilterPattern: '{ $.level = "WARN" }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
-          MetricName: WarnLogCountByContext
+          MetricName: WarnLogCount
           MetricValue: "1"
 
-  ApiLockoutStatusLambdaLogWarnByContextMetricFilter:
+  ApiLockoutStatusLambdaLogWarnMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
       FilterPattern: '{ $.level = "WARN" }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
-          MetricName: WarnLogCountByContext
+          MetricName: WarnLogCount
           MetricValue: "1"
 
   SessionSecret:
@@ -4853,9 +4853,9 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"CriticalLogCountByContext\"', 'Sum')),0)", "id": "critical__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"ErrorLogCountByContext\"', 'Sum')),0)", "id": "error__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"WarnLogCountByContext\"', 'Sum')),0)", "id": "warn__total" } ]
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
                 ],
                 "view": "timeSeries",
                 "title": "Generate OTP lambda warnings/errors",
@@ -4910,9 +4910,9 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"CriticalLogCountByContext\"', 'Sum')),0)", "id": "critical__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"ErrorLogCountByContext\"', 'Sum')),0)", "id": "error__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"WarnLogCountByContext\"', 'Sum')),0)", "id": "warn__total" } ]
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
                 ],
                 "view": "timeSeries",
                 "title": "Check OTP lambda warnings/errors",
@@ -4967,9 +4967,9 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"CriticalLogCountByContext\"', 'Sum')),0)", "id": "critical__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"ErrorLogCountByContext\"', 'Sum')),0)", "id": "error__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"WarnLogCountByContext\"', 'Sum')),0)", "id": "warn__total" } ]
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
                 ],
                 "view": "timeSeries",
                 "title": "Check password lambda warnings/errors",
@@ -5024,9 +5024,9 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"CriticalLogCountByContext\"', 'Sum')),0)", "id": "critical__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"ErrorLogCountByContext\"', 'Sum')),0)", "id": "error__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"WarnLogCountByContext\"', 'Sum')),0)", "id": "warn__total" } ]
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
                 ],
                 "view": "timeSeries",
                 "title": "Lockout status lambda warnings/errors",
