@@ -2038,6 +2038,213 @@ Resources:
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
 
+  ApiCheckOTPLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiCheckOTPLambda"
+      RetentionInDays: 90
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  ApiCheckOTPLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      DeploymentPreference:
+        Alarms:
+          - !Ref ApiCheckOTPLambdaErrorsAlarm
+          - !Ref ApiCheckOTPLambdaAvailabilityAlarm
+          - !Ref ApiCheckOTPLambdaLogErrorAlarm
+      LoggingConfig:
+        LogGroup: !Ref ApiCheckOTPLambdaLogGroup
+      Handler: index.handler
+      Environment:
+        Variables:
+          OTPS_TABLE_NAME: !Ref OTPsTable
+          OTP_CHECKS_TABLE_NAME: !Ref OTPChecksTable
+          LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt LockoutsTable.Arn
+                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+              Resource:
+                - !GetAtt OTPsTable.Arn
+                - !Sub "${OTPsTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt OTPChecksTable.Arn
+                - !Sub "${OTPChecksTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Resource: !GetAtt DynamoDbSSEKey.Arn
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
+      Events:
+        CheckOTP:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiApiGateway
+            Path: /check-otp/{publicSubjectId}
+            Method: POST
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2024"
+        Sourcemap: true
+        EntryPoints:
+          - solutions/api/src/lambda/check-otp/index.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+
+  ApiCheckPasswordLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiCheckPasswordLambda"
+      RetentionInDays: 90
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  ApiCheckPasswordLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      DeploymentPreference:
+        Alarms:
+          - !Ref ApiCheckPasswordLambdaErrorsAlarm
+          - !Ref ApiCheckPasswordLambdaAvailabilityAlarm
+          - !Ref ApiCheckPasswordLambdaLogErrorAlarm
+      LoggingConfig:
+        LogGroup: !Ref ApiCheckPasswordLambdaLogGroup
+      Handler: index.handler
+      Environment:
+        Variables:
+          PASSWORD_CHECKS_TABLE_NAME: !Ref PasswordChecksTable
+          LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+          ACCOUNT_DATA_API_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              accountDataApiUrl,
+            ]
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt LockoutsTable.Arn
+                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt PasswordChecksTable.Arn
+                - !Sub "${PasswordChecksTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Resource: !GetAtt DynamoDbSSEKey.Arn
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
+      Events:
+        CheckPassword:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiApiGateway
+            Path: /check-password/{publicSubjectId}
+            Method: POST
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2024"
+        Sourcemap: true
+        EntryPoints:
+          - solutions/api/src/lambda/check-password/index.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+
+  ApiLockoutStatusLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiLockoutStatusLambda"
+      RetentionInDays: 90
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  ApiLockoutStatusLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      DeploymentPreference:
+        Alarms:
+          - !Ref ApiLockoutStatusLambdaErrorsAlarm
+          - !Ref ApiLockoutStatusLambdaAvailabilityAlarm
+          - !Ref ApiLockoutStatusLambdaLogErrorAlarm
+      LoggingConfig:
+        LogGroup: !Ref ApiLockoutStatusLambdaLogGroup
+      Handler: index.handler
+      Environment:
+        Variables:
+          LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+              Resource:
+                - !GetAtt LockoutsTable.Arn
+                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource: !GetAtt DynamoDbSSEKey.Arn
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
+      Events:
+        LockoutStatus:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiApiGateway
+            Path: /lockout-status/{publicSubjectId}
+            Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2024"
+        Sourcemap: true
+        EntryPoints:
+          - solutions/api/src/lambda/lockout-status/index.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+
   ApiHealthcheckLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -2066,6 +2273,30 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref ApiGenerateOTPLambda.Alias
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
+
+  ApiCheckOTPLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiCheckOTPLambda.Alias
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
+
+  ApiCheckPasswordLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiCheckPasswordLambda.Alias
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
+
+  ApiLockoutStatusLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiLockoutStatusLambda.Alias
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
