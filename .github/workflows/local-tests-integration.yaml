@@ -118,6 +118,9 @@ jobs:
               "JWT_SIGNING_KEY_ALIAS": "alias/amc-JWTSigningKey",
               "JOURNEY_OUTCOME_TABLE_NAME": "amc-JourneyOutcome"
             },
+            "ApiLockoutStatusLambda": {
+              "LOCKOUTS_TABLE_NAME": "amc-Lockouts"
+            },
             "ApiGenerateOTPLambda": {
               "LOCKOUTS_TABLE_NAME": "amc-Lockouts",
               "OTPS_TABLE_NAME": "amc-OTPs"
