@@ -2006,7 +2006,6 @@ Resources:
               Action:
                 - dynamodb:Query
                 - dynamodb:PutItem
-                - dynamodb:UpdateItem
               Resource:
                 - !GetAtt OTPsTable.Arn
                 - !Sub "${OTPsTable.Arn}/index/PublicSubjectIdIndex"

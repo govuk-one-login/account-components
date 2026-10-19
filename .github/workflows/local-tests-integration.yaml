@@ -67,7 +67,7 @@ jobs:
           REPLAY_ATTACK_TABLE_NAME=amc-ReplayAttack  
           NOTIFICATIONS_QUEUE_URL=http://localhost:4566/000000000000/amc-NotificationsQueue
           AUDIT_EVENTS_QUEUE_URL=http://localhost:4566/000000000000/amc-TxMASQSProducerAuditEventQueue
-          INTERNAL_API_URL=http://localhost:6004          
+          INTERNAL_API_URL=http://localhost:6003/internal-api        
           EOF
 
       - name: Configure stubs environment
