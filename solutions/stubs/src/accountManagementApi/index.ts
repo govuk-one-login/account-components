@@ -64,6 +64,12 @@ export const accountManagementApi = function (app: FastifyInstance) {
         return reply;
       }
 
+      if (!request.headers["x-adapi-accesstoken"]) {
+        reply.status(401);
+        reply.send();
+        return reply;
+      }
+
       reply.send();
       return reply;
     },
@@ -73,12 +79,6 @@ export const accountManagementApi = function (app: FastifyInstance) {
     paths.accountManagementApi.sendOtpChallenge,
     async function (request, reply) {
       if (!request.headers.authorization) {
-        reply.status(401);
-        reply.send();
-        return reply;
-      }
-
-      if (!request.headers["x-adapi-accesstoken"]) {
         reply.status(401);
         reply.send();
         return reply;
