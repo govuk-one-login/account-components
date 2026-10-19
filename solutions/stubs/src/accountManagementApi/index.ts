@@ -78,6 +78,12 @@ export const accountManagementApi = function (app: FastifyInstance) {
         return reply;
       }
 
+      if (!request.headers["x-adapi-accesstoken"]) {
+        reply.status(401);
+        reply.send();
+        return reply;
+      }
+
       const token = request.headers.authorization.split(" ")[1];
       if (token) {
         const claims = decodeJwt(token);
