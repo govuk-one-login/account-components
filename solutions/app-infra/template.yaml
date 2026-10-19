@@ -4334,7 +4334,7 @@ Resources:
             {
               "type": "text",
               "width": 24,
-              "height": 2,
+              "height": 1,
               "properties": {
                 "markdown": " ",
                 "background": "transparent"
@@ -4406,7 +4406,7 @@ Resources:
             {
               "type": "text",
               "width": 24,
-              "height": 2,
+              "height": 1,
               "properties": {
                 "markdown": " ",
                 "background": "transparent"
@@ -4478,7 +4478,7 @@ Resources:
             {
               "type": "text",
               "width": 24,
-              "height": 2,
+              "height": 1,
               "properties": {
                 "markdown": " ",
                 "background": "transparent"
@@ -4538,7 +4538,7 @@ Resources:
             {
               "type": "text",
               "width": 24,
-              "height": 2,
+              "height": 1,
               "properties": {
                 "markdown": " ",
                 "background": "transparent"
@@ -4839,7 +4839,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3           
+              "height": 4
             },                               
             {
               "type": "metric",
@@ -4854,7 +4854,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3            
+              "height": 4
             },            
             {
               "type": "log",
@@ -4865,7 +4865,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },             
             {
               "type": "log",
@@ -4876,7 +4876,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },   
             {
               "type": "log",
@@ -4887,7 +4887,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },   
             {
               "type": "text",
@@ -4909,7 +4909,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3           
+              "height": 4           
             },                        
             {
               "type": "metric",
@@ -4924,7 +4924,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3             
+              "height": 4             
             },             
             {
               "type": "log",
@@ -4935,7 +4935,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },              
             {
               "type": "log",
@@ -4946,7 +4946,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },   
             {
               "type": "log",
@@ -4957,7 +4957,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },      
             {
               "type": "text",
@@ -4979,7 +4979,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3           
+              "height": 4           
             },                   
             {
               "type": "metric",
@@ -4994,7 +4994,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3            
+              "height": 4            
             },              
             {
               "type": "log",
@@ -5005,7 +5005,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },             
             {
               "type": "log",
@@ -5016,7 +5016,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },   
             {
               "type": "log",
@@ -5027,7 +5027,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },
             {
               "type": "text",
@@ -5049,7 +5049,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3           
+              "height": 4           
             }, 
             {
               "type": "metric",
@@ -5064,7 +5064,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3           
+              "height": 4           
             },             
             {
               "type": "log",
@@ -5075,7 +5075,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },             
             {
               "type": "log",
@@ -5086,7 +5086,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },   
             {
               "type": "log",
@@ -5097,7 +5097,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },
             {
               "type": "text",
@@ -5119,7 +5119,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3           
+              "height": 4           
             },             
             {
               "type": "metric",
@@ -5134,7 +5134,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3             
+              "height": 4             
             },             
             {
               "type": "log",
@@ -5145,7 +5145,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },             
             {
               "type": "log",
@@ -5156,7 +5156,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },   
             {
               "type": "log",
@@ -5167,7 +5167,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },
             {
               "type": "text",
@@ -5189,7 +5189,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3           
+              "height": 4           
             },             
             {
               "type": "metric",
@@ -5204,7 +5204,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3            
+              "height": 4            
             },              
             {
               "type": "log",
@@ -5215,7 +5215,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },             
             {
               "type": "log",
@@ -5226,7 +5226,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },   
             {
               "type": "log",
@@ -5237,7 +5237,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },
             {
               "type": "text",
@@ -5259,7 +5259,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3           
+              "height": 4           
             },             
             {
               "type": "metric",
@@ -5274,7 +5274,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 12,
-              "height": 3             
+              "height": 4             
             },             
             {
               "type": "log",
@@ -5285,7 +5285,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },             
             {
               "type": "log",
@@ -5296,7 +5296,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             },   
             {
               "type": "log",
@@ -5307,7 +5307,7 @@ Resources:
                 "region": "${AWS::Region}"
               },
               "width": 8,
-              "height": 3
+              "height": 4
             }                                                
           ]
         }
