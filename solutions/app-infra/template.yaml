@@ -2792,6 +2792,298 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
+  ApiGenerateOTPLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC generate OTP lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiGenerateOTPLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiGenerateOTPLambdaAvailabilityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+              MetricName: 5XXResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: total
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+              MetricName: ResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: availability
+          Expression: "IF(total > 0, 1 - (errors / total))"
+          Label: "Availability"
+          ReturnData: true
+      Threshold: 0.999
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiGenerateOTPLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC generate OTP lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckOTPLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC check OTP lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiCheckOTPLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckOTPLambdaAvailabilityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+              MetricName: 5XXResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: total
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+              MetricName: ResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: availability
+          Expression: "IF(total > 0, 1 - (errors / total))"
+          Label: "Availability"
+          ReturnData: true
+      Threshold: 0.999
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckOTPLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC check OTP lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckPasswordLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC check password lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiCheckPasswordLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckPasswordLambdaAvailabilityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+              MetricName: 5XXResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: total
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+              MetricName: ResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: availability
+          Expression: "IF(total > 0, 1 - (errors / total))"
+          Label: "Availability"
+          ReturnData: true
+      Threshold: 0.999
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckPasswordLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC check password lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiLockoutStatusLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC lockout status lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiLockoutStatusLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiLockoutStatusLambdaAvailabilityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+              MetricName: 5XXResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: total
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+              MetricName: ResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: availability
+          Expression: "IF(total > 0, 1 - (errors / total))"
+          Label: "Availability"
+          ReturnData: true
+      Threshold: 0.999
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiLockoutStatusLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC lockout status lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
   SessionSecret:
     Type: AWS::SecretsManager::Secret
     DeletionPolicy: Retain
