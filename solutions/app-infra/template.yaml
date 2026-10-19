@@ -2482,6 +2482,21 @@ Resources:
             - Key: client_id
               Value: $.client_id
 
+  ApiTokenLambdaLogRequestByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+          MetricName: RequestLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
   ApiTokenLambdaLogErrorMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -2701,6 +2716,21 @@ Resources:
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  ApiJourneyOutcomeLambdaLogRequestByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+          MetricName: RequestLogCountByContext
           MetricValue: "1"
           Dimensions:
             - Key: scope
@@ -3204,6 +3234,46 @@ Resources:
           MetricName: WarnLogCount
           MetricValue: "1"
 
+  ApiGenerateOTPLambdaLogRequestMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+          MetricName: RequestLogCount
+          MetricValue: "1"
+
+  ApiCheckOTPLambdaLogRequestMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+          MetricName: RequestLogCount
+          MetricValue: "1"
+
+  ApiCheckPasswordLambdaLogRequestMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+          MetricName: RequestLogCount
+          MetricValue: "1"
+
+  ApiLockoutStatusLambdaLogRequestMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+          MetricName: RequestLogCount
+          MetricValue: "1"
+
   SessionSecret:
     Type: AWS::SecretsManager::Secret
     DeletionPolicy: Retain
@@ -3667,6 +3737,23 @@ Resources:
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
           MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+            - Key: path
+              Value: $.path
+
+  FrontendLambdaLogRequestByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: RequestLogCountByContext
           MetricValue: "1"
           Dimensions:
             - Key: scope
@@ -4677,7 +4764,20 @@ Resources:
               },
               "width": 12,
               "height": 4
-            },                     
+            },   
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/FrontendLambda\" MetricName=\"RequestLogCountByContext\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Frontend lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 3           
+            },                               
             {
               "type": "metric",
               "properties": {
@@ -4692,16 +4792,7 @@ Resources:
               },
               "width": 12,
               "height": 3            
-            },
-            {
-              "type": "text",
-              "properties": {
-                "markdown": "TODO",
-                "background": "transparent"
-              },
-              "width": 12,
-              "height": 3
-            },             
+            },            
             {
               "type": "log",
               "properties": {
@@ -4734,7 +4825,20 @@ Resources:
               },
               "width": 8,
               "height": 3
-            },             
+            },   
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiTokenLambda\" MetricName=\"RequestLogCountByContext\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Token lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 3           
+            },                        
             {
               "type": "metric",
               "properties": {
@@ -4749,16 +4853,7 @@ Resources:
               },
               "width": 12,
               "height": 3             
-            }, 
-            {
-              "type": "text",
-              "properties": {
-                "markdown": "TODO",
-                "background": "transparent"
-              },
-              "width": 12,
-              "height": 3
-            },              
+            },             
             {
               "type": "log",
               "properties": {
@@ -4791,7 +4886,20 @@ Resources:
               },
               "width": 8,
               "height": 3
-            },             
+            },       
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiJourneyOutcomeLambda\" MetricName=\"RequestLogCountByContext\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Journey outcome lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 3           
+            },                   
             {
               "type": "metric",
               "properties": {
@@ -4806,15 +4914,6 @@ Resources:
               },
               "width": 12,
               "height": 3            
-            }, 
-            {
-              "type": "text",
-              "properties": {
-                "markdown": "TODO",
-                "background": "transparent"
-              },
-              "width": 12,
-              "height": 3
             },              
             {
               "type": "log",
@@ -4853,6 +4952,19 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"RequestLogCount\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Generate OTP lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 3           
+            }, 
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
@@ -4863,16 +4975,7 @@ Resources:
               },
               "width": 12,
               "height": 3           
-            }, 
-            {
-              "type": "text",
-              "properties": {
-                "markdown": "TODO",
-                "background": "transparent"
-              },
-              "width": 12,
-              "height": 3
-            },              
+            },             
             {
               "type": "log",
               "properties": {
@@ -4910,6 +5013,19 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"RequestLogCount\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Check OTP lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 3           
+            },             
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
@@ -4920,16 +5036,7 @@ Resources:
               },
               "width": 12,
               "height": 3             
-            }, 
-            {
-              "type": "text",
-              "properties": {
-                "markdown": "TODO",
-                "background": "transparent"
-              },
-              "width": 12,
-              "height": 3
-            },              
+            },             
             {
               "type": "log",
               "properties": {
@@ -4967,6 +5074,19 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"RequestLogCount\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Check password lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 3           
+            },             
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
@@ -4977,15 +5097,6 @@ Resources:
               },
               "width": 12,
               "height": 3            
-            }, 
-            {
-              "type": "text",
-              "properties": {
-                "markdown": "TODO",
-                "background": "transparent"
-              },
-              "width": 12,
-              "height": 3
             },              
             {
               "type": "log",
@@ -5024,6 +5135,19 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"RequestLogCount\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Lockout status lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 3           
+            },             
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
                   [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
@@ -5034,16 +5158,7 @@ Resources:
               },
               "width": 12,
               "height": 3             
-            }, 
-            {
-              "type": "text",
-              "properties": {
-                "markdown": "TODO",
-                "background": "transparent"
-              },
-              "width": 12,
-              "height": 3
-            },              
+            },             
             {
               "type": "log",
               "properties": {
