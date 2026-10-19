@@ -3155,35 +3155,35 @@ Resources:
             - Key: client_id
               Value: $.client_id
 
-    ApiCheckPasswordLambdaLogErrorByContextMetricFilter:
-      Type: AWS::Logs::MetricFilter
-      Properties:
-        LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
-        FilterPattern: '{ $.level = "ERROR" }'
-        MetricTransformations:
-          - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
-            MetricName: ErrorLogCountByContext
-            MetricValue: "1"
-            Dimensions:
-              - Key: scope
-                Value: $.scope
-              - Key: client_id
-                Value: $.client_id
+  ApiCheckPasswordLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
 
-    ApiLockoutStatusLambdaLogErrorByContextMetricFilter:
-      Type: AWS::Logs::MetricFilter
-      Properties:
-        LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
-        FilterPattern: '{ $.level = "ERROR" }'
-        MetricTransformations:
-          - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
-            MetricName: ErrorLogCountByContext
-            MetricValue: "1"
-            Dimensions:
-              - Key: scope
-                Value: $.scope
-              - Key: client_id
-                Value: $.client_id
+  ApiLockoutStatusLambdaLogErrorByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+          MetricName: ErrorLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
 
   ApiGenerateOTPLambdaLogWarnByContextMetricFilter:
     Type: AWS::Logs::MetricFilter
