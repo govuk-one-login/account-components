@@ -46,26 +46,26 @@ describe("session utils", () => {
   });
 
   describe("getSessionOptions", () => {
-    it("throws when SESSIONS_SIGNER is missing", async () => {
+    it("throws when SESSIONS_SIGNER is missing", () => {
       delete process.env["SESSIONS_SIGNER"];
       process.env["SESSIONS_TABLE_NAME"] = "test-table";
 
-      await expect(getSessionOptions()).rejects.toThrow();
+      expect(() => getSessionOptions()).toThrow();
     });
 
-    it("throws when SESSIONS_TABLE_NAME is missing", async () => {
+    it("throws when SESSIONS_TABLE_NAME is missing", () => {
       process.env["SESSIONS_SIGNER"] = "test-signer";
       delete process.env["SESSIONS_TABLE_NAME"];
 
-      await expect(getSessionOptions()).rejects.toThrow();
+      expect(() => getSessionOptions()).toThrow();
     });
 
-    it("returns session options with secure cookie for non-local environment", async () => {
+    it("returns session options with secure cookie for non-local environment", () => {
       process.env["SESSIONS_SIGNER"] = "test-signer";
       process.env["SESSIONS_TABLE_NAME"] = "test-table";
       mockGetEnvironment.mockReturnValue("production");
 
-      const options = await getSessionOptions();
+      const options = getSessionOptions();
 
       expect(options.secret).toBe("test-signer");
       expect(options.cookie?.secure).toBe(true);
@@ -79,22 +79,22 @@ describe("session utils", () => {
       expect(options.store).toBeDefined();
     });
 
-    it("returns session options with non-secure cookie for local environment", async () => {
+    it("returns session options with non-secure cookie for local environment", () => {
       process.env["SESSIONS_SIGNER"] = "test-signer";
       process.env["SESSIONS_TABLE_NAME"] = "test-table";
       mockGetEnvironment.mockReturnValue("local");
 
-      const options = await getSessionOptions();
+      const options = getSessionOptions();
 
       expect(options.cookie?.secure).toBe(false);
     });
 
-    it("creates DynamoDB store with table name", async () => {
+    it("creates DynamoDB store with table name", () => {
       process.env["SESSIONS_SIGNER"] = "test-signer";
       process.env["SESSIONS_TABLE_NAME"] = "test-table";
       mockGetEnvironment.mockReturnValue("production");
 
-      const options = await getSessionOptions();
+      const options = getSessionOptions();
 
       expect(options.store).toBeInstanceOf(DynamoDbSessionStore);
     });
