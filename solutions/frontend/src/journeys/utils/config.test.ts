@@ -82,6 +82,7 @@ describe("journeys", () => {
       [Lang.Welsh]: { delete: "delete-cy" },
     });
     expect(result.requiredClaims).toStrictEqual([
+      "account_data_api_access_token",
       "account_management_api_access_token",
     ]);
   });
