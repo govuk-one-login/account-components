@@ -36,7 +36,7 @@ export enum Lang {
 }
 
 export enum Source {
-  "account-delete" = "accont-delete",
+  "account-delete" = "account-delete",
 }
 
 export enum LockoutType {
