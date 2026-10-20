@@ -5,6 +5,12 @@ import * as v from "valibot";
 import type { Source } from "../../../commons/utils/constants.js";
 import { LockoutType } from "../../../commons/utils/constants.js";
 
+const defaultMaxAllowedBeforeLockout = {
+  count: 6,
+  window: 10800,
+};
+const defaultLockoutDuration = 900;
+
 export class InternalApiClient extends JsonApiClient {
   private readonly baseUrl: string;
   private readonly commonHeaders: NonNullable<RequestInit["headers"]>;
@@ -23,15 +29,21 @@ export class InternalApiClient extends JsonApiClient {
 
   async generateOTP(
     publicSubjectId: string,
-    body: {
+    {
+      reissueUnusedUnexpiredOTP = true,
+      expiresIn = 900,
+      maxAllowedBeforeLockout = defaultMaxAllowedBeforeLockout,
+      lockoutDuration = defaultLockoutDuration,
+      ...body
+    }: {
       source: Source;
-      reissueUnusedUnexpiredOTP: boolean;
-      expiresIn: number;
-      maxAllowedBeforeLockout: {
+      reissueUnusedUnexpiredOTP?: boolean;
+      expiresIn?: number;
+      maxAllowedBeforeLockout?: {
         count: number;
         window: number;
       };
-      lockoutDuration: number;
+      lockoutDuration?: number;
     },
   ) {
     return this.logOnError("generateOTP", async () => {
@@ -41,7 +53,13 @@ export class InternalApiClient extends JsonApiClient {
           {
             method: "POST",
             headers: this.commonHeaders,
-            body: JSON.stringify(body),
+            body: JSON.stringify({
+              reissueUnusedUnexpiredOTP,
+              expiresIn,
+              maxAllowedBeforeLockout,
+              lockoutDuration,
+              ...body,
+            }),
           },
         );
 
@@ -70,14 +88,18 @@ export class InternalApiClient extends JsonApiClient {
 
   async checkOTP(
     publicSubjectId: string,
-    body: {
+    {
+      maxAllowedBeforeLockout = defaultMaxAllowedBeforeLockout,
+      lockoutDuration = defaultLockoutDuration,
+      ...body
+    }: {
       otp: string;
       source: Source;
-      maxAllowedBeforeLockout: {
+      maxAllowedBeforeLockout?: {
         count: number;
         window: number;
       };
-      lockoutDuration: number;
+      lockoutDuration?: number;
     },
   ) {
     return this.logOnError("checkOTP", async () => {
@@ -87,7 +109,11 @@ export class InternalApiClient extends JsonApiClient {
           {
             method: "POST",
             headers: this.commonHeaders,
-            body: JSON.stringify(body),
+            body: JSON.stringify({
+              maxAllowedBeforeLockout,
+              lockoutDuration,
+              ...body,
+            }),
           },
         );
 
@@ -113,14 +139,18 @@ export class InternalApiClient extends JsonApiClient {
 
   async checkPassword(
     publicSubjectId: string,
-    body: {
+    {
+      maxAllowedBeforeLockout = defaultMaxAllowedBeforeLockout,
+      lockoutDuration = defaultLockoutDuration,
+      ...body
+    }: {
       password: string;
       source: Source;
-      maxAllowedBeforeLockout: {
+      maxAllowedBeforeLockout?: {
         count: number;
         window: number;
       };
-      lockoutDuration: number;
+      lockoutDuration?: number;
     },
   ) {
     return this.logOnError("checkPassword", async () => {
@@ -130,7 +160,11 @@ export class InternalApiClient extends JsonApiClient {
           {
             method: "POST",
             headers: this.commonHeaders,
-            body: JSON.stringify(body),
+            body: JSON.stringify({
+              maxAllowedBeforeLockout,
+              lockoutDuration,
+              ...body,
+            }),
           },
         );
 
