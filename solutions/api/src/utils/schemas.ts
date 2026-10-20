@@ -6,7 +6,7 @@ const unixEpochTimeInSecondsToDate = v.pipe(
   v.transform((value) => new Date(value * 1000)),
 );
 
-export const otpItem = v.looseObject({
+export const otpsItem = v.looseObject({
   id: v.string(),
   publicSubjectId: v.string(),
   generatedAt: unixEpochTimeInSecondsToDate,
@@ -17,7 +17,7 @@ export const otpItem = v.looseObject({
   hasContributedToTooManyOTPsRequestedLockout: v.boolean(),
 });
 
-export const otpCheck = v.looseObject({
+export const otpChecksItem = v.looseObject({
   id: v.string(),
   publicSubjectId: v.string(),
   checkedAt: unixEpochTimeInSecondsToDate,
@@ -26,7 +26,7 @@ export const otpCheck = v.looseObject({
   hasContributedToTooManyIncorrectOTPsEnteredLockout: v.boolean(),
 });
 
-export const passwordCheck = v.looseObject({
+export const passwordChecksItem = v.looseObject({
   id: v.string(),
   publicSubjectId: v.string(),
   checkedAt: unixEpochTimeInSecondsToDate,
@@ -35,7 +35,7 @@ export const passwordCheck = v.looseObject({
   hasContributedToTooManyIncorrectPasswordsEnteredLockout: v.boolean(),
 });
 
-export const lockoutStatus = v.looseObject({
+export const lockoutStatusesItem = v.looseObject({
   id: v.string(),
   publicSubjectId: v.string(),
   lockedOutAt: unixEpochTimeInSecondsToDate,
