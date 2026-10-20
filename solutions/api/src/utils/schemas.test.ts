@@ -4,7 +4,7 @@ import {
   otpsItem,
   otpChecksItem,
   passwordChecksItem,
-  lockoutStatusesItem,
+  lockoutsItem,
 } from "./schemas.js";
 import { LockoutType, Source } from "../../../commons/utils/constants.js";
 
@@ -120,7 +120,7 @@ describe("passwordChecksItem", () => {
   });
 });
 
-describe("lockoutStatusesItem", () => {
+describe("lockoutsItem", () => {
   const valid = {
     ...baseFields,
     lockedOutAt: now,
@@ -129,7 +129,7 @@ describe("lockoutStatusesItem", () => {
   };
 
   it("parses a valid item", () => {
-    const result = v.parse(lockoutStatusesItem, valid);
+    const result = v.parse(lockoutsItem, valid);
 
     expect(result.lockedOutAt).toBeInstanceOf(Date);
     expect(result.lockedOutUntil).toBeInstanceOf(Date);
@@ -138,27 +138,25 @@ describe("lockoutStatusesItem", () => {
 
   it("allows extra fields", () => {
     expect(() =>
-      v.parse(lockoutStatusesItem, { ...valid, extra: "field" }),
+      v.parse(lockoutsItem, { ...valid, extra: "field" }),
     ).not.toThrow();
   });
 
   it("throws for invalid type", () => {
     expect(() =>
-      v.parse(lockoutStatusesItem, { ...valid, type: "invalid" }),
+      v.parse(lockoutsItem, { ...valid, type: "invalid" }),
     ).toThrow();
   });
 
   it("throws for invalid source", () => {
     expect(() =>
-      v.parse(lockoutStatusesItem, { ...valid, source: "invalid" }),
+      v.parse(lockoutsItem, { ...valid, source: "invalid" }),
     ).toThrow();
   });
 
   it("parses all LockoutType values", () => {
     for (const type of Object.values(LockoutType)) {
-      expect(() =>
-        v.parse(lockoutStatusesItem, { ...valid, type }),
-      ).not.toThrow();
+      expect(() => v.parse(lockoutsItem, { ...valid, type })).not.toThrow();
     }
   });
 });

@@ -35,7 +35,7 @@ export const passwordChecksItem = v.looseObject({
   hasContributedToTooManyIncorrectPasswordsEnteredLockout: v.boolean(),
 });
 
-export const lockoutStatusesItem = v.looseObject({
+export const lockoutsItem = v.looseObject({
   id: v.string(),
   publicSubjectId: v.string(),
   lockedOutAt: unixEpochTimeInSecondsToDate,
