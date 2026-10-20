@@ -64,6 +64,12 @@ export const accountManagementApi = function (app: FastifyInstance) {
         return reply;
       }
 
+      if (!request.headers["x-adapi-accesstoken"]) {
+        reply.status(401);
+        reply.send();
+        return reply;
+      }
+
       reply.send();
       return reply;
     },

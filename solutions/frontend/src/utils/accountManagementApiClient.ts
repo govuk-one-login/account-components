@@ -58,12 +58,14 @@ export class AccountManagementApiClient extends JsonApiClient {
     });
   }
 
-  async deleteAccount(emailAddress: string) {
+  async deleteAccount(adapiAccessToken: string, emailAddress: string) {
     return this.logOnError("deleteAccount", async () => {
       try {
         const response = await this.fetch(`${this.baseUrl}/delete-account`, {
           method: "POST",
-          headers: this.commonHeaders,
+          headers: Object.assign({}, this.commonHeaders, {
+            "X-ADAPI-AccessToken": adapiAccessToken,
+          }),
           body: JSON.stringify({
             email: emailAddress,
           }),
