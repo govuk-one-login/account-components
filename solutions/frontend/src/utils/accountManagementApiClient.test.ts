@@ -147,11 +147,12 @@ describe("accountManagementApiClient", () => {
   describe("deleteAccount", () => {
     it("should make correct API call", async () => {
       const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
+      const adapiAccessToken = "test-adapi-access-token";
       const email = "test@example.com";
 
       mockThisFetch.mockResolvedValueOnce(new Response());
 
-      await client.deleteAccount(email);
+      await client.deleteAccount(adapiAccessToken, email);
 
       expect(mockThisFetch).toHaveBeenCalledWith(
         "https://api.example.com/delete-account",
@@ -160,6 +161,7 @@ describe("accountManagementApiClient", () => {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${mockAccessToken}`,
+            "X-ADAPI-AccessToken": adapiAccessToken,
           },
           body: JSON.stringify({
             email,
@@ -174,7 +176,10 @@ describe("accountManagementApiClient", () => {
 
       mockThisFetch.mockRejectedValueOnce(error);
 
-      const result = await client.deleteAccount("test@example.com");
+      const result = await client.deleteAccount(
+        "test-adapi-access-token",
+        "test@example.com",
+      );
 
       expect(result).toStrictEqual({
         success: false,

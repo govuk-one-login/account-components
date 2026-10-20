@@ -275,8 +275,39 @@ describe("accountManagementApi", () => {
     expect(mockReply.send).toHaveBeenCalledWith();
   });
 
+  it("should return 200 for deleteAccount with valid headers", async () => {
+    accountManagementApi(mockApp);
+
+    mockRequest.headers = {
+      authorization: "Bearer test-token",
+      "x-adapi-accesstoken": "test-adapi-access-token",
+    };
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[1]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.status).not.toHaveBeenCalled();
+    expect(mockReply.send).toHaveBeenCalledWith();
+  });
+
   it("should return 401 for deleteAccount without authorization header", async () => {
     accountManagementApi(mockApp);
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[1]![1] as unknown as (...args: any) => any;
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(mockReply.status).toHaveBeenCalledWith(401);
+    expect(mockReply.send).toHaveBeenCalledWith();
+  });
+
+  it("should return 401 for deleteAccount without x-adapi-accesstoken header", async () => {
+    accountManagementApi(mockApp);
+
+    mockRequest.headers = { authorization: "Bearer test-token" };
 
     const registeredHandler = vi.mocked(mockApp.post).mock
       .calls[1]![1] as unknown as (...args: any) => any;

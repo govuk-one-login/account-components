@@ -1,6 +1,6 @@
 import { metrics } from "../../metrics/index.js";
 
-export const flushMetrics = async () => {
+export const flushMetrics = () => {
   metrics.captureColdStartMetric();
   metrics.publishStoredMetrics();
 };

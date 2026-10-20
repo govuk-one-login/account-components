@@ -37,6 +37,7 @@ describe("confirm handlers", () => {
         // @ts-expect-error
         claims: {
           account_management_api_access_token: "test-token",
+          account_data_api_access_token: "test-adapi-token",
           email: "test@example.com",
           redirect_uri: "https://example.com/callback",
           state: "test-state",
@@ -90,7 +91,10 @@ describe("confirm handlers", () => {
         mockReply as FastifyReply,
       );
 
-      expect(mockDeleteAccount).toHaveBeenCalledWith("test@example.com");
+      expect(mockDeleteAccount).toHaveBeenCalledWith(
+        "test-token",
+        "test@example.com",
+      );
       expect(mockCompleteJourneyActionSuccessfully).toHaveBeenCalledWith(
         {
           action: "temp-account-delete-action",
@@ -120,7 +124,10 @@ describe("confirm handlers", () => {
         ),
       ).rejects.toThrow("Failed to delete account");
 
-      expect(mockDeleteAccount).toHaveBeenCalledWith("test@example.com");
+      expect(mockDeleteAccount).toHaveBeenCalledWith(
+        "test-token",
+        "test@example.com",
+      );
       expect(mockCompleteJourney).not.toHaveBeenCalled();
     });
 
@@ -138,9 +145,24 @@ describe("confirm handlers", () => {
       expect(mockCompleteJourney).not.toHaveBeenCalled();
     });
 
-    it("should throw error when access token is missing", async () => {
+    it("should throw error when account_management_api_access_token is missing", async () => {
       // @ts-expect-error
       delete mockRequest.session.claims.account_management_api_access_token;
+
+      await expect(
+        confirmPostHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        ),
+      ).rejects.toThrow();
+
+      expect(mockDeleteAccount).not.toHaveBeenCalled();
+      expect(mockCompleteJourney).not.toHaveBeenCalled();
+    });
+
+    it("should throw error when account_data_api_access_token is missing", async () => {
+      // @ts-expect-error
+      delete mockRequest.session.claims.account_data_api_access_token;
 
       await expect(
         confirmPostHandler(
