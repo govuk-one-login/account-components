@@ -34,3 +34,13 @@ export enum Lang {
   English = "en",
   Welsh = "cy",
 }
+
+export enum Source {
+  "account-delete" = "accont-delete",
+}
+
+export enum LockoutType {
+  TooManyOTPsRequested = "TooManyOTPsRequested",
+  TooManyIncorrectOTPsEntered = "TooManyIncorrectOTPsEntered",
+  TooManyIncorrectPasswordsEntered = "TooManyIncorrectPasswordsEntered", // pragma: allowlist secret
+}
