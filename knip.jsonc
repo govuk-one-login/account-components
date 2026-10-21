@@ -21,6 +21,7 @@
         "submodules/**/*",
         "solutions/frontend/src/static/application.scss",
         "solutions/stubs/src/static/application.scss",
+        "solutions/api/src/utils/schemas.ts",
       ],
       "ignoreBinaries": [
         "zizmor",
@@ -30,13 +31,10 @@
         "read",
         "sam",
         "awk",
-        "jsonschema",
-        "import",
         "detect-secrets",
       ],
       "ignoreDependencies": [
         "csso-cli",
-        "sass",
         "esbuild",
         "@simplewebauthn/browser",
         "@govuk-one-login/frontend-device-intelligence",
