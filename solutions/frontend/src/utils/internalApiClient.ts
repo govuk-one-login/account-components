@@ -4,6 +4,7 @@ import type { APIGatewayProxyEvent } from "aws-lambda";
 import * as v from "valibot";
 import type { Source } from "../../../commons/utils/constants.js";
 import { LockoutType } from "../../../commons/utils/constants.js";
+import { getEnvironment } from "../../../commons/utils/getEnvironment/index.js";
 
 const defaultMaxAllowedBeforeLockout = {
   count: 6,
@@ -15,7 +16,7 @@ export class InternalApiClient extends JsonApiClient {
   private readonly baseUrl: string;
   private readonly commonHeaders: NonNullable<RequestInit["headers"]>;
 
-  constructor(event?: APIGatewayProxyEvent) {
+  constructor(accessToken?: string, event?: APIGatewayProxyEvent) {
     super("Internal API", event);
 
     assert(process.env["INTERNAL_API_URL"], "INTERNAL_API_URL is not set");
@@ -25,6 +26,16 @@ export class InternalApiClient extends JsonApiClient {
     this.commonHeaders = {
       "Content-Type": "application/json",
     };
+
+    // The access token is not used by the real internal API, only by
+    // the stub version where it contains information about which scenario
+    // to simulate
+    if (
+      ["local", "dev", "build"].includes(getEnvironment()) &&
+      accessToken !== undefined
+    ) {
+      this.commonHeaders.Authorization = `Bearer ${accessToken}`;
+    }
   }
 
   async generateOTP(

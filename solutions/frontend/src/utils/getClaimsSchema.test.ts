@@ -89,6 +89,7 @@ describe("getClaimsSchema", () => {
       account_management_api_access_token: "management-token",
       account_data_api_access_token: "data-token",
       stubs_account_interventions_service_api_access_token: "ais-token",
+      internal_api_access_token: "internal-token",
       sub: "user-123",
       public_sub: "public-user-123",
       email: "test@example.com",
@@ -126,6 +127,36 @@ describe("getClaimsSchema", () => {
     const result = v.safeParse(schema, validClaims);
 
     expect(result.success).toBe(true);
+  });
+
+  it("fails validation for empty internal_api_access_token", () => {
+    const schema = getClaimsSchema(
+      mockAddMetricDimension,
+      mockClient,
+      redirectUri,
+      scope,
+      state,
+    );
+    const invalidClaims = {
+      client_id: "test-client",
+      iss: "test-client",
+      aud: "https://auth.example.com",
+      response_type: "code",
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      iat: Math.floor(Date.now() / 1000) - 10,
+      redirect_uri: redirectUri,
+      scope: "account-delete",
+      state,
+      jti: "unique-jti",
+      sub: "user-123",
+      public_sub: "public-user-123",
+      email: "test@example.com",
+      internal_api_access_token: "",
+    };
+
+    const result = v.safeParse(schema, invalidClaims);
+
+    expect(result.success).toBe(false);
   });
 
   it("validates claims without state when state is undefined", () => {
