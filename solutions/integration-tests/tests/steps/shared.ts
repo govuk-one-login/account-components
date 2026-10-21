@@ -185,7 +185,7 @@ Then("the {word} cookie has been set", async ({ page }, cookieName) => {
 
 Given(
   "I make an API request with the config:",
-  async ({ scenarioData, featureData }, configString: string) => {
+  async ({ scenarioData }, configString: string) => {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const unsafeConfig = yaml.parse(configString);
 
@@ -202,48 +202,16 @@ Given(
         "TRACE",
       ]),
       path: v.string(),
-      queryParameters: v.optional(v.record(v.string(), v.string())),
       headers: v.optional(v.record(v.string(), v.string())),
       body: v.optional(v.record(v.string(), v.any())),
-      pathReplacements: v.optional(v.record(v.string(), v.string())),
     });
 
     const config = v.safeParse(configSchema, unsafeConfig);
 
     expect(config.success, JSON.stringify(config.issues, null, 2)).toBe(true);
-
     if (config.success) {
-      const featureIdReplacementIndicator = "{{FEATURE_ID}}";
-      const scenarioIdReplacementIndicator = "{{SCENARIO_ID}}";
-
-      for (const [placeholder, replacement] of Object.entries(
-        config.output.pathReplacements ?? {},
-      )) {
-        let newReplacement = replacement;
-
-        if (replacement === featureIdReplacementIndicator) {
-          newReplacement = featureData.id;
-        } else if (replacement === scenarioIdReplacementIndicator) {
-          newReplacement = scenarioData.id;
-        }
-
-        config.output.path = config.output.path.replaceAll(
-          placeholder,
-          newReplacement,
-        );
-      }
-
-      let queryString: string | undefined = undefined;
-
-      if (config.output.queryParameters) {
-        const queryParameters = new URLSearchParams(
-          config.output.queryParameters,
-        );
-        queryString = queryParameters.toString();
-      }
-
       const response = await fetch(
-        `${await getApiBaseUrl()}${config.output.path}?${queryString ?? ""}`,
+        `${await getApiBaseUrl()}${config.output.path}`,
         {
           body: JSON.stringify(config.output.body),
           method: config.output.method,
