@@ -6,7 +6,7 @@ Feature: Lockout status API endpoint
       """
         method: GET
         path: "/lockout-status/{{FEATURE_ID}}"
-        body:
+        queryParameters:
           TODO: TODO
         pathReplacements:
           "{{FEATURE_ID}}": "{{FEATURE_ID}}"

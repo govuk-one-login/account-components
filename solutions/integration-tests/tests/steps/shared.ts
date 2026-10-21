@@ -202,6 +202,7 @@ Given(
         "TRACE",
       ]),
       path: v.string(),
+      queryParameters: v.optional(v.record(v.string(), v.string())),
       headers: v.optional(v.record(v.string(), v.string())),
       body: v.optional(v.record(v.string(), v.any())),
       pathReplacements: v.optional(v.record(v.string(), v.string())),
@@ -232,8 +233,17 @@ Given(
         );
       }
 
+      let queryString: string | undefined = undefined;
+
+      if (config.output.queryParameters) {
+        const queryParameters = new URLSearchParams(
+          config.output.queryParameters,
+        );
+        queryString = queryParameters.toString();
+      }
+
       const response = await fetch(
-        `${await getApiBaseUrl()}${config.output.path}`,
+        `${await getApiBaseUrl()}${config.output.path}?${queryString ?? ""}`,
         {
           body: JSON.stringify(config.output.body),
           method: config.output.method,
