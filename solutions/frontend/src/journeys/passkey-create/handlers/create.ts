@@ -179,8 +179,7 @@ const getUserAisStatus = async (request: FastifyRequest) => {
 
   const accountInterventionsServiceApiClient =
     new AccountInterventionsServiceApiClient(
-      request.session.claims
-        .stubs_account_interventions_service_api_access_token,
+      request.session.claims.account_interventions_service_api_access_token,
       request.awsLambda?.event,
     );
 
