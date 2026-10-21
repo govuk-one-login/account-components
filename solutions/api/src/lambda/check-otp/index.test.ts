@@ -21,17 +21,15 @@ vi.mock(
 
 const { handler } = await import("./index.js");
 
-describe("lockout-status handler", () => {
-  it("returns 200 with the event as the body", async () => {
-    const mockEvent = {
-      pathParameters: { userId: "test-user-id" },
-    } as unknown as APIGatewayProxyEvent;
+describe("check-otp handler", () => {
+  it("returns 200", async () => {
+    const mockEvent = {} as unknown as APIGatewayProxyEvent;
 
     const result = await handler(mockEvent, mockContext);
 
     expect(result).toStrictEqual({
       statusCode: 200,
-      body: JSON.stringify(mockEvent),
+      body: JSON.stringify({ TODO: "TODO" }),
     });
   });
 });

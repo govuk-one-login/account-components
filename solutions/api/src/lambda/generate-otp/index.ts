@@ -6,10 +6,13 @@ import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons
 export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
-      async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      async (_e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
         return Promise.resolve({
           statusCode: 200,
-          body: JSON.stringify(e),
+          body: JSON.stringify({
+            TODO: "TODO",
+          }),
         });
       },
     ),
