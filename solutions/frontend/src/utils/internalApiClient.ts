@@ -201,18 +201,19 @@ export class InternalApiClient extends JsonApiClient {
 
   async getLockoutStatus(
     publicSubjectId: string,
-    body: {
+    parameters: {
       source: Source;
       lockoutType?: LockoutType;
     },
   ) {
     return this.logOnError("getLockoutStatus", async () => {
       try {
+        const queryString = new URLSearchParams(parameters);
+
         const response = await this.fetch(
-          `${this.baseUrl}/lockout-status/${publicSubjectId}`,
+          `${this.baseUrl}/lockout-status/${publicSubjectId}?${queryString.toString()}`,
           {
             headers: this.commonHeaders,
-            body: JSON.stringify(body),
           },
         );
 
