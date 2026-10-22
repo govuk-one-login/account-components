@@ -39,7 +39,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97
         with:
-          python-version: "3.14"
+          python-version: "3.16"
 
       - name: Install Python dependencies
         run: "pip install --require-hashes --only-binary :all: -r .github/workflows/requirements.txt"
