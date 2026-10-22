@@ -265,6 +265,16 @@ Conditions:
   IsBuildEnvironment: !Equals [!Ref Environment, "build"]
   IsDevOrBuild: !Or [Condition: IsDevEnvironment, Condition: IsBuildEnvironment]
   IsLocalOrDev: !Or [Condition: IsDevEnvironment, Condition: IsLocal]
+  HasAllowedVpceIds: !Not
+    - !Equals
+      - !Join
+        - ""
+        - !FindInMap [
+            EnvironmentConfiguration,
+            !Ref Environment,
+            apiAllowedVpceIds,
+          ]
+      - ""
   HasTxmaAccountArn: !Not
     - !Equals
       - !FindInMap [EnvironmentConfiguration, !Ref Environment, txmaAccountArn]
@@ -878,6 +888,146 @@ Resources:
         - Key: Name
           Value: !Sub "${AWS::StackName}-replay_attack"
 
+  LockoutsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub ${AWS::StackName}-Lockouts
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: publicSubjectId
+          AttributeType: S
+        - AttributeName: lockedOutAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: PublicSubjectIdIndex
+          KeySchema:
+            - AttributeName: publicSubjectId
+              KeyType: HASH
+            - AttributeName: lockedOutAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+
+  OTPsTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub ${AWS::StackName}-OTPs
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: publicSubjectId
+          AttributeType: S
+        - AttributeName: generatedAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: PublicSubjectIdIndex
+          KeySchema:
+            - AttributeName: publicSubjectId
+              KeyType: HASH
+            - AttributeName: generatedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+
+  OTPChecksTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub ${AWS::StackName}-OTP-Checks
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: publicSubjectId
+          AttributeType: S
+        - AttributeName: checkedAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: PublicSubjectIdIndex
+          KeySchema:
+            - AttributeName: publicSubjectId
+              KeyType: HASH
+            - AttributeName: checkedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+
+  PasswordChecksTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      TableName: !Sub ${AWS::StackName}-Password-Checks
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: publicSubjectId
+          AttributeType: S
+        - AttributeName: checkedAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: PublicSubjectIdIndex
+          KeySchema:
+            - AttributeName: publicSubjectId
+              KeyType: HASH
+            - AttributeName: checkedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+
   SecretsKmsKey:
     Type: AWS::KMS::Key
     DeletionPolicy: Retain
@@ -1433,10 +1583,33 @@ Resources:
                 aws:sourceVpce: !If
                   - IsDevOrBuild
                   - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
-                  - !FindInMap
-                    - EnvironmentConfiguration
-                    - !Ref Environment
-                    - apiAllowedVpceIds
+                  - !If
+                    - HasAllowedVpceIds
+                    - !Split
+                      - ","
+                      - !Sub
+                        - "${CurrentVpce},${AllowedVpceIds}"
+                        - CurrentVpce:
+                            Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+                          AllowedVpceIds: !Join
+                            - ","
+                            - !FindInMap
+                              - EnvironmentConfiguration
+                              - !Ref Environment
+                              - apiAllowedVpceIds
+                    - - Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
+          - Effect: Deny
+            Principal: "*"
+            Action: execute-api:Invoke
+            Resource:
+              - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/generate-otp/*"
+              - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/check-otp/*"
+              - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/check-password/*"
+              - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/GET/lockout-status/*"
+            Condition:
+              StringNotEquals:
+                aws:sourceVpce:
+                  Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
       Variables:
         ApiDomain: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
         AuthorizeEndpointUrl:
@@ -1471,6 +1644,54 @@ Resources:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiJourneyOutcomeLambda.Alias}/invocations"
+          /generate-otp/{publicSubjectId}:
+            post:
+              parameters:
+                - name: publicSubjectId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiGenerateOTPLambda.Alias}/invocations"
+          /check-otp/{publicSubjectId}:
+            post:
+              parameters:
+                - name: publicSubjectId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiCheckOTPLambda.Alias}/invocations"
+          /check-password/{publicSubjectId}:
+            post:
+              parameters:
+                - name: publicSubjectId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiCheckPasswordLambda.Alias}/invocations"
+          /lockout-status/{publicSubjectId}:
+            get:
+              parameters:
+                - name: publicSubjectId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiLockoutStatusLambda.Alias}/invocations"
           /.well-known/jwks.json:
             get:
               responses:
@@ -1749,6 +1970,281 @@ Resources:
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
 
+  ApiGenerateOTPLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiGenerateOTPLambda"
+      RetentionInDays: 90
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  ApiGenerateOTPLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      DeploymentPreference:
+        Alarms:
+          - !Ref ApiGenerateOTPLambdaErrorsAlarm
+          - !Ref ApiGenerateOTPLambdaAvailabilityAlarm
+          - !Ref ApiGenerateOTPLambdaLogErrorAlarm
+      LoggingConfig:
+        LogGroup: !Ref ApiGenerateOTPLambdaLogGroup
+      Handler: index.handler
+      Environment:
+        Variables:
+          OTPS_TABLE_NAME: !Ref OTPsTable
+          LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt LockoutsTable.Arn
+                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt OTPsTable.Arn
+                - !Sub "${OTPsTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Resource: !GetAtt DynamoDbSSEKey.Arn
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
+      Events:
+        GenerateOTP:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiApiGateway
+            Path: /generate-otp/{publicSubjectId}
+            Method: POST
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2024"
+        Sourcemap: true
+        EntryPoints:
+          - solutions/api/src/lambda/generate-otp/index.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+
+  ApiCheckOTPLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiCheckOTPLambda"
+      RetentionInDays: 90
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  ApiCheckOTPLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      DeploymentPreference:
+        Alarms:
+          - !Ref ApiCheckOTPLambdaErrorsAlarm
+          - !Ref ApiCheckOTPLambdaAvailabilityAlarm
+          - !Ref ApiCheckOTPLambdaLogErrorAlarm
+      LoggingConfig:
+        LogGroup: !Ref ApiCheckOTPLambdaLogGroup
+      Handler: index.handler
+      Environment:
+        Variables:
+          OTPS_TABLE_NAME: !Ref OTPsTable
+          OTP_CHECKS_TABLE_NAME: !Ref OTPChecksTable
+          LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt LockoutsTable.Arn
+                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+              Resource:
+                - !GetAtt OTPsTable.Arn
+                - !Sub "${OTPsTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt OTPChecksTable.Arn
+                - !Sub "${OTPChecksTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Resource: !GetAtt DynamoDbSSEKey.Arn
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
+      Events:
+        CheckOTP:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiApiGateway
+            Path: /check-otp/{publicSubjectId}
+            Method: POST
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2024"
+        Sourcemap: true
+        EntryPoints:
+          - solutions/api/src/lambda/check-otp/index.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+
+  ApiCheckPasswordLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiCheckPasswordLambda"
+      RetentionInDays: 90
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  ApiCheckPasswordLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      DeploymentPreference:
+        Alarms:
+          - !Ref ApiCheckPasswordLambdaErrorsAlarm
+          - !Ref ApiCheckPasswordLambdaAvailabilityAlarm
+          - !Ref ApiCheckPasswordLambdaLogErrorAlarm
+      LoggingConfig:
+        LogGroup: !Ref ApiCheckPasswordLambdaLogGroup
+      Handler: index.handler
+      Environment:
+        Variables:
+          PASSWORD_CHECKS_TABLE_NAME: !Ref PasswordChecksTable
+          LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+          ACCOUNT_DATA_API_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              accountDataApiUrl,
+            ]
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt LockoutsTable.Arn
+                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+                - dynamodb:PutItem
+              Resource:
+                - !GetAtt PasswordChecksTable.Arn
+                - !Sub "${PasswordChecksTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+                - kms:GenerateDataKey
+              Resource: !GetAtt DynamoDbSSEKey.Arn
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
+      Events:
+        CheckPassword:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiApiGateway
+            Path: /check-password/{publicSubjectId}
+            Method: POST
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2024"
+        Sourcemap: true
+        EntryPoints:
+          - solutions/api/src/lambda/check-password/index.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+
+  ApiLockoutStatusLambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiLockoutStatusLambda"
+      RetentionInDays: 90
+      KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  ApiLockoutStatusLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      DeploymentPreference:
+        Alarms:
+          - !Ref ApiLockoutStatusLambdaErrorsAlarm
+          - !Ref ApiLockoutStatusLambdaAvailabilityAlarm
+          - !Ref ApiLockoutStatusLambdaLogErrorAlarm
+      LoggingConfig:
+        LogGroup: !Ref ApiLockoutStatusLambdaLogGroup
+      Handler: index.handler
+      Environment:
+        Variables:
+          LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+      Policies:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:Query
+              Resource:
+                - !GetAtt LockoutsTable.Arn
+                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+              Resource: !GetAtt DynamoDbSSEKey.Arn
+      # These events are only necessary for running locally using the SAM CLI.
+      # When CloudFormation executes this template these events are ignored
+      # and the DefinitionBody on the API Gateways takes precedence.
+      Events:
+        LockoutStatus:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ApiApiGateway
+            Path: /lockout-status/{publicSubjectId}
+            Method: GET
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Format: "esm"
+        OutExtension:
+          - .js=.mjs
+        Target: "es2024"
+        Sourcemap: true
+        EntryPoints:
+          - solutions/api/src/lambda/lockout-status/index.ts
+        Banner:
+          - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
+
   ApiHealthcheckLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -1769,6 +2265,38 @@ Resources:
     Type: AWS::Lambda::Permission
     Properties:
       FunctionName: !Ref ApiJourneyOutcomeLambda.Alias
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
+
+  ApiGenerateOTPLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiGenerateOTPLambda.Alias
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
+
+  ApiCheckOTPLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiCheckOTPLambda.Alias
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
+
+  ApiCheckPasswordLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiCheckPasswordLambda.Alias
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
+
+  ApiLockoutStatusLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ApiLockoutStatusLambda.Alias
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
@@ -1884,7 +2412,6 @@ Resources:
   ApiTokenLambdaColdStartDurationAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: "AMC token lambda cold start durations have increased significantly above what is expected. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Metrics:
         - Id: initDuration
           MetricStat:
@@ -1947,6 +2474,21 @@ Resources:
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
           MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  ApiTokenLambdaLogRequestByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiTokenLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
+          MetricName: RequestLogCountByContext
           MetricValue: "1"
           Dimensions:
             - Key: scope
@@ -2110,7 +2652,6 @@ Resources:
   ApiJourneyOutcomeLambdaColdStartDurationAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: "AMC journey outcome lambda cold start durations have increased significantly above what is expected. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Metrics:
         - Id: initDuration
           MetricStat:
@@ -2173,6 +2714,21 @@ Resources:
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: CriticalLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+
+  ApiJourneyOutcomeLambdaLogRequestByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
+          MetricName: RequestLogCountByContext
           MetricValue: "1"
           Dimensions:
             - Key: scope
@@ -2263,6 +2819,754 @@ Resources:
       TreatMissingData: notBreaching
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiGenerateOTPLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC generate OTP lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiGenerateOTPLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiGenerateOTPLambdaAvailabilityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+              MetricName: 5XXResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: total
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+              MetricName: ResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: availability
+          Expression: "IF(total > 0, 1 - (errors / total))"
+          Label: "Availability"
+          ReturnData: true
+      Threshold: 0.999
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiGenerateOTPLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC generate OTP lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiGenerateOTPLambdaThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/Lambda
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiGenerateOTPLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiGenerateOTPLambdaDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/Lambda
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiGenerateOTPLambda
+      ExtendedStatistic: p90
+      Period: 60
+      EvaluationPeriods: 15
+      DatapointsToAlarm: 15
+      Threshold: 1000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiGenerateOTPLambdaColdStartInitDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
+      FilterPattern: '{ $.type = "platform.report" && $.record.metrics.initDurationMs > 0 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+          MetricName: ColdStartInitDurationMs
+          MetricValue: $.record.metrics.initDurationMs
+          Unit: Milliseconds
+
+  ApiGenerateOTPLambdaColdStartDurationAnomalyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: initDuration
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+              MetricName: ColdStartInitDurationMs
+            Period: 300
+            Stat: p90
+          ReturnData: true
+        - Id: band
+          Expression: ANOMALY_DETECTION_BAND(initDuration, 2)
+          ReturnData: true
+      ComparisonOperator: GreaterThanUpperThreshold
+      ThresholdMetricId: band
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      TreatMissingData: notBreaching
+      ActionsEnabled: false
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+          - !Ref AWS::NoValue
+
+  ApiCheckOTPLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC check OTP lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiCheckOTPLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckOTPLambdaAvailabilityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+              MetricName: 5XXResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: total
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+              MetricName: ResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: availability
+          Expression: "IF(total > 0, 1 - (errors / total))"
+          Label: "Availability"
+          ReturnData: true
+      Threshold: 0.999
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckOTPLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC check OTP lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckOTPLambdaThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/Lambda
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiCheckOTPLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckOTPLambdaDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/Lambda
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiCheckOTPLambda
+      ExtendedStatistic: p90
+      Period: 60
+      EvaluationPeriods: 15
+      DatapointsToAlarm: 15
+      Threshold: 1000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckOTPLambdaColdStartInitDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
+      FilterPattern: '{ $.type = "platform.report" && $.record.metrics.initDurationMs > 0 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+          MetricName: ColdStartInitDurationMs
+          MetricValue: $.record.metrics.initDurationMs
+          Unit: Milliseconds
+
+  ApiCheckOTPLambdaColdStartDurationAnomalyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: initDuration
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+              MetricName: ColdStartInitDurationMs
+            Period: 300
+            Stat: p90
+          ReturnData: true
+        - Id: band
+          Expression: ANOMALY_DETECTION_BAND(initDuration, 2)
+          ReturnData: true
+      ComparisonOperator: GreaterThanUpperThreshold
+      ThresholdMetricId: band
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      TreatMissingData: notBreaching
+      ActionsEnabled: false
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+          - !Ref AWS::NoValue
+
+  ApiCheckPasswordLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC check password lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiCheckPasswordLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckPasswordLambdaAvailabilityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+              MetricName: 5XXResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: total
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+              MetricName: ResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: availability
+          Expression: "IF(total > 0, 1 - (errors / total))"
+          Label: "Availability"
+          ReturnData: true
+      Threshold: 0.999
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckPasswordLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC check password lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckPasswordLambdaThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/Lambda
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiCheckPasswordLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckPasswordLambdaDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/Lambda
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiCheckPasswordLambda
+      ExtendedStatistic: p90
+      Period: 60
+      EvaluationPeriods: 15
+      DatapointsToAlarm: 15
+      Threshold: 1000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiCheckPasswordLambdaColdStartInitDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
+      FilterPattern: '{ $.type = "platform.report" && $.record.metrics.initDurationMs > 0 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+          MetricName: ColdStartInitDurationMs
+          MetricValue: $.record.metrics.initDurationMs
+          Unit: Milliseconds
+
+  ApiCheckPasswordLambdaColdStartDurationAnomalyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: initDuration
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+              MetricName: ColdStartInitDurationMs
+            Period: 300
+            Stat: p90
+          ReturnData: true
+        - Id: band
+          Expression: ANOMALY_DETECTION_BAND(initDuration, 2)
+          ReturnData: true
+      ComparisonOperator: GreaterThanUpperThreshold
+      ThresholdMetricId: band
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      TreatMissingData: notBreaching
+      ActionsEnabled: false
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+          - !Ref AWS::NoValue
+
+  ApiLockoutStatusLambdaErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC lockout status lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiLockoutStatusLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiLockoutStatusLambdaAvailabilityAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: errors
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+              MetricName: 5XXResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: total
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+              MetricName: ResponseCount
+            Period: 60
+            Stat: Sum
+          ReturnData: false
+        - Id: availability
+          Expression: "IF(total > 0, 1 - (errors / total))"
+          Label: "Availability"
+          ReturnData: true
+      Threshold: 0.999
+      ComparisonOperator: LessThanThreshold
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiLockoutStatusLambdaLogErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: "AMC lockout status lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+      MetricName: ErrorAndCriticalLogCount
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 3
+      DatapointsToAlarm: 3
+      Threshold: 3
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiLockoutStatusLambdaThrottlesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/Lambda
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiLockoutStatusLambda
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      Threshold: 0
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiLockoutStatusLambdaDurationAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Namespace: AWS/Lambda
+      MetricName: Duration
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiLockoutStatusLambda
+      ExtendedStatistic: p90
+      Period: 60
+      EvaluationPeriods: 15
+      DatapointsToAlarm: 15
+      Threshold: 1000
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+      AlarmActions:
+        - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+
+  ApiLockoutStatusLambdaColdStartInitDurationMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      FilterPattern: '{ $.type = "platform.report" && $.record.metrics.initDurationMs > 0 }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+          MetricName: ColdStartInitDurationMs
+          MetricValue: $.record.metrics.initDurationMs
+          Unit: Milliseconds
+
+  ApiLockoutStatusLambdaColdStartDurationAnomalyAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      Metrics:
+        - Id: initDuration
+          MetricStat:
+            Metric:
+              Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+              MetricName: ColdStartInitDurationMs
+            Period: 300
+            Stat: p90
+          ReturnData: true
+        - Id: band
+          Expression: ANOMALY_DETECTION_BAND(initDuration, 2)
+          ReturnData: true
+      ComparisonOperator: GreaterThanUpperThreshold
+      ThresholdMetricId: band
+      EvaluationPeriods: 5
+      DatapointsToAlarm: 5
+      TreatMissingData: notBreaching
+      ActionsEnabled: false
+      AlarmActions:
+        - !If
+          - IsProduction
+          - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
+          - !Ref AWS::NoValue
+
+  ApiGenerateOTPLambdaLogCriticalMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+          MetricName: CriticalLogCount
+          MetricValue: "1"
+
+  ApiCheckOTPLambdaLogCriticalMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+          MetricName: CriticalLogCount
+          MetricValue: "1"
+
+  ApiCheckPasswordLambdaLogCriticalMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+          MetricName: CriticalLogCount
+          MetricValue: "1"
+
+  ApiLockoutStatusLambdaLogCriticalMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      FilterPattern: '{ $.level = "CRITICAL" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+          MetricName: CriticalLogCount
+          MetricValue: "1"
+
+  ApiGenerateOTPLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+          MetricName: ErrorLogCount
+          MetricValue: "1"
+
+  ApiCheckOTPLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+          MetricName: ErrorLogCount
+          MetricValue: "1"
+
+  ApiCheckPasswordLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+          MetricName: ErrorLogCount
+          MetricValue: "1"
+
+  ApiLockoutStatusLambdaLogErrorMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      FilterPattern: '{ $.level = "ERROR" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+          MetricName: ErrorLogCount
+          MetricValue: "1"
+
+  ApiGenerateOTPLambdaLogWarnMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+          MetricName: WarnLogCount
+          MetricValue: "1"
+
+  ApiCheckOTPLambdaLogWarnMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+          MetricName: WarnLogCount
+          MetricValue: "1"
+
+  ApiCheckPasswordLambdaLogWarnMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+          MetricName: WarnLogCount
+          MetricValue: "1"
+
+  ApiLockoutStatusLambdaLogWarnMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      FilterPattern: '{ $.level = "WARN" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+          MetricName: WarnLogCount
+          MetricValue: "1"
+
+  ApiGenerateOTPLambdaLogRequestMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
+          MetricName: RequestLogCount
+          MetricValue: "1"
+
+  ApiCheckOTPLambdaLogRequestMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
+          MetricName: RequestLogCount
+          MetricValue: "1"
+
+  ApiCheckPasswordLambdaLogRequestMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
+          MetricName: RequestLogCount
+          MetricValue: "1"
+
+  ApiLockoutStatusLambdaLogRequestMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+          MetricName: RequestLogCount
+          MetricValue: "1"
 
   SessionSecret:
     Type: AWS::SecretsManager::Secret
@@ -2551,6 +3855,7 @@ Resources:
             ]
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Ref JARRSAEncryptionKeyAlias
           REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
+          INTERNAL_API_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -2735,6 +4040,23 @@ Resources:
             - Key: path
               Value: $.path
 
+  FrontendLambdaLogRequestByContextMetricFilter:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref FrontendLambdaLogGroup
+      FilterPattern: '{ $.message = "Request" }'
+      MetricTransformations:
+        - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
+          MetricName: RequestLogCountByContext
+          MetricValue: "1"
+          Dimensions:
+            - Key: scope
+              Value: $.scope
+            - Key: client_id
+              Value: $.client_id
+            - Key: path
+              Value: $.path
+
   FrontendLambdaLogErrorMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
@@ -2851,7 +4173,6 @@ Resources:
   FrontendLambdaColdStartDurationAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: "AMC frontend lambda cold start durations have increased significantly above what is expected. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
       Metrics:
         - Id: initDuration
           MetricStat:
@@ -2879,7 +4200,6 @@ Resources:
   FrontendApiGatewayHighTrafficAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: "AMC frontend API Gateway traffic has risen significantly above expected levels. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
       Metrics:
         - Id: traffic
           MetricStat:
@@ -2910,7 +4230,6 @@ Resources:
   FrontendApiGatewayLowTrafficAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: "AMC frontend API Gateway traffic has dropped significantly below expected levels. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/frontend-alarms-runbook.md"
       Metrics:
         - Id: traffic
           MetricStat:
@@ -3110,7 +4429,7 @@ Resources:
           DEFAULT_AUDIENCE: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
           ACCESS_TOKEN_ISSUER: !Sub "https://stubs.manage.${Environment}.account.gov.uk"
           AUTHORIZE_URL: !Sub "https://manage.${Environment}.account.gov.uk/authorize"
-          API_BASE_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+          INTERNAL_API_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
           ROOT_DOMAIN:
             !FindInMap [EnvironmentConfiguration, !Ref Environment, rootDomain]
           NOTIFY_DONT_SEND_EMAILS_TO:
@@ -3199,6 +4518,15 @@ Resources:
               "height": 6
             },  
             {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },             
+            {
               "type": "log",
               "properties": {
                 "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | fields method, path, total | filter message = 'Request' | stats count(*) as total by method, path | sort total desc",
@@ -3215,7 +4543,16 @@ Resources:
                 "title": "Frontend responses"
               },
               "width": 12
-            },                          
+            },    
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },                                   
             {
               "type": "metric",
               "properties": {
@@ -3286,6 +4623,15 @@ Resources:
               "height": 4
             },
             {
+              "type": "text",
+              "width": 24,
+              "height": 1,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },             
+            {
               "type": "metric",
               "properties": {
                 "metrics": [
@@ -3348,6 +4694,15 @@ Resources:
               "width": 5,              
               "height": 4
             },
+            {
+              "type": "text",
+              "width": 24,
+              "height": 1,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },             
             {
               "type": "metric",
               "properties": {
@@ -3412,6 +4767,15 @@ Resources:
               "height": 4
             },
             {
+              "type": "text",
+              "width": 24,
+              "height": 1,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },             
+            {
               "type": "metric",
               "properties": {
                 "metrics": [
@@ -3462,6 +4826,15 @@ Resources:
               "width": 5,              
               "height": 4
             },
+            {
+              "type": "text",
+              "width": 24,
+              "height": 1,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },             
             {
               "type": "metric",
               "properties": {
@@ -3524,186 +4897,7 @@ Resources:
               },
               "width": 5,              
               "height": 4
-            },
-            {
-              "type": "text",
-              "properties": {
-                "markdown": "&nbsp;\n# Lambdas",
-                "background": "transparent"
-              },
-              "width": 24,
-              "height": 3
-            },   
-            {
-              "type": "metric",
-              "properties": {
-                "metrics": [
-                  [ { "expression": "FILL(SEARCH('{AWS/Lambda} MetricName=\"ConcurrentExecutions\"', 'Maximum'),0)", "id": "total" } ]
-                ],
-                "view": "timeSeries",
-                "title": "Concurrent lambda executions",
-                "region": "${AWS::Region}"
-              },
-              "width": 12,
-              "height": 4
-            }, 
-            {
-              "type": "metric",
-              "properties": {
-                "metrics": [
-                  [ { "expression": "FILL(SEARCH('{AWS/Lambda} MetricName=\"Invocations\"', 'Sum'),0)", "id": "total" } ]
-                ],
-                "view": "timeSeries",
-                "title": "Lambda invocations",
-                "region": "${AWS::Region}"
-              },
-              "width": 12,
-              "height": 4
-            },                     
-            {
-              "type": "metric",
-              "properties": {
-                "metrics": [
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/FrontendLambda\" MetricName=\"CriticalLogCountByContext\"', 'Sum')),0)", "id": "critical__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/FrontendLambda\" MetricName=\"ErrorLogCountByContext\"', 'Sum')),0)", "id": "error__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/FrontendLambda\" MetricName=\"WarnLogCountByContext\"', 'Sum')),0)", "id": "warn__total" } ]
-                ],
-                "view": "timeSeries",
-                "title": "Frontend lambda warnings/errors",
-                "region": "${AWS::Region}"
-              },
-              "width": 6,
-              "height": 4              
-            },
-            {
-              "type": "log",
-              "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
-                "view": "bar",
-                "title": "Frontend lambda duration (p90) in milliseconds",
-                "region": "${AWS::Region}"
-              },
-              "width": 6,
-              "height": 4
-            },             
-            {
-              "type": "log",
-              "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
-                "view": "bar",
-                "title": "Frontend lambda cold start rate (%)",
-                "region": "${AWS::Region}"
-              },
-              "width": 6,
-              "height": 4
-            },   
-            {
-              "type": "log",
-              "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
-                "view": "bar",
-                "title": "Frontend lambda cold start duration (p90) in milliseconds",
-                "region": "${AWS::Region}"
-              },
-              "width": 6,
-              "height": 4
-            },             
-            {
-              "type": "metric",
-              "properties": {
-                "metrics": [
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiTokenLambda\" MetricName=\"CriticalLogCountByContext\"', 'Sum')),0)", "id": "critical__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiTokenLambda\" MetricName=\"ErrorLogCountByContext\"', 'Sum')),0)", "id": "error__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiTokenLambda\" MetricName=\"WarnLogCountByContext\"', 'Sum')),0)", "id": "warn__total" } ]
-                ],
-                "view": "timeSeries",
-                "title": "Token lambda warnings/errors",
-                "region": "${AWS::Region}"
-              },
-              "width": 6,
-              "height": 4              
-            }, 
-            {
-              "type": "log",
-              "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
-                "view": "bar",
-                "title": "Token lambda duration (p90) in milliseconds",
-                "region": "${AWS::Region}"
-              },
-              "width": 6,
-              "height": 4
-            },              
-            {
-              "type": "log",
-              "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
-                "view": "bar",
-                "title": "Token lambda cold start rate (%)",
-                "region": "${AWS::Region}"
-              },
-              "width": 6,
-              "height": 4
-            },   
-            {
-              "type": "log",
-              "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
-                "view": "bar",
-                "title": "Token lambda cold start duration (p90) in milliseconds",
-                "region": "${AWS::Region}"
-              },
-              "width": 6,
-              "height": 4
-            },             
-            {
-              "type": "metric",
-              "properties": {
-                "metrics": [
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiJourneyOutcomeLambda\" MetricName=\"CriticalLogCountByContext\"', 'Sum')),0)", "id": "critical__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiJourneyOutcomeLambda\" MetricName=\"ErrorLogCountByContext\"', 'Sum')),0)", "id": "error__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiJourneyOutcomeLambda\" MetricName=\"WarnLogCountByContext\"', 'Sum')),0)", "id": "warn__total" } ]
-                ],
-                "view": "timeSeries",
-                "title": "Journey outcome lambda warnings/errors",
-                "region": "${AWS::Region}"
-              },
-              "width": 6,
-              "height": 4              
-            }, 
-            {
-              "type": "log",
-              "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
-                "view": "bar",
-                "title": "Journey outcome lambda duration (p90) in milliseconds",
-                "region": "${AWS::Region}"
-              },
-              "width": 6,
-              "height": 4
-            },             
-            {
-              "type": "log",
-              "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
-                "view": "bar",
-                "title": "Journey outcome lambda cold start rate (%)",
-                "region": "${AWS::Region}"
-              },
-              "width": 6,
-              "height": 4
-            },   
-            {
-              "type": "log",
-              "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
-                "view": "bar",
-                "title": "Journey outcome lambda cold start duration (p90) in milliseconds",
-                "region": "${AWS::Region}"
-              },
-              "width": 6,
-              "height": 4
-            },                                                                                    
+            },                                                                                
             {
               "type": "text",
               "properties": {
@@ -3880,6 +5074,531 @@ Resources:
               },
               "width": 10,              
               "height": 5
-            }
+            },
+            {
+              "type": "text",
+              "properties": {
+                "markdown": "&nbsp;\n# Lambdas",
+                "background": "transparent"
+              },
+              "width": 24,
+              "height": 3
+            },   
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SEARCH('{AWS/Lambda} MetricName=\"ConcurrentExecutions\"', 'Maximum'),0)", "id": "total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Concurrent lambda executions",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4
+            }, 
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SEARCH('{AWS/Lambda} MetricName=\"Invocations\"', 'Sum'),0)", "id": "total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Lambda invocations",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4
+            },
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },            
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/FrontendLambda\" MetricName=\"RequestLogCountByContext\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Frontend lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4
+            },                               
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/FrontendLambda\" MetricName=\"CriticalLogCountByContext\"', 'Sum')),0)", "id": "critical__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/FrontendLambda\" MetricName=\"ErrorLogCountByContext\"', 'Sum')),0)", "id": "error__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/FrontendLambda\" MetricName=\"WarnLogCountByContext\"', 'Sum')),0)", "id": "warn__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Frontend lambda warnings/errors",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4
+            },            
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
+                "view": "bar",
+                "title": "Frontend lambda duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "view": "bar",
+                "title": "Frontend lambda cold start rate (%)",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },   
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
+                "view": "bar",
+                "title": "Frontend lambda cold start duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },   
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },               
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiTokenLambda\" MetricName=\"RequestLogCountByContext\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Token lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4           
+            },                        
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiTokenLambda\" MetricName=\"CriticalLogCountByContext\"', 'Sum')),0)", "id": "critical__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiTokenLambda\" MetricName=\"ErrorLogCountByContext\"', 'Sum')),0)", "id": "error__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiTokenLambda\" MetricName=\"WarnLogCountByContext\"', 'Sum')),0)", "id": "warn__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Token lambda warnings/errors",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4             
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
+                "view": "bar",
+                "title": "Token lambda duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },              
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "view": "bar",
+                "title": "Token lambda cold start rate (%)",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },   
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiTokenLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
+                "view": "bar",
+                "title": "Token lambda cold start duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },      
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },                
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiJourneyOutcomeLambda\" MetricName=\"RequestLogCountByContext\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Journey outcome lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4           
+            },                   
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiJourneyOutcomeLambda\" MetricName=\"CriticalLogCountByContext\"', 'Sum')),0)", "id": "critical__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiJourneyOutcomeLambda\" MetricName=\"ErrorLogCountByContext\"', 'Sum')),0)", "id": "error__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiJourneyOutcomeLambda\" MetricName=\"WarnLogCountByContext\"', 'Sum')),0)", "id": "warn__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Journey outcome lambda warnings/errors",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4            
+            },              
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
+                "view": "bar",
+                "title": "Journey outcome lambda duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "view": "bar",
+                "title": "Journey outcome lambda cold start rate (%)",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },   
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiJourneyOutcomeLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
+                "view": "bar",
+                "title": "Journey outcome lambda cold start duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },               
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"RequestLogCount\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Generate OTP lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4           
+            }, 
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiGenerateOTPLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Generate OTP lambda warnings/errors",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4           
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiGenerateOTPLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
+                "view": "bar",
+                "title": "Generate OTP lambda duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiGenerateOTPLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "view": "bar",
+                "title": "Generate OTP lambda cold start rate (%)",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },   
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiGenerateOTPLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
+                "view": "bar",
+                "title": "Generate OTP lambda cold start duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },               
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"RequestLogCount\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Check OTP lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4           
+            },             
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckOTPLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Check OTP lambda warnings/errors",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4             
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiCheckOTPLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
+                "view": "bar",
+                "title": "Check OTP lambda duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiCheckOTPLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "view": "bar",
+                "title": "Check OTP lambda cold start rate (%)",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },   
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiCheckOTPLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
+                "view": "bar",
+                "title": "Check OTP lambda cold start duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },               
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"RequestLogCount\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Check password lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4           
+            },             
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiCheckPasswordLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Check password lambda warnings/errors",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4            
+            },              
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiCheckPasswordLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
+                "view": "bar",
+                "title": "Check password lambda duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiCheckPasswordLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "view": "bar",
+                "title": "Check password lambda cold start rate (%)",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },   
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiCheckPasswordLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
+                "view": "bar",
+                "title": "Check password lambda cold start duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },
+            {
+              "type": "text",
+              "width": 24,
+              "height": 2,
+              "properties": {
+                "markdown": " ",
+                "background": "transparent"
+              }
+            },               
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"RequestLogCount\"', 'Sum')),0)", "id": "request__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Lockout status lambda requests",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4           
+            },             
+            {
+              "type": "metric",
+              "properties": {
+                "metrics": [
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
+                ],
+                "view": "timeSeries",
+                "title": "Lockout status lambda warnings/errors",
+                "region": "${AWS::Region}"
+              },
+              "width": 12,
+              "height": 4             
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutStatusLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
+                "view": "bar",
+                "title": "Lockout status lambda duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },             
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutStatusLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "view": "bar",
+                "title": "Lockout status lambda cold start rate (%)",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            },   
+            {
+              "type": "log",
+              "properties": {
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutStatusLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
+                "view": "bar",
+                "title": "Lockout status lambda cold start duration (p90) in milliseconds",
+                "region": "${AWS::Region}"
+              },
+              "width": 8,
+              "height": 4
+            }                                                
           ]
         }
