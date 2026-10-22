@@ -4,11 +4,19 @@
 
 This runbook covers the following second line production alarms for the Account Management Components (AMC) private API in the AWS account **di-account-components-prod** (494066295151):
 
-- [ApiApiGateway5XXErrorsAlarm](#apiapigateway5xxerrorsalarm)
-- [ApiTokenLambdaErrorsAlarm](#apitokenlambdaerrorsalarm)
-- [ApiTokenLambdaLogErrorAlarm](#apitokenlambdalogerroralarm)
-- [ApiJourneyOutcomeLambdaErrorsAlarm](#apijourneyoutcomelambdaerrorsalarm)
-- [ApiJourneyOutcomeLambdaLogErrorAlarm](#apijourneyoutcomelambdalogerroralarm)
+- [ApiApiGateway5XXErrorsAlarm](#ApiApiGateway5XXErrorsAlarm)
+- [ApiTokenLambdaErrorsAlarm](#ApiTokenLambdaErrorsAlarm)
+- [ApiTokenLambdaLogErrorAlarm](#ApiTokenLambdaLogErrorAlarm)
+- [ApiJourneyOutcomeLambdaErrorsAlarm](#ApiJourneyOutcomeLambdaErrorsAlarm)
+- [ApiJourneyOutcomeLambdaLogErrorAlarm](#ApiJourneyOutcomeLambdaLogErrorAlarm)
+- [ApiGenerateOTPLambdaErrorsAlarm](#ApiGenerateOTPLambdaErrorsAlarm)
+- [ApiGenerateOTPLambdaLogErrorAlarm](#ApiGenerateOTPLambdaLogErrorAlarm)
+- [ApiCheckOTPLambdaErrorsAlarm](#ApiCheckOTPLambdaErrorsAlarm)
+- [ApiCheckOTPLambdaLogErrorAlarm](#ApiCheckOTPLambdaLogErrorAlarm)
+- [ApiCheckPasswordLambdaErrorsAlarm](#ApiCheckPasswordLambdaErrorsAlarm)
+- [ApiCheckPasswordLambdaLogErrorAlarm](#ApiCheckPasswordLambdaLogErrorAlarm)
+- [ApiLockoutStatusLambdaErrorsAlarm](#ApiLockoutStatusLambdaErrorsAlarm)
+- [ApiLockoutStatusLambdaLogErrorAlarm](#ApiLockoutStatusLambdaLogErrorAlarm)
 
 These alarms are owned by the **Home team** in the **Accounts pod**.
 
@@ -132,5 +140,101 @@ These alarms may indicate a P3 incident. Out-of-hours escalation and support is 
 1. Check the `amc-dashboard` CloudWatch dashboard.
 2. Check the Journey Outcome Lambda logs at `/aws/lambda/amc/ApiJourneyOutcomeLambda` — filter for `level = "ERROR"` or `level = "CRITICAL"` to identify the specific error messages.
 3. Check whether errors relate to token validation or journey outcome retrieval.
+4. Check downstream service health (DynamoDB, KMS).
+5. Check whether a recent deployment correlates with the start of errors.
+
+### ApiGenerateOTPLambdaErrorsAlarm
+
+**What it means:** The Generate OTP Lambda function is producing invocation errors (unhandled exceptions or timeouts).
+
+**Investigation steps:**
+
+1. Check the `amc-dashboard` CloudWatch dashboard.
+2. Check the Generate OTP Lambda logs at `/aws/lambda/amc/ApiGenerateOTPLambda` for stack traces or timeout messages.
+3. Check Lambda metrics (duration, memory usage, concurrent executions) for resource exhaustion.
+4. Check downstream dependencies (e.g. DynamoDB, KMS) for availability issues.
+5. Check whether a recent deployment correlates with the start of errors.
+
+### ApiGenerateOTPLambdaLogErrorAlarm
+
+**What it means:** The Generate OTP Lambda is logging ERROR or CRITICAL level messages at an elevated rate.
+
+**Investigation steps:**
+
+1. Check the `amc-dashboard` CloudWatch dashboard.
+2. Check the Generate OTP Lambda logs at `/aws/lambda/amc/ApiGenerateOTPLambda` — filter for `level = "ERROR"` or `level = "CRITICAL"` to identify the specific error messages.
+3. Check whether errors relate to lockout or OTP retrieval.
+4. Check downstream service health (DynamoDB, KMS).
+5. Check whether a recent deployment correlates with the start of errors.
+
+### ApiCheckOTPLambdaErrorsAlarm
+
+**What it means:** The Check OTP Lambda function is producing invocation errors (unhandled exceptions or timeouts).
+
+**Investigation steps:**
+
+1. Check the `amc-dashboard` CloudWatch dashboard.
+2. Check the Check OTP Lambda logs at `/aws/lambda/amc/ApiCheckOTPLambda` for stack traces or timeout messages.
+3. Check Lambda metrics (duration, memory usage, concurrent executions) for resource exhaustion.
+4. Check downstream dependencies (e.g. DynamoDB, KMS) for availability issues.
+5. Check whether a recent deployment correlates with the start of errors.
+
+### ApiCheckOTPLambdaLogErrorAlarm
+
+**What it means:** The Check OTP Lambda is logging ERROR or CRITICAL level messages at an elevated rate.
+
+**Investigation steps:**
+
+1. Check the `amc-dashboard` CloudWatch dashboard.
+2. Check the Check OTP Lambda logs at `/aws/lambda/amc/ApiCheckOTPLambda` — filter for `level = "ERROR"` or `level = "CRITICAL"` to identify the specific error messages.
+3. Check whether errors relate to lockout, OTP or OTP checks retrieval.
+4. Check downstream service health (DynamoDB, KMS).
+5. Check whether a recent deployment correlates with the start of errors.
+
+### ApiCheckPasswordLambdaErrorsAlarm
+
+**What it means:** The Check Password Lambda function is producing invocation errors (unhandled exceptions or timeouts).
+
+**Investigation steps:**
+
+1. Check the `amc-dashboard` CloudWatch dashboard.
+2. Check the Check Password Lambda logs at `/aws/lambda/amc/ApiCheckPasswordLambda` for stack traces or timeout messages.
+3. Check Lambda metrics (duration, memory usage, concurrent executions) for resource exhaustion.
+4. Check downstream dependencies (e.g. DynamoDB, KMS) for availability issues.
+5. Check whether a recent deployment correlates with the start of errors.
+
+### ApiCheckPasswordLambdaLogErrorAlarm
+
+**What it means:** The Check Password Lambda is logging ERROR or CRITICAL level messages at an elevated rate.
+
+**Investigation steps:**
+
+1. Check the `amc-dashboard` CloudWatch dashboard.
+2. Check the Check Password Lambda logs at `/aws/lambda/amc/ApiCheckPasswordLambda` — filter for `level = "ERROR"` or `level = "CRITICAL"` to identify the specific error messages.
+3. Check whether errors relate to lockout or password checks retrieval.
+4. Check downstream service health (DynamoDB, KMS).
+5. Check whether a recent deployment correlates with the start of errors.
+
+### ApiLockoutStatusLambdaErrorsAlarm
+
+**What it means:** The Lockout Status Lambda function is producing invocation errors (unhandled exceptions or timeouts).
+
+**Investigation steps:**
+
+1. Check the `amc-dashboard` CloudWatch dashboard.
+2. Check the Lockout Status Lambda logs at `/aws/lambda/amc/ApiLockoutStatusLambda` for stack traces or timeout messages.
+3. Check Lambda metrics (duration, memory usage, concurrent executions) for resource exhaustion.
+4. Check downstream dependencies (e.g. DynamoDB, KMS) for availability issues.
+5. Check whether a recent deployment correlates with the start of errors.
+
+### ApiLockoutStatusLambdaLogErrorAlarm
+
+**What it means:** The Lockout Status Lambda is logging ERROR or CRITICAL level messages at an elevated rate.
+
+**Investigation steps:**
+
+1. Check the `amc-dashboard` CloudWatch dashboard.
+2. Check the Lockout Status Lambda logs at `/aws/lambda/amc/ApiLockoutStatusLambda` — filter for `level = "ERROR"` or `level = "CRITICAL"` to identify the specific error messages.
+3. Check whether errors relate to lockout retrieval.
 4. Check downstream service health (DynamoDB, KMS).
 5. Check whether a recent deployment correlates with the start of errors.

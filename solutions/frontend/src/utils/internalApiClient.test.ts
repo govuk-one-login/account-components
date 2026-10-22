@@ -326,39 +326,37 @@ describe("internalApiClient", () => {
   });
 
   describe("getLockoutStatus", () => {
-    it("should make correct API call", async () => {
+    it("should make correct API call without lockoutType", async () => {
       const client = new InternalApiClient(undefined, mockEvent);
-      const body = { source: "account-delete" as any };
 
       mockThisFetch.mockResolvedValueOnce(new Response());
 
-      await client.getLockoutStatus(publicSubjectId, body);
+      await client.getLockoutStatus(publicSubjectId, {
+        source: "account-delete" as any,
+      });
 
       expect(mockThisFetch).toHaveBeenCalledWith(
-        `https://internal.example.com/lockout-status/${publicSubjectId}`,
+        `https://internal.example.com/lockout-status/${publicSubjectId}?source=account-delete`,
         {
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
         },
       );
     });
 
     it("should make correct API call with lockoutType", async () => {
       const client = new InternalApiClient(undefined, mockEvent);
-      const body = {
-        source: "account-delete" as any,
-        lockoutType: "TooManyOTPsRequested" as any,
-      };
 
       mockThisFetch.mockResolvedValueOnce(new Response());
 
-      await client.getLockoutStatus(publicSubjectId, body);
+      await client.getLockoutStatus(publicSubjectId, {
+        source: "account-delete" as any,
+        lockoutType: "TooManyOTPsRequested" as any,
+      });
 
       expect(mockThisFetch).toHaveBeenCalledWith(
-        `https://internal.example.com/lockout-status/${publicSubjectId}`,
+        `https://internal.example.com/lockout-status/${publicSubjectId}?source=account-delete&lockoutType=TooManyOTPsRequested`,
         {
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
         },
       );
     });

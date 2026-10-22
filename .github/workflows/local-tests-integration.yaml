@@ -68,6 +68,7 @@ jobs:
           NOTIFICATIONS_QUEUE_URL=http://localhost:4566/000000000000/amc-NotificationsQueue
           AUDIT_EVENTS_QUEUE_URL=http://localhost:4566/000000000000/amc-TxMASQSProducerAuditEventQueue                 
           SPLIT_TESTS_COOKIE_OVERRIDE=1
+          INTERNAL_API_URL=http://localhost:6003/internal-api        
           EOF
 
       - name: Configure stubs environment
@@ -83,7 +84,7 @@ jobs:
           MOCK_CLIENT_RSA_PUBLIC_KEY_SSM_NAME=/amc/MockClientRsaPublicKey 
           JAR_RSA_ENCRYPTION_KEY_ALIAS=alias/amc-JARRSAEncryptionKey 
           DEFAULT_AUDIENCE=http://localhost:6002/authorize
-          API_BASE_URL=http://localhost:6004
+          INTERNAL_API_URL=http://localhost:6004
           ACCESS_TOKEN_ISSUER=http://localhost:6003
           AUTHORIZE_URL=http://localhost:6002/authorize
           AWS_REGION=eu-west-2
@@ -118,6 +119,23 @@ jobs:
             "ApiJourneyOutcomeLambda": {
               "JWT_SIGNING_KEY_ALIAS": "alias/amc-JWTSigningKey",
               "JOURNEY_OUTCOME_TABLE_NAME": "amc-JourneyOutcome"
+            },
+            "ApiLockoutStatusLambda": {
+              "LOCKOUTS_TABLE_NAME": "amc-Lockouts"
+            },
+            "ApiGenerateOTPLambda": {
+              "LOCKOUTS_TABLE_NAME": "amc-Lockouts",
+              "OTPS_TABLE_NAME": "amc-OTPs"
+            },
+            "ApiCheckOTPLambda": {
+              "LOCKOUTS_TABLE_NAME": "amc-Lockouts",
+              "OTPS_TABLE_NAME": "amc-OTPs",
+              "OTP_CHECKS_TABLE_NAME": "amc-OTP-Checks"
+            },
+            "ApiCheckPasswordLambda": {
+              "LOCKOUTS_TABLE_NAME": "amc-Lockouts",
+              "PASSWORD_CHECKS_TABLE_NAME": "amc-Password-Checks",
+              "ACCOUNT_DATA_API_URL": "http://localhost:6003/account-data-api"
             }
           }
           EOF
