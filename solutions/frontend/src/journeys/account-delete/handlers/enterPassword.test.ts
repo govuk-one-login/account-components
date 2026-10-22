@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
+import { Scope } from "../../../../../commons/utils/commonTypes.js";
 
 const mockAuthenticate = vi.fn();
 const mockCompleteJourney = vi.fn();
@@ -98,7 +99,7 @@ describe("enterPassword handlers", () => {
         "validPassword123",
       );
       expect(
-        mockReply.journeyStates?.["account-delete"]?.send,
+        mockReply.journeyStates?.[Scope.accountDelete]?.send,
       ).toHaveBeenCalledWith({
         type: "authenticated",
       });
@@ -284,7 +285,7 @@ describe("enterPassword handlers", () => {
       );
 
       expect(
-        mockReply.journeyStates?.["account-delete"]?.send,
+        mockReply.journeyStates?.[Scope.accountDelete]?.send,
       ).toHaveBeenCalledWith({
         type: "lockedOutPasswordEnteredTooManyTimes",
       });

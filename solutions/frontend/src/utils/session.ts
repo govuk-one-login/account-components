@@ -11,7 +11,7 @@ export const destroySession = async (request: FastifyRequest) => {
   // calling request.session.regenerate does it for us
 };
 
-export const getSessionOptions = async (): Promise<FastifySessionOptions> => {
+export const getSessionOptions = (): FastifySessionOptions => {
   assert.ok(process.env["SESSIONS_SIGNER"]);
   assert.ok(process.env["SESSIONS_TABLE_NAME"]);
   assert.ok(rootDomainWithEnv);

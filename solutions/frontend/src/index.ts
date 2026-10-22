@@ -182,8 +182,8 @@ export const initFrontend = async function () {
     },
   });
 
-  fastify.register(async (fastify) => {
-    fastify.register(fastifySession, await getSessionOptions());
+  fastify.register((fastify) => {
+    fastify.register(fastifySession, getSessionOptions());
     fastify.addHook("onRequest", setSplitTestBucketAssignments);
     fastify.addHook("onRequest", setAnalyticsForPath);
     fastify.register(csrfProtection);

@@ -23,12 +23,14 @@ export async function confirmPostHandler(
 ) {
   assert.ok(request.session.claims);
   assert.ok(request.session.claims.account_management_api_access_token);
+  assert.ok(request.session.claims.account_data_api_access_token);
   const accountManagementApiClient = new AccountManagementApiClient(
     request.session.claims.account_management_api_access_token,
     request.awsLambda?.event,
   );
 
   const result = await accountManagementApiClient.deleteAccount(
+    request.session.claims.account_management_api_access_token,
     request.session.claims.email,
   );
 

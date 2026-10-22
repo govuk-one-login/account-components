@@ -6,6 +6,7 @@ import {
   completeJourneyActionSuccessfully,
   startJourneyAction,
 } from "../utils/journeyActions.js";
+import { Scope } from "../../../../commons/utils/commonTypes.js";
 
 export async function step1GetHandler(
   request: FastifyRequest,
@@ -47,9 +48,9 @@ export async function enterPasswordPostHandler(
   _request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(reply.journeyStates?.["testing-journey"]);
+  assert.ok(reply.journeyStates?.[Scope.testingJourney]);
 
-  reply.journeyStates["testing-journey"].send({
+  reply.journeyStates[Scope.testingJourney].send({
     type: "passwordEntered",
   });
 

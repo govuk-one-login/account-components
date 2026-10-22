@@ -23,6 +23,11 @@ export const onError = async (
     statusCode = 403;
   }
 
+  if (isFastifyError(error) && error.code === "FST_ERR_CTP_EMPTY_JSON_BODY") {
+    logger = request.log.warn;
+    statusCode = 400;
+  }
+
   logger(error, msg);
   metrics.addMetric(msg, MetricUnit.Count, 1);
 

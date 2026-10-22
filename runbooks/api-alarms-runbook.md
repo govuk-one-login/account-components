@@ -41,7 +41,16 @@ Because AMC serves multiple journeys to different clients, the specific cause of
 
 Check the [AMC Dynatrace dashboard](https://bhe21058.live.dynatrace.com/#dashboard;id=c73876e9-7e9b-4962-b0ca-fc81b9e1164f;applyDashboardDefaults=true). This dashboard gives a high-level overview of the number of responses and errors within AMC and can be used to spot anomalies from usual patterns.
 
-The [AMC CloudWatch dashboard](https://uk-digital-identity.awsapps.com/start/#/console?account_id=494066295151&destination=https%3A%2F%2Feu-west-2.console.aws.amazon.com%2Fcloudwatch%2Fhome%3Fregion%3Deu-west-2%23dashboards%2Fdashboard%2Famc-dashboard) can also be checked. This dashboard provides more information than the Dynatrace dashboard but requires a TEAM request to access it using the `ApprovedServiceSupport` role on the `di-account-components-prod` AWS account.
+The AMC CloudWatch dashboard can also be checked. This dashboard provides more information than the Dynatrace dashboard but requires elevated permissions to access it. To view this dashboard follow these steps:
+
+- Raise a TEAM request for the `ApprovedServiceSupport` on the `di-account-components-prod` AWS account
+- Once approved go to https://uk-digital-identity.awsapps.com/start/#/console?account_id=494066295151&destination=https%3A%2F%2Feu-west-2.console.aws.amazon.com%2Fcloudwatch%2Fhome%3Fregion%3Deu-west-2%23dashboards%2Fdashboard%2Famc-dashboard and sign in with the `ApprovedServiceSupport` role
+- You should have been taken to the dashboard but some of the widgets may be showing permissions errors. To fix these errors continue with the following steps:
+- Click the "Account ID" button on the far-right of the top menu and then click "Switch role" in the dropdown which appears
+- In the form which appears enter the following details and then click "Switch role":
+  - Account ID: `494066295151`
+  - IAM role name: `runbooks/ApprovedServiceSupportRunbooksRole`
+- You should have been taken back to the dashboard and all widgets should now be loading without errors
 
 ### Test the Journeys
 

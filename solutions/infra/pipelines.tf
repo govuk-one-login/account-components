@@ -5,7 +5,7 @@ resource "aws_cloudformation_stack" "amc_pipeline_stack" {
   template_url = "https://template-storage-templatebucket-1upzyw6v9cs42.s3.amazonaws.com/sam-deploy-pipeline/template-v2.yaml"
 
   parameters = {
-    SAMStackName                            = "amc"
+    SAMStackName                            = var.sam_stack_name
     Environment                             = var.environment
     VpcStackName                            = "vpc"
     SigningProfileArn                       = var.signing_profile_arn

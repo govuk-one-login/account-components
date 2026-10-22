@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
+import { Scope } from "../../../../../commons/utils/commonTypes.js";
 
 const mockSendOtpChallenge = vi.fn();
 
@@ -67,7 +68,7 @@ describe("sharedSendOtpHandler", () => {
     );
 
     expect(
-      mockReply.journeyStates?.["account-delete"]?.send,
+      mockReply.journeyStates?.[Scope.accountDelete]?.send,
     ).toHaveBeenCalledWith({
       type: "lockedOutSecurityCodeEnteredTooManyTimes",
     });
@@ -89,7 +90,7 @@ describe("sharedSendOtpHandler", () => {
     );
 
     expect(
-      mockReply.journeyStates?.["account-delete"]?.send,
+      mockReply.journeyStates?.[Scope.accountDelete]?.send,
     ).toHaveBeenCalledWith({
       type: "lockedOutSecurityCodeRequestedTooManyTimes",
     });

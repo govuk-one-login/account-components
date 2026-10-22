@@ -5,13 +5,11 @@ import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../commons/ut
 
 export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
-    metricsAPIGatewayProxyHandlerWrapper(
-      async (): Promise<APIGatewayProxyResult> => {
-        return {
-          statusCode: 200,
-          body: '"ok"',
-        };
-      },
-    ),
+    metricsAPIGatewayProxyHandlerWrapper((): Promise<APIGatewayProxyResult> => {
+      return Promise.resolve({
+        statusCode: 200,
+        body: '"ok"',
+      });
+    }),
   ),
 );

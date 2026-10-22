@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 import type { Claims } from "../../utils/getClaimsSchema.js";
 import type { FastifySessionObject } from "@fastify/session";
+import { Scope } from "../../../../commons/utils/commonTypes.js";
 
 const mockCompleteJourney = vi.fn();
 const mockStartJourneyAction = vi.fn();
@@ -143,7 +144,7 @@ describe("testing-journey handlers", () => {
       );
 
       expect(
-        mockReply.journeyStates?.["testing-journey"]?.send,
+        mockReply.journeyStates?.[Scope.testingJourney]?.send,
       ).toHaveBeenCalledWith({
         type: "passwordEntered",
       });

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { FastifySessionObject } from "@fastify/session";
 import type { PublicKeyCredentialCreationOptionsJSON } from "@simplewebauthn/server";
+import { Scope } from "../../../../../../commons/utils/commonTypes.js";
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-return
 const mockCreateEvent = vi.fn((_, props) => props);
@@ -49,7 +50,7 @@ describe("passkey-create audit events", () => {
           email: "test@example.com",
           sub: "user-123",
           client_id: "client-123",
-          scope: "passkey-create",
+          scope: Scope.passkeyCreate,
         },
       },
       awsLambda: {

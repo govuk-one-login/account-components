@@ -13,6 +13,7 @@ import {
   completeAllJourneyActionsUnsuccessfully,
   unsuccessfulJourneyActionErrors,
 } from "../../utils/journeyActions.js";
+import { Scope } from "../../../../../commons/utils/commonTypes.js";
 
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
@@ -34,7 +35,7 @@ export async function enterPasswordPostHandler(
   request: FastifyRequest,
   reply: FastifyReply,
 ) {
-  assert.ok(reply.journeyStates?.["account-delete"]);
+  assert.ok(reply.journeyStates?.[Scope.accountDelete]);
 
   const bodySchema = v.object({
     password: v.pipe(
@@ -81,7 +82,7 @@ export async function enterPasswordPostHandler(
       });
       return reply;
     } else if (result.error === "ExceededIncorrectPasswordSubmissionLimit") {
-      reply.journeyStates["account-delete"].send({
+      reply.journeyStates[Scope.accountDelete].send({
         type: "lockedOutPasswordEnteredTooManyTimes",
       });
       reply.redirect(
@@ -129,7 +130,7 @@ export async function enterPasswordPostHandler(
     throw new Error(result.error);
   }
 
-  reply.journeyStates["account-delete"].send({
+  reply.journeyStates[Scope.accountDelete].send({
     type: "authenticated",
   });
 

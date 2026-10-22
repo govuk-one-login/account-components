@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
 import type { Claims } from "../../../utils/getClaimsSchema.js";
 import type { FastifySessionObject } from "@fastify/session";
+import { Scope } from "../../../../../commons/utils/commonTypes.js";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -138,7 +139,7 @@ describe("passkey-create handlers", () => {
       account_data_api_access_token: "access-token-123",
       sub: "internal-sub",
       client_id: "client-123",
-      scope: "passkey-create",
+      scope: Scope.passkeyCreate,
       redirect_uri: "https://client.example.com/callback",
       state: "state-123",
     } as Claims;
@@ -1208,7 +1209,7 @@ describe("passkey-create handlers", () => {
       it("should throw when registration options are missing", async () => {
         mockReply.journeyStates = {
           // @ts-expect-error
-          "passkey-create": {
+          [Scope.passkeyCreate]: {
             send: vi.fn(),
             getSnapshot: vi.fn().mockReturnValue({
               context: {},

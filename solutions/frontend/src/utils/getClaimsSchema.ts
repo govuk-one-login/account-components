@@ -19,7 +19,7 @@ export const getClaimsSchema = (
   const expectedResponseType = "code";
 
   const validClientScopes = client.scope.split(" ").filter((scope) => {
-    // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-assignment, @typescript-eslint/consistent-type-assertions
     return Object.values(Scope).includes(scope as Scope);
   });
 
@@ -105,6 +105,10 @@ export const getClaimsSchema = (
       v.picklist(["web", "strategic_app", "generic_app"]),
       "web",
     ),
+    // This access token is not used by the real internal API, only by
+    // the stub version where it contains information about which scenario
+    // to simulate
+    internal_api_access_token: v.optional(v.pipe(v.string(), v.nonEmpty())),
   });
 
   return claimsSchema;

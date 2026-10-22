@@ -142,7 +142,7 @@ describe("onRequest", () => {
     vi.mocked(getClientRegistry).mockResolvedValue([
       { client_id: "test-client-id" } as ClientEntry,
     ]);
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-enum-assignment
     vi.mocked(journeys["test-scope" as Scope]).mockResolvedValue({
       translations: { en: { key: "value" } },
       stateMachine: { resolveState: vi.fn().mockReturnValue({}) },
@@ -233,6 +233,7 @@ describe("onRequest", () => {
       expect(mockReply.globals?.buildCompleteFailedJourneyUri).toBeTypeOf(
         "function",
       );
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-enum-assignment
       expect(journeys["test-scope" as Scope]).toHaveBeenCalledWith();
       expect(mockRequest.i18n?.addResourceBundle).toHaveBeenCalledWith(
         "en",

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import type { Claims, getClaimsSchema } from "../../utils/getClaimsSchema.js";
 import type * as v from "valibot";
+import { Scope } from "../../../../commons/utils/commonTypes.js";
 
 const mockTransactWrite = vi.fn();
 const mockRandomBytes = vi.fn();
@@ -76,7 +77,7 @@ describe("completeJourney", () => {
     } as unknown as FastifyReply;
 
     mockClaims = {
-      scope: "testing-journey",
+      scope: Scope.testingJourney,
       sub: "test-sub",
       email: "test@example.com",
       client_id: "test-client-id",

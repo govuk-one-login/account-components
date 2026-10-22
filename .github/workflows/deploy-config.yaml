@@ -36,12 +36,12 @@ jobs:
           ref: ${{ inputs.git-ref || github.ref }}
 
       - name: Get distribution artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
         with:
           name: ${{ inputs.artifact-name }}
 
       - name: Assume AWS Role
-        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c
+        uses: aws-actions/configure-aws-credentials@e1253824e5c10ff9df46874f81ed3ec929e19cfd
         with:
           role-to-assume: ${{ secrets.aws-role-arn }}
           aws-region: eu-west-2
