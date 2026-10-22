@@ -190,6 +190,54 @@ create_dynamodb_tables() {
     --table-name "amc-ReplayAttack" \
     --time-to-live-specification "Enabled=true,AttributeName=expires"
 
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+    --table-name "amc-Lockouts" \
+    --attribute-definitions \
+      AttributeName=id,AttributeType=S \
+      AttributeName=publicSubjectId,AttributeType=S \
+      AttributeName=lockedOutAt,AttributeType=N \
+    --key-schema \
+      AttributeName=id,KeyType=HASH \
+    --global-secondary-indexes \
+      '[{"IndexName":"PublicSubjectIdIndex","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"lockedOutAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+    --billing-mode PAY_PER_REQUEST
+
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+    --table-name "amc-OTPs" \
+    --attribute-definitions \
+      AttributeName=id,AttributeType=S \
+      AttributeName=publicSubjectId,AttributeType=S \
+      AttributeName=generatedAt,AttributeType=N \
+    --key-schema \
+      AttributeName=id,KeyType=HASH \
+    --global-secondary-indexes \
+      '[{"IndexName":"PublicSubjectIdIndex","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"generatedAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+    --billing-mode PAY_PER_REQUEST
+
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+    --table-name "amc-OTP-Checks" \
+    --attribute-definitions \
+      AttributeName=id,AttributeType=S \
+      AttributeName=publicSubjectId,AttributeType=S \
+      AttributeName=checkedAt,AttributeType=N \
+    --key-schema \
+      AttributeName=id,KeyType=HASH \
+    --global-secondary-indexes \
+      '[{"IndexName":"PublicSubjectIdIndex","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"checkedAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+    --billing-mode PAY_PER_REQUEST
+
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+    --table-name "amc-Password-Checks" \
+    --attribute-definitions \
+      AttributeName=id,AttributeType=S \
+      AttributeName=publicSubjectId,AttributeType=S \
+      AttributeName=checkedAt,AttributeType=N \
+    --key-schema \
+      AttributeName=id,KeyType=HASH \
+    --global-secondary-indexes \
+      '[{"IndexName":"PublicSubjectIdIndex","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"checkedAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+    --billing-mode PAY_PER_REQUEST
+
   echo "Finished creating DynamoDB tables"
   return 0
 }
