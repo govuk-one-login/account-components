@@ -122,7 +122,7 @@ describe("createRequestObjectPost", () => {
         internal_api_checkOTP_scenario: "successful",
         internal_api_checkPassword_scenario: "successful", // pragma: allowlist secret
         internal_api_lockoutStatus_scenario: "not_locked_out",
-        split_test_bucket_assignments: "splitTestName: bucketName",        
+        split_test_bucket_assignments: "splitTestName: bucketName",
       },
     };
 
