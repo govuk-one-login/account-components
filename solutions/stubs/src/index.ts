@@ -19,6 +19,7 @@ import { getEnvironment } from "../../commons/utils/getEnvironment/index.js";
 import { accountManagementApi } from "./accountManagementApi/index.js";
 import { accountDataApi } from "./accountDataApi/index.js";
 import { accountInterventionsServiceApi } from "./accountInterventionsServiceApi/index.js";
+import { internalApi } from "./internalApi/index.js";
 import { FastifyLogController } from "../../commons/utils/fastify/logController/index.js";
 
 export const initStubs = async function () {
@@ -117,6 +118,7 @@ export const initStubs = async function () {
   fastify.register(accountManagementApi);
   fastify.register(accountDataApi);
   fastify.register(accountInterventionsServiceApi);
+  fastify.register(internalApi);
 
   return fastify;
 };

@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components OAuth Provider Public API
-  version: 0.0.16
+  version: 0.0.17
   description: |
     OAuth 2.0 provider endpoints, including:
     - GET /authorize
@@ -180,6 +180,7 @@ components:
         - `account_management_api_access_token` (string, optional): Access token for stubbed account management API, used to determine which canned response to return. Only needed when calling the stubbed account management API instead of the real one.
         - `account_data_api_access_token` (string, optional): Access token for account data API
         - `account_interventions_service_api_access_token` (string, optional): Access token for stubbed account interventions service API, used to determine which canned response to return. Only needed when calling the stubbed account interventions service API instead of the real one.
+        - `internal_api_access_token` (string, optional): Access token for stubbed internal API, used to determine which canned response to return. Only needed when calling the stubbed internal API instead of the real one.
         - `sub` (string): Internal pairwise identifier
         - `public_sub` (string): Public subject identifier
         - `email` (string): User email address
