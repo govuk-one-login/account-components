@@ -32,7 +32,7 @@ resource "aws_cloudformation_stack" "amc_pipeline_stack" {
     AllowedServiceFive                      = "Xray"
     AllowedServiceSix                       = "SQS"
     AllowedServiceSeven                     = "SSM"
-    LambdaCanaryDeployment                  = contains(["production", "integration"], var.environment) ? "Canary10Percent30Minutes" : "AllAtOnce"
+    LambdaCanaryDeployment                  = contains(["production", "integration"], var.environment) ? "Canary10Percent15Minutes" : "AllAtOnce"
   }
 
   capabilities = var.capabilities

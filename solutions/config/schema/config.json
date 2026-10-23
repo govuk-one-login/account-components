@@ -48,6 +48,39 @@
     "max_number_of_passkeys": {
       "description": "The maximum number of passkeys a user can have",
       "type": "integer"
+    },
+    "split_tests": {
+      "description": "Split test configurations",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "testingJourneySplitTest": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "bucket1": {
+              "type": "object",
+              "properties": { "percentage": { "type": "number" } },
+              "required": ["percentage"],
+              "additionalProperties": false
+            },
+            "bucket2": {
+              "type": "object",
+              "properties": { "percentage": { "type": "number" } },
+              "required": ["percentage"],
+              "additionalProperties": false
+            },
+            "bucket3": {
+              "type": "object",
+              "properties": { "percentage": { "type": "number" } },
+              "required": ["percentage"],
+              "additionalProperties": false
+            }
+          },
+          "required": ["bucket1", "bucket2", "bucket3"]
+        }
+      },
+      "required": ["testingJourneySplitTest"]
     }
   },
   "required": [
@@ -58,7 +91,8 @@
     "jwks_http_timeout",
     "access_token_max_age",
     "journey_outcome_ttl",
-    "max_number_of_passkeys"
+    "max_number_of_passkeys",
+    "split_tests"
   ],
   "$defs": {
     "analytics": {

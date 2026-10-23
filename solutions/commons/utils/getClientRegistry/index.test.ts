@@ -30,6 +30,19 @@ describe("getClientRegistry", () => {
       access_token_max_age: 300,
       journey_outcome_ttl: 360,
       max_number_of_passkeys: 5,
+      split_tests: {
+        testingJourneySplitTest: {
+          bucket1: {
+            percentage: 50,
+          },
+          bucket2: {
+            percentage: 30,
+          },
+          bucket3: {
+            percentage: 20,
+          },
+        },
+      },
     };
 
     const { getAppConfig } = await import("../getAppConfig/index.js");

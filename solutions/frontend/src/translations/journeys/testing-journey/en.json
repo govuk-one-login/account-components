@@ -1,7 +1,11 @@
 {
   "step1": {
     "pageTitle": "Testing journey step 1",
-    "heading": "Testing journey step 1",
+    "heading": {
+      "bucket1": "Testing journey step 1 - split test bucket 1",
+      "bucket2": "Testing journey step 1 - split test bucket 2",
+      "bucket3": "Testing journey step 1 - split test bucket 3"
+    },
     "paragraph": "This is a testing journey. Click the button below to continue.",
     "buttonLabel": "Go to next step"
   },

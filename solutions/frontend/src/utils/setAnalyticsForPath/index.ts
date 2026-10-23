@@ -8,15 +8,46 @@ const findAnalytics = (pathsMap: PathsMap, pathname: string) =>
     (path) => path.path === pathname && path.analytics,
   )?.analytics;
 
+const getAnalyticsConfig = (
+  splitTestBucketAssignments: FastifyReply["globals"]["splitTestBucketAssignments"],
+  analytics: NonNullable<ReturnType<typeof findAnalytics>>,
+): FastifyReply["analytics"] => {
+  const { contentId, ...analyticsWithoutContentId } = analytics;
+
+  if (contentId === undefined || typeof contentId === "string") {
+    return {
+      ...analyticsWithoutContentId,
+      ...(contentId && { contentId }),
+    };
+  }
+
+  if (!splitTestBucketAssignments) {
+    return analyticsWithoutContentId;
+  }
+
+  const bucket = splitTestBucketAssignments[contentId[0]];
+  const splitTestContentId = contentId[1][bucket];
+
+  return {
+    ...analyticsWithoutContentId,
+    contentId: splitTestContentId,
+  };
+};
+
 export const setAnalyticsForPath = async (
   request: FastifyRequest,
   reply: FastifyReply,
 ) => {
   const url = new URL(request.url, "http://localhost");
 
-  const analytics = findAnalytics(paths.others, url.pathname);
+  const analytics =
+    findAnalytics(paths.journeys.others, url.pathname) ??
+    findAnalytics(paths.others, url.pathname);
   if (analytics) {
-    reply.analytics = analytics;
+    reply.analytics = getAnalyticsConfig(
+      reply.globals.splitTestBucketAssignments,
+      analytics,
+    );
   }
 
   for (const scope of Object.values(Scope)) {
@@ -24,7 +55,10 @@ export const setAnalyticsForPath = async (
       // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
       const analytics = findAnalytics(state as PathsMap, url.pathname);
       if (analytics) {
-        reply.analytics = analytics;
+        reply.analytics = getAnalyticsConfig(
+          reply.globals.splitTestBucketAssignments,
+          analytics,
+        );
         return;
       }
     }

@@ -1,62 +1,181 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { setAnalyticsForPath } from "./index.js";
 import type { FastifyRequest, FastifyReply } from "fastify";
+import type { paths } from "../paths.js";
+
+vi.mock(import("../paths.js"), () => ({
+  paths: {
+    others: {
+      withAnalytics: {
+        path: "/with-analytics",
+        analytics: {
+          taxonomyLevel1: "accounts",
+          contentId: "static-content-id",
+        },
+      },
+      withoutAnalytics: {
+        path: "/without-analytics",
+      },
+    },
+    journeys: {
+      "testing-journey": {
+        stateA: {
+          withAnalytics: {
+            path: "/journey/with-analytics",
+            analytics: {
+              taxonomyLevel1: "accounts",
+              taxonomyLevel2: "journey",
+            },
+          },
+          withoutAnalytics: {
+            path: "/journey/without-analytics",
+          },
+          withSplitTest: {
+            path: "/journey/split-test",
+            analytics: {
+              taxonomyLevel1: "accounts",
+              contentId: [
+                "testSplitTest",
+                {
+                  bucket1: "split-test-bucket1-content-id",
+                  bucket2: "split-test-bucket2-content-id",
+                },
+              ],
+            },
+          },
+          withQueryParams: {
+            path: "/journey/query-params",
+            analytics: { taxonomyLevel1: "accounts" },
+          },
+        },
+      },
+      "account-delete": {},
+      "passkey-create": {},
+      others: {
+        withAnalytics: {
+          path: "/journey/other-with-analytics",
+          analytics: { taxonomyLevel1: "accounts" },
+        },
+      },
+    },
+  } as unknown as typeof paths,
+}));
 
 describe("setAnalyticsForPath", () => {
   let reply: Partial<FastifyReply>;
 
   beforeEach(() => {
-    reply = {};
+    reply = { globals: {} };
   });
 
-  it("should set analytics on reply when path has analytics defined", async () => {
-    const request = { url: "/set-up-passkey" };
+  it("should set analytics on reply when path in paths.journeys.others has analytics defined", async () => {
+    const request = { url: "/journey/other-with-analytics", session: {} };
 
-    await setAnalyticsForPath(request as FastifyRequest, reply as FastifyReply);
+    await setAnalyticsForPath(
+      request as unknown as FastifyRequest,
+      reply as FastifyReply,
+    );
+
+    expect(reply.analytics).toStrictEqual({ taxonomyLevel1: "accounts" });
+  });
+
+  it("should set analytics on reply when path in paths.others has analytics defined", async () => {
+    const request = { url: "/with-analytics", session: {} };
+
+    await setAnalyticsForPath(
+      request as unknown as FastifyRequest,
+      reply as FastifyReply,
+    );
 
     expect(reply.analytics).toStrictEqual({
       taxonomyLevel1: "accounts",
-      taxonomyLevel2: "manage",
-      taxonomyLevel3: "passkey",
+      contentId: "static-content-id",
     });
   });
 
-  it("should not set analytics on reply when path has no analytics defined", async () => {
-    const request = { url: "/testing-journey/step-1" };
+  it("should not set analytics on reply when path in paths.others has no analytics defined", async () => {
+    const request = { url: "/without-analytics", session: {} };
 
-    await setAnalyticsForPath(request as FastifyRequest, reply as FastifyReply);
+    await setAnalyticsForPath(
+      request as unknown as FastifyRequest,
+      reply as FastifyReply,
+    );
+
+    expect(reply.analytics).toBeUndefined();
+  });
+
+  it("should set analytics on reply when journey path has analytics defined", async () => {
+    const request = { url: "/journey/with-analytics", session: {} };
+
+    await setAnalyticsForPath(
+      request as unknown as FastifyRequest,
+      reply as FastifyReply,
+    );
+
+    expect(reply.analytics).toStrictEqual({
+      taxonomyLevel1: "accounts",
+      taxonomyLevel2: "journey",
+    });
+  });
+
+  it("should not set analytics on reply when journey path has no analytics defined", async () => {
+    const request = { url: "/journey/without-analytics", session: {} };
+
+    await setAnalyticsForPath(
+      request as unknown as FastifyRequest,
+      reply as FastifyReply,
+    );
 
     expect(reply.analytics).toBeUndefined();
   });
 
   it("should not set analytics on reply when path does not match any known path", async () => {
-    const request = { url: "/unknown-path" };
+    const request = { url: "/unknown-path", session: {} };
 
-    await setAnalyticsForPath(request as FastifyRequest, reply as FastifyReply);
+    await setAnalyticsForPath(
+      request as unknown as FastifyRequest,
+      reply as FastifyReply,
+    );
 
     expect(reply.analytics).toBeUndefined();
   });
 
   it("should match path ignoring query parameters", async () => {
-    const request = { url: "/set-up-passkey?foo=bar" };
+    const request = { url: "/journey/query-params?foo=bar", session: {} };
 
-    await setAnalyticsForPath(request as FastifyRequest, reply as FastifyReply);
+    await setAnalyticsForPath(
+      request as unknown as FastifyRequest,
+      reply as FastifyReply,
+    );
+
+    expect(reply.analytics).toStrictEqual({ taxonomyLevel1: "accounts" });
+  });
+
+  it("should resolve split test contentId from reply.globals bucket assignment", async () => {
+    const request = { url: "/journey/split-test", session: {} };
+    reply.globals = {
+      splitTestBucketAssignments: { testSplitTest: "bucket1" },
+    } as unknown as FastifyReply["globals"];
+
+    await setAnalyticsForPath(
+      request as unknown as FastifyRequest,
+      reply as FastifyReply,
+    );
 
     expect(reply.analytics).toStrictEqual({
       taxonomyLevel1: "accounts",
-      taxonomyLevel2: "manage",
-      taxonomyLevel3: "passkey",
+      contentId: "split-test-bucket1-content-id",
     });
   });
 
-  it("should set analytics for paths defined in paths.others", async () => {
-    const request = { url: "/error" };
+  it("should omit contentId when split test path has no splitTestBucketAssignments in reply.globals", async () => {
+    const request = { url: "/journey/split-test", session: {} };
 
-    await setAnalyticsForPath(request as FastifyRequest, reply as FastifyReply);
+    await setAnalyticsForPath(
+      request as unknown as FastifyRequest,
+      reply as FastifyReply,
+    );
 
-    expect(reply.analytics).toStrictEqual({
-      taxonomyLevel1: "accounts",
-      contentId: "a1a3dddd-9e65-40dc-9256-12ed597ec40e",
-    });
+    expect(reply.analytics).toStrictEqual({ taxonomyLevel1: "accounts" });
   });
 });
