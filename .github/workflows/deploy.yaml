@@ -79,6 +79,7 @@ jobs:
         uses: aws-actions/setup-sam@89ddb14d60e682855e3fea4be85b3c56485de310
         with:
           use-installer: true
+          version: "1.169.0"
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Assume AWS role
