@@ -363,20 +363,6 @@ describe("verifyEmailAddress handlers", () => {
       ).rejects.toThrow();
     });
 
-    it("should throw if access token is not available", async () => {
-      mockRequest.body = { code: "123456" };
-      mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
-      // @ts-expect-error
-      delete mockRequest.session.claims.account_management_api_access_token;
-
-      await expect(
-        verifyEmailAddressPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-      ).rejects.toThrow();
-    });
-
     it("should render error when verifyOtpChallenge fails with InvalidOTPCode", async () => {
       mockRequest.body = { code: "123456" };
       mockRequest.i18n = {

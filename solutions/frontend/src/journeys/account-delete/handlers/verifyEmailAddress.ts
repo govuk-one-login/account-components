@@ -75,7 +75,6 @@ export async function verifyEmailAddressPostHandler(
   const body = bodyValidation.parsedValue;
 
   assert.ok(request.session.claims);
-  assert.ok(request.session.claims.account_management_api_access_token);
   const accountManagementApiClient = new AccountManagementApiClient(
     request.session.claims.account_management_api_access_token,
     request.awsLambda?.event,

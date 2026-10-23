@@ -2,6 +2,10 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AccountManagementApiClient } from "./accountManagementApiClient.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 
+vi.mock(import("../../../commons/utils/getEnvironment/index.js"), () => ({
+  getEnvironment: vi.fn().mockReturnValue("local"),
+}));
+
 const mockThisFetch = vi.fn();
 
 // @ts-expect-error
@@ -31,10 +35,13 @@ describe("accountManagementApiClient", () => {
   const mockEvent = {} as APIGatewayProxyEvent;
   const originalEnv = process.env;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     process.env = { ...originalEnv };
     process.env["ACCOUNT_MANAGEMENT_API_URL"] = "https://api.example.com";
     vi.clearAllMocks();
+    const { getEnvironment } =
+      await import("../../../commons/utils/getEnvironment/index.js");
+    vi.mocked(getEnvironment).mockReturnValue("local");
   });
 
   afterEach(() => {
@@ -55,6 +62,48 @@ describe("accountManagementApiClient", () => {
 
       expect(client).toBeInstanceOf(AccountManagementApiClient);
     });
+
+    it("should set Authorization header when in local environment and token provided", async () => {
+      const { getEnvironment } =
+        await import("../../../commons/utils/getEnvironment/index.js");
+      vi.mocked(getEnvironment).mockReturnValue("local");
+
+      const client = new AccountManagementApiClient(mockAccessToken, mockEvent);
+
+      // @ts-expect-error
+      expect(client.commonHeaders.Authorization).toBe(
+        `Bearer ${mockAccessToken}`,
+      );
+    });
+
+    it("should not set Authorization header when token is not provided", async () => {
+      const { getEnvironment } =
+        await import("../../../commons/utils/getEnvironment/index.js");
+      vi.mocked(getEnvironment).mockReturnValue("local");
+
+      const client = new AccountManagementApiClient(undefined, mockEvent);
+
+      // @ts-expect-error
+      expect(client.commonHeaders.Authorization).toBeUndefined();
+    });
+
+    it.each(["staging", "production"])(
+      "should not set Authorization header in %s environment",
+      async (env) => {
+        const { getEnvironment } =
+          await import("../../../commons/utils/getEnvironment/index.js");
+        // @ts-expect-error
+        vi.mocked(getEnvironment).mockReturnValue(env);
+
+        const client = new AccountManagementApiClient(
+          mockAccessToken,
+          mockEvent,
+        );
+
+        // @ts-expect-error
+        expect(client.commonHeaders.Authorization).toBeUndefined();
+      },
+    );
   });
 
   describe("sendOtpChallenge", () => {
