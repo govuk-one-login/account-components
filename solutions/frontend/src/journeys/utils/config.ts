@@ -50,10 +50,7 @@ export const journeys = {
         [Lang.English]: en,
         [Lang.Welsh]: cy,
       },
-      requiredClaims: [
-        "account_data_api_access_token",
-        "account_management_api_access_token",
-      ],
+      requiredClaims: ["account_data_api_access_token"],
     };
   },
 } satisfies Record<

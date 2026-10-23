@@ -9,7 +9,6 @@ export async function sharedSendOtpHandler(
   reply: FastifyReply,
 ) {
   assert.ok(request.session.claims);
-  assert.ok(request.session.claims.account_management_api_access_token);
   assert.ok(reply.journeyStates?.[Scope.accountDelete]);
 
   const accountManagementApiClient = new AccountManagementApiClient(

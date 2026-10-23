@@ -33,19 +33,11 @@ export const startSessionAndGoToJourney = async (
     const now = Math.floor(Date.now() / 1000);
     let sessionExpiry = now + 1800; // Default session length of 30 mins
 
-    const accountManagementApiAccessTokenExpiry =
-      claims.account_management_api_access_token
-        ? decodeJwt(claims.account_management_api_access_token).exp
-        : undefined;
-
     const accountDataApiAccessTokenExpiry = claims.account_data_api_access_token
       ? decodeJwt(claims.account_data_api_access_token).exp
       : undefined;
 
-    const tokenExpiries = [
-      accountManagementApiAccessTokenExpiry,
-      accountDataApiAccessTokenExpiry,
-    ]
+    const tokenExpiries = [accountDataApiAccessTokenExpiry]
       .filter((item) => typeof item === "number")
       // Take time off of the token lengths so that the session expires
       // before the tokens. This should prevent the edge case where
