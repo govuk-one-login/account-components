@@ -21,7 +21,9 @@ export async function generateRequestObjectPost(
   for (const key of Object.keys(authorizeRequestObject)) {
     if (
       key.startsWith("account_management_api_") ||
-      key.startsWith("account_data_api_")
+      key.startsWith("account_data_api_") ||
+      key.startsWith("account_interventions_service_api_") ||
+      key.startsWith("internal_api_")
     ) {
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete authorizeRequestObject[key];
@@ -43,11 +45,17 @@ export async function generateRequestObjectPost(
       getPasskeys_scenario: body.account_data_api_getPasskeys_scenario,
       createPasskey_scenario: body.account_data_api_createPasskey_scenario,
     });
-  authorizeRequestObject.stubs_account_interventions_service_api_access_token =
+  authorizeRequestObject.account_interventions_service_api_access_token =
     await generateAccessToken({
       getUserAisStatus_scenario:
-        body.stubs_account_interventions_service_api_access_token_getUserAisStatus_scenario,
+        body.account_interventions_service_api_access_token_getUserAisStatus_scenario,
     });
+  authorizeRequestObject.internal_api_access_token = await generateAccessToken({
+    generateOTP_scenario: body.internal_api_generateOTP_scenario,
+    checkOTP_scenario: body.internal_api_checkOTP_scenario,
+    checkPassword_scenario: body.internal_api_checkPassword_scenario,
+    lockoutStatus_scenario: body.internal_api_lockoutStatus_scenario,
+  });
 
   const scenario = getScenario(authorizeRequestObject);
 

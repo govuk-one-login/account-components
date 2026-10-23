@@ -20,4 +20,10 @@ export const paths = {
   accountInterventionsServiceApi: {
     getUserAisStatus: "/account-interventions-service-api/ais/:commonSubjectId",
   },
+  internalApi: {
+    generateOTP: "/internal-api/generate-otp/:publicSubjectId",
+    checkOTP: "/internal-api/check-otp/:publicSubjectId",
+    checkPassword: "/internal-api/check-password/:publicSubjectId",
+    lockoutStatus: "/internal-api/lockout-status/:publicSubjectId",
+  },
 } as const;

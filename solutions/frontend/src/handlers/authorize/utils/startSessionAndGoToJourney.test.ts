@@ -117,7 +117,7 @@ describe("startSessionAndGoToJourney", () => {
     expect(mockRedirect).toHaveBeenCalledWith("/reset-delete/start");
   });
 
-  it("sets session expiry based on account management API token expiry", async () => {
+  it("sets session expiry based on account data API token expiry when only that token is present", async () => {
     const mockRegenerate = vi.fn().mockResolvedValue(undefined);
     const mockRedirect = vi.fn().mockReturnThis();
     const mockSession = {
@@ -134,7 +134,7 @@ describe("startSessionAndGoToJourney", () => {
     const claims = {
       sub: "user-789",
       scope: Scope.testingJourney,
-      account_management_api_access_token: "token-123",
+      account_data_api_access_token: "token-123",
     } as Claims;
 
     await startSessionAndGoToJourney(
@@ -193,16 +193,12 @@ describe("startSessionAndGoToJourney", () => {
     const reply = { redirect: mockRedirect } as unknown as FastifyReply;
 
     const earlierExpiry = 1704111400;
-    const laterExpiry = 1704115400;
 
-    mockDecodeJwt
-      .mockReturnValueOnce({ exp: laterExpiry })
-      .mockReturnValueOnce({ exp: earlierExpiry });
+    mockDecodeJwt.mockReturnValue({ exp: earlierExpiry });
 
     const claims = {
       sub: "user-def",
       scope: Scope.testingJourney,
-      account_management_api_access_token: "token-1",
       account_data_api_access_token: "token-2",
     } as Claims;
 
@@ -234,7 +230,7 @@ describe("startSessionAndGoToJourney", () => {
     const claims = {
       sub: "user-ghi",
       scope: Scope.testingJourney,
-      account_management_api_access_token: "token-789",
+      account_data_api_access_token: "token-789",
     } as Claims;
 
     await startSessionAndGoToJourney(

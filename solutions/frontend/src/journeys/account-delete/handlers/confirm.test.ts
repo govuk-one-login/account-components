@@ -92,7 +92,7 @@ describe("confirm handlers", () => {
       );
 
       expect(mockDeleteAccount).toHaveBeenCalledWith(
-        "test-token",
+        "test-adapi-token",
         "test@example.com",
       );
       expect(mockCompleteJourneyActionSuccessfully).toHaveBeenCalledWith(
@@ -125,7 +125,7 @@ describe("confirm handlers", () => {
       ).rejects.toThrow("Failed to delete account");
 
       expect(mockDeleteAccount).toHaveBeenCalledWith(
-        "test-token",
+        "test-adapi-token",
         "test@example.com",
       );
       expect(mockCompleteJourney).not.toHaveBeenCalled();
@@ -133,21 +133,6 @@ describe("confirm handlers", () => {
 
     it("should throw error when session claims are missing", async () => {
       delete mockRequest.session;
-
-      await expect(
-        confirmPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-      ).rejects.toThrow();
-
-      expect(mockDeleteAccount).not.toHaveBeenCalled();
-      expect(mockCompleteJourney).not.toHaveBeenCalled();
-    });
-
-    it("should throw error when account_management_api_access_token is missing", async () => {
-      // @ts-expect-error
-      delete mockRequest.session.claims.account_management_api_access_token;
 
       await expect(
         confirmPostHandler(

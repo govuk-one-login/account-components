@@ -2,6 +2,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AccountInterventionsServiceApiClient } from "./accountInterventionsServiceApiClient.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 
+const mockGetEnvironment = vi.fn();
+
+vi.mock(import("../../../commons/utils/getEnvironment/index.js"), () => ({
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  getEnvironment: () => mockGetEnvironment(),
+}));
+
 const mockThisFetch = vi.fn();
 
 // @ts-expect-error
@@ -35,6 +42,7 @@ describe("accountInterventionsServiceApiClient", () => {
     process.env = { ...originalEnv };
     process.env["ACCOUNT_INTERVENTIONS_SERVICE_API_URL"] =
       "https://api.example.com";
+    mockGetEnvironment.mockReturnValue("local");
     vi.clearAllMocks();
   });
 
@@ -63,26 +71,54 @@ describe("accountInterventionsServiceApiClient", () => {
   });
 
   describe("getUserAisStatus", () => {
-    it("should make correct API call", async () => {
-      const client = new AccountInterventionsServiceApiClient(
-        mockAccessToken,
-        mockEvent,
-      );
+    it.each(["local", "dev", "build"])(
+      "should include Authorization header in %s environment",
+      async (env) => {
+        mockGetEnvironment.mockReturnValue(env);
+        const client = new AccountInterventionsServiceApiClient(
+          mockAccessToken,
+          mockEvent,
+        );
 
-      mockThisFetch.mockResolvedValueOnce(new Response());
+        mockThisFetch.mockResolvedValueOnce(new Response());
 
-      await client.getUserAisStatus("test-common-subject-id");
+        await client.getUserAisStatus("test-common-subject-id");
 
-      expect(mockThisFetch).toHaveBeenCalledWith(
-        "https://api.example.com/ais/test-common-subject-id",
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${mockAccessToken}`,
+        expect(mockThisFetch).toHaveBeenCalledWith(
+          "https://api.example.com/ais/test-common-subject-id",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${mockAccessToken}`,
+            },
           },
-        },
-      );
-    });
+        );
+      },
+    );
+
+    it.each(["staging", "integration", "production"])(
+      "should not include Authorization header in %s environment",
+      async (env) => {
+        mockGetEnvironment.mockReturnValue(env);
+        const client = new AccountInterventionsServiceApiClient(
+          mockAccessToken,
+          mockEvent,
+        );
+
+        mockThisFetch.mockResolvedValueOnce(new Response());
+
+        await client.getUserAisStatus("test-common-subject-id");
+
+        expect(mockThisFetch).toHaveBeenCalledWith(
+          "https://api.example.com/ais/test-common-subject-id",
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
+      },
+    );
 
     it("should not include Authorization header when accessToken is not provided", async () => {
       const client = new AccountInterventionsServiceApiClient(

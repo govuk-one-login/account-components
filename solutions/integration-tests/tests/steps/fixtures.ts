@@ -9,6 +9,7 @@ export const test = base.extend<
     skips: undefined;
     fails: undefined;
     scenarioData: {
+      id: UUID;
       cdpSession: CDPSession;
       authenticatorIds: string[];
       [key: string]: unknown;
@@ -60,6 +61,7 @@ export const test = base.extend<
     await cdpSession.send("WebAuthn.enable");
 
     await use({
+      id: randomUUID(),
       cdpSession,
       authenticatorIds: [],
     });

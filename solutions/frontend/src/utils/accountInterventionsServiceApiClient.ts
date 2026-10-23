@@ -3,6 +3,7 @@ import { JsonApiClient } from "./jsonApiClient.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
 
 import * as v from "valibot";
+import { getEnvironment } from "../../../commons/utils/getEnvironment/index.js";
 
 const AccountStateSchema = v.object({
   blocked: v.boolean(),
@@ -36,8 +37,17 @@ export class AccountInterventionsServiceApiClient extends JsonApiClient {
 
     this.commonHeaders = {
       "Content-Type": "application/json",
-      ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
     };
+
+    // The access token is not used by the real AIS API, only by
+    // the stub version where it contains information about which scenario
+    // to simulate
+    if (
+      ["local", "dev", "build"].includes(getEnvironment()) &&
+      accessToken !== undefined
+    ) {
+      this.commonHeaders.Authorization = `Bearer ${accessToken}`;
+    }
   }
 
   async getUserAisStatus(commonSubjectId: string) {

@@ -116,9 +116,13 @@ describe("createRequestObjectPost", () => {
         account_management_api_verifyOtpChallenge_scenario: "successful",
         account_data_api_createPasskey_scenario: "successful",
         account_data_api_getPasskeys_scenario: "successful",
-        stubs_account_interventions_service_api_access_token_getUserAisStatus_scenario:
+        account_interventions_service_api_access_token_getUserAisStatus_scenario:
           "no_interventions",
-        split_test_bucket_assignments: "splitTestName: bucketName",
+        internal_api_generateOTP_scenario: "successful",
+        internal_api_checkOTP_scenario: "successful",
+        internal_api_checkPassword_scenario: "successful", // pragma: allowlist secret
+        internal_api_lockoutStatus_scenario: "not_locked_out",
+        split_test_bucket_assignments: "splitTestName: bucketName",        
       },
     };
 
