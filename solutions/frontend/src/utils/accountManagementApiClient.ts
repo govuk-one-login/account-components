@@ -1,12 +1,13 @@
 import assert from "node:assert";
 import { JsonApiClient } from "./jsonApiClient.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
+import { getEnvironment } from "../../../commons/utils/getEnvironment/index.js";
 
 export class AccountManagementApiClient extends JsonApiClient {
   private readonly baseUrl: string;
   private readonly commonHeaders: NonNullable<RequestInit["headers"]>;
 
-  constructor(accessToken: string, event?: APIGatewayProxyEvent) {
+  constructor(accessToken?: string, event?: APIGatewayProxyEvent) {
     super("Account management API", event);
 
     assert(
@@ -18,8 +19,17 @@ export class AccountManagementApiClient extends JsonApiClient {
 
     this.commonHeaders = {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
     };
+
+    // The access token is not used by the real account management API, only by
+    // the stub version where it contains information about which scenario
+    // to simulate
+    if (
+      ["local", "dev", "build"].includes(getEnvironment()) &&
+      accessToken !== undefined
+    ) {
+      this.commonHeaders.Authorization = `Bearer ${accessToken}`;
+    }
   }
 
   async authenticate(emailAddress: string, password: string) {

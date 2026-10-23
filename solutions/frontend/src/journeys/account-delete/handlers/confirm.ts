@@ -22,7 +22,6 @@ export async function confirmPostHandler(
   reply: FastifyReply,
 ) {
   assert.ok(request.session.claims);
-  assert.ok(request.session.claims.account_management_api_access_token);
   assert.ok(request.session.claims.account_data_api_access_token);
   const accountManagementApiClient = new AccountManagementApiClient(
     request.session.claims.account_management_api_access_token,
@@ -30,7 +29,7 @@ export async function confirmPostHandler(
   );
 
   const result = await accountManagementApiClient.deleteAccount(
-    request.session.claims.account_management_api_access_token,
+    request.session.claims.account_data_api_access_token,
     request.session.claims.email,
   );
 

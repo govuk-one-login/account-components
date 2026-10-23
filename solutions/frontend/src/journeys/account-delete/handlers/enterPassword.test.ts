@@ -257,20 +257,6 @@ describe("enterPassword handlers", () => {
       ).rejects.toThrow();
     });
 
-    it("should throw if access token is not available", async () => {
-      // @ts-expect-error
-      delete mockRequest.session.claims.account_management_api_access_token;
-      mockRequest.body = { password: "validPassword123" }; // pragma: allowlist secret
-      mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
-
-      await expect(
-        enterPasswordPostHandler(
-          mockRequest as FastifyRequest,
-          mockReply as FastifyReply,
-        ),
-      ).rejects.toThrow();
-    });
-
     it("should send lockedOutPasswordEnteredTooManyTimes event and redirect when ExceededIncorrectPasswordSubmissionLimit", async () => {
       mockRequest.body = { password: "invalidPassword123" }; // pragma: allowlist secret
       mockRequest.i18n = { t: vi.fn().mockReturnValue("Mock error") } as any;
