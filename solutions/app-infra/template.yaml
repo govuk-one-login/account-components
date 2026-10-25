@@ -79,6 +79,7 @@ Mappings:
       securityUrl: https://home.dev.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.dev.account.gov.uk/account-data-api
+      internalApiUrl: https://stubs.manage.dev.account.gov.uk/internal-api
       notifyDontSendEmailsTo: "^(perftest.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyTemplateIds: |
         {
@@ -115,6 +116,7 @@ Mappings:
       securityUrl: https://home.build.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.build.account.gov.uk/account-data-api
+      internalApiUrl: https://stubs.manage.build.account.gov.uk/internal-api
       notifyDontSendEmailsTo: "^(perftest.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyTemplateIds: |
         {
@@ -153,6 +155,7 @@ Mappings:
       securityUrl: https://home.staging.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://7xgl7lexy4.execute-api.eu-west-2.amazonaws.com/staging
+      internalApiUrl: https://2hdyiuvtug.execute-api.eu-west-2.amazonaws.com/v1
       notifyDontSendEmailsTo: "^(perftest.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyTemplateIds: |
         {
@@ -191,6 +194,7 @@ Mappings:
       securityUrl: https://home.integration.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://hoidt6wujb.execute-api.eu-west-2.amazonaws.com/integration
+      internalApiUrl: https://votf1tvl36.execute-api.eu-west-2.amazonaws.com/v1
       notifyDontSendEmailsTo: ""
       notifyTemplateIds: |
         {
@@ -229,6 +233,7 @@ Mappings:
       securityUrl: https://home.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://0218o1p9tj.execute-api.eu-west-2.amazonaws.com/production
+      internalApiUrl: https://h06vqhfzgi.execute-api.eu-west-2.amazonaws.com/v1
       notifyDontSendEmailsTo: ""
       notifyTemplateIds: |
         {
@@ -1611,7 +1616,7 @@ Resources:
                 aws:sourceVpce:
                   Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
       Variables:
-        ApiDomain: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+        ApiBaseUrl: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
         AuthorizeEndpointUrl:
           !FindInMap [
             EnvironmentConfiguration,
@@ -1759,8 +1764,8 @@ Resources:
                         {
                             "issuer": "$stageVariables.IssuerUrl",
                             "authorization_endpoint": "$stageVariables.AuthorizeEndpointUrl",
-                            "token_endpoint": "$stageVariables.ApiDomain/token",
-                            "jwks_uri": "$stageVariables.ApiDomain/.well-known/jwks.json",
+                            "token_endpoint": "$stageVariables.ApiBaseUrl/token",
+                            "jwks_uri": "$stageVariables.ApiBaseUrl/.well-known/jwks.json",
                             "response_types_supported": ["code"],
                             "token_endpoint_auth_methods_supported": ["private_key_jwt"],
                             "token_endpoint_auth_signing_alg_values_supported": ["ES256"],
@@ -3855,7 +3860,21 @@ Resources:
             ]
           JAR_RSA_ENCRYPTION_KEY_ALIAS: !Ref JARRSAEncryptionKeyAlias
           REPLAY_ATTACK_TABLE_NAME: !Ref ReplayAttackTable
-          INTERNAL_API_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+          # Rather than dynamically building the API URL as is done elsewhere in the template we must
+          # provide it as a per-environment hardcoded string. This serves two purposes: the first is that
+          # it means we can use the stub URL in dev and build; the second and more important is that it
+          # prevents deployment of this Lambda from being dependent on the the deployment of the API and
+          # associated resources. If we used the dynamically built API URL the deployment would have to wait
+          # until API Gateway has deployed and also until all Lambdas used by the API Gateway have deployed.
+          # This can take a long time if canaries are in use on those Lambdas which results in very slow
+          # deployments which sometimes even timeout, especially when this Lambda also uses a canary which
+          # can't start until after all of the previously mentioned resources have deployed.
+          INTERNAL_API_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              internalApiUrl,
+            ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
