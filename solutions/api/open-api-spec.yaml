@@ -3,30 +3,13 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components API
-  version: 0.0.19
-  description: |
-    OAuth 2.0 provider endpoints, including:
-    - POST /token (supports client assertions via private_key_jwt)
-    - GET /journeyoutcome
-    - GET /.well-known/jwks.json (publishes signing and encryption keys)
-    - GET /.well-known/oauth-authorization-server (OAuth Discovery)
+  version: 0.0.20
   contact:
     name: GDS - DI Accounts Pod - Home Team
     email: one-login-home-team@digital.cabinet-office.gov.uk
   license:
     name: MIT
     url: https://github.com/govuk-one-login/account-components/blob/main/LICENSE.md
-tags:
-  - name: OAuth
-    description: |-
-      Supporting methods for Account Management Component Journeys.
-
-      **Note:** This functionality is intended to be used by systems solely belonging internally to GDS DI.
-  - name: AMC
-    description: |-
-      Specific methods for Account Management Component Journeys.
-
-      **Note:** This functionality is intended to be used by systems solely belonging internally to GDS DI.
 servers:
   - url: https://771yjwzya0.execute-api.eu-west-2.amazonaws.com/v1
     description: development server
@@ -47,8 +30,6 @@ paths:
         Issues tokens for supported grants. This endpoint supports `private_key_jwt` client authentication via `client_assertion_type` and `client_assertion` per RFC 7523.
       operationId: token
       security: []
-      tags:
-        - OAuth
       parameters:
         - $ref: "#/components/parameters/DiPersistentSessionId"
         - $ref: "#/components/parameters/SessionId"
@@ -140,8 +121,6 @@ paths:
       security:
         - bearerAuth: []
       operationId: journeyoutcome
-      tags:
-        - AMC
       parameters:
         - $ref: "#/components/parameters/DiPersistentSessionId"
         - $ref: "#/components/parameters/SessionId"
@@ -168,7 +147,7 @@ paths:
                     scope: account-delete
                     success: true
                     actions:
-                      - action: account-delete
+                      - action: temp-account-delete-action
                         timestamp: 1760718467000
                         success: true
                         details: {}
@@ -308,14 +287,350 @@ paths:
                     error: internal_server_error
                     error_description: E5001
 
+  /generate-otp/{publicSubjectId}:
+    post:
+      summary: Generate OTP endpoint
+      description: Generate an OTP
+      security: []
+      operationId: generateotp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [source]
+              properties:
+                source:
+                  $ref: "#/components/schemas/Source"
+                  description: The source to generate an OTP for and to apply lockouts to
+                reissueUnusedUnexpiredOTP:
+                  type: boolean
+                  default: true
+                  description: If true and an unused, unexpired OTP exists then return it instead of generating a new one
+                expiresIn:
+                  type: integer
+                  default: 900
+                  description: Number of seconds until a newly generated OTP expires
+                lockoutDuration:
+                  type: integer
+                  default: 900
+                  description: If the request results in a lockout, the number of seconds the lockout applies for
+                maxAllowedBeforeLockout:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+                      default: 6
+                      description: The maximum number of OTPs generated before a TooManyOTPsRequested lockout is applied
+                    window:
+                      type: integer
+                      default: 10800
+                      description: The time window in seconds in which the count applies
+      parameters:
+        - name: publicSubjectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/DiPersistentSessionId"
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/ClientSessionId"
+        - $ref: "#/components/parameters/TxmaAuditEncoded"
+        - $ref: "#/components/parameters/XForwardedFor"
+        - $ref: "#/components/parameters/UserLanguage"
+      responses:
+        "200":
+          description: OTP details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  otp:
+                    type: string
+                    example: "123456"
+                    description: A one-time passcode
+                  expires:
+                    type: integer
+                    description: Unix epoch time in seconds when the token expires
+                    example: 1682959031
+                required: [otp, expires]
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                InvalidRequest:
+                  value:
+                    code: 1001
+                    message: InvalidRequest
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                TooManyOTPsRequested:
+                  value:
+                    code: 1002
+                    message: TooManyOTPsRequested
+                TooManyIncorrectOTPsEntered:
+                  value:
+                    code: 1003
+                    message: TooManyIncorrectOTPsEntered
+        "500":
+          description: Internal server error
+
+  /check-otp/{publicSubjectId}:
+    post:
+      summary: Check OTP endpoint
+      description: Check an OTP is valid
+      security: []
+      operationId: checkotp
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [otp, source]
+              properties:
+                otp:
+                  type: string
+                  example: "123456"
+                  description: A one-time passcode
+                source:
+                  $ref: "#/components/schemas/Source"
+                  description: The source to check an OTP for and to apply lockouts to
+                lockoutDuration:
+                  type: integer
+                  default: 900
+                  description: If the request results in a lockout, the number of seconds the lockout applies for
+                maxAllowedBeforeLockout:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+                      default: 6
+                      description: The maximum number of failed OTP checks before a TooManyIncorrectOTPsEntered lockout is applied
+                    window:
+                      type: integer
+                      default: 10800
+                      description: The time window in seconds in which the count applies
+      parameters:
+        - name: publicSubjectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/DiPersistentSessionId"
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/ClientSessionId"
+        - $ref: "#/components/parameters/TxmaAuditEncoded"
+        - $ref: "#/components/parameters/XForwardedFor"
+        - $ref: "#/components/parameters/UserLanguage"
+      responses:
+        "204":
+          description: OTP is valid
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                InvalidRequest:
+                  value:
+                    code: 1001
+                    message: InvalidRequest
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                TooManyIncorrectOTPsEntered:
+                  value:
+                    code: 1002
+                    message: TooManyIncorrectOTPsEntered
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                InvalidOTP:
+                  value:
+                    code: 1003
+                    message: InvalidOTP
+        "500":
+          description: Internal server error
+
+  /check-password/{publicSubjectId}:
+    post:
+      summary: Check password endpoint
+      description: Check a password is valid
+      security: []
+      operationId: checkpassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [password, source]
+              properties:
+                password:
+                  type: string
+                  description: The account password
+                source:
+                  $ref: "#/components/schemas/Source"
+                  description: The source to check a password for and to apply lockouts to
+                lockoutDuration:
+                  type: integer
+                  default: 900
+                  description: If the request results in a lockout, the number of seconds the lockout applies for
+                maxAllowedBeforeLockout:
+                  type: object
+                  properties:
+                    count:
+                      type: integer
+                      default: 6
+                      description: The maximum number of failed password checks before a TooManyIncorrectPasswordsEntered lockout is applied
+                    window:
+                      type: integer
+                      default: 10800
+                      description: The time window in seconds in which the count applies
+      parameters:
+        - name: publicSubjectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/DiPersistentSessionId"
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/ClientSessionId"
+        - $ref: "#/components/parameters/TxmaAuditEncoded"
+        - $ref: "#/components/parameters/XForwardedFor"
+        - $ref: "#/components/parameters/UserLanguage"
+      responses:
+        "204":
+          description: Password is valid
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                InvalidRequest:
+                  value:
+                    code: 1001
+                    message: InvalidRequest
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                TooManyIncorrectPasswordsEntered:
+                  value:
+                    code: 1002
+                    message: TooManyIncorrectPasswordsEntered
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                InvalidPassword:
+                  value:
+                    code: 1003
+                    message: InvalidPassword
+        "500":
+          description: Internal server error
+
+  /lockout-status/{publicSubjectId}:
+    get:
+      summary: Lockout status endpoint
+      description: Get the lockout status for the account
+      security: []
+      operationId: lockoutstatus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [source]
+              properties:
+                source:
+                  $ref: "#/components/schemas/Source"
+                  description: The source to check for lockouts
+                lockoutType:
+                  $ref: "#/components/schemas/LockoutType"
+                  description: The type of lockout to check for (defaults to checking all lockout types if not specified)
+      parameters:
+        - name: publicSubjectId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: "#/components/parameters/DiPersistentSessionId"
+        - $ref: "#/components/parameters/SessionId"
+        - $ref: "#/components/parameters/ClientSessionId"
+        - $ref: "#/components/parameters/TxmaAuditEncoded"
+        - $ref: "#/components/parameters/XForwardedFor"
+        - $ref: "#/components/parameters/UserLanguage"
+      responses:
+        "200":
+          description: Lockout status details
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    required: [isLockedOut]
+                    properties:
+                      isLockedOut:
+                        type: boolean
+                        enum: [false]
+                  - type: object
+                    required: [isLockedOut, lockoutType]
+                    properties:
+                      isLockedOut:
+                        type: boolean
+                        enum: [true]
+                      lockoutType:
+                        $ref: "#/components/schemas/LockoutType"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+              examples:
+                InvalidRequest:
+                  value:
+                    code: 1001
+                    message: InvalidRequest
+        "500":
+          description: Internal server error
+
   /.well-known/jwks.json:
     get:
       summary: JSON Web Key Set (JWKS)
       description: Publishes public keys for signature and encryption.
       operationId: jwks
       security: []
-      tags:
-        - OAuth
       responses:
         "200":
           description: JWK Set
@@ -344,8 +659,6 @@ paths:
         Discover OAuth method URLs.
       operationId: discovery
       security: []
-      tags:
-        - OAuth
       responses:
         "200":
           description: OAuth discovery metadata document (rfc8414)
@@ -441,6 +754,19 @@ components:
         example: "no-store, no-cache, must-revalidate, proxy-revalidate"
 
   schemas:
+    Source:
+      type: string
+      enum:
+        - account-delete
+      description: Namespaces shared across various functionalities including OTP generation and verification, password verification and lockouts
+
+    LockoutType:
+      type: string
+      enum:
+        - TooManyOTPsRequested
+        - TooManyIncorrectOTPsEntered
+        - TooManyIncorrectPasswordsEntered
+
     OAuthError:
       type: object
       properties:
@@ -453,6 +779,20 @@ components:
           example: E9999
       required:
         - error
+
+    ApiError:
+      type: object
+      properties:
+        code:
+          type: number
+          description: Error code
+          example: 1001
+        message:
+          type: string
+          description: A description of the error
+          example: Invalid request parameters
+      required:
+        - code
 
     TokenResponse:
       type: object
@@ -501,7 +841,12 @@ components:
             properties:
               action:
                 type: string
-                enum: ["testing-journey-action", "passkey-create"]
+                enum:
+                  [
+                    "testing-journey-action",
+                    "passkey-create",
+                    "temp-account-delete-action",
+                  ]
                 description: The name of the action
               timestamp:
                 type: integer
