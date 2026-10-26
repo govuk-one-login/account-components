@@ -5,6 +5,7 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 import { metrics } from "../../metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { isFastifyError } from "../isFastifyError/index.js";
+import { isExpectedError } from "../../isExpectedError/index.js";
 
 // @ts-expect-error
 vi.mock(import("../../metrics/index.js"), () => ({
@@ -15,6 +16,9 @@ vi.mock(import("../../metrics/index.js"), () => ({
 
 vi.mock(import("../isFastifyError/index.js"));
 const mockIsFastifyError = vi.mocked(isFastifyError);
+
+vi.mock(import("../../isExpectedError/index.js"));
+const mockIsExpectedError = vi.mocked(isExpectedError);
 
 describe("onError handler", () => {
   let mockLog: {
@@ -37,6 +41,9 @@ describe("onError handler", () => {
       statusCode: 200,
       render: vi.fn(),
     } as unknown as FastifyReply;
+
+    mockIsFastifyError.mockReturnValue(false);
+    mockIsExpectedError.mockReturnValue(false);
   });
 
   afterEach(() => {
@@ -91,6 +98,43 @@ describe("onError handler", () => {
     await onError(testError, mockRequest, mockReply, customTemplate);
 
     expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(customTemplate);
+  });
+
+  describe("when error is an expected error", () => {
+    const expectedError = {
+      code: "EXPECTED_ERROR_SOME_INTERVENTION",
+      message: "Expected error",
+    };
+
+    beforeEach(() => {
+      mockIsExpectedError.mockReturnValue(true);
+    });
+
+    it("logs with warn", async () => {
+      await onError(expectedError, mockRequest, mockReply);
+
+      expect(mockLog.warn).toHaveBeenCalledExactlyOnceWith(
+        expectedError,
+        "ERROR_CAUGHT_BY_GLOBAL_ERROR_HANDLER",
+      );
+      expect(mockLog.error).not.toHaveBeenCalled();
+    });
+
+    it("sets status code to 200 when statusCode is not set", async () => {
+      await onError(expectedError, mockRequest, mockReply);
+
+      expect(mockReply.statusCode).toBe(200);
+    });
+
+    it("sets status code to the error's statusCode when set", async () => {
+      await onError(
+        { ...expectedError, statusCode: 403 },
+        mockRequest,
+        mockReply,
+      );
+
+      expect(mockReply.statusCode).toBe(403);
+    });
   });
 
   describe("when error is an empty JSON body FastifyError", () => {

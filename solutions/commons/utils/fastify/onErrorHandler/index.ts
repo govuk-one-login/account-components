@@ -4,6 +4,7 @@ import { metrics } from "../../metrics/index.js";
 
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { isFastifyError } from "../isFastifyError/index.js";
+import { isExpectedError } from "../../isExpectedError/index.js";
 
 type ErrorHandler = Parameters<FastifyInstance["setErrorHandler"]>[0];
 
@@ -26,6 +27,11 @@ export const onError = async (
   if (isFastifyError(error) && error.code === "FST_ERR_CTP_EMPTY_JSON_BODY") {
     logger = request.log.warn;
     statusCode = 400;
+  }
+
+  if (isExpectedError(error)) {
+    logger = request.log.warn;
+    statusCode = error.statusCode ?? 200;
   }
 
   logger(error, msg);
