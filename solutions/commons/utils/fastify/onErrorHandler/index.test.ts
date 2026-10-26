@@ -5,7 +5,7 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 import { metrics } from "../../metrics/index.js";
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { isFastifyError } from "../isFastifyError/index.js";
-import { isExpectedError } from "../isExpectedError/index.js";
+import { isExpectedError } from "../../isExpectedError/index.js";
 
 // @ts-expect-error
 vi.mock(import("../../metrics/index.js"), () => ({
@@ -17,7 +17,7 @@ vi.mock(import("../../metrics/index.js"), () => ({
 vi.mock(import("../isFastifyError/index.js"));
 const mockIsFastifyError = vi.mocked(isFastifyError);
 
-vi.mock(import("../isExpectedError/index.js"));
+vi.mock(import("../../isExpectedError/index.js"));
 const mockIsExpectedError = vi.mocked(isExpectedError);
 
 describe("onError handler", () => {

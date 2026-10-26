@@ -4,7 +4,7 @@ import { metrics } from "../../metrics/index.js";
 
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { isFastifyError } from "../isFastifyError/index.js";
-import { isExpectedError } from "../isExpectedError/index.js";
+import { isExpectedError } from "../../isExpectedError/index.js";
 
 type ErrorHandler = Parameters<FastifyInstance["setErrorHandler"]>[0];
 
