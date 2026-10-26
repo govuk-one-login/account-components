@@ -20,6 +20,7 @@ on:
       - .npmrc
       - .nvmrc
       - tsconfig.json
+      - submodules
 
 concurrency:
   group: ${{ github.workflow }}
