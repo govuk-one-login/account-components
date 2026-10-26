@@ -1,6 +1,6 @@
 import { type FastifyReply, type FastifyRequest } from "fastify";
 import assert from "node:assert";
-import { AccountManagementApiClient } from "../../../utils/accountManagementApiClient.js";
+import { AccountManagementApiClient } from "../../../../../commons/utils/apiClients/accountManagementApiClient.js";
 import { completeJourney } from "../../utils/completeJourney.js";
 import { completeJourneyActionSuccessfully } from "../../utils/journeyActions.js";
 

@@ -7,13 +7,16 @@ const mockCompleteJourney = vi.fn();
 const mockCompleteAllJourneyActionsUnsuccessfully = vi.fn();
 
 // @ts-expect-error
-vi.mock(import("../../../utils/accountManagementApiClient.js"), () => ({
-  AccountManagementApiClient: vi.fn().mockImplementation(function () {
-    return {
-      authenticate: mockAuthenticate,
-    };
+vi.mock(
+  import("../../../../../commons/utils/apiClients//accountManagementApiClient.js"),
+  () => ({
+    AccountManagementApiClient: vi.fn().mockImplementation(function () {
+      return {
+        authenticate: mockAuthenticate,
+      };
+    }),
   }),
-}));
+);
 
 vi.mock(import("../../utils/completeJourney.js"), () => ({
   completeJourney: mockCompleteJourney,

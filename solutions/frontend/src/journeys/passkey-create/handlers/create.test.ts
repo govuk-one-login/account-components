@@ -70,12 +70,15 @@ vi.mock(import("../utils/auditEvents/index.js"), async (importOriginal) => ({
 }));
 
 // @ts-expect-error
-vi.mock(import("../../../utils/accountDataApiClient.js"), () => ({
-  AccountDataApiClient: class {
-    getPasskeys = mockGetPasskeys;
-    createPasskey = mockCreatePasskey;
-  },
-}));
+vi.mock(
+  import("../../../../../commons/utils/apiClients/accountDataApiClient.js"),
+  () => ({
+    AccountDataApiClient: class {
+      getPasskeys = mockGetPasskeys;
+      createPasskey = mockCreatePasskey;
+    },
+  }),
+);
 
 // @ts-expect-error
 vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
@@ -108,7 +111,7 @@ vi.mock(import("../utils/extractRegistrationResponseInfo/index.js"), () => ({
 
 // @ts-expect-error
 vi.mock(
-  import("../../../utils/accountInterventionsServiceApiClient.js"),
+  import("../../../../../commons/utils/apiClients/accountInterventionsServiceApiClient.js"),
   () => ({
     AccountInterventionsServiceApiClient: class {
       getUserAisStatus = mockGetUserAisStatus;
