@@ -99,11 +99,11 @@ export const initFrontend = async function () {
   fastify.addHook("onRequest", setAnalyticsForPath);
   fastify.decorateReply("render", render);
 
-  fastify.setNotFoundHandler(async function (request, reply) {
+  fastify.setNotFoundHandler(async function (_request, reply) {
     const onNotFound = (
       await import("../../commons/utils/fastify/onNotFoundHandler/index.js")
     ).onNotFound;
-    return onNotFound.bind(this)(request, reply);
+    return onNotFound.bind(this)(reply, "templates/pages/notFound.njk");
   });
 
   fastify.setErrorHandler(async function (error, request, reply) {
@@ -111,7 +111,12 @@ export const initFrontend = async function () {
       await import("../../commons/utils/fastify/onErrorHandler/index.js")
     ).onError;
     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return onError.bind(this)(error, request, reply);
+    return onError.bind(this)(
+      error,
+      request,
+      reply,
+      "templates/pages/error.njk",
+    );
   });
 
   fastify.register(fastifyStatic, {
