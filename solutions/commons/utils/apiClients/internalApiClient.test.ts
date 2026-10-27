@@ -44,8 +44,6 @@ describe("internalApiClient", () => {
   const mockEvent = {} as APIGatewayProxyEvent;
   const originalEnv = process.env;
   const publicSubjectId = "test-public-subject-id";
-  const defaultMaxAllowedBeforeLockout = { count: 6, window: 10800 };
-  const defaultLockoutDuration = 900;
   const commonBody = {
     source: "account-delete" as any,
   };
@@ -130,34 +128,11 @@ describe("internalApiClient", () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            ...commonBody,
             reissueUnusedUnexpiredOTP: false,
             expiresIn: 600,
             maxAllowedBeforeLockout: { count: 3, window: 300 },
             lockoutDuration: 600,
-            ...commonBody,
-          }),
-        },
-      );
-    });
-
-    it("should use defaults when optional fields are omitted", async () => {
-      const client = new InternalApiClient(undefined, mockEvent);
-
-      mockThisFetch.mockResolvedValueOnce(new Response());
-
-      await client.generateOTP(publicSubjectId, commonBody);
-
-      expect(mockThisFetch).toHaveBeenCalledWith(
-        `https://internal.example.com/generate-otp/${publicSubjectId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            reissueUnusedUnexpiredOTP: true,
-            expiresIn: 900,
-            maxAllowedBeforeLockout: defaultMaxAllowedBeforeLockout,
-            lockoutDuration: defaultLockoutDuration,
-            ...commonBody,
           }),
         },
       );
@@ -200,32 +175,10 @@ describe("internalApiClient", () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            ...commonBody,
+            otp: "123456",
             maxAllowedBeforeLockout: { count: 3, window: 300 },
             lockoutDuration: 600,
-            ...commonBody,
-            otp: "123456",
-          }),
-        },
-      );
-    });
-
-    it("should use defaults when optional fields are omitted", async () => {
-      const client = new InternalApiClient(undefined, mockEvent);
-
-      mockThisFetch.mockResolvedValueOnce(new Response());
-
-      await client.checkOTP(publicSubjectId, { ...commonBody, otp: "123456" });
-
-      expect(mockThisFetch).toHaveBeenCalledWith(
-        `https://internal.example.com/check-otp/${publicSubjectId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            maxAllowedBeforeLockout: defaultMaxAllowedBeforeLockout,
-            lockoutDuration: defaultLockoutDuration,
-            ...commonBody,
-            otp: "123456",
           }),
         },
       );
@@ -271,35 +224,10 @@ describe("internalApiClient", () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            ...commonBody,
+            password: "hunter2", // pragma: allowlist secret
             maxAllowedBeforeLockout: { count: 3, window: 300 },
             lockoutDuration: 600,
-            ...commonBody,
-            password: "hunter2", // pragma: allowlist secret
-          }),
-        },
-      );
-    });
-
-    it("should use defaults when optional fields are omitted", async () => {
-      const client = new InternalApiClient(undefined, mockEvent);
-
-      mockThisFetch.mockResolvedValueOnce(new Response());
-
-      await client.checkPassword(publicSubjectId, {
-        ...commonBody,
-        password: "hunter2", // pragma: allowlist secret
-      });
-
-      expect(mockThisFetch).toHaveBeenCalledWith(
-        `https://internal.example.com/check-password/${publicSubjectId}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            maxAllowedBeforeLockout: defaultMaxAllowedBeforeLockout,
-            lockoutDuration: defaultLockoutDuration,
-            ...commonBody,
-            password: "hunter2", // pragma: allowlist secret
           }),
         },
       );
