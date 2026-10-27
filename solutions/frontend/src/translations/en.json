@@ -49,5 +49,31 @@
       "paragraph2": "Cancel this page and try again.",
       "buttonText": "Go to the GOV.UK homepage"
     }
+  },
+  "lockouts": {
+    "lockedOutSecurityCodeEnteredTooManyTimes": {
+      "pageTitle": "You entered the wrong security code too many times",
+      "heading": "You entered the wrong security code too many times",
+      "paragraphs": [
+        "You need to wait 15 minutes.",
+        "You can then <a href=\"{{exitLinkUrl}}\" class=\"govuk-link govuk-link--no-visited-state\">try signing in again</a>."
+      ]
+    },
+    "lockedOutPasswordEnteredTooManyTimes": {
+      "pageTitle": "You entered the wrong password too many times",
+      "heading": "You entered the wrong password too many times",
+      "paragraphs": [
+        "You need to wait 15 minutes.",
+        "You can then <a href=\"{{exitLinkUrl}}\" class=\"govuk-link govuk-link--no-visited-state\">try signing in again</a>."
+      ]
+    },
+    "lockedOutSecurityCodeRequestedTooManyTimes": {
+      "pageTitle": "You asked to resend the security code too many times",
+      "heading": "You asked to resend the security code too many times",
+      "paragraphs": [
+        "You need to wait 15 minutes.",
+        "You can then <a href=\"{{exitLinkUrl}}\" class=\"govuk-link govuk-link--no-visited-state\">try signing in again</a>."
+      ]
+    }
   }
 }

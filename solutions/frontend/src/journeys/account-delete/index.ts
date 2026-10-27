@@ -26,7 +26,7 @@ export const accountDelete = function (fastify: FastifyInstance) {
       .lockedOutSecurityCodeEnteredTooManyTimes.path,
     async function (request, reply) {
       return (
-        await import("./handlers/lockedOutSecurityCodeEnteredTooManyTimes.js")
+        await import("../../handlers/lockouts/lockedOutSecurityCodeEnteredTooManyTimes.js")
       ).getHandler(request, reply);
     },
   );
@@ -36,7 +36,7 @@ export const accountDelete = function (fastify: FastifyInstance) {
       .lockedOutPasswordEnteredTooManyTimes.path,
     async function (request, reply) {
       return (
-        await import("./handlers/lockedOutPasswordEnteredTooManyTimes.js")
+        await import("../../handlers/lockouts/lockedOutPasswordEnteredTooManyTimes.js")
       ).getHandler(request, reply);
     },
   );
@@ -123,7 +123,7 @@ export const accountDelete = function (fastify: FastifyInstance) {
       .lockedOutSecurityCodeRequestedTooManyTimes.path,
     async function (request, reply) {
       return (
-        await import("./handlers/lockedOutSecurityCodeRequestedTooManyTimes.js")
+        await import("../../handlers/lockouts/lockedOutSecurityCodeRequestedTooManyTimes.js")
       ).getHandler(request, reply);
     },
   );

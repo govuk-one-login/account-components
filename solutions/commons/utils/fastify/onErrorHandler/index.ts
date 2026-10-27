@@ -12,7 +12,7 @@ export const onError = async (
   error: Parameters<ErrorHandler>[0],
   request: Parameters<ErrorHandler>[1],
   reply: Parameters<ErrorHandler>[2],
-  pathToTemplate = "handlers/onError/index.njk",
+  pathToTemplate?: string,
 ): Promise<ReturnType<ErrorHandler>> => {
   const msg = "ERROR_CAUGHT_BY_GLOBAL_ERROR_HANDLER";
 
@@ -39,6 +39,10 @@ export const onError = async (
 
   reply.statusCode = statusCode;
   assert.ok(reply.render);
-  await reply.render(pathToTemplate);
+  if (pathToTemplate) {
+    await reply.render(pathToTemplate);
+  } else {
+    reply.send("An error occurred");
+  }
   return reply;
 };

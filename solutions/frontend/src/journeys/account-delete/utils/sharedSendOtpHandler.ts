@@ -1,6 +1,6 @@
 import type { FastifyReply, FastifyRequest } from "fastify";
 import assert from "node:assert";
-import { AccountManagementApiClient } from "../../../utils/accountManagementApiClient.js";
+import { AccountManagementApiClient } from "../../../../../commons/utils/apiClients/accountManagementApiClient.js";
 import { paths } from "../../../utils/paths.js";
 import { Scope } from "../../../../../commons/utils/commonTypes.js";
 

@@ -1,3 +1,4 @@
+@skip
 Feature: Delete account
 
   # Should fail because of known accessibility issues

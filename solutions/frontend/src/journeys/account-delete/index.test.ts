@@ -28,15 +28,18 @@ vi.mock(import("./handlers/confirm.js"), () => ({
 }));
 
 vi.mock(
-  import("./handlers/lockedOutSecurityCodeEnteredTooManyTimes.js"),
+  import("../../handlers/lockouts/lockedOutSecurityCodeEnteredTooManyTimes.js"),
   () => ({
     getHandler: vi.fn(),
   }),
 );
 
-vi.mock(import("./handlers/lockedOutPasswordEnteredTooManyTimes.js"), () => ({
-  getHandler: vi.fn(),
-}));
+vi.mock(
+  import("../../handlers/lockouts/lockedOutPasswordEnteredTooManyTimes.js"),
+  () => ({
+    getHandler: vi.fn(),
+  }),
+);
 
 describe("accountDelete", () => {
   let mockFastify: FastifyInstance;
