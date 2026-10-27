@@ -10,7 +10,7 @@ import {
   isoUint8Array,
 } from "@simplewebauthn/server/helpers";
 import { completeJourney } from "../../utils/completeJourney.js";
-import { AccountDataApiClient } from "../../../utils/accountDataApiClient.js";
+import { AccountDataApiClient } from "../../../../../commons/utils/apiClients/accountDataApiClient.js";
 import {
   getFormErrors,
   getFormErrorsList,
@@ -39,7 +39,7 @@ import {
   passkeyRegistrationFailureReason,
 } from "../utils/auditEvents/index.js";
 import { extractRegistrationResponseInfo } from "../utils/extractRegistrationResponseInfo/index.js";
-import { AccountInterventionsServiceApiClient } from "../../../utils/accountInterventionsServiceApiClient.js";
+import { AccountInterventionsServiceApiClient } from "../../../../../commons/utils/apiClients/accountInterventionsServiceApiClient.js";
 import { Scope } from "../../../../../commons/utils/commonTypes.js";
 
 export const postBodySchema = v.object({

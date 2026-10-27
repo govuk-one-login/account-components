@@ -5,13 +5,16 @@ import { Scope } from "../../../../../commons/utils/commonTypes.js";
 const mockSendOtpChallenge = vi.fn();
 
 // @ts-expect-error
-vi.mock(import("../../../utils/accountManagementApiClient.js"), () => ({
-  AccountManagementApiClient: vi.fn().mockImplementation(function () {
-    return {
-      sendOtpChallenge: mockSendOtpChallenge,
-    };
+vi.mock(
+  import("../../../../../commons/utils/apiClients/accountManagementApiClient.js"),
+  () => ({
+    AccountManagementApiClient: vi.fn().mockImplementation(function () {
+      return {
+        sendOtpChallenge: mockSendOtpChallenge,
+      };
+    }),
   }),
-}));
+);
 
 const { sharedSendOtpHandler } = await import("./sharedSendOtpHandler.js");
 
