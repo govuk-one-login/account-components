@@ -40,6 +40,7 @@ describe("onError handler", () => {
     mockReply = {
       statusCode: 200,
       render: vi.fn(),
+      send: vi.fn(),
     } as unknown as FastifyReply;
 
     mockIsFastifyError.mockReturnValue(false);
@@ -81,14 +82,13 @@ describe("onError handler", () => {
     expect(mockReply.statusCode).toBe(500);
   });
 
-  it("renders the default error template", async () => {
+  it("sends default error message when no pathToTemplate provided", async () => {
     const testError = new Error("Test error");
 
     await onError(testError, mockRequest, mockReply);
 
-    expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(
-      "handlers/onError/index.njk",
-    );
+    expect(mockReply.send).toHaveBeenCalledExactlyOnceWith("An error occurred");
+    expect(mockReply.render).not.toHaveBeenCalled();
   });
 
   it("renders custom template when pathToTemplate is provided", async () => {
@@ -98,6 +98,7 @@ describe("onError handler", () => {
     await onError(testError, mockRequest, mockReply, customTemplate);
 
     expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(customTemplate);
+    expect(mockReply.send).not.toHaveBeenCalled();
   });
 
   describe("when error is an expected error", () => {
