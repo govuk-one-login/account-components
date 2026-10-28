@@ -2434,7 +2434,7 @@ Resources:
       EvaluationPeriods: 5
       DatapointsToAlarm: 5
       TreatMissingData: notBreaching
-      ActionsEnabled: false
+      ActionsEnabled: true
       AlarmActions:
         - !If
           - IsProduction
@@ -2674,7 +2674,7 @@ Resources:
       EvaluationPeriods: 5
       DatapointsToAlarm: 5
       TreatMissingData: notBreaching
-      ActionsEnabled: false
+      ActionsEnabled: true
       AlarmActions:
         - !If
           - IsProduction
@@ -4209,7 +4209,7 @@ Resources:
       EvaluationPeriods: 5
       DatapointsToAlarm: 5
       TreatMissingData: notBreaching
-      ActionsEnabled: false
+      ActionsEnabled: true
       AlarmActions:
         - !If
           - IsProduction
@@ -4232,44 +4232,35 @@ Resources:
             Stat: Sum
           ReturnData: true
         - Id: band
-          Expression: ANOMALY_DETECTION_BAND(traffic, 2)
+          Expression: ANOMALY_DETECTION_BAND(traffic, 3)
           ReturnData: true
       ComparisonOperator: GreaterThanUpperThreshold
       ThresholdMetricId: band
       EvaluationPeriods: 5
       DatapointsToAlarm: 5
       TreatMissingData: notBreaching
-      ActionsEnabled: false
+      ActionsEnabled: true
       AlarmActions:
         - !If
           - IsProduction
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
           - !Ref AWS::NoValue
 
-  FrontendApiGatewayLowTrafficAnomalyAlarm:
+  FrontendApiGatewayLowTrafficAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Metrics:
-        - Id: traffic
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: Count
-              Dimensions:
-                - Name: ApiName
-                  Value: !Sub "${AWS::StackName}-frontend"
-            Period: 300
-            Stat: Sum
-          ReturnData: true
-        - Id: band
-          Expression: ANOMALY_DETECTION_BAND(traffic, 2)
-          ReturnData: true
-      ComparisonOperator: LessThanLowerThreshold
-      ThresholdMetricId: band
+      Namespace: AWS/ApiGateway
+      MetricName: Count
+      Dimensions:
+        - Name: ApiName
+          Value: !Sub "${AWS::StackName}-frontend"
+      Period: 300
+      Statistic: Sum
+      Threshold: 200
+      ComparisonOperator: LessThanThreshold
       EvaluationPeriods: 5
       DatapointsToAlarm: 5
       TreatMissingData: notBreaching
-      ActionsEnabled: false
       AlarmActions:
         - !If
           - IsProduction
