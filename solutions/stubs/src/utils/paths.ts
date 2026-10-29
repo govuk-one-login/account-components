@@ -24,6 +24,6 @@ export const paths = {
     generateOTP: "/internal-api/generate-otp/:publicSubjectId",
     checkOTP: "/internal-api/check-otp/:publicSubjectId",
     checkPassword: "/internal-api/check-password/:publicSubjectId",
-    lockoutStatus: "/internal-api/lockout-status/:publicSubjectId",
+    lockouts: "/internal-api/lockouts/:publicSubjectId",
   },
 } as const;

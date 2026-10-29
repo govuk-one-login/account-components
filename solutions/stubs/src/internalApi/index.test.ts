@@ -17,6 +17,8 @@ describe("internalApi", () => {
     mockRequest = {
       headers: {},
       body: { expiresIn: 300 },
+      params: { publicSubjectId: "test-subject-id" },
+      query: { source: "account-delete" },
     };
     mockReply = {
       send: vi.fn(),
@@ -212,8 +214,16 @@ describe("internalApi", () => {
     });
   });
 
-  describe("lockoutStatus", () => {
-    it("should return isLockedOut false when no token is provided", async () => {
+  describe("lockouts", () => {
+    const lockoutDatabaseItemShape = {
+      id: expect.any(String),
+      publicSubjectId: "test-subject-id",
+      lockedOutAt: expect.any(Number),
+      lockedOutUntil: expect.any(Number),
+      source: "account-delete",
+    };
+
+    it("should return an empty array when no token is provided", async () => {
       internalApi(mockApp);
 
       const registeredHandler = vi.mocked(mockApp.get).mock
@@ -221,10 +231,10 @@ describe("internalApi", () => {
 
       await registeredHandler(mockRequest, mockReply);
 
-      expect(mockReply.send).toHaveBeenCalledWith({ isLockedOut: false });
+      expect(mockReply.send).toHaveBeenCalledWith([]);
     });
 
-    it("should return isLockedOut false when token has no scenario claim", async () => {
+    it("should return an empty array when token has no scenario claim", async () => {
       internalApi(mockApp);
 
       const token = await new SignJWT({})
@@ -238,14 +248,14 @@ describe("internalApi", () => {
 
       await registeredHandler(mockRequest, mockReply);
 
-      expect(mockReply.send).toHaveBeenCalledWith({ isLockedOut: false });
+      expect(mockReply.send).toHaveBeenCalledWith([]);
     });
 
-    it("should return locked out for locked_out_too_many_otps_requested scenario", async () => {
+    it("should return a lockout item for locked_out_too_many_otps_requested scenario", async () => {
       internalApi(mockApp);
 
       const token = await new SignJWT({
-        lockoutStatus_scenario: "locked_out_too_many_otps_requested",
+        lockouts_scenario: "locked_out_too_many_otps_requested",
       })
         .setProtectedHeader({ alg: "HS256" })
         .sign(new TextEncoder().encode("secret"));
@@ -257,17 +267,19 @@ describe("internalApi", () => {
 
       await registeredHandler(mockRequest, mockReply);
 
-      expect(mockReply.send).toHaveBeenCalledWith({
-        isLockedOut: true,
-        lockoutType: "TooManyOTPsRequested",
-      });
+      expect(mockReply.send).toHaveBeenCalledWith([
+        expect.objectContaining({
+          ...lockoutDatabaseItemShape,
+          type: "TooManyOTPsRequested",
+        }),
+      ]);
     });
 
-    it("should return locked out for locked_out_too_many_incorrect_otps_entered scenario", async () => {
+    it("should return a lockout item for locked_out_too_many_incorrect_otps_entered scenario", async () => {
       internalApi(mockApp);
 
       const token = await new SignJWT({
-        lockoutStatus_scenario: "locked_out_too_many_incorrect_otps_entered",
+        lockouts_scenario: "locked_out_too_many_incorrect_otps_entered",
       })
         .setProtectedHeader({ alg: "HS256" })
         .sign(new TextEncoder().encode("secret"));
@@ -279,18 +291,19 @@ describe("internalApi", () => {
 
       await registeredHandler(mockRequest, mockReply);
 
-      expect(mockReply.send).toHaveBeenCalledWith({
-        isLockedOut: true,
-        lockoutType: "TooManyIncorrectOTPsEntered",
-      });
+      expect(mockReply.send).toHaveBeenCalledWith([
+        expect.objectContaining({
+          ...lockoutDatabaseItemShape,
+          type: "TooManyIncorrectOTPsEntered",
+        }),
+      ]);
     });
 
-    it("should return locked out for locked_out_too_many_incorrect_passwords_entered scenario", async () => {
+    it("should return a lockout item for locked_out_too_many_incorrect_passwords_entered scenario", async () => {
       internalApi(mockApp);
 
       const token = await new SignJWT({
-        lockoutStatus_scenario:
-          "locked_out_too_many_incorrect_passwords_entered",
+        lockouts_scenario: "locked_out_too_many_incorrect_passwords_entered",
       })
         .setProtectedHeader({ alg: "HS256" })
         .sign(new TextEncoder().encode("secret"));
@@ -302,10 +315,12 @@ describe("internalApi", () => {
 
       await registeredHandler(mockRequest, mockReply);
 
-      expect(mockReply.send).toHaveBeenCalledWith({
-        isLockedOut: true,
-        lockoutType: "TooManyIncorrectPasswordsEntered",
-      });
+      expect(mockReply.send).toHaveBeenCalledWith([
+        expect.objectContaining({
+          ...lockoutDatabaseItemShape,
+          type: "TooManyIncorrectPasswordsEntered",
+        }),
+      ]);
     });
   });
 });

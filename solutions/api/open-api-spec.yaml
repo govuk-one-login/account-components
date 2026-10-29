@@ -558,12 +558,12 @@ paths:
         "500":
           description: Internal server error
 
-  /lockout-status/{publicSubjectId}:
+  /lockout/{publicSubjectId}:
     get:
-      summary: Lockout status endpoint
-      description: Get the lockout status for the account
+      summary: Lockouts endpoint
+      description: Get the lockouts for the account
       security: []
-      operationId: lockoutstatus
+      operationId: lockouts
       requestBody:
         required: true
         content:
@@ -575,7 +575,7 @@ paths:
                 source:
                   $ref: "#/components/schemas/Source"
                   description: The source to check for lockouts
-                lockoutType:
+                type:
                   $ref: "#/components/schemas/LockoutType"
                   description: The type of lockout to check for (defaults to checking all lockout types if not specified)
       parameters:
@@ -592,25 +592,37 @@ paths:
         - $ref: "#/components/parameters/UserLanguage"
       responses:
         "200":
-          description: Lockout status details
+          description: Lockouts details
           content:
             application/json:
               schema:
-                oneOf:
-                  - type: object
-                    required: [isLockedOut]
-                    properties:
-                      isLockedOut:
-                        type: boolean
-                        enum: [false]
-                  - type: object
-                    required: [isLockedOut, lockoutType]
-                    properties:
-                      isLockedOut:
-                        type: boolean
-                        enum: [true]
-                      lockoutType:
-                        $ref: "#/components/schemas/LockoutType"
+                type: array
+                items:
+                  type: object
+                  required:
+                    [
+                      id,
+                      publicSubjectId,
+                      lockedOutAt,
+                      lockedOutUntil,
+                      source,
+                      type,
+                    ]
+                  properties:
+                    id:
+                      type: string
+                    publicSubjectId:
+                      type: string
+                    lockedOutAt:
+                      type: number
+                      description: Unix epoch time in seconds when the lockout was created
+                    lockedOutUntil:
+                      type: number
+                      description: Unix epoch time in seconds when the lockout expires
+                    source:
+                      $ref: "#/components/schemas/Source"
+                    type:
+                      $ref: "#/components/schemas/LockoutType"
         "400":
           description: Bad request
           content:

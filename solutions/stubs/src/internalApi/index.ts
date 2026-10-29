@@ -2,6 +2,8 @@ import { decodeJwt } from "jose";
 import { paths } from "../utils/paths.js";
 import type { FastifyInstance } from "fastify";
 import * as v from "valibot";
+import { LockoutType, Source } from "../../../commons/utils/constants.js";
+import { randomUUID } from "node:crypto";
 
 export const internalApi = function (app: FastifyInstance) {
   app.post(paths.internalApi.generateOTP, async function (request, reply) {
@@ -101,44 +103,70 @@ export const internalApi = function (app: FastifyInstance) {
     return reply;
   });
 
-  app.get(paths.internalApi.lockoutStatus, async function (request, reply) {
+  app.get(paths.internalApi.lockouts, async function (request, reply) {
     const token = request.headers.authorization?.split(" ")[1];
     if (token) {
       const claims = decodeJwt(token);
 
+      const pathParams = v.parse(
+        v.object({
+          publicSubjectId: v.string(),
+        }),
+        request.params,
+      );
+
+      const queryParams = v.parse(
+        v.object({
+          source: v.enum(Source),
+          type: v.optional(v.enum(LockoutType)),
+        }),
+        request.query,
+      );
+
+      const lockoutBase = {
+        lockedOutUntil: Math.floor(Date.now() / 1000) + 60 * 15,
+        lockedOutAt: Math.floor(Date.now() / 1000) - 60 * 15,
+        id: randomUUID(),
+        publicSubjectId: pathParams.publicSubjectId,
+        source: queryParams.source,
+      };
+
       if (
-        claims["lockoutStatus_scenario"] ===
-        "locked_out_too_many_otps_requested"
+        claims["lockouts_scenario"] === "locked_out_too_many_otps_requested"
       ) {
-        reply.send({
-          isLockedOut: true,
-          lockoutType: "TooManyOTPsRequested",
-        });
+        reply.send([
+          {
+            ...lockoutBase,
+            type: "TooManyOTPsRequested",
+          },
+        ]);
         return reply;
       } else if (
-        claims["lockoutStatus_scenario"] ===
+        claims["lockouts_scenario"] ===
         "locked_out_too_many_incorrect_otps_entered"
       ) {
-        reply.send({
-          isLockedOut: true,
-          lockoutType: "TooManyIncorrectOTPsEntered",
-        });
+        reply.send([
+          {
+            ...lockoutBase,
+            type: "TooManyIncorrectOTPsEntered",
+          },
+        ]);
         return reply;
       } else if (
-        claims["lockoutStatus_scenario"] ===
+        claims["lockouts_scenario"] ===
         "locked_out_too_many_incorrect_passwords_entered"
       ) {
-        reply.send({
-          isLockedOut: true,
-          lockoutType: "TooManyIncorrectPasswordsEntered",
-        });
+        reply.send([
+          {
+            ...lockoutBase,
+            type: "TooManyIncorrectPasswordsEntered",
+          },
+        ]);
         return reply;
       }
     }
 
-    reply.send({
-      isLockedOut: false,
-    });
+    reply.send([]);
     return reply;
   });
 };

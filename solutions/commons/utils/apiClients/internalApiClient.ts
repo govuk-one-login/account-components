@@ -5,6 +5,11 @@ import * as v from "valibot";
 import type { Source } from "../../../commons/utils/constants.js";
 import { LockoutType } from "../../../commons/utils/constants.js";
 import { getEnvironment } from "../../../commons/utils/getEnvironment/index.js";
+import { lockoutsDatabaseItem } from "../schemas.js";
+
+const unixEpochTimeInSecondsToDate = v.transform(
+  (value: number) => new Date(value * 1000),
+);
 
 export class InternalApiClient extends JsonApiClient {
   private readonly baseUrl: string;
@@ -32,19 +37,20 @@ export class InternalApiClient extends JsonApiClient {
     }
   }
 
-  async generateOTP(
-    publicSubjectId: string,
-    body: {
-      source: Source;
-      reissueUnusedUnexpiredOTP?: boolean;
-      expiresIn?: number;
-      maxAllowedBeforeLockout?: {
-        count: number;
-        window: number;
-      };
-      lockoutDuration?: number;
-    },
-  ) {
+  async generateOTP({
+    publicSubjectId,
+    ...body
+  }: {
+    publicSubjectId: string;
+    source: Source;
+    reissueUnusedUnexpiredOTP?: boolean;
+    expiresIn?: number;
+    maxAllowedBeforeLockout?: {
+      count: number;
+      window: number;
+    };
+    lockoutDuration?: number;
+  }) {
     return this.logOnError("generateOTP", async () => {
       try {
         const response = await this.fetch(
@@ -79,18 +85,19 @@ export class InternalApiClient extends JsonApiClient {
     });
   }
 
-  async checkOTP(
-    publicSubjectId: string,
-    body: {
-      otp: string;
-      source: Source;
-      maxAllowedBeforeLockout?: {
-        count: number;
-        window: number;
-      };
-      lockoutDuration?: number;
-    },
-  ) {
+  async checkOTP({
+    publicSubjectId,
+    ...body
+  }: {
+    publicSubjectId: string;
+    otp: string;
+    source: Source;
+    maxAllowedBeforeLockout?: {
+      count: number;
+      window: number;
+    };
+    lockoutDuration?: number;
+  }) {
     return this.logOnError("checkOTP", async () => {
       try {
         const response = await this.fetch(
@@ -122,18 +129,19 @@ export class InternalApiClient extends JsonApiClient {
     });
   }
 
-  async checkPassword(
-    publicSubjectId: string,
-    body: {
-      password: string;
-      source: Source;
-      maxAllowedBeforeLockout?: {
-        count: number;
-        window: number;
-      };
-      lockoutDuration?: number;
-    },
-  ) {
+  async checkPassword({
+    publicSubjectId,
+    ...body
+  }: {
+    publicSubjectId: string;
+    password: string;
+    source: Source;
+    maxAllowedBeforeLockout?: {
+      count: number;
+      window: number;
+    };
+    lockoutDuration?: number;
+  }) {
     return this.logOnError("checkPassword", async () => {
       try {
         const response = await this.fetch(
@@ -165,19 +173,20 @@ export class InternalApiClient extends JsonApiClient {
     });
   }
 
-  async getLockoutStatus(
-    publicSubjectId: string,
-    parameters: {
-      source: Source;
-      lockoutType?: LockoutType;
-    },
-  ) {
-    return this.logOnError("getLockoutStatus", async () => {
+  async getLockouts({
+    publicSubjectId,
+    ...parameters
+  }: {
+    publicSubjectId: string;
+    source: Source;
+    type?: LockoutType;
+  }) {
+    return this.logOnError("getLockouts", async () => {
       try {
         const queryString = new URLSearchParams(parameters);
 
         const response = await this.fetch(
-          `${this.baseUrl}/lockout-status/${publicSubjectId}?${queryString.toString()}`,
+          `${this.baseUrl}/lockouts/${publicSubjectId}?${queryString.toString()}`,
           {
             headers: this.commonHeaders,
           },
@@ -189,15 +198,19 @@ export class InternalApiClient extends JsonApiClient {
 
         return await InternalApiClient.processResponse(
           response,
-          v.variant("isLockedOut", [
-            v.object({
-              isLockedOut: v.literal(false),
+          v.array(
+            v.looseObject({
+              ...lockoutsDatabaseItem.entries,
+              lockedOutAt: v.pipe(
+                lockoutsDatabaseItem.entries.lockedOutAt,
+                unixEpochTimeInSecondsToDate,
+              ),
+              lockedOutUntil: v.pipe(
+                lockoutsDatabaseItem.entries.lockedOutUntil,
+                unixEpochTimeInSecondsToDate,
+              ),
             }),
-            v.object({
-              isLockedOut: v.literal(true),
-              lockoutType: v.enum(LockoutType),
-            }),
-          ]),
+          ),
           errorsCodesMap,
         );
       } catch (error) {

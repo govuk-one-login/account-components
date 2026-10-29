@@ -61,4 +61,4 @@ Resources:
                   - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${SAMStackName}/ApiGenerateOTPLambda:*"
                   - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${SAMStackName}/ApiCheckOTPLambda:*"
                   - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${SAMStackName}/ApiCheckPasswordLambda:*"
-                  - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${SAMStackName}/ApiLockoutStatusLambda:*"
+                  - !Sub "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/${SAMStackName}/ApiLockoutsLambda:*"
