@@ -232,6 +232,7 @@ describe("passkey-create handlers", () => {
           showErrorUi: false,
           stringsSuffix: "_signedOut",
           formAction: "/cannot-set-up-passkey",
+          analytics: {},
         }),
       );
     });
@@ -289,6 +290,7 @@ describe("passkey-create handlers", () => {
           showErrorUi: true,
           stringsSuffix: "_signedOut",
           formAction: "/cannot-set-up-passkey",
+          analytics: { reason: "GetHandler" },
         }),
       );
     });
@@ -670,6 +672,7 @@ describe("passkey-create handlers", () => {
             errors: expect.any(Object),
             errorList: expect.any(Array),
             formAction: "/cannot-set-up-passkey",
+            analytics: { reason: "ActionNotSpecified" },
           }),
         );
       });
@@ -686,6 +689,7 @@ describe("passkey-create handlers", () => {
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
             showErrorUi: true,
+            analytics: { reason: "InvalidRequestBody" },
           }),
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
@@ -702,11 +706,6 @@ describe("passkey-create handlers", () => {
           "PasskeyCreateError",
           "Count",
           1,
-        );
-        expect(mockReply.analytics).toStrictEqual(
-          expect.objectContaining({
-            reason: "InvalidRequestBody",
-          }),
         );
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
@@ -997,6 +996,7 @@ describe("passkey-create handlers", () => {
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
             showErrorUi: true,
+            analytics: { reason: "VerificationError" },
           }),
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
@@ -1055,6 +1055,7 @@ describe("passkey-create handlers", () => {
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
             showErrorUi: true,
+            analytics: { reason: "VerificationFailed" },
           }),
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
@@ -1157,6 +1158,7 @@ describe("passkey-create handlers", () => {
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
             showErrorUi: true,
+            analytics: { reason: "UnknownError" },
           }),
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
@@ -1180,11 +1182,6 @@ describe("passkey-create handlers", () => {
           "PasskeyCreateError",
           "Count",
           1,
-        );
-        expect(mockReply.analytics).toStrictEqual(
-          expect.objectContaining({
-            reason: "UnknownError",
-          }),
         );
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
@@ -1365,6 +1362,7 @@ describe("passkey-create handlers", () => {
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
             showErrorUi: true,
+            analytics: { reason: "UserHasMaximumNumberOfPasskeys" },
           }),
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
