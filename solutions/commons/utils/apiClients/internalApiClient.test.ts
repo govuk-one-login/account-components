@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { InternalApiClient } from "./internalApiClient.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
+import assert from "node:assert";
 
 const mockThisFetch = vi.fn();
 
@@ -120,7 +121,7 @@ describe("internalApiClient", () => {
 
       mockThisFetch.mockResolvedValueOnce(new Response());
 
-      await client.generateOTP(publicSubjectId, body);
+      await client.generateOTP({ publicSubjectId, ...body });
 
       expect(mockThisFetch).toHaveBeenCalledWith(
         `https://internal.example.com/generate-otp/${publicSubjectId}`,
@@ -144,7 +145,10 @@ describe("internalApiClient", () => {
 
       mockThisFetch.mockRejectedValueOnce(error);
 
-      const result = await client.generateOTP(publicSubjectId, commonBody);
+      const result = await client.generateOTP({
+        publicSubjectId,
+        ...commonBody,
+      });
 
       expect(result).toStrictEqual({
         success: false,
@@ -167,7 +171,7 @@ describe("internalApiClient", () => {
 
       mockThisFetch.mockResolvedValueOnce(new Response());
 
-      await client.checkOTP(publicSubjectId, body);
+      await client.checkOTP({ publicSubjectId, ...body });
 
       expect(mockThisFetch).toHaveBeenCalledWith(
         `https://internal.example.com/check-otp/${publicSubjectId}`,
@@ -190,7 +194,8 @@ describe("internalApiClient", () => {
 
       mockThisFetch.mockRejectedValueOnce(error);
 
-      const result = await client.checkOTP(publicSubjectId, {
+      const result = await client.checkOTP({
+        publicSubjectId,
         ...commonBody,
         otp: "123456",
       });
@@ -216,7 +221,7 @@ describe("internalApiClient", () => {
 
       mockThisFetch.mockResolvedValueOnce(new Response());
 
-      await client.checkPassword(publicSubjectId, body);
+      await client.checkPassword({ publicSubjectId, ...body });
 
       expect(mockThisFetch).toHaveBeenCalledWith(
         `https://internal.example.com/check-password/${publicSubjectId}`,
@@ -239,7 +244,8 @@ describe("internalApiClient", () => {
 
       mockThisFetch.mockRejectedValueOnce(error);
 
-      const result = await client.checkPassword(publicSubjectId, {
+      const result = await client.checkPassword({
+        publicSubjectId,
         ...commonBody,
         password: "hunter2", // pragma: allowlist secret
       });
@@ -253,36 +259,38 @@ describe("internalApiClient", () => {
     });
   });
 
-  describe("getLockoutStatus", () => {
-    it("should make correct API call without lockoutType", async () => {
+  describe("getLockouts", () => {
+    it("should make correct API call without type", async () => {
       const client = new InternalApiClient(undefined, mockEvent);
 
       mockThisFetch.mockResolvedValueOnce(new Response());
 
-      await client.getLockoutStatus(publicSubjectId, {
+      await client.getLockouts({
+        publicSubjectId,
         source: "account-delete" as any,
       });
 
       expect(mockThisFetch).toHaveBeenCalledWith(
-        `https://internal.example.com/lockout-status/${publicSubjectId}?source=account-delete`,
+        `https://internal.example.com/lockouts/${publicSubjectId}?source=account-delete`,
         {
           headers: { "Content-Type": "application/json" },
         },
       );
     });
 
-    it("should make correct API call with lockoutType", async () => {
+    it("should make correct API call with type", async () => {
       const client = new InternalApiClient(undefined, mockEvent);
 
       mockThisFetch.mockResolvedValueOnce(new Response());
 
-      await client.getLockoutStatus(publicSubjectId, {
+      await client.getLockouts({
+        publicSubjectId,
         source: "account-delete" as any,
-        lockoutType: "TooManyOTPsRequested" as any,
+        type: "TooManyOTPsRequested" as any,
       });
 
       expect(mockThisFetch).toHaveBeenCalledWith(
-        `https://internal.example.com/lockout-status/${publicSubjectId}?source=account-delete&lockoutType=TooManyOTPsRequested`,
+        `https://internal.example.com/lockouts/${publicSubjectId}?source=account-delete&type=TooManyOTPsRequested`,
         {
           headers: { "Content-Type": "application/json" },
         },
@@ -295,7 +303,8 @@ describe("internalApiClient", () => {
 
       mockThisFetch.mockRejectedValueOnce(error);
 
-      const result = await client.getLockoutStatus(publicSubjectId, {
+      const result = await client.getLockouts({
+        publicSubjectId,
         source: "account-delete" as any,
       });
 
@@ -305,6 +314,47 @@ describe("internalApiClient", () => {
         rawResponse: undefined,
         errorDetails: error,
       });
+    });
+
+    it("should pass a schema that transforms lockedOutAt and lockedOutUntil to Dates", async () => {
+      const { JsonApiClient } = await import("./jsonApiClient.js");
+      const client = new InternalApiClient(undefined, mockEvent);
+      const unixSeconds = 1704067200;
+
+      mockThisFetch.mockResolvedValueOnce(new Response());
+
+      await client.getLockouts({
+        publicSubjectId,
+        source: "account-delete" as any,
+      });
+
+      // @ts-expect-error
+      const schema = vi.mocked(JsonApiClient.processResponse).mock
+        .calls[0]?.[1];
+      assert.ok(schema);
+
+      const v = await import("valibot");
+      const result = v.parse(schema, [
+        {
+          id: "lockout-id",
+          publicSubjectId,
+          source: "account-delete",
+          type: "TooManyOTPsRequested",
+          lockedOutAt: unixSeconds,
+          lockedOutUntil: unixSeconds,
+        },
+      ]);
+
+      expect(result).toStrictEqual([
+        {
+          id: "lockout-id",
+          publicSubjectId,
+          source: "account-delete",
+          type: "TooManyOTPsRequested",
+          lockedOutAt: new Date(unixSeconds * 1000),
+          lockedOutUntil: new Date(unixSeconds * 1000),
+        },
+      ]);
     });
   });
 });

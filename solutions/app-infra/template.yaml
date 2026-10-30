@@ -1610,7 +1610,7 @@ Resources:
               - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/generate-otp/*"
               - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/check-otp/*"
               - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/check-password/*"
-              - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/GET/lockout-status/*"
+              - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/GET/lockouts/*"
             Condition:
               StringNotEquals:
                 aws:sourceVpce:
@@ -1685,7 +1685,7 @@ Resources:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiCheckPasswordLambda.Alias}/invocations"
-          /lockout-status/{publicSubjectId}:
+          /lockouts/{publicSubjectId}:
             get:
               parameters:
                 - name: publicSubjectId
@@ -1696,7 +1696,7 @@ Resources:
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiLockoutStatusLambda.Alias}/invocations"
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiLockoutsLambda.Alias}/invocations"
           /.well-known/jwks.json:
             get:
               responses:
@@ -2192,23 +2192,23 @@ Resources:
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
 
-  ApiLockoutStatusLambdaLogGroup:
+  ApiLockoutsLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiLockoutStatusLambda"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiLockoutsLambda"
       RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
-  ApiLockoutStatusLambda:
+  ApiLockoutsLambda:
     Type: AWS::Serverless::Function
     Properties:
       DeploymentPreference:
         Alarms:
-          - !Ref ApiLockoutStatusLambdaErrorsAlarm
-          - !Ref ApiLockoutStatusLambdaAvailabilityAlarm
-          - !Ref ApiLockoutStatusLambdaLogErrorAlarm
+          - !Ref ApiLockoutsLambdaErrorsAlarm
+          - !Ref ApiLockoutsLambdaAvailabilityAlarm
+          - !Ref ApiLockoutsLambdaLogErrorAlarm
       LoggingConfig:
-        LogGroup: !Ref ApiLockoutStatusLambdaLogGroup
+        LogGroup: !Ref ApiLockoutsLambdaLogGroup
       Handler: index.handler
       Environment:
         Variables:
@@ -2230,11 +2230,11 @@ Resources:
       # When CloudFormation executes this template these events are ignored
       # and the DefinitionBody on the API Gateways takes precedence.
       Events:
-        LockoutStatus:
+        Lockouts:
           Type: Api
           Properties:
             RestApiId: !Ref ApiApiGateway
-            Path: /lockout-status/{publicSubjectId}
+            Path: /lockouts/{publicSubjectId}
             Method: GET
     Metadata:
       BuildMethod: esbuild
@@ -2246,7 +2246,7 @@ Resources:
         Target: "es2024"
         Sourcemap: true
         EntryPoints:
-          - solutions/api/src/lambda/lockout-status/index.ts
+          - solutions/api/src/lambda/lockouts/index.ts
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
 
@@ -2298,10 +2298,10 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
 
-  ApiLockoutStatusLambdaPermission:
+  ApiLockoutsLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref ApiLockoutStatusLambda.Alias
+      FunctionName: !Ref ApiLockoutsLambda.Alias
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
@@ -3266,15 +3266,15 @@ Resources:
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
           - !Ref AWS::NoValue
 
-  ApiLockoutStatusLambdaErrorsAlarm:
+  ApiLockoutsLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: "AMC lockout status lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      AlarmDescription: "AMC lockouts lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Namespace: AWS/Lambda
       MetricName: Errors
       Dimensions:
         - Name: FunctionName
-          Value: !Ref ApiLockoutStatusLambda
+          Value: !Ref ApiLockoutsLambda
       Statistic: Sum
       Period: 60
       EvaluationPeriods: 3
@@ -3288,14 +3288,14 @@ Resources:
           - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiLockoutStatusLambdaAvailabilityAlarm:
+  ApiLockoutsLambdaAvailabilityAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       Metrics:
         - Id: errors
           MetricStat:
             Metric:
-              Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+              Namespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
               MetricName: 5XXResponseCount
             Period: 60
             Stat: Sum
@@ -3303,7 +3303,7 @@ Resources:
         - Id: total
           MetricStat:
             Metric:
-              Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+              Namespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
               MetricName: ResponseCount
             Period: 60
             Stat: Sum
@@ -3320,11 +3320,11 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiLockoutStatusLambdaLogErrorAlarm:
+  ApiLockoutsLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: "AMC lockout status lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
-      Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+      AlarmDescription: "AMC lockouts lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
       Period: 60
@@ -3339,14 +3339,14 @@ Resources:
           - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiLockoutStatusLambdaThrottlesAlarm:
+  ApiLockoutsLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       Namespace: AWS/Lambda
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
-          Value: !Ref ApiLockoutStatusLambda
+          Value: !Ref ApiLockoutsLambda
       Statistic: Sum
       Period: 60
       EvaluationPeriods: 5
@@ -3357,14 +3357,14 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiLockoutStatusLambdaDurationAlarm:
+  ApiLockoutsLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       Namespace: AWS/Lambda
       MetricName: Duration
       Dimensions:
         - Name: FunctionName
-          Value: !Ref ApiLockoutStatusLambda
+          Value: !Ref ApiLockoutsLambda
       ExtendedStatistic: p90
       Period: 60
       EvaluationPeriods: 15
@@ -3375,25 +3375,25 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiLockoutStatusLambdaColdStartInitDurationMetricFilter:
+  ApiLockoutsLambdaColdStartInitDurationMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      LogGroupName: !Ref ApiLockoutsLambdaLogGroup
       FilterPattern: '{ $.type = "platform.report" && $.record.metrics.initDurationMs > 0 }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
           MetricName: ColdStartInitDurationMs
           MetricValue: $.record.metrics.initDurationMs
           Unit: Milliseconds
 
-  ApiLockoutStatusLambdaColdStartDurationAnomalyAlarm:
+  ApiLockoutsLambdaColdStartDurationAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       Metrics:
         - Id: initDuration
           MetricStat:
             Metric:
-              Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+              Namespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
               MetricName: ColdStartInitDurationMs
             Period: 300
             Stat: p90
@@ -3443,13 +3443,13 @@ Resources:
           MetricName: CriticalLogCount
           MetricValue: "1"
 
-  ApiLockoutStatusLambdaLogCriticalMetricFilter:
+  ApiLockoutsLambdaLogCriticalMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      LogGroupName: !Ref ApiLockoutsLambdaLogGroup
       FilterPattern: '{ $.level = "CRITICAL" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
           MetricName: CriticalLogCount
           MetricValue: "1"
 
@@ -3483,13 +3483,13 @@ Resources:
           MetricName: ErrorLogCount
           MetricValue: "1"
 
-  ApiLockoutStatusLambdaLogErrorMetricFilter:
+  ApiLockoutsLambdaLogErrorMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      LogGroupName: !Ref ApiLockoutsLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
           MetricName: ErrorLogCount
           MetricValue: "1"
 
@@ -3523,13 +3523,13 @@ Resources:
           MetricName: WarnLogCount
           MetricValue: "1"
 
-  ApiLockoutStatusLambdaLogWarnMetricFilter:
+  ApiLockoutsLambdaLogWarnMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      LogGroupName: !Ref ApiLockoutsLambdaLogGroup
       FilterPattern: '{ $.level = "WARN" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
           MetricName: WarnLogCount
           MetricValue: "1"
 
@@ -3563,13 +3563,13 @@ Resources:
           MetricName: RequestLogCount
           MetricValue: "1"
 
-  ApiLockoutStatusLambdaLogRequestMetricFilter:
+  ApiLockoutsLambdaLogRequestMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      LogGroupName: !Ref ApiLockoutsLambdaLogGroup
       FilterPattern: '{ $.message = "Request" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
           MetricName: RequestLogCount
           MetricValue: "1"
 
@@ -5553,10 +5553,10 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"RequestLogCount\"', 'Sum')),0)", "id": "request__total" } ]
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutsLambda\" MetricName=\"RequestLogCount\"', 'Sum')),0)", "id": "request__total" } ]
                 ],
                 "view": "timeSeries",
-                "title": "Lockout status lambda requests",
+                "title": "Lockouts lambda requests",
                 "region": "${AWS::Region}"
               },
               "width": 12,
@@ -5566,12 +5566,12 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutsLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutsLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutsLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
                 ],
                 "view": "timeSeries",
-                "title": "Lockout status lambda warnings/errors",
+                "title": "Lockouts lambda warnings/errors",
                 "region": "${AWS::Region}"
               },
               "width": 12,
@@ -5580,9 +5580,9 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutStatusLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutsLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
                 "view": "bar",
-                "title": "Lockout status lambda duration (p90) in milliseconds",
+                "title": "Lockouts lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
               "width": 8,
@@ -5591,9 +5591,9 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutStatusLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutsLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
                 "view": "bar",
-                "title": "Lockout status lambda cold start rate (%)",
+                "title": "Lockouts lambda cold start rate (%)",
                 "region": "${AWS::Region}"
               },
               "width": 8,
@@ -5602,9 +5602,9 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutStatusLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutsLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
                 "view": "bar",
-                "title": "Lockout status lambda cold start duration (p90) in milliseconds",
+                "title": "Lockouts lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
               "width": 8,

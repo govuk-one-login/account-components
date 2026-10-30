@@ -21,7 +21,7 @@ vi.mock(
 
 const { handler } = await import("./index.js");
 
-describe("lockout-status handler", () => {
+describe("lockouts handler", () => {
   it("returns 200", async () => {
     const mockEvent = {} as unknown as APIGatewayProxyEvent;
 

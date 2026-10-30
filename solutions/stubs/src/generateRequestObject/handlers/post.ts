@@ -54,7 +54,7 @@ export async function generateRequestObjectPost(
     generateOTP_scenario: body.internal_api_generateOTP_scenario,
     checkOTP_scenario: body.internal_api_checkOTP_scenario,
     checkPassword_scenario: body.internal_api_checkPassword_scenario,
-    lockoutStatus_scenario: body.internal_api_lockoutStatus_scenario,
+    lockouts_scenario: body.internal_api_lockouts_scenario,
   });
 
   const scenario = getScenario(authorizeRequestObject);

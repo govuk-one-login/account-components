@@ -1,45 +1,40 @@
 import * as v from "valibot";
-import { LockoutType, Source } from "../../../commons/utils/constants.js";
+import { LockoutType, Source } from "./constants.js";
 
-const unixEpochTimeInSecondsToDate = v.pipe(
-  v.number(),
-  v.transform((value) => new Date(value * 1000)),
-);
-
-export const otpsItem = v.looseObject({
+export const otpsDatabaseItem = v.looseObject({
   id: v.string(),
   publicSubjectId: v.string(),
-  generatedAt: unixEpochTimeInSecondsToDate,
-  expiresAt: unixEpochTimeInSecondsToDate,
+  generatedAt: v.number(),
+  expiresAt: v.number(),
   source: v.enum(Source),
   otp: v.string(),
   used: v.boolean(),
   hasContributedToTooManyOTPsRequestedLockout: v.boolean(),
 });
 
-export const otpChecksItem = v.looseObject({
+export const otpChecksDatabaseItem = v.looseObject({
   id: v.string(),
   publicSubjectId: v.string(),
-  checkedAt: unixEpochTimeInSecondsToDate,
+  checkedAt: v.number(),
   source: v.enum(Source),
   successful: v.boolean(),
   hasContributedToTooManyIncorrectOTPsEnteredLockout: v.boolean(),
 });
 
-export const passwordChecksItem = v.looseObject({
+export const passwordChecksDatabaseItem = v.looseObject({
   id: v.string(),
   publicSubjectId: v.string(),
-  checkedAt: unixEpochTimeInSecondsToDate,
+  checkedAt: v.number(),
   source: v.enum(Source),
   successful: v.boolean(),
   hasContributedToTooManyIncorrectPasswordsEnteredLockout: v.boolean(),
 });
 
-export const lockoutsItem = v.looseObject({
+export const lockoutsDatabaseItem = v.looseObject({
   id: v.string(),
   publicSubjectId: v.string(),
-  lockedOutAt: unixEpochTimeInSecondsToDate,
-  lockedOutUntil: unixEpochTimeInSecondsToDate,
+  lockedOutAt: v.number(),
+  lockedOutUntil: v.number(),
   source: v.enum(Source),
   type: v.enum(LockoutType),
 });

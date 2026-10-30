@@ -4,13 +4,13 @@ import { getApiBaseUrl } from "../../utils/getApiBaseUrl.js";
 
 const { When } = bdd;
 
-const lockoutStatusEndpointPath = "/lockout-status";
+const lockoutsEndpointPath = "/lockouts";
 
 When(
-  "I make a request to the lockout status endpoint then the response is as expected",
+  "I make a request to the lockouts endpoint then the response is as expected",
   async () => {
     const response = await fetch(
-      `${await getApiBaseUrl()}${lockoutStatusEndpointPath}/TODO`,
+      `${await getApiBaseUrl()}${lockoutsEndpointPath}/TODO`,
     );
 
     expect(response.status).toBe(200);
