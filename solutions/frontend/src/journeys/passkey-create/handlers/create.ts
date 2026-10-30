@@ -111,6 +111,7 @@ const render = async (
   reply: FastifyReply,
   options?: {
     showErrorUi?: boolean;
+    analytics?: FastifyReply["analytics"];
     [key: string]: unknown;
   },
 ) => {
@@ -158,6 +159,7 @@ const render = async (
     contentId: reply.client?.consider_user_logged_in
       ? contentIds.loggedIn
       : contentIds.notLoggedIn,
+    ...options?.analytics,
   };
 
   await reply.render("journeys/passkey-create/templates/create.njk", {
@@ -222,6 +224,11 @@ export async function getHandler(
 
   await render(request, reply, {
     showErrorUi,
+    analytics: showErrorUi
+      ? {
+          reason: "GetHandler",
+        }
+      : {},
   });
   return reply;
 }
@@ -249,11 +256,6 @@ export async function postHandler(
     const invalidRequestBodyErrorReason = "InvalidRequestBody";
     addErrorMetric(invalidRequestBodyErrorReason);
 
-    reply.analytics = {
-      ...reply.analytics,
-      reason: invalidRequestBodyErrorReason,
-    };
-
     await sendPasskeyRegistrationFailedAuditEvent(
       request,
       reply,
@@ -269,6 +271,9 @@ export async function postHandler(
 
     await render(request, reply, {
       showErrorUi: true,
+      analytics: {
+        reason: invalidRequestBodyErrorReason,
+      },
     });
     return reply;
   }
@@ -289,6 +294,9 @@ export async function postHandler(
       showErrorUi: true,
       errors: formErrors,
       errorList: getFormErrorsList(formErrors),
+      analytics: {
+        reason: "ActionNotSpecified",
+      },
     });
     return reply;
   }
@@ -321,11 +329,6 @@ export async function postHandler(
       body.registrationError,
     );
 
-    reply.analytics = {
-      ...reply.analytics,
-      reason,
-    };
-
     await sendPasskeyRegistrationFailedAuditEvent(request, reply, reason);
     await sendPasskeyEnrolmentFailedAuditEvent(
       request,
@@ -337,6 +340,9 @@ export async function postHandler(
 
     await render(request, reply, {
       showErrorUi: true,
+      analytics: {
+        reason,
+      },
     });
     return reply;
   }
@@ -376,6 +382,9 @@ export async function postHandler(
 
     await render(request, reply, {
       showErrorUi: true,
+      analytics: {
+        reason: "VerificationError",
+      },
     });
     return reply;
   }
@@ -395,6 +404,9 @@ export async function postHandler(
 
     await render(request, reply, {
       showErrorUi: true,
+      analytics: {
+        reason: "VerificationFailed",
+      },
     });
     return reply;
   }
@@ -448,6 +460,9 @@ export async function postHandler(
 
     await render(request, reply, {
       showErrorUi: true,
+      analytics: {
+        reason: "UserHasMaximumNumberOfPasskeys",
+      },
     });
 
     return reply;
