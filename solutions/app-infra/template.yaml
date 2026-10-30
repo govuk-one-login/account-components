@@ -52,6 +52,18 @@ Parameters:
     Type: String
     Description: The name of the alerting stack that contains SNS topics for alarms
     Default: "build-notifications"
+  LockoutsTablePublicSubjectIdIndexName:
+    Type: String
+    Default: "PublicSubjectIdIndex"
+  OTPsTablePublicSubjectIdIndexName:
+    Type: String
+    Default: "PublicSubjectIdIndex"
+  OTPChecksTablePublicSubjectIdIndexName:
+    Type: String
+    Default: "PublicSubjectIdIndex"
+  PasswordChecksTablePublicSubjectIdIndexName:
+    Type: String
+    Default: "PublicSubjectIdIndex"
 
 Mappings:
   EnvironmentConfiguration:
@@ -913,7 +925,7 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: PublicSubjectIdIndex
+        - IndexName: !Ref LockoutsTablePublicSubjectIdIndexName
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
@@ -948,7 +960,7 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: PublicSubjectIdIndex
+        - IndexName: !Ref OTPsTablePublicSubjectIdIndexName
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
@@ -983,7 +995,7 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: PublicSubjectIdIndex
+        - IndexName: !Ref OTPChecksTablePublicSubjectIdIndexName
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
@@ -1018,7 +1030,7 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: PublicSubjectIdIndex
+        - IndexName: !Ref PasswordChecksTablePublicSubjectIdIndexName
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
@@ -1997,6 +2009,8 @@ Resources:
         Variables:
           OTPS_TABLE_NAME: !Ref OTPsTable
           LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+          OTPS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref OTPsTablePublicSubjectIdIndexName
+          LOCKOUTS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref LockoutsTablePublicSubjectIdIndexName
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -2006,14 +2020,14 @@ Resources:
                 - dynamodb:PutItem
               Resource:
                 - !GetAtt LockoutsTable.Arn
-                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${LockoutsTable.Arn}/index/${LockoutsTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - dynamodb:Query
                 - dynamodb:PutItem
               Resource:
                 - !GetAtt OTPsTable.Arn
-                - !Sub "${OTPsTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${OTPsTable.Arn}/index/${OTPsTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - kms:Decrypt
@@ -2066,6 +2080,9 @@ Resources:
           OTPS_TABLE_NAME: !Ref OTPsTable
           OTP_CHECKS_TABLE_NAME: !Ref OTPChecksTable
           LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+          OTPS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref OTPsTablePublicSubjectIdIndexName
+          OTP_CHECKS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref OTPChecksTablePublicSubjectIdIndexName
+          LOCKOUTS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref LockoutsTablePublicSubjectIdIndexName
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -2075,20 +2092,20 @@ Resources:
                 - dynamodb:PutItem
               Resource:
                 - !GetAtt LockoutsTable.Arn
-                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${LockoutsTable.Arn}/index/${LockoutsTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - dynamodb:Query
               Resource:
                 - !GetAtt OTPsTable.Arn
-                - !Sub "${OTPsTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${OTPsTable.Arn}/index/${OTPsTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - dynamodb:Query
                 - dynamodb:PutItem
               Resource:
                 - !GetAtt OTPChecksTable.Arn
-                - !Sub "${OTPChecksTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${OTPChecksTable.Arn}/index/${OTPChecksTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - kms:Decrypt
@@ -2140,6 +2157,8 @@ Resources:
         Variables:
           PASSWORD_CHECKS_TABLE_NAME: !Ref PasswordChecksTable
           LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+          PASSWORD_CHECKS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref PasswordChecksTablePublicSubjectIdIndexName
+          LOCKOUTS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref LockoutsTablePublicSubjectIdIndexName
           ACCOUNT_DATA_API_URL:
             !FindInMap [
               EnvironmentConfiguration,
@@ -2155,14 +2174,14 @@ Resources:
                 - dynamodb:PutItem
               Resource:
                 - !GetAtt LockoutsTable.Arn
-                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${LockoutsTable.Arn}/index/${LockoutsTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - dynamodb:Query
                 - dynamodb:PutItem
               Resource:
                 - !GetAtt PasswordChecksTable.Arn
-                - !Sub "${PasswordChecksTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${PasswordChecksTable.Arn}/index/${PasswordChecksTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - kms:Decrypt
@@ -2213,6 +2232,7 @@ Resources:
       Environment:
         Variables:
           LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+          LOCKOUTS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref LockoutsTablePublicSubjectIdIndexName
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -2221,7 +2241,7 @@ Resources:
                 - dynamodb:Query
               Resource:
                 - !GetAtt LockoutsTable.Arn
-                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${LockoutsTable.Arn}/index/${LockoutsTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - kms:Decrypt
