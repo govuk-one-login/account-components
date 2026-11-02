@@ -72,6 +72,13 @@ const setRegistrationOptions = async (
     rpName: process.env["PASSKEYS_RP_NAME"],
     rpID: process.env["PASSKEYS_RP_ID"],
     userName: request.session.claims.email,
+    /*
+      Despite the spec allowing display name to be an empty string (which
+      is what SimpleWebauthN defaults to if userDisplayName is not set)
+      LastPass seems to require it to be set to a non-empty string.
+      Therefore we set it to the user's email address.
+    */
+    userDisplayName: request.session.claims.email,
     userID: isoUint8Array.fromUTF8String(request.session.claims.public_sub),
     attestationType: "direct",
     authenticatorSelection: {
