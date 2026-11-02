@@ -72,7 +72,7 @@ export class InternalApiClient extends JsonApiClient {
           response,
           v.object({
             otp: v.string(),
-            expires: v.number(),
+            expiresAt: v.pipe(v.number(), unixEpochTimeInSecondsToDate),
           }),
           errorsCodesMap,
         );
