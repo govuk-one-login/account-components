@@ -62,7 +62,7 @@ vi.mock(import("node:crypto"), () => ({
   })),
 }));
 
-const context: Context = {
+const context = {
   callbackWaitsForEmptyEventLoop: false,
   functionName: "test-function",
   functionVersion: "1",
@@ -73,10 +73,7 @@ const context: Context = {
   logGroupName: "/aws/lambda/test-function",
   logStreamName: "2023/01/01/[$LATEST]test-stream",
   getRemainingTimeInMillis: () => 30000,
-  done: vi.fn(),
-  fail: vi.fn(),
-  succeed: vi.fn(),
-};
+} as unknown as Context;
 
 const createEvent = (
   requestType: "Create" | "Update" | "Delete",
