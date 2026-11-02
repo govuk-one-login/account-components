@@ -351,11 +351,11 @@ paths:
                     type: string
                     example: "123456"
                     description: A one-time passcode
-                  expires:
+                  expiresAt:
                     type: integer
                     description: Unix epoch time in seconds when the token expires
                     example: 1682959031
-                required: [otp, expires]
+                required: [otp, expiresAt]
         "400":
           description: Bad request
           content:
