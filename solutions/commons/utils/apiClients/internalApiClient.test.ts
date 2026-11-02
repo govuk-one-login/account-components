@@ -157,6 +157,29 @@ describe("internalApiClient", () => {
         errorDetails: error,
       });
     });
+
+    it("should pass a schema that transforms expiresAt to a Date", async () => {
+      const { JsonApiClient } = await import("./jsonApiClient.js");
+      const client = new InternalApiClient(undefined, mockEvent);
+      const unixSeconds = 1704067200;
+
+      mockThisFetch.mockResolvedValueOnce(new Response());
+
+      await client.generateOTP({ publicSubjectId, ...commonBody });
+
+      // @ts-expect-error
+      const schema = vi.mocked(JsonApiClient.processResponse).mock
+        .calls[0]?.[1];
+      assert.ok(schema);
+
+      const v = await import("valibot");
+      const result = v.parse(schema, { otp: "123456", expiresAt: unixSeconds });
+
+      expect(result).toStrictEqual({
+        otp: "123456",
+        expiresAt: new Date(unixSeconds * 1000),
+      });
+    });
   });
 
   describe("checkOTP", () => {
