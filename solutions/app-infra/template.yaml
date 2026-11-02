@@ -4256,7 +4256,7 @@ Resources:
           Value: !Sub "${AWS::StackName}-frontend"
       Period: 300
       Statistic: Sum
-      Threshold: 200
+      Threshold: 100
       ComparisonOperator: LessThanThreshold
       EvaluationPeriods: 5
       DatapointsToAlarm: 5
