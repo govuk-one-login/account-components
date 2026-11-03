@@ -116,7 +116,7 @@ export class AccountDataApiClient extends JsonApiClient {
           {
             method: "POST",
             headers: this.commonHeaders,
-            body: JSON.stringify({ password }),
+            body: JSON.stringify({ password }), // pragma: allowlist secret
           },
         );
 
