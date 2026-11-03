@@ -30,7 +30,7 @@ export async function confirmPostHandler(
 
   const result = await accountManagementApiClient.deleteAccount(
     request.session.claims.account_data_api_access_token,
-    request.session.claims.email,
+    request.session.claims.public_sub,
   );
 
   if (!result.success) {

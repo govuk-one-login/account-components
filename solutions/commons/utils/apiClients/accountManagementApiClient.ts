@@ -68,22 +68,21 @@ export class AccountManagementApiClient extends JsonApiClient {
     });
   }
 
-  async deleteAccount(adapiAccessToken: string, emailAddress: string) {
+  async deleteAccount(adapiAccessToken: string, publicSubjectId: string) {
     return this.logOnError("deleteAccount", async () => {
       try {
-        const response = await this.fetch(`${this.baseUrl}/delete-account`, {
-          method: "POST",
+        const response = await this.fetch(`/accounts/${publicSubjectId}`, {
+          method: "DELETE",
           headers: Object.assign({}, this.commonHeaders, {
             "X-ADAPI-AccessToken": adapiAccessToken,
-          }),
-          body: JSON.stringify({
-            email: emailAddress,
           }),
         });
 
         const errorsCodesMap = {
           "1001": "RequestIsMissingParameters",
-          "1010": "AccountDoesNotExist",
+          "4010": "UnauthorizedRequest",
+          "1056": "UserNotFoundOrNoMatch",
+          "5000": "InternalServerError",
         } as const;
 
         return await AccountManagementApiClient.processResponse(
