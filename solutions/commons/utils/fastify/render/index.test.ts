@@ -17,17 +17,15 @@ vi.mock(import("../../getQueryParamsFromUrl/index.js"), () => ({
   getQueryParamsFromUrl: vi.fn(),
 }));
 
-const { mockEnv, nunjucks } = vi.hoisted(() => {
-  const mockEnv = {
-    addFilter: vi.fn(),
-    addGlobal: vi.fn(),
-  };
-  const nunjucks = {
-    configure: vi.fn().mockReturnValue(mockEnv),
-    render: vi.fn(),
-  };
-  return { mockEnv, nunjucks };
-});
+const mockEnv = {
+  addFilter: vi.fn(),
+  addGlobal: vi.fn(),
+};
+
+const nunjucks = {
+  configure: vi.fn().mockReturnValue(mockEnv),
+  render: vi.fn(),
+};
 
 // @ts-expect-error
 vi.mock(import("nunjucks"), () => ({
