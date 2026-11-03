@@ -116,7 +116,7 @@ describe("accountDataApiClient", () => {
     it("should make correct API call", async () => {
       const client = new AccountDataApiClient(mockAccessToken, mockEvent);
       const publicSubjectId = "test-public-subject-id";
-      const password = "test-password";
+      const password = "test-password"; // pragma: allowlist secret
 
       mockThisFetch.mockResolvedValueOnce(new Response());
 
