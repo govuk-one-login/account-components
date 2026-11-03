@@ -204,7 +204,7 @@ describe("accountManagementApiClient", () => {
       await client.deleteAccount(adapiAccessToken, publicSubjectId);
 
       expect(mockThisFetch).toHaveBeenCalledWith(
-        `/accounts/${publicSubjectId}`,
+        `https://api.example.com/accounts/${publicSubjectId}`,
         {
           method: "DELETE",
           headers: {

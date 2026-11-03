@@ -71,12 +71,15 @@ export class AccountManagementApiClient extends JsonApiClient {
   async deleteAccount(adapiAccessToken: string, publicSubjectId: string) {
     return this.logOnError("deleteAccount", async () => {
       try {
-        const response = await this.fetch(`/accounts/${publicSubjectId}`, {
-          method: "DELETE",
-          headers: Object.assign({}, this.commonHeaders, {
-            "X-ADAPI-AccessToken": adapiAccessToken,
-          }),
-        });
+        const response = await this.fetch(
+          `${this.baseUrl}/accounts/${publicSubjectId}`,
+          {
+            method: "DELETE",
+            headers: Object.assign({}, this.commonHeaders, {
+              "X-ADAPI-AccessToken": adapiAccessToken,
+            }),
+          },
+        );
 
         const errorsCodesMap = {
           "1001": "RequestIsMissingParameters",
