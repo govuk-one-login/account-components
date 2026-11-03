@@ -112,6 +112,49 @@ describe("accountDataApiClient", () => {
     });
   });
 
+  describe("verifyPassword", () => {
+    it("should make correct API call", async () => {
+      const client = new AccountDataApiClient(mockAccessToken, mockEvent);
+      const publicSubjectId = "test-public-subject-id";
+      const password = "test-password";
+
+      mockThisFetch.mockResolvedValueOnce(new Response());
+
+      await client.verifyPassword(publicSubjectId, password);
+
+      expect(mockThisFetch).toHaveBeenCalledWith(
+        "https://api.example.com/accounts/test-public-subject-id/authenticators/password/verify",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${mockAccessToken}`,
+          },
+          body: JSON.stringify({ password }),
+        },
+      );
+    });
+
+    it("should return unknown error when fetch throws", async () => {
+      const client = new AccountDataApiClient(mockAccessToken, mockEvent);
+      const error = new Error("Network error");
+
+      mockThisFetch.mockRejectedValueOnce(error);
+
+      const result = await client.verifyPassword(
+        "test-public-subject-id",
+        "test-password",
+      );
+
+      expect(result).toStrictEqual({
+        success: false,
+        error: "UnknownError",
+        rawResponse: undefined,
+        errorDetails: error,
+      });
+    });
+  });
+
   describe("createPasskey", () => {
     it("should make correct API call", async () => {
       const client = new AccountDataApiClient(mockAccessToken, mockEvent);
