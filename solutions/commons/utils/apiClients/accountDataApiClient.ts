@@ -107,4 +107,38 @@ export class AccountDataApiClient extends JsonApiClient {
       }
     });
   }
+
+  async verifyPassword(publicSubjectId: string, password: string) {
+    return this.logOnError("verifyPassword", async () => {
+      try {
+        const response = await this.fetch(
+          `${this.baseUrl}/accounts/${publicSubjectId}/authenticators/password/verify`,
+          {
+            method: "POST",
+            headers: this.commonHeaders,
+            body: JSON.stringify({ password }),
+          },
+        );
+
+        const errorsCodesMap = {
+          "4000": "invalid_request_body",
+          "4001": "missing_required_subject_id",
+          "4010": "unauthorized_request",
+          "4041": "user_not_found_or_no_match",
+          "5000": "internal_server_error",
+        } as const;
+
+        return await AccountDataApiClient.processResponse(
+          response,
+          v.object({ verified: v.boolean() }),
+          errorsCodesMap,
+        );
+      } catch (error) {
+        return {
+          ...AccountDataApiClient.unknownError,
+          errorDetails: error,
+        };
+      }
+    });
+  }
 }
