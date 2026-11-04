@@ -12,6 +12,7 @@ const baseFields = {
   id: "abc123",
   publicSubjectId: "sub123",
   source: Source["account-delete"],
+  lockoutId: "xyz1789",
 };
 
 const now = Math.floor(Date.now() / 1000);
@@ -23,7 +24,7 @@ describe("otpsDatabaseItem", () => {
     expiresAt: now + 300,
     otp: "123456",
     used: false,
-    hasContributedToTooManyOTPsRequestedLockout: false,
+    lockoutId: "xyz1789",
   };
 
   it("parses a valid item", () => {
@@ -58,7 +59,7 @@ describe("otpChecksDatabaseItem", () => {
     ...baseFields,
     checkedAt: now,
     successful: true,
-    hasContributedToTooManyIncorrectOTPsEnteredLockout: false,
+    lockoutId: "xyz1789",
   };
 
   it("parses a valid item", () => {
@@ -92,7 +93,6 @@ describe("passwordChecksDatabaseItem", () => {
     ...baseFields,
     checkedAt: now,
     successful: false,
-    hasContributedToTooManyIncorrectPasswordsEnteredLockout: true,
   };
 
   it("parses a valid item", () => {

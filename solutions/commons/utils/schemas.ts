@@ -9,7 +9,7 @@ export const otpsDatabaseItem = v.looseObject({
   source: v.enum(Source),
   otp: v.string(),
   used: v.boolean(),
-  hasContributedToTooManyOTPsRequestedLockout: v.boolean(),
+  lockoutId: v.optional(v.string()),
 });
 
 export const otpChecksDatabaseItem = v.looseObject({
@@ -18,7 +18,7 @@ export const otpChecksDatabaseItem = v.looseObject({
   checkedAt: v.number(),
   source: v.enum(Source),
   successful: v.boolean(),
-  hasContributedToTooManyIncorrectOTPsEnteredLockout: v.boolean(),
+  lockoutId: v.optional(v.string()),
 });
 
 export const passwordChecksDatabaseItem = v.looseObject({
@@ -27,7 +27,7 @@ export const passwordChecksDatabaseItem = v.looseObject({
   checkedAt: v.number(),
   source: v.enum(Source),
   successful: v.boolean(),
-  hasContributedToTooManyIncorrectPasswordsEnteredLockout: v.boolean(),
+  lockoutId: v.optional(v.string()),
 });
 
 export const lockoutsDatabaseItem = v.looseObject({
