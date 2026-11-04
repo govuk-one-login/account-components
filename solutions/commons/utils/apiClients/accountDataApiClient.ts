@@ -36,7 +36,7 @@ export class AccountDataApiClient extends JsonApiClient {
 
         const errorsCodesMap = {
           "4010": "unauthorized_request",
-          "5000": "invalid_request_body",
+          "5000": "internal_server_error",
         } as const;
 
         return await AccountDataApiClient.processResponse(
@@ -91,7 +91,7 @@ export class AccountDataApiClient extends JsonApiClient {
           "4220": "invalid_credential_format",
           "4221": "invalid_aaguid_format",
           "4222": "invalid_attestation_signature",
-          "5000": "invalid_request_body",
+          "5000": "internal_server_error",
         } as const;
 
         return await AccountDataApiClient.processResponse(
