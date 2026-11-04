@@ -5,7 +5,7 @@ export const paths = {
   clientCallback: "/:client/callback",
   accountManagementApi: {
     authenticate: "/account-management-api/authenticate",
-    deleteAccount: "/account-management-api/delete-account",
+    deleteAccount: "/account-management-api/accounts/:publicSubjectId",
     sendOtpChallenge:
       "/account-management-api/send-otp-challenge/:publicSubjectId",
     verifyOtpChallenge:
