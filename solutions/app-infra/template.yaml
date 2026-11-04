@@ -954,7 +954,7 @@ Resources:
           AttributeType: S
         - AttributeName: publicSubjectId
           AttributeType: S
-        - AttributeName: generatedAt
+        - AttributeName: createdAt
           AttributeType: N
       KeySchema:
         - AttributeName: id
@@ -964,7 +964,7 @@ Resources:
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
-            - AttributeName: generatedAt
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
@@ -989,7 +989,7 @@ Resources:
           AttributeType: S
         - AttributeName: publicSubjectId
           AttributeType: S
-        - AttributeName: checkedAt
+        - AttributeName: createdAt
           AttributeType: N
       KeySchema:
         - AttributeName: id
@@ -999,7 +999,7 @@ Resources:
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
-            - AttributeName: checkedAt
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
@@ -1024,7 +1024,7 @@ Resources:
           AttributeType: S
         - AttributeName: publicSubjectId
           AttributeType: S
-        - AttributeName: checkedAt
+        - AttributeName: createdAt
           AttributeType: N
       KeySchema:
         - AttributeName: id
@@ -1034,7 +1034,7 @@ Resources:
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
-            - AttributeName: checkedAt
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             ProjectionType: ALL

@@ -8,29 +8,48 @@ import {
 } from "./schemas.js";
 import { LockoutType, Source } from "./constants.js";
 
+const now = Math.floor(Date.now() / 1000);
+
 const baseFields = {
   id: "abc123",
   publicSubjectId: "sub123",
   source: Source["account-delete"],
+  createdAt: now,
 };
-
-const now = Math.floor(Date.now() / 1000);
 
 describe("otpsDatabaseItem", () => {
   const valid = {
     ...baseFields,
-    generatedAt: now,
     expiresAt: now + 300,
     otp: "123456",
     used: false,
-    hasContributedToTooManyOTPsRequestedLockout: false,
   };
 
   it("parses a valid item", () => {
     const result = v.parse(otpsDatabaseItem, valid);
 
-    expect(result.generatedAt).toBe(now);
+    expect(result.id).toBe("abc123");
+    expect(result.createdAt).toBe(now);
     expect(result.expiresAt).toBe(now + 300);
+    expect(result.otp).toBe("123456");
+    expect(result.used).toBe(false);
+  });
+
+  it("parses optional lockouts field when present", () => {
+    const result = v.parse(otpsDatabaseItem, {
+      ...valid,
+      lockouts: [{ type: LockoutType.TooManyOTPsRequested, id: "lockout-1" }],
+    });
+
+    expect(result.lockouts).toStrictEqual([
+      { type: LockoutType.TooManyOTPsRequested, id: "lockout-1" },
+    ]);
+  });
+
+  it("parses when lockouts field is absent", () => {
+    const result = v.parse(otpsDatabaseItem, valid);
+
+    expect(result.lockouts).toBeUndefined();
   });
 
   it("allows extra fields", () => {
@@ -56,15 +75,34 @@ describe("otpsDatabaseItem", () => {
 describe("otpChecksDatabaseItem", () => {
   const valid = {
     ...baseFields,
-    checkedAt: now,
     successful: true,
-    hasContributedToTooManyIncorrectOTPsEnteredLockout: false,
   };
 
   it("parses a valid item", () => {
     const result = v.parse(otpChecksDatabaseItem, valid);
 
-    expect(result.checkedAt).toBe(now);
+    expect(result.id).toBe("abc123");
+    expect(result.createdAt).toBe(now);
+    expect(result.successful).toBe(true);
+  });
+
+  it("parses optional lockouts field when present", () => {
+    const result = v.parse(otpChecksDatabaseItem, {
+      ...valid,
+      lockouts: [
+        { type: LockoutType.TooManyIncorrectOTPsEntered, id: "lockout-1" },
+      ],
+    });
+
+    expect(result.lockouts).toStrictEqual([
+      { type: LockoutType.TooManyIncorrectOTPsEntered, id: "lockout-1" },
+    ]);
+  });
+
+  it("parses when lockouts field is absent", () => {
+    const result = v.parse(otpChecksDatabaseItem, valid);
+
+    expect(result.lockouts).toBeUndefined();
   });
 
   it("allows extra fields", () => {
@@ -90,15 +128,37 @@ describe("otpChecksDatabaseItem", () => {
 describe("passwordChecksDatabaseItem", () => {
   const valid = {
     ...baseFields,
-    checkedAt: now,
     successful: false,
-    hasContributedToTooManyIncorrectPasswordsEnteredLockout: true,
   };
 
   it("parses a valid item", () => {
     const result = v.parse(passwordChecksDatabaseItem, valid);
 
-    expect(result.checkedAt).toBe(now);
+    expect(result.id).toBe("abc123");
+    expect(result.createdAt).toBe(now);
+    expect(result.successful).toBe(false);
+  });
+
+  it("parses optional lockouts field when present", () => {
+    const result = v.parse(passwordChecksDatabaseItem, {
+      ...valid,
+      lockouts: [
+        {
+          type: LockoutType.TooManyIncorrectPasswordsEntered,
+          id: "lockout-1",
+        },
+      ],
+    });
+
+    expect(result.lockouts).toStrictEqual([
+      { type: LockoutType.TooManyIncorrectPasswordsEntered, id: "lockout-1" },
+    ]);
+  });
+
+  it("parses when lockouts field is absent", () => {
+    const result = v.parse(passwordChecksDatabaseItem, valid);
+
+    expect(result.lockouts).toBeUndefined();
   });
 
   it("allows extra fields", () => {
@@ -125,7 +185,9 @@ describe("passwordChecksDatabaseItem", () => {
 
 describe("lockoutsDatabaseItem", () => {
   const valid = {
-    ...baseFields,
+    id: "abc123",
+    publicSubjectId: "sub123",
+    source: Source["account-delete"],
     lockedOutAt: now,
     lockedOutUntil: now + 900,
     type: LockoutType.TooManyOTPsRequested,
