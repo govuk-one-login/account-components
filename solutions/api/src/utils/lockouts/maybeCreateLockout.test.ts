@@ -75,7 +75,10 @@ describe("maybeCreateLockout", () => {
 
   describe("early returns", () => {
     it("returns undefined if query returns no items", async () => {
-      mockQuery.mockResolvedValue({ Items: undefined });
+      mockQuery.mockResolvedValue({
+        Items: undefined,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout(baseInput);
 
@@ -84,7 +87,7 @@ describe("maybeCreateLockout", () => {
     });
 
     it("returns undefined if query returns an empty array", async () => {
-      mockQuery.mockResolvedValue({ Items: [] });
+      mockQuery.mockResolvedValue({ Items: [], LastEvaluatedKey: undefined });
 
       const result = await maybeCreateLockout(baseInput);
 
@@ -93,7 +96,10 @@ describe("maybeCreateLockout", () => {
     });
 
     it("returns undefined if fewer items than itemCountForLockout", async () => {
-      mockQuery.mockResolvedValue({ Items: [makeItem(), makeItem()] });
+      mockQuery.mockResolvedValue({
+        Items: [makeItem(), makeItem()],
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout(baseInput);
 
@@ -103,7 +109,10 @@ describe("maybeCreateLockout", () => {
   });
 
   it("queries DynamoDB with the correct parameters", async () => {
-    mockQuery.mockResolvedValue({ Items: undefined });
+    mockQuery.mockResolvedValue({
+      Items: undefined,
+      LastEvaluatedKey: undefined,
+    });
 
     await maybeCreateLockout(baseInput);
 
@@ -111,14 +120,38 @@ describe("maybeCreateLockout", () => {
       TableName: "checks-table",
       IndexName: "publicSubjectId-index",
       KeyConditionExpression: "publicSubjectId = :publicSubjectId",
-      FilterExpression: "source = :source",
+      FilterExpression: "source = :source AND createdAt > :createdSince",
       ExpressionAttributeValues: {
         ":publicSubjectId": "sub-123",
         ":source": Source["account-delete"],
+        ":createdSince": NOW_SECONDS - baseInput.window,
       },
       ConsistentRead: true,
       ScanIndexForward: false,
+      ExclusiveStartKey: undefined,
     });
+  });
+
+  it("paginates until LastEvaluatedKey is undefined", async () => {
+    const page1Key = { id: "page-1-last" };
+    mockQuery
+      .mockResolvedValueOnce({
+        Items: [makeItem({ id: "1" }), makeItem({ id: "2" })],
+        LastEvaluatedKey: page1Key,
+      })
+      .mockResolvedValueOnce({
+        Items: [makeItem({ id: "3" })],
+        LastEvaluatedKey: undefined,
+      });
+
+    const result = await maybeCreateLockout(baseInput);
+
+    expect(mockQuery).toHaveBeenCalledTimes(2);
+    expect(mockQuery).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ ExclusiveStartKey: page1Key }),
+    );
+    expect(result).toBeDefined();
   });
 
   describe("mostRecent mode (default)", () => {
@@ -128,7 +161,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "2" }),
         makeItem({ id: "3" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout(baseInput);
 
@@ -154,35 +190,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "2", successful: true }),
         makeItem({ id: "3" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
-
-      const result = await maybeCreateLockout(baseInput);
-
-      expect(result).toBeUndefined();
-      expect(mockTransactWrite).not.toHaveBeenCalled();
-    });
-
-    it("returns undefined if any of the most recent items are outside the window", async () => {
-      const items = [
-        makeItem({ id: "1" }),
-        makeItem({ id: "2", createdAt: NOW_SECONDS - 10801 }),
-        makeItem({ id: "3" }),
-      ];
-      mockQuery.mockResolvedValue({ Items: items });
-
-      const result = await maybeCreateLockout(baseInput);
-
-      expect(result).toBeUndefined();
-      expect(mockTransactWrite).not.toHaveBeenCalled();
-    });
-
-    it("returns undefined if an item is exactly at the window boundary", async () => {
-      const items = [
-        makeItem({ id: "1" }),
-        makeItem({ id: "2", createdAt: NOW_SECONDS - 10800 }),
-        makeItem({ id: "3" }),
-      ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout(baseInput);
 
@@ -197,7 +208,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "3" }),
         makeItem({ id: "4" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout(baseInput);
 
@@ -214,7 +228,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "3", successful: true }),
         makeItem({ id: "4" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout({ ...baseInput, mode: "Any" });
 
@@ -234,7 +251,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "3" }),
         makeItem({ id: "4" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       await maybeCreateLockout({ ...baseInput, mode: "Any" });
 
@@ -251,35 +271,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "2" }),
         makeItem({ id: "3", successful: true }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
-
-      const result = await maybeCreateLockout({ ...baseInput, mode: "Any" });
-
-      expect(result).toBeUndefined();
-      expect(mockTransactWrite).not.toHaveBeenCalled();
-    });
-
-    it("does not count items outside the window as contributing", async () => {
-      const items = [
-        makeItem({ id: "1" }),
-        makeItem({ id: "2" }),
-        makeItem({ id: "3", createdAt: NOW_SECONDS - 10801 }),
-      ];
-      mockQuery.mockResolvedValue({ Items: items });
-
-      const result = await maybeCreateLockout({ ...baseInput, mode: "Any" });
-
-      expect(result).toBeUndefined();
-      expect(mockTransactWrite).not.toHaveBeenCalled();
-    });
-
-    it("does not count an item exactly at the window boundary as contributing", async () => {
-      const items = [
-        makeItem({ id: "1" }),
-        makeItem({ id: "2" }),
-        makeItem({ id: "3", createdAt: NOW_SECONDS - 10800 }),
-      ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout({ ...baseInput, mode: "Any" });
 
@@ -296,7 +291,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "3" }),
         makeItem({ id: "4" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout({
         ...baseInput,
@@ -320,7 +318,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "4" }),
         makeItem({ id: "5" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout({
         ...baseInput,
@@ -337,7 +338,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "2" }),
         makeItem({ id: "3" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout({
         ...baseInput,
@@ -356,7 +360,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "4" }),
         makeItem({ id: "5", successful: true }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout({
         ...baseInput,
@@ -381,7 +388,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "5" }),
         makeItem({ id: "6" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout({
         ...baseInput,
@@ -397,53 +407,16 @@ describe("maybeCreateLockout", () => {
       expect(updatedIds).toStrictEqual(["4", "5", "6"]);
     });
 
-    it("stops collecting and does not use items after an out-of-window item", async () => {
-      const items = [
-        makeItem({ id: "1" }),
-        makeItem({ id: "2" }),
-        makeItem({ id: "3", createdAt: NOW_SECONDS - 10801 }),
-        makeItem({ id: "4" }),
-        makeItem({ id: "5" }),
-        makeItem({ id: "6" }),
-      ];
-      mockQuery.mockResolvedValue({ Items: items });
-
-      const result = await maybeCreateLockout({
-        ...baseInput,
-        mode: "Consecutive",
-      });
-
-      expect(result).toBeUndefined();
-      expect(mockTransactWrite).not.toHaveBeenCalled();
-    });
-
-    it("stops collecting if an item is exactly at the window boundary", async () => {
-      const items = [
-        makeItem({ id: "1" }),
-        makeItem({ id: "2" }),
-        makeItem({ id: "3", createdAt: NOW_SECONDS - 10800 }),
-        makeItem({ id: "4" }),
-        makeItem({ id: "5" }),
-        makeItem({ id: "6" }),
-      ];
-      mockQuery.mockResolvedValue({ Items: items });
-
-      const result = await maybeCreateLockout({
-        ...baseInput,
-        mode: "Consecutive",
-      });
-
-      expect(result).toBeUndefined();
-      expect(mockTransactWrite).not.toHaveBeenCalled();
-    });
-
     it("uses items from the start of the array when all qualify", async () => {
       const items = [
         makeItem({ id: "1" }),
         makeItem({ id: "2" }),
         makeItem({ id: "3" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout({
         ...baseInput,
@@ -467,7 +440,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "2" }),
         makeItem({ id: "3" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       await maybeCreateLockout(baseInput);
 
@@ -495,7 +471,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "2" }),
         makeItem({ id: "3" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       await maybeCreateLockout(baseInput);
 
@@ -516,7 +495,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "2" }),
         makeItem({ id: "3" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       await maybeCreateLockout(baseInput);
 
@@ -534,7 +516,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "2" }),
         makeItem({ id: "3" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       await maybeCreateLockout(baseInput);
 
@@ -551,7 +536,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "2" }),
         makeItem({ id: "3" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout(baseInput);
 
@@ -567,7 +555,10 @@ describe("maybeCreateLockout", () => {
         makeItem({ id: "2" }),
         makeItem({ id: "3" }),
       ];
-      mockQuery.mockResolvedValue({ Items: items });
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
 
       const result = await maybeCreateLockout({ ...baseInput, duration: 1800 });
 

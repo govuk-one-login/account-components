@@ -7,24 +7,93 @@ import type { itemWithLockouts } from "../../../../commons/utils/schemas.js";
 import { lockoutsDatabaseItem } from "../../../../commons/utils/schemas.js";
 import { randomUUID } from "node:crypto";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
+import type { AttributeValue } from "@aws-sdk/client-dynamodb";
+
+type ItemSchemaBase = v.GenericSchema<v.InferOutput<typeof itemWithLockouts>>;
+type Mode = "MostRecent" | "Consecutive" | "Any";
+type ItemShouldContributeToLockout<ItemSchema extends ItemSchemaBase> = (
+  item: v.InferOutput<ItemSchema>,
+) => boolean;
 
 const dynamoDbClient = getDynamoDbClient();
 
-/*
-TODO
-what about multiple lockout types per action?
-is that now solved?
-yes by storing id and type of lockouts and allow decision to be made in itemShouldContributeToLockout
+const queryAllItems = async ({
+  tableName,
+  publicSubjectIdGsiName,
+  publicSubjectId,
+  source,
+  createdSince,
+}: {
+  tableName: string;
+  publicSubjectIdGsiName: string;
+  publicSubjectId: string;
+  source: Source;
+  createdSince: number;
+}) => {
+  const items: Record<string, AttributeValue>[] = [];
+  let lastEvaluatedKey: Record<string, AttributeValue> | undefined = undefined;
 
-no defaults on endpoints for lockoutDuration, maxAllowedBeforeLockout in endpoints
+  do {
+    const response = await dynamoDbClient.query({
+      TableName: tableName,
+      IndexName: publicSubjectIdGsiName,
+      KeyConditionExpression: "publicSubjectId = :publicSubjectId",
+      FilterExpression: "source = :source AND createdAt > :createdSince",
+      ExpressionAttributeValues: {
+        ":publicSubjectId": publicSubjectId,
+        ":source": source,
+        ":createdSince": createdSince,
+      },
+      ConsistentRead: true,
+      ScanIndexForward: false,
+      ExclusiveStartKey: lastEvaluatedKey,
+    });
 
-will need to update existing tickets
-need to update Word doc?
-*/
+    items.push(...(response.Items ?? []));
+    lastEvaluatedKey = response.LastEvaluatedKey;
+  } while (lastEvaluatedKey);
 
-export const maybeCreateLockout = async <
-  ItemSchema extends v.GenericSchema<v.InferOutput<typeof itemWithLockouts>>,
->({
+  return items;
+};
+
+const getLockoutContributingItems = <ItemSchema extends ItemSchemaBase>({
+  mode,
+  validatedItems,
+  itemShouldContributeToLockout,
+  itemCountForLockout,
+}: {
+  mode: Mode;
+  validatedItems: v.InferOutput<ItemSchema>[];
+  itemShouldContributeToLockout: ItemShouldContributeToLockout<ItemSchema>;
+  itemCountForLockout: number;
+}) => {
+  let lockoutContributingItems: v.InferOutput<ItemSchema>[] = [];
+
+  if (mode === "MostRecent") {
+    lockoutContributingItems = validatedItems
+      .slice(0, itemCountForLockout)
+      .filter((item) => itemShouldContributeToLockout(item));
+  } else if (mode === "Consecutive") {
+    for (const item of validatedItems) {
+      if (lockoutContributingItems.length === itemCountForLockout) {
+        break;
+      }
+      if (itemShouldContributeToLockout(item)) {
+        lockoutContributingItems.push(item);
+      } else {
+        lockoutContributingItems = [];
+      }
+    }
+  } else {
+    lockoutContributingItems = validatedItems
+      .filter((item) => itemShouldContributeToLockout(item))
+      .slice(0, itemCountForLockout);
+  }
+
+  return lockoutContributingItems;
+};
+
+export const maybeCreateLockout = async <ItemSchema extends ItemSchemaBase>({
   publicSubjectId,
   source,
   type,
@@ -43,64 +112,31 @@ export const maybeCreateLockout = async <
   tableName: string;
   publicSubjectIdGsiName: string;
   itemSchema: ItemSchema;
-  itemShouldContributeToLockout: (item: v.InferOutput<ItemSchema>) => boolean;
+  itemShouldContributeToLockout: ItemShouldContributeToLockout<ItemSchema>;
   itemCountForLockout?: number;
   window?: number;
   duration?: number;
-  mode?: "MostRecent" | "Consecutive" | "Any";
+  mode?: Mode;
 }) => {
-  const items = await dynamoDbClient.query({
-    TableName: tableName,
-    IndexName: publicSubjectIdGsiName,
-    KeyConditionExpression: "publicSubjectId = :publicSubjectId",
-    FilterExpression: "source = :source",
-    ExpressionAttributeValues: {
-      ":publicSubjectId": publicSubjectId,
-      ":source": source,
-    },
-    ConsistentRead: true,
-    ScanIndexForward: false,
-  });
-
-  if (!items.Items || items.Items.length < itemCountForLockout) return;
-
-  const validatedItems = v.parse(v.array(itemSchema), items.Items ?? []);
-
   const nowInSeconds = Math.floor(Date.now() / 1000);
 
-  const itemCreatedInWindow = (item: v.InferOutput<ItemSchema>) => {
-    return item.createdAt > nowInSeconds - window;
-  };
+  const allItems = await queryAllItems({
+    tableName,
+    publicSubjectIdGsiName,
+    publicSubjectId,
+    source,
+    createdSince: nowInSeconds - window,
+  });
 
-  let lockoutContributingItems: v.InferOutput<ItemSchema>[] = [];
+  if (allItems.length < itemCountForLockout) return;
 
-  if (mode === "MostRecent") {
-    lockoutContributingItems = validatedItems
-      .slice(0, itemCountForLockout)
-      .filter((item) => {
-        return itemCreatedInWindow(item) && itemShouldContributeToLockout(item);
-      });
-  } else if (mode === "Consecutive") {
-    for (const item of validatedItems) {
-      if (
-        lockoutContributingItems.length === itemCountForLockout ||
-        !itemCreatedInWindow(item)
-      ) {
-        break;
-      }
-      if (itemShouldContributeToLockout(item)) {
-        lockoutContributingItems.push(item);
-      } else {
-        lockoutContributingItems = [];
-      }
-    }
-  } else {
-    lockoutContributingItems = validatedItems
-      .filter((item) => {
-        return itemCreatedInWindow(item) && itemShouldContributeToLockout(item);
-      })
-      .slice(0, itemCountForLockout);
-  }
+  const validatedItems = v.parse(v.array(itemSchema), allItems);
+  const lockoutContributingItems = getLockoutContributingItems({
+    mode,
+    validatedItems,
+    itemShouldContributeToLockout,
+    itemCountForLockout,
+  });
 
   if (lockoutContributingItems.length < itemCountForLockout) {
     return;
