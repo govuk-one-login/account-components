@@ -921,6 +921,8 @@ Resources:
           AttributeType: S
         - AttributeName: lockedOutAt
           AttributeType: N
+        - AttributeName: keepUntil
+          AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -958,6 +960,8 @@ Resources:
         - AttributeName: publicSubjectId
           AttributeType: S
         - AttributeName: createdAt
+          AttributeType: N
+        - AttributeName: keepUntil
           AttributeType: N
       KeySchema:
         - AttributeName: id
@@ -997,6 +1001,8 @@ Resources:
           AttributeType: S
         - AttributeName: createdAt
           AttributeType: N
+        - AttributeName: keepUntil
+          AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
@@ -1034,6 +1040,8 @@ Resources:
         - AttributeName: publicSubjectId
           AttributeType: S
         - AttributeName: createdAt
+          AttributeType: N
+        - AttributeName: keepUntil
           AttributeType: N
       KeySchema:
         - AttributeName: id
