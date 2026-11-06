@@ -9,15 +9,11 @@ const startActor = (initialState?: AcountDeleteJourneyState) => {
   const actor = createActor(accountDeleteStateMachine);
   actor.start();
 
-  if (initialState) {
-    while (actor.getSnapshot().value !== initialState) {
-      const current = actor.getSnapshot().value;
-      if (current === AcountDeleteJourneyState.emailNotVerified) {
-        actor.send({ type: "emailVerified" });
-      } else if (current === AcountDeleteJourneyState.notAuthenticated) {
-        actor.send({ type: "authenticated" });
-      }
-    }
+  if (initialState === AcountDeleteJourneyState.notAuthenticated) {
+    actor.send({ type: "emailVerified" });
+  } else if (initialState === AcountDeleteJourneyState.authenticated) {
+    actor.send({ type: "emailVerified" });
+    actor.send({ type: "authenticated" });
   }
 
   return actor;
@@ -80,36 +76,23 @@ describe("accountDeleteStateMachine", () => {
       );
     });
 
-    it.each([
-      "lockedOutSecurityCodeRequestedTooManyTimes",
-      "lockedOutSecurityCodeEnteredTooManyTimes",
-      "lockedOutPasswordEnteredTooManyTimes",
-    ] as const)("transitions to %s", (event) => {
+    it("transitions to lockedOutPasswordEnteredTooManyTimes", () => {
       const actor = startActor(AcountDeleteJourneyState.notAuthenticated);
-      actor.send({ type: event });
+      actor.send({ type: "lockedOutPasswordEnteredTooManyTimes" });
 
-      expect(actor.getSnapshot().value).toBe(AcountDeleteJourneyState[event]);
+      expect(actor.getSnapshot().value).toBe(
+        AcountDeleteJourneyState.lockedOutPasswordEnteredTooManyTimes,
+      );
     });
   });
 
   describe("authenticated", () => {
-    it("sets stateBeforeLockout to authenticated on entry", () => {
+    it("transitions to authenticated", () => {
       const actor = startActor(AcountDeleteJourneyState.authenticated);
 
-      expect(actor.getSnapshot().context.stateBeforeLockout).toBe(
+      expect(actor.getSnapshot().value).toBe(
         AcountDeleteJourneyState.authenticated,
       );
-    });
-
-    it.each([
-      "lockedOutSecurityCodeRequestedTooManyTimes",
-      "lockedOutSecurityCodeEnteredTooManyTimes",
-      "lockedOutPasswordEnteredTooManyTimes",
-    ] as const)("transitions to %s", (event) => {
-      const actor = startActor(AcountDeleteJourneyState.authenticated);
-      actor.send({ type: event });
-
-      expect(actor.getSnapshot().value).toBe(AcountDeleteJourneyState[event]);
     });
   });
 
@@ -121,11 +104,10 @@ describe("accountDeleteStateMachine", () => {
     it.each([
       AcountDeleteJourneyState.emailNotVerified,
       AcountDeleteJourneyState.notAuthenticated,
-      AcountDeleteJourneyState.authenticated,
-    ])("returns to %s on returnToPreviousState", (previousState) => {
+    ])("returns to %s on returnToStateBeforeLockout", (previousState) => {
       const actor = startActor(previousState);
       actor.send({ type: lockoutEvent });
-      actor.send({ type: "returnToPreviousState" });
+      actor.send({ type: "returnToStateBeforeLockout" });
 
       expect(actor.getSnapshot().value).toBe(previousState);
     });

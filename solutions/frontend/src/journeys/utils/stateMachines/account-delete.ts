@@ -12,21 +12,12 @@ export enum AcountDeleteJourneyState {
   lockedOutPasswordEnteredTooManyTimes = "LOCKED_OUT_PASSWORD_ENTERED_TOO_MANY_TIMES", // pragma: allowlist secret
 }
 
-const toLockoutStateTransitions = {
-  lockedOutSecurityCodeRequestedTooManyTimes:
-    AcountDeleteJourneyState.lockedOutSecurityCodeRequestedTooManyTimes,
-  lockedOutSecurityCodeEnteredTooManyTimes:
-    AcountDeleteJourneyState.lockedOutSecurityCodeEnteredTooManyTimes,
-  lockedOutPasswordEnteredTooManyTimes:
-    AcountDeleteJourneyState.lockedOutPasswordEnteredTooManyTimes,
-} as const;
-
 type AccountDeleteMachineContext = MachineContext & {
   stateBeforeLockout?: AcountDeleteJourneyState;
 };
 
 const fromLockoutStateToPreviousStateTransitions = {
-  returnToPreviousState: [
+  returnToStateBeforeLockout: [
     {
       guard: ({ context }: { context: AccountDeleteMachineContext }) =>
         context.stateBeforeLockout ===
@@ -39,26 +30,17 @@ const fromLockoutStateToPreviousStateTransitions = {
         AcountDeleteJourneyState.notAuthenticated,
       target: AcountDeleteJourneyState.notAuthenticated,
     },
-    {
-      guard: ({ context }: { context: AccountDeleteMachineContext }) =>
-        context.stateBeforeLockout === AcountDeleteJourneyState.authenticated,
-      target: AcountDeleteJourneyState.authenticated,
-    },
   ],
 };
 
 export const accountDeleteStateMachine = createJourneyStateMachine<
   AccountDeleteMachineContext,
-  | {
-      type: "emailVerified";
-    }
-  | {
-      type: "authenticated";
-    }
-  | { type: keyof typeof toLockoutStateTransitions }
-  | {
-      type: "returnToPreviousState";
-    }
+  | { type: "emailVerified" }
+  | { type: "authenticated" }
+  | { type: "lockedOutSecurityCodeRequestedTooManyTimes" }
+  | { type: "lockedOutSecurityCodeEnteredTooManyTimes" }
+  | { type: "lockedOutPasswordEnteredTooManyTimes" }
+  | { type: "returnToStateBeforeLockout" }
 >(Scope.accountDelete, {
   initial: AcountDeleteJourneyState.emailNotVerified,
   states: {
@@ -68,7 +50,12 @@ export const accountDeleteStateMachine = createJourneyStateMachine<
       }),
       on: {
         emailVerified: AcountDeleteJourneyState.notAuthenticated,
-        ...toLockoutStateTransitions,
+        lockedOutSecurityCodeRequestedTooManyTimes:
+          AcountDeleteJourneyState.lockedOutSecurityCodeRequestedTooManyTimes,
+        lockedOutSecurityCodeEnteredTooManyTimes:
+          AcountDeleteJourneyState.lockedOutSecurityCodeEnteredTooManyTimes,
+        lockedOutPasswordEnteredTooManyTimes:
+          AcountDeleteJourneyState.lockedOutPasswordEnteredTooManyTimes,
       },
     },
     [AcountDeleteJourneyState.notAuthenticated]: {
@@ -77,15 +64,11 @@ export const accountDeleteStateMachine = createJourneyStateMachine<
       }),
       on: {
         authenticated: AcountDeleteJourneyState.authenticated,
-        ...toLockoutStateTransitions,
+        lockedOutPasswordEnteredTooManyTimes:
+          AcountDeleteJourneyState.lockedOutPasswordEnteredTooManyTimes,
       },
     },
-    [AcountDeleteJourneyState.authenticated]: {
-      entry: assign({
-        stateBeforeLockout: AcountDeleteJourneyState.authenticated,
-      }),
-      on: toLockoutStateTransitions,
-    },
+    [AcountDeleteJourneyState.authenticated]: {},
     [AcountDeleteJourneyState.lockedOutSecurityCodeRequestedTooManyTimes]: {
       on: fromLockoutStateToPreviousStateTransitions,
     },
