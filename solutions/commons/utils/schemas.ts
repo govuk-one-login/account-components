@@ -20,18 +20,21 @@ export const otpsDatabaseItem = v.looseObject({
   expiresAt: v.number(),
   otp: v.string(),
   used: v.boolean(),
+  keepUntil: v.number(),
   ...itemWithLockouts.entries,
 });
 
 export const otpChecksDatabaseItem = v.looseObject({
   id: v.string(),
   successful: v.boolean(),
+  keepUntil: v.number(),
   ...itemWithLockouts.entries,
 });
 
 export const passwordChecksDatabaseItem = v.looseObject({
   id: v.string(),
   successful: v.boolean(),
+  keepUntil: v.number(),
   ...itemWithLockouts.entries,
 });
 
@@ -42,4 +45,5 @@ export const lockoutsDatabaseItem = v.looseObject({
   lockedOutUntil: v.number(),
   source: v.enum(Source),
   type: v.enum(LockoutType),
+  keepUntil: v.number(),
 });

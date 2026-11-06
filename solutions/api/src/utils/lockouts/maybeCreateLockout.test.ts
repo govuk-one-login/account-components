@@ -47,6 +47,7 @@ const makeItem = (
   source: Source["account-delete"],
   createdAt: NOW_SECONDS,
   successful: false,
+  keepUntil: NOW_SECONDS + 31536000,
   ...overrides,
 });
 

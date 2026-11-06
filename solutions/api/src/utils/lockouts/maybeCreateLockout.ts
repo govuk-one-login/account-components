@@ -1,6 +1,7 @@
-import type {
-  LockoutType,
-  Source,
+import {
+  oneYearInSeconds,
+  type LockoutType,
+  type Source,
 } from "../../../../commons/utils/constants.js";
 import * as v from "valibot";
 import type { itemWithLockouts } from "../../../../commons/utils/schemas.js";
@@ -149,6 +150,7 @@ export const maybeCreateLockout = async <ItemSchema extends ItemSchemaBase>({
     lockedOutUntil: nowInSeconds + duration,
     source,
     type,
+    keepUntil: nowInSeconds + oneYearInSeconds,
   });
 
   await dynamoDbClient.transactWrite({

@@ -939,6 +939,9 @@ Resources:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
         SSEEnabled: true
         SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: keepUntil
+        Enabled: true
 
   OTPsTable:
     Type: AWS::DynamoDB::Table
@@ -974,6 +977,9 @@ Resources:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
         SSEEnabled: true
         SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: keepUntil
+        Enabled: true
 
   OTPChecksTable:
     Type: AWS::DynamoDB::Table
@@ -1009,6 +1015,9 @@ Resources:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
         SSEEnabled: true
         SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: keepUntil
+        Enabled: true
 
   PasswordChecksTable:
     Type: AWS::DynamoDB::Table
@@ -1044,6 +1053,9 @@ Resources:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
         SSEEnabled: true
         SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: keepUntil
+        Enabled: true
 
   SecretsKmsKey:
     Type: AWS::KMS::Key

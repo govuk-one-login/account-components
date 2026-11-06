@@ -15,6 +15,7 @@ const baseFields = {
   publicSubjectId: "sub123",
   source: Source["account-delete"],
   createdAt: now,
+  keepUntil: now + 31536000,
 };
 
 describe("otpsDatabaseItem", () => {
@@ -191,6 +192,7 @@ describe("lockoutsDatabaseItem", () => {
     lockedOutAt: now,
     lockedOutUntil: now + 900,
     type: LockoutType.TooManyOTPsRequested,
+    keepUntil: now + 31536000,
   };
 
   it("parses a valid item", () => {
