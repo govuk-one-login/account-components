@@ -141,22 +141,22 @@ const processNotification = async (
 
     const reference = randomUUID();
 
-    if (
-      process.env["NOTIFY_DONT_SEND_EMAILS_TO"] &&
-      new RegExp(process.env["NOTIFY_DONT_SEND_EMAILS_TO"], "i").test(
-        message.emailAddress,
-      )
-    ) {
-      logger.info("notification_would_have_been_sent", {
-        reference,
-        templateId,
-        template: templateType,
-      });
-      return;
-    }
-
     try {
-      const notifyClient = new NotifyClient(notifyApiKey);
+      const stubUrl = process.env["NOTIFY_STUB_URL"];
+
+      let notifyClient: InstanceType<typeof NotifyClient>;
+
+      if (
+        stubUrl?.length &&
+        process.env["NOTIFY_DONT_SEND_EMAILS_TO"] &&
+        new RegExp(process.env["NOTIFY_DONT_SEND_EMAILS_TO"], "i").test(
+          message.emailAddress,
+        )
+      ) {
+        notifyClient = new NotifyClient(stubUrl, randomUUID());
+      } else {
+        notifyClient = new NotifyClient(notifyApiKey);
+      }
 
       const sendResult = await notifyClient.sendEmail(
         templateId,

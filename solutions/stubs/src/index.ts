@@ -112,6 +112,10 @@ export const initStubs = async function () {
     );
   });
 
+  fastify.all("/notify/*", async function (request, reply) {
+    return (await import("./handlers/notify/index.js")).handler(request, reply);
+  });
+
   fastify.register(generateRequestObject);
   fastify.register(clientJwks);
   fastify.register(clientCallback);

@@ -91,7 +91,8 @@ jobs:
           LOCAL_AWS_KMS_ENDPOINT=http://localhost:4567
           LOCAL_AWS_ACCESS_KEY_ID=test
           LOCAL_AWS_ACCESS_KEY=test      
-          ROOT_DOMAIN=localhost          
+          ROOT_DOMAIN=localhost
+          STUBS_OUTPUTS_TABLE_NAME=amc-StubsOutputTable
           EOF
 
       - name: Configure API environment

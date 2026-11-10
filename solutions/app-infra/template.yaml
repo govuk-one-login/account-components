@@ -104,6 +104,7 @@ Mappings:
       stubsDomain: stubs.manage.dev.account.gov.uk
       rootDomain: account.gov.uk
       rootDomainWithEnv: dev.account.gov.uk
+      notifyStubUrl: https://stubs.manage.dev.account.gov.uk/notify
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
       authorizeEndpointUrl: https://manage.build.account.gov.uk/authorize
@@ -141,6 +142,7 @@ Mappings:
       stubsDomain: stubs.manage.build.account.gov.uk
       rootDomain: account.gov.uk
       rootDomainWithEnv: build.account.gov.uk
+      notifyStubUrl: https://stubs.manage.build.account.gov.uk/notify
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
       authorizeEndpointUrl: https://manage.staging.account.gov.uk/authorize
@@ -180,6 +182,7 @@ Mappings:
       stubsDomain: ""
       rootDomain: account.gov.uk
       rootDomainWithEnv: staging.account.gov.uk
+      notifyStubUrl: ""
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
       authorizeEndpointUrl: https://manage.integration.account.gov.uk/authorize
@@ -219,6 +222,7 @@ Mappings:
       stubsDomain: ""
       rootDomain: account.gov.uk
       rootDomainWithEnv: integration.account.gov.uk
+      notifyStubUrl: ""
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist secret
       authorizeEndpointUrl: https://manage.account.gov.uk/authorize
@@ -258,6 +262,7 @@ Mappings:
       stubsDomain: ""
       rootDomain: account.gov.uk
       rootDomainWithEnv: account.gov.uk
+      notifyStubUrl: ""
 
 Conditions:
   UseCodeSigning:
@@ -1163,6 +1168,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               notifyDontSendEmailsTo,
+            ]
+          NOTIFY_STUB_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              notifyStubUrl,
             ]
       DeploymentPreference:
         Alarms:
@@ -4468,6 +4479,7 @@ Resources:
               !Ref Environment,
               notifyDontSendEmailsTo,
             ]
+          STUBS_OUTPUTS_TABLE_NAME: !Ref StubsOutputsTable
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -4491,6 +4503,20 @@ Resources:
                 - kms:DescribeKey
                 - kms:GetPublicKey
               Resource: !GetAtt JARRSAEncryptionKey.Arn
+        - Statement:
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+                - kms:GenerateDataKey*
+              Resource: !GetAtt DynamoDbSSEKey.Arn
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:BatchWriteItem
+              Resource: !GetAtt StubsOutputsTable.Arn
 
   StubsLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -4499,6 +4525,45 @@ Resources:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/StubsLambda"
       RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  StubsOutputsTable:
+    Type: AWS::DynamoDB::Table
+    Condition: IsDevOrBuild
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-StubsOutputsTable
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: allItemsId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: AllItemsIndex
+          KeySchema:
+            - AttributeName: allItemsId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
+        SSEEnabled: true
+        SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
 
   Dashboard:
     Type: AWS::CloudWatch::Dashboard

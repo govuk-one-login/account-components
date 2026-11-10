@@ -238,6 +238,22 @@ create_dynamodb_tables() {
       '[{"IndexName":"PublicSubjectIdIndex","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"checkedAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     --billing-mode PAY_PER_REQUEST
 
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+    --table-name "amc-StubsOutputsTable" \
+    --attribute-definitions \
+      AttributeName=id,AttributeType=S \
+      AttributeName=allItemsId,AttributeType=S \
+      AttributeName=createdAt,AttributeType=N \
+    --key-schema \
+      AttributeName=id,KeyType=HASH \
+    --global-secondary-indexes \
+      '[{"IndexName":"AllItemsIndex","KeySchema":[{"AttributeName":"allItemsId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+    --billing-mode PAY_PER_REQUEST
+
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb update-time-to-live \
+    --table-name "amc-StubsOutputsTable" \
+    --time-to-live-specification "Enabled=true,AttributeName=expiresAt"
+
   echo "Finished creating DynamoDB tables"
   return 0
 }
