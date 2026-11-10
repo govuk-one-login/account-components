@@ -73,33 +73,6 @@ export const paths = {
           },
         },
       },
-      [AcountDeleteJourneyState.lockedOutSecurityCodeEnteredTooManyTimes]: {
-        lockedOutSecurityCodeEnteredTooManyTimes: {
-          path: "/reset-delete/security-code-entered-exceeded",
-          analytics: {
-            ...accountDeleteAnalyticsDefaults,
-            contentId: "a3e221fb-2a5f-455c-a140-d8340377e644",
-          },
-        },
-      },
-      [AcountDeleteJourneyState.lockedOutPasswordEnteredTooManyTimes]: {
-        lockedOutPasswordEnteredTooManyTimes: {
-          path: "/reset-delete/password-entered-exceeded",
-          analytics: {
-            ...accountDeleteAnalyticsDefaults,
-            contentId: "51520436-ac01-4c1a-8e52-99260c8da7d6",
-          },
-        },
-      },
-      [AcountDeleteJourneyState.lockedOutSecurityCodeRequestedTooManyTimes]: {
-        lockedOutSecurityCodeRequestedTooManyTimes: {
-          path: "/reset-delete/security-code-requested-too-many-times",
-          analytics: {
-            ...accountDeleteAnalyticsDefaults,
-            contentId: "9ce0496f-ab95-444d-9c93-5cb1a2fb0b22",
-          },
-        },
-      },
       [AcountDeleteJourneyState.notAuthenticated]: {
         enterPassword: {
           path: "/reset-delete/enter-password",
@@ -115,6 +88,33 @@ export const paths = {
           analytics: {
             ...accountDeleteAnalyticsDefaults,
             contentId: "9141ea01-aca4-46d6-b48d-044d3ac7ff7a",
+          },
+        },
+      },
+      [AcountDeleteJourneyState.lockedOutSecurityCodeRequestedTooManyTimes]: {
+        lockedOutSecurityCodeRequestedTooManyTimes: {
+          path: "/reset-delete/security-code-requested-too-many-times",
+          analytics: {
+            ...accountDeleteAnalyticsDefaults,
+            contentId: "9ce0496f-ab95-444d-9c93-5cb1a2fb0b22",
+          },
+        },
+      },
+      [AcountDeleteJourneyState.lockedOutSecurityCodeEnteredTooManyTimes]: {
+        lockedOutSecurityCodeEnteredTooManyTimes: {
+          path: "/reset-delete/security-code-entered-exceeded",
+          analytics: {
+            ...accountDeleteAnalyticsDefaults,
+            contentId: "a3e221fb-2a5f-455c-a140-d8340377e644",
+          },
+        },
+      },
+      [AcountDeleteJourneyState.lockedOutPasswordEnteredTooManyTimes]: {
+        lockedOutPasswordEnteredTooManyTimes: {
+          path: "/reset-delete/password-entered-exceeded",
+          analytics: {
+            ...accountDeleteAnalyticsDefaults,
+            contentId: "51520436-ac01-4c1a-8e52-99260c8da7d6",
           },
         },
       },
