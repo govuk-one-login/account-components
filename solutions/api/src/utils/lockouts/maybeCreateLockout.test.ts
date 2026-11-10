@@ -107,6 +107,16 @@ describe("maybeCreateLockout", () => {
       expect(result).toBeUndefined();
       expect(mockTransactWrite).not.toHaveBeenCalled();
     });
+
+    it("throws if queried items fail schema validation", async () => {
+      mockQuery.mockResolvedValue({
+        Items: [{ invalid: "item" }, { invalid: "item" }, { invalid: "item" }],
+        LastEvaluatedKey: undefined,
+      });
+
+      await expect(maybeCreateLockout(baseInput)).rejects.toThrow();
+      expect(mockTransactWrite).not.toHaveBeenCalled();
+    });
   });
 
   it("queries DynamoDB with the correct parameters", async () => {
