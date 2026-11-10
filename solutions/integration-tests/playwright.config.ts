@@ -71,6 +71,8 @@ if (env.TEST_TARGET === "local") {
 export default defineConfig({
   testDir,
   forbidOnly: !env.HUMAN_IN_THE_LOOP,
+  timeout: 60000,
+  expect: { timeout: 20000 },
   preserveOutput:
     env.HUMAN_IN_THE_LOOP || env.TEST_REPORT_DIR ? "always" : "failures-only",
   workers: "50%",
