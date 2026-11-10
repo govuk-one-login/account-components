@@ -1,12 +1,8 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import type {
-  BatchGetCommandInput,
-  BatchWriteCommandInput,
   DeleteCommandInput,
   GetCommandInput,
   PutCommandInput,
-  QueryCommandInput,
-  ScanCommandInput,
   TransactWriteCommandInput,
   UpdateCommandInput,
 } from "@aws-sdk/lib-dynamodb";
@@ -47,22 +43,6 @@ const createDynamoDbClient = () => {
     update: async (params: UpdateCommandInput) => {
       const { UpdateCommand } = await import("@aws-sdk/lib-dynamodb");
       return await docClient.send(new UpdateCommand(params));
-    },
-    query: async (params: QueryCommandInput) => {
-      const { QueryCommand } = await import("@aws-sdk/client-dynamodb");
-      return await docClient.send(new QueryCommand(params));
-    },
-    scan: async (params: ScanCommandInput) => {
-      const { ScanCommand } = await import("@aws-sdk/client-dynamodb");
-      return await docClient.send(new ScanCommand(params));
-    },
-    batchWrite: async (params: BatchWriteCommandInput) => {
-      const { BatchWriteCommand } = await import("@aws-sdk/lib-dynamodb");
-      return await docClient.send(new BatchWriteCommand(params));
-    },
-    batchGet: async (params: BatchGetCommandInput) => {
-      const { BatchGetCommand } = await import("@aws-sdk/lib-dynamodb");
-      return await docClient.send(new BatchGetCommand(params));
     },
     transactWrite: async (params: TransactWriteCommandInput) => {
       const { TransactWriteCommand } = await import("@aws-sdk/lib-dynamodb");

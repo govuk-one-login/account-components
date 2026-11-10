@@ -28,6 +28,12 @@ const envSchema = v.object({
   ),
   TEST_REPORT_DIR: v.optional(v.string()),
   UPDATE_SNAPSHOTS: v.optional(boolish, false),
+  USE_LOCAL_AWS: v.optional(boolish, false),
+  AWS_REGION: v.string(),
+  LOCAL_AWS_ENDPOINT: v.optional(v.string()),
+  LOCAL_AWS_KMS_ENDPOINT: v.optional(v.string()),
+  LOCAL_AWS_ACCESS_KEY_ID: v.optional(v.string()),
+  LOCAL_AWS_ACCESS_KEY: v.optional(v.string()),
 });
 
 export const env = v.parse(envSchema, {
