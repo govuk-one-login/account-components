@@ -92,6 +92,29 @@ describe("internalApi", () => {
         message: "TooManyIncorrectOTPsEntered",
       });
     });
+
+    it("should return 403 for too_many_incorrect_passwords_entered scenario", async () => {
+      internalApi(mockApp);
+
+      const token = await new SignJWT({
+        generateOTP_scenario: "too_many_incorrect_passwords_entered",
+      })
+        .setProtectedHeader({ alg: "HS256" })
+        .sign(new TextEncoder().encode("secret"));
+
+      mockRequest.headers = { authorization: `Bearer ${token}` };
+
+      const registeredHandler = vi.mocked(mockApp.post).mock
+        .calls[0]![1] as unknown as (...args: any) => any;
+
+      await registeredHandler(mockRequest, mockReply);
+
+      expect(mockReply.status).toHaveBeenCalledWith(403);
+      expect(mockReply.send).toHaveBeenCalledWith({
+        code: 1004,
+        message: "TooManyIncorrectPasswordsEntered",
+      });
+    });
   });
 
   describe("checkOTP", () => {
@@ -105,6 +128,29 @@ describe("internalApi", () => {
 
       expect(mockReply.status).toHaveBeenCalledWith(204);
       expect(mockReply.send).toHaveBeenCalledWith();
+    });
+
+    it("should return 403 for too_many_otps_requested scenario", async () => {
+      internalApi(mockApp);
+
+      const token = await new SignJWT({
+        checkOTP_scenario: "too_many_otps_requested",
+      })
+        .setProtectedHeader({ alg: "HS256" })
+        .sign(new TextEncoder().encode("secret"));
+
+      mockRequest.headers = { authorization: `Bearer ${token}` };
+
+      const registeredHandler = vi.mocked(mockApp.post).mock
+        .calls[1]![1] as unknown as (...args: any) => any;
+
+      await registeredHandler(mockRequest, mockReply);
+
+      expect(mockReply.status).toHaveBeenCalledWith(403);
+      expect(mockReply.send).toHaveBeenCalledWith({
+        code: 1002,
+        message: "TooManyOTPsRequested",
+      });
     });
 
     it("should return 403 for too_many_incorrect_otps_entered scenario", async () => {
@@ -125,8 +171,31 @@ describe("internalApi", () => {
 
       expect(mockReply.status).toHaveBeenCalledWith(403);
       expect(mockReply.send).toHaveBeenCalledWith({
-        code: 1002,
+        code: 1003,
         message: "TooManyIncorrectOTPsEntered",
+      });
+    });
+
+    it("should return 403 for too_many_incorrect_passwords_entered scenario", async () => {
+      internalApi(mockApp);
+
+      const token = await new SignJWT({
+        checkOTP_scenario: "too_many_incorrect_passwords_entered",
+      })
+        .setProtectedHeader({ alg: "HS256" })
+        .sign(new TextEncoder().encode("secret"));
+
+      mockRequest.headers = { authorization: `Bearer ${token}` };
+
+      const registeredHandler = vi.mocked(mockApp.post).mock
+        .calls[1]![1] as unknown as (...args: any) => any;
+
+      await registeredHandler(mockRequest, mockReply);
+
+      expect(mockReply.status).toHaveBeenCalledWith(403);
+      expect(mockReply.send).toHaveBeenCalledWith({
+        code: 1004,
+        message: "TooManyIncorrectPasswordsEntered",
       });
     });
 
@@ -148,7 +217,7 @@ describe("internalApi", () => {
 
       expect(mockReply.status).toHaveBeenCalledWith(403);
       expect(mockReply.send).toHaveBeenCalledWith({
-        code: 1003,
+        code: 1005,
         message: "InvalidOTP",
       });
     });
@@ -165,6 +234,52 @@ describe("internalApi", () => {
 
       expect(mockReply.status).toHaveBeenCalledWith(204);
       expect(mockReply.send).toHaveBeenCalledWith();
+    });
+
+    it("should return 403 for too_many_otps_requested scenario", async () => {
+      internalApi(mockApp);
+
+      const token = await new SignJWT({
+        checkPassword_scenario: "too_many_otps_requested", // pragma: allowlist secret
+      })
+        .setProtectedHeader({ alg: "HS256" })
+        .sign(new TextEncoder().encode("secret"));
+
+      mockRequest.headers = { authorization: `Bearer ${token}` };
+
+      const registeredHandler = vi.mocked(mockApp.post).mock
+        .calls[2]![1] as unknown as (...args: any) => any;
+
+      await registeredHandler(mockRequest, mockReply);
+
+      expect(mockReply.status).toHaveBeenCalledWith(403);
+      expect(mockReply.send).toHaveBeenCalledWith({
+        code: 1002,
+        message: "TooManyOTPsRequested",
+      });
+    });
+
+    it("should return 403 for too_many_incorrect_otps_entered scenario", async () => {
+      internalApi(mockApp);
+
+      const token = await new SignJWT({
+        checkPassword_scenario: "too_many_incorrect_otps_entered", // pragma: allowlist secret
+      })
+        .setProtectedHeader({ alg: "HS256" })
+        .sign(new TextEncoder().encode("secret"));
+
+      mockRequest.headers = { authorization: `Bearer ${token}` };
+
+      const registeredHandler = vi.mocked(mockApp.post).mock
+        .calls[2]![1] as unknown as (...args: any) => any;
+
+      await registeredHandler(mockRequest, mockReply);
+
+      expect(mockReply.status).toHaveBeenCalledWith(403);
+      expect(mockReply.send).toHaveBeenCalledWith({
+        code: 1003,
+        message: "TooManyIncorrectOTPsEntered",
+      });
     });
 
     it("should return 403 for too_many_incorrect_passwords_entered scenario", async () => {
@@ -185,7 +300,7 @@ describe("internalApi", () => {
 
       expect(mockReply.status).toHaveBeenCalledWith(403);
       expect(mockReply.send).toHaveBeenCalledWith({
-        code: 1002,
+        code: 1004,
         message: "TooManyIncorrectPasswordsEntered",
       });
     });
@@ -208,7 +323,7 @@ describe("internalApi", () => {
 
       expect(mockReply.status).toHaveBeenCalledWith(403);
       expect(mockReply.send).toHaveBeenCalledWith({
-        code: 1003,
+        code: 1005,
         message: "InvalidPassword",
       });
     });

@@ -27,6 +27,16 @@ export const internalApi = function (app: FastifyInstance) {
           message: "TooManyIncorrectOTPsEntered",
         });
         return reply;
+      } else if (
+        claims["generateOTP_scenario"] ===
+        "too_many_incorrect_passwords_entered"
+      ) {
+        reply.status(403);
+        reply.send({
+          code: 1004,
+          message: "TooManyIncorrectPasswordsEntered",
+        });
+        return reply;
       }
     }
 
@@ -49,17 +59,35 @@ export const internalApi = function (app: FastifyInstance) {
     if (token) {
       const claims = decodeJwt(token);
 
-      if (claims["checkOTP_scenario"] === "too_many_incorrect_otps_entered") {
+      if (claims["checkOTP_scenario"] === "too_many_otps_requested") {
         reply.status(403);
         reply.send({
           code: 1002,
+          message: "TooManyOTPsRequested",
+        });
+        return reply;
+      } else if (
+        claims["checkOTP_scenario"] === "too_many_incorrect_otps_entered"
+      ) {
+        reply.status(403);
+        reply.send({
+          code: 1003,
           message: "TooManyIncorrectOTPsEntered",
+        });
+        return reply;
+      } else if (
+        claims["checkOTP_scenario"] === "too_many_incorrect_passwords_entered"
+      ) {
+        reply.status(403);
+        reply.send({
+          code: 1004,
+          message: "TooManyIncorrectPasswordsEntered",
         });
         return reply;
       } else if (claims["checkOTP_scenario"] === "incorrect_otp") {
         reply.status(403);
         reply.send({
-          code: 1003,
+          code: 1005,
           message: "InvalidOTP",
         });
         return reply;
@@ -76,13 +104,29 @@ export const internalApi = function (app: FastifyInstance) {
     if (token) {
       const claims = decodeJwt(token);
 
-      if (
+      if (claims["checkPassword_scenario"] === "too_many_otps_requested") {
+        reply.status(403);
+        reply.send({
+          code: 1002,
+          message: "TooManyOTPsRequested",
+        });
+        return reply;
+      } else if (
+        claims["checkPassword_scenario"] === "too_many_incorrect_otps_entered"
+      ) {
+        reply.status(403);
+        reply.send({
+          code: 1003,
+          message: "TooManyIncorrectOTPsEntered",
+        });
+        return reply;
+      } else if (
         claims["checkPassword_scenario"] ===
         "too_many_incorrect_passwords_entered"
       ) {
         reply.status(403);
         reply.send({
-          code: 1002,
+          code: 1004,
           message: "TooManyIncorrectPasswordsEntered",
         });
         return reply;
@@ -91,7 +135,7 @@ export const internalApi = function (app: FastifyInstance) {
       ) {
         reply.status(403);
         reply.send({
-          code: 1003,
+          code: 1005,
           message: "InvalidPassword",
         });
         return reply;
