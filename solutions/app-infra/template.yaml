@@ -286,6 +286,7 @@ Conditions:
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
   IsBuildEnvironment: !Equals [!Ref Environment, "build"]
   IsDevOrBuild: !Or [Condition: IsDevEnvironment, Condition: IsBuildEnvironment]
+  IsNotDevOrBuild: !Not [Condition: IsDevOrBuild]
   IsLocalOrDev: !Or [Condition: IsDevEnvironment, Condition: IsLocal]
   HasAllowedVpceIds: !Not
     - !Equals
@@ -1124,6 +1125,14 @@ Resources:
             notificationsMaxReceiveCount,
           ]
 
+  NotificationsQueueUrlParameter: # for use by Integration Tests only
+    Type: AWS::SSM::Parameter
+    Condition: IsDevOrBuild
+    Properties:
+      Name: !Sub "/tests/NotificationsQueueUrl"
+      Type: String
+      Value: !GetAtt NotificationsQueue.QueueUrl
+
   NotificationsDLQ:
     Type: AWS::SQS::Queue
     DeletionPolicy: Retain
@@ -1420,6 +1429,14 @@ Resources:
               - "sqs:GetQueueAttributes"
             Resource: !GetAtt TxMASQSProducerAuditEventQueue.Arn
 
+  TxMASQSProducerAuditEventQueueUrlParameter: # for use by Integration Tests only
+    Type: AWS::SSM::Parameter
+    Condition: IsDevOrBuild
+    Properties:
+      Name: !Sub "/tests/TxMASQSProducerAuditEventQueueUrl"
+      Type: String
+      Value: !GetAtt TxMASQSProducerAuditEventQueue.QueueUrl
+
   TxMAAuditEventDeadLetterQueue:
     Type: AWS::SQS::Queue
     DeletionPolicy: Retain
@@ -1481,6 +1498,7 @@ Resources:
 
   TxMASQSProducerAuditEventQueueProcessingTooSlow:
     Type: AWS::CloudWatch::Alarm
+    Condition: IsNotDevOrBuild
     Properties:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
@@ -1498,6 +1516,7 @@ Resources:
 
   TxMAAuditEventDeadLetterQueueHasMessages:
     Type: AWS::CloudWatch::Alarm
+    Condition: IsNotDevOrBuild
     Properties:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn

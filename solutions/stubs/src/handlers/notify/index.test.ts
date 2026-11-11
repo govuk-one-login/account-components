@@ -14,14 +14,22 @@ describe("notify handler", () => {
 
   it("saves the request and sends a reply", async () => {
     const { handler } = await import("./index.js");
-    const mockRequest = { body: "test" } as unknown as FastifyRequest;
+    const mockRequest = {
+      body: "test",
+      method: "POST",
+      url: "/notify",
+    } as unknown as FastifyRequest;
 
     const result = await handler(
       mockRequest,
       mockReply as unknown as FastifyReply,
     );
 
-    expect(mockSaveStubOutput).toHaveBeenCalledExactlyOnceWith(mockRequest);
+    expect(mockSaveStubOutput).toHaveBeenCalledExactlyOnceWith({
+      body: mockRequest.body,
+      method: mockRequest.method,
+      url: mockRequest.url,
+    });
     expect(mockReply.send).toHaveBeenCalledExactlyOnceWith();
     expect(result).toBe(mockReply);
   });

@@ -261,11 +261,25 @@ create_dynamodb_tables() {
 create_sqs_queues() {
   echo "Creating SQS queues"
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" sqs create-queue \
-    --queue-name "amc-NotificationsQueue"
+  NOTIFICATIONS_QUEUE_URL=$(aws --endpoint-url="$FLOCI_ENDPOINT" sqs create-queue \
+    --queue-name "amc-NotificationsQueue" \
+    --query 'QueueUrl' \
+    --output text)
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" sqs create-queue \
-    --queue-name "amc-TxMASQSProducerAuditEventQueue"
+  aws --endpoint-url="$FLOCI_ENDPOINT" ssm put-parameter \
+    --name "/tests/NotificationsQueueUrl" \
+    --value "$NOTIFICATIONS_QUEUE_URL" \
+    --type "String"
+
+  TXMA_QUEUE_URL=$(aws --endpoint-url="$FLOCI_ENDPOINT" sqs create-queue \
+    --queue-name "amc-TxMASQSProducerAuditEventQueue" \
+    --query 'QueueUrl' \
+    --output text)
+
+  aws --endpoint-url="$FLOCI_ENDPOINT" ssm put-parameter \
+    --name "/tests/TxMASQSProducerAuditEventQueueUrl" \
+    --value "$TXMA_QUEUE_URL" \
+    --type "String"
 
   echo "Finished creating SQS queues"
   return 0
