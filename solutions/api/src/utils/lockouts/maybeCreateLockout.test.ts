@@ -137,6 +137,9 @@ describe("maybeCreateLockout", () => {
         ":source": Source["account-delete"],
         ":createdSince": NOW_SECONDS - baseInput.window,
       },
+      ExpressionAttributeNames: {
+        "#source": "source",
+      },
       ConsistentRead: true,
       ScanIndexForward: false,
       ExclusiveStartKey: undefined,
