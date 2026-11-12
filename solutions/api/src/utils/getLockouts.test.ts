@@ -52,12 +52,15 @@ describe("getLockouts", () => {
         TableName: "lockouts-table",
         IndexName: "publicSubjectId-index",
         KeyConditionExpression: "publicSubjectId = :publicSubjectId",
-        FilterExpression: "lockedOutUntil > :now AND source = :source",
+        FilterExpression: "lockedOutUntil > :now AND #source = :source",
         ExpressionAttributeValues: expect.objectContaining({
           ":publicSubjectId": publicSubjectId,
           ":now": FAKE_NOW_S,
           ":source": Source["account-delete"],
         }),
+        ExpressionAttributeNames: {
+          "#source": "source",
+        },
       }),
     );
   });
@@ -74,10 +77,14 @@ describe("getLockouts", () => {
     expect(mockQuery).toHaveBeenCalledWith(
       expect.objectContaining({
         FilterExpression:
-          "lockedOutUntil > :now AND source = :source AND type = :type",
+          "lockedOutUntil > :now AND #source = :source AND #type = :type",
         ExpressionAttributeValues: expect.objectContaining({
           ":type": LockoutType.TooManyOTPsRequested,
         }),
+        ExpressionAttributeNames: {
+          "#source": "source",
+          "#type": "type",
+        },
       }),
     );
   });
