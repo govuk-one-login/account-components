@@ -122,10 +122,13 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           TableName: process.env["OTPS_TABLE_NAME"],
           IndexName: process.env["OTPS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME"],
           KeyConditionExpression: "publicSubjectId = :publicSubjectId",
-          FilterExpression: "source = :source",
+          FilterExpression: "#source = :source",
           ExpressionAttributeValues: {
             ":publicSubjectId": pathParams.output.publicSubjectId,
             ":source": body.output.source,
+          },
+          ExpressionAttributeNames: {
+            "#source": "source",
           },
           ScanIndexForward: false,
           ConsistentRead: true,

@@ -332,10 +332,13 @@ describe("generate-otp handler", () => {
         TableName: "otps-table",
         IndexName: "otps-gsi",
         KeyConditionExpression: "publicSubjectId = :publicSubjectId",
-        FilterExpression: "source = :source",
+        FilterExpression: "#source = :source",
         ExpressionAttributeValues: {
           ":publicSubjectId": "subject-123",
           ":source": Source["account-delete"],
+        },
+        ExpressionAttributeNames: {
+          "#source": "source",
         },
         ScanIndexForward: false,
         ConsistentRead: true,
