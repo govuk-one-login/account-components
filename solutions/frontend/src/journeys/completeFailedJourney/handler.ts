@@ -6,6 +6,7 @@ import {
   simpleUnsuccessfulJourneyActionErrors,
 } from "../utils/journeyActions.js";
 import assert from "node:assert";
+import { Scope } from "../../../../commons/utils/commonTypes.js";
 
 export const completeFailedJourneyHandler = async (
   request: FastifyRequest,
@@ -34,6 +35,16 @@ export const completeFailedJourneyHandler = async (
   );
 
   assert.ok(unsuccessfulActionError, "Error not found");
+
+  if (request.session.claims?.scope === Scope.passkeyCreate) {
+    if (unsuccessfulActionError.description === "UserAbortedJourney") {
+      request.log.info("Skipped from set up passkey screen");
+    } else if (
+      unsuccessfulActionError.description === "UserBackedOutOfJourney"
+    ) {
+      request.log.info("Backed out from set up passkey screen");
+    }
+  }
 
   await completeAllJourneyActionsUnsuccessfully(
     unsuccessfulActionError,
