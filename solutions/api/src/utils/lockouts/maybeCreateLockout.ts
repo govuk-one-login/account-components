@@ -114,9 +114,9 @@ export const maybeCreateLockout = async <ItemSchema extends ItemSchemaBase>({
   publicSubjectIdGsiName: string;
   itemSchema: ItemSchema;
   itemShouldContributeToLockout: ItemShouldContributeToLockout<ItemSchema>;
-  itemCountForLockout?: number;
-  window?: number;
-  duration?: number;
+  itemCountForLockout?: number | undefined;
+  window?: number | undefined;
+  duration?: number | undefined;
   mode?: Mode;
 }) => {
   const nowInSeconds = Math.floor(Date.now() / 1000);
