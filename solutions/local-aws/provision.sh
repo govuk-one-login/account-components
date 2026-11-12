@@ -199,7 +199,7 @@ create_dynamodb_tables() {
     --key-schema \
       AttributeName=id,KeyType=HASH \
     --global-secondary-indexes \
-      '[{"IndexName":"PublicSubjectIdIndex","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"lockedOutAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+      '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"lockedOutAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     --billing-mode PAY_PER_REQUEST
 
   aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
@@ -207,11 +207,11 @@ create_dynamodb_tables() {
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
       AttributeName=publicSubjectId,AttributeType=S \
-      AttributeName=generatedAt,AttributeType=N \
+      AttributeName=createdAt,AttributeType=N \
     --key-schema \
       AttributeName=id,KeyType=HASH \
     --global-secondary-indexes \
-      '[{"IndexName":"PublicSubjectIdIndex","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"generatedAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+      '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     --billing-mode PAY_PER_REQUEST
 
   aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
@@ -219,11 +219,11 @@ create_dynamodb_tables() {
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
       AttributeName=publicSubjectId,AttributeType=S \
-      AttributeName=checkedAt,AttributeType=N \
+      AttributeName=createdAt,AttributeType=N \
     --key-schema \
       AttributeName=id,KeyType=HASH \
     --global-secondary-indexes \
-      '[{"IndexName":"PublicSubjectIdIndex","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"checkedAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+      '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     --billing-mode PAY_PER_REQUEST
 
   aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
@@ -231,11 +231,11 @@ create_dynamodb_tables() {
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
       AttributeName=publicSubjectId,AttributeType=S \
-      AttributeName=checkedAt,AttributeType=N \
+      AttributeName=createdAt,AttributeType=N \
     --key-schema \
       AttributeName=id,KeyType=HASH \
     --global-secondary-indexes \
-      '[{"IndexName":"PublicSubjectIdIndex","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"checkedAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+      '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     --billing-mode PAY_PER_REQUEST
 
   echo "Finished creating DynamoDB tables"
