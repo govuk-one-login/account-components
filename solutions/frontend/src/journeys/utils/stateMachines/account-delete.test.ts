@@ -76,12 +76,23 @@ describe("accountDeleteStateMachine", () => {
       );
     });
 
-    it("transitions to lockedOutPasswordEnteredTooManyTimes", () => {
+    it.each([
+      "lockedOutSecurityCodeRequestedTooManyTimes",
+      "lockedOutSecurityCodeEnteredTooManyTimes",
+      "lockedOutPasswordEnteredTooManyTimes",
+    ] as const)("transitions to %s", (event) => {
       const actor = startActor(AcountDeleteJourneyState.notAuthenticated);
-      actor.send({ type: "lockedOutPasswordEnteredTooManyTimes" });
+      actor.send({ type: event });
+
+      expect(actor.getSnapshot().value).toBe(AcountDeleteJourneyState[event]);
+    });
+
+    it("transitions to notAuthenticated on emailVerified", () => {
+      const actor = startActor(AcountDeleteJourneyState.notAuthenticated);
+      actor.send({ type: "emailVerified" });
 
       expect(actor.getSnapshot().value).toBe(
-        AcountDeleteJourneyState.lockedOutPasswordEnteredTooManyTimes,
+        AcountDeleteJourneyState.notAuthenticated,
       );
     });
   });
