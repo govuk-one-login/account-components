@@ -24,6 +24,7 @@ const makeLockoutItem = (overrides = {}) => ({
   lockedOutUntil: FAKE_NOW_S + 3600,
   source: Source["account-delete"],
   type: LockoutType.TooManyOTPsRequested,
+  keepUntil: FAKE_NOW_S + 7200,
   ...overrides,
 });
 
