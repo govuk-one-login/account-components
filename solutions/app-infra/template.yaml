@@ -939,6 +939,9 @@ Resources:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
         SSEEnabled: true
         SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: keepUntil
+        Enabled: true
 
   OTPsTable:
     Type: AWS::DynamoDB::Table
@@ -954,7 +957,7 @@ Resources:
           AttributeType: S
         - AttributeName: publicSubjectId
           AttributeType: S
-        - AttributeName: generatedAt
+        - AttributeName: createdAt
           AttributeType: N
       KeySchema:
         - AttributeName: id
@@ -964,7 +967,7 @@ Resources:
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
-            - AttributeName: generatedAt
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
@@ -974,6 +977,9 @@ Resources:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
         SSEEnabled: true
         SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: keepUntil
+        Enabled: true
 
   OTPChecksTable:
     Type: AWS::DynamoDB::Table
@@ -989,7 +995,7 @@ Resources:
           AttributeType: S
         - AttributeName: publicSubjectId
           AttributeType: S
-        - AttributeName: checkedAt
+        - AttributeName: createdAt
           AttributeType: N
       KeySchema:
         - AttributeName: id
@@ -999,7 +1005,7 @@ Resources:
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
-            - AttributeName: checkedAt
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
@@ -1009,6 +1015,9 @@ Resources:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
         SSEEnabled: true
         SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: keepUntil
+        Enabled: true
 
   PasswordChecksTable:
     Type: AWS::DynamoDB::Table
@@ -1024,7 +1033,7 @@ Resources:
           AttributeType: S
         - AttributeName: publicSubjectId
           AttributeType: S
-        - AttributeName: checkedAt
+        - AttributeName: createdAt
           AttributeType: N
       KeySchema:
         - AttributeName: id
@@ -1034,7 +1043,7 @@ Resources:
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
-            - AttributeName: checkedAt
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
@@ -1044,6 +1053,9 @@ Resources:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
         SSEEnabled: true
         SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: keepUntil
+        Enabled: true
 
   SecretsKmsKey:
     Type: AWS::KMS::Key
