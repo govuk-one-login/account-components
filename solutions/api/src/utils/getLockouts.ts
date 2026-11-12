@@ -25,14 +25,18 @@ export const getLockouts = async ({
       TableName: process.env["LOCKOUTS_TABLE_NAME"],
       IndexName: process.env["LOCKOUTS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME"],
       KeyConditionExpression: "publicSubjectId = :publicSubjectId",
-      FilterExpression: `lockedOutUntil > :now AND source = :source${
-        type !== undefined ? " AND type = :type" : ""
+      FilterExpression: `lockedOutUntil > :now AND #source = :source${
+        type !== undefined ? " AND #type = :type" : ""
       }`,
       ExpressionAttributeValues: {
         ":publicSubjectId": publicSubjectId,
         ":now": now,
         ":source": source,
         ...(type !== undefined ? { ":type": type } : {}),
+      },
+      ExpressionAttributeNames: {
+        "#source": "source",
+        ...(type !== undefined ? { "#type": "type" } : {}),
       },
       ScanIndexForward: false,
       ExclusiveStartKey: lastEvaluatedKey,
