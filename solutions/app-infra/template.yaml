@@ -54,16 +54,16 @@ Parameters:
     Default: "build-notifications"
   LockoutsTablePublicSubjectIdIndexName:
     Type: String
-    Default: "PublicSubjectIdIndex"
+    Default: "PublicSubjectId_Index"
   OTPsTablePublicSubjectIdIndexName:
     Type: String
-    Default: "PublicSubjectIdIndex"
+    Default: "PublicSubjectId_Index"
   OTPChecksTablePublicSubjectIdIndexName:
     Type: String
-    Default: "PublicSubjectIdIndex"
+    Default: "PublicSubjectId_Index"
   PasswordChecksTablePublicSubjectIdIndexName:
     Type: String
-    Default: "PublicSubjectIdIndex"
+    Default: "PublicSubjectId_Index"
 
 Mappings:
   EnvironmentConfiguration:
