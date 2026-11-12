@@ -131,11 +131,14 @@ describe("maybeCreateLockout", () => {
       TableName: "checks-table",
       IndexName: "publicSubjectId-index",
       KeyConditionExpression: "publicSubjectId = :publicSubjectId",
-      FilterExpression: "source = :source AND createdAt > :createdSince",
+      FilterExpression: "#source = :source AND createdAt > :createdSince",
       ExpressionAttributeValues: {
         ":publicSubjectId": "sub-123",
         ":source": Source["account-delete"],
         ":createdSince": NOW_SECONDS - baseInput.window,
+      },
+      ExpressionAttributeNames: {
+        "#source": "source",
       },
       ConsistentRead: true,
       ScanIndexForward: false,

@@ -39,11 +39,14 @@ const queryAllItems = async ({
       TableName: tableName,
       IndexName: publicSubjectIdGsiName,
       KeyConditionExpression: "publicSubjectId = :publicSubjectId",
-      FilterExpression: "source = :source AND createdAt > :createdSince",
+      FilterExpression: "#source = :source AND createdAt > :createdSince",
       ExpressionAttributeValues: {
         ":publicSubjectId": publicSubjectId,
         ":source": source,
         ":createdSince": createdSince,
+      },
+      ExpressionAttributeNames: {
+        "#source": "source",
       },
       ConsistentRead: true,
       ScanIndexForward: false,

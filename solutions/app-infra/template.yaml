@@ -917,22 +917,22 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
-        # - AttributeName: publicSubjectId
-        #   AttributeType: S
-        # - AttributeName: lockedOutAt
-        #   AttributeType: N
+        - AttributeName: publicSubjectId
+          AttributeType: S
+        - AttributeName: lockedOutAt
+          AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
-      # GlobalSecondaryIndexes:
-      #   - IndexName: !Ref LockoutsTablePublicSubjectIdIndexName
-      #     KeySchema:
-      #       - AttributeName: publicSubjectId
-      #         KeyType: HASH
-      #       - AttributeName: lockedOutAt
-      #         KeyType: RANGE
-      #     Projection:
-      #       ProjectionType: ALL
+      GlobalSecondaryIndexes:
+        - IndexName: !Ref LockoutsTablePublicSubjectIdIndexName
+          KeySchema:
+            - AttributeName: publicSubjectId
+              KeyType: HASH
+            - AttributeName: lockedOutAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
       SSESpecification:
@@ -955,22 +955,22 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
-        # - AttributeName: publicSubjectId
-        #   AttributeType: S
-        # - AttributeName: createdAt
-        #   AttributeType: N
+        - AttributeName: publicSubjectId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
-      # GlobalSecondaryIndexes:
-      #   - IndexName: !Ref OTPsTablePublicSubjectIdIndexName
-      #     KeySchema:
-      #       - AttributeName: publicSubjectId
-      #         KeyType: HASH
-      #       - AttributeName: createdAt
-      #         KeyType: RANGE
-      #     Projection:
-      #       ProjectionType: ALL
+      GlobalSecondaryIndexes:
+        - IndexName: !Ref OTPsTablePublicSubjectIdIndexName
+          KeySchema:
+            - AttributeName: publicSubjectId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
       SSESpecification:
@@ -993,22 +993,22 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
-        # - AttributeName: publicSubjectId
-        #   AttributeType: S
-        # - AttributeName: createdAt
-        #   AttributeType: N
+        - AttributeName: publicSubjectId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
-      # GlobalSecondaryIndexes:
-      #   - IndexName: !Ref OTPChecksTablePublicSubjectIdIndexName
-      #     KeySchema:
-      #       - AttributeName: publicSubjectId
-      #         KeyType: HASH
-      #       - AttributeName: createdAt
-      #         KeyType: RANGE
-      #     Projection:
-      #       ProjectionType: ALL
+      GlobalSecondaryIndexes:
+        - IndexName: !Ref OTPChecksTablePublicSubjectIdIndexName
+          KeySchema:
+            - AttributeName: publicSubjectId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
       SSESpecification:
@@ -1031,22 +1031,22 @@ Resources:
       AttributeDefinitions:
         - AttributeName: id
           AttributeType: S
-        # - AttributeName: publicSubjectId
-        #   AttributeType: S
-        # - AttributeName: createdAt
-        #   AttributeType: N
+        - AttributeName: publicSubjectId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
-      # GlobalSecondaryIndexes:
-      #   - IndexName: !Ref PasswordChecksTablePublicSubjectIdIndexName
-      #     KeySchema:
-      #       - AttributeName: publicSubjectId
-      #         KeyType: HASH
-      #       - AttributeName: createdAt
-      #         KeyType: RANGE
-      #     Projection:
-      #       ProjectionType: ALL
+      GlobalSecondaryIndexes:
+        - IndexName: !Ref PasswordChecksTablePublicSubjectIdIndexName
+          KeySchema:
+            - AttributeName: publicSubjectId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
       SSESpecification:
