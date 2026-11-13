@@ -73,7 +73,7 @@ When(
     await $test.step("Wait 1 second", () => sleep(1_000));
 
     const { otp: secondOtp, expiresAt: secondExpiresAt } = await $test.step(
-      "reissueUnusedUnexpiredOTP=false, lockoutDuration=10s, maxAllowedBeforeLockout.count=3: issues a new OTP expiring in ~900s",
+      "reissueUnusedUnexpiredOTP=false, lockoutDuration=5s, maxAllowedBeforeLockout.count=3: issues a new OTP expiring in ~900s",
       async () => {
         const before = Math.floor(Date.now() / 1000);
         const res = await makeRequest(publicSubjectId, {
@@ -106,7 +106,7 @@ When(
       },
     );
 
-    await $test.step("Wait for lockout to expire", () => sleep(9_000));
+    await $test.step("Wait for lockout to expire", () => sleep(4_000));
 
     const { otp: thirdOtp, expiresAt: thirdExpiresAt } = await $test.step(
       "expiresIn=4s: issues a new OTP expiring in ~4s",
@@ -128,9 +128,7 @@ When(
       },
     );
 
-    await $test.step("Wait 5 seconds for the short-lived OTP to expire", () =>
-      sleep(5_000),
-    );
+    await $test.step("Wait for OTP to expire", () => sleep(5_000));
 
     const { otp: fourthOtp, expiresAt: fourthExpiresAt } = await $test.step(
       "maxAllowedBeforeLockout.count=2, window=4: issues a new OTP expiring in ~900s",
@@ -192,8 +190,6 @@ When(
         expect(body.code).toBe(1002);
       },
     );
-
-    await $test.step("Wait 1 second", () => sleep(1_000));
 
     await $test.step(
       "source=passkey-create: separate lockout scope, issues a new OTP expiring in ~900s",
