@@ -1,6 +1,7 @@
 import { expect } from "@playwright/test";
 import { bdd } from "./fixtures.js";
 import { getApiBaseUrl } from "../../utils/getApiBaseUrl.js";
+import * as v from "valibot";
 
 const { When } = bdd;
 
@@ -11,13 +12,14 @@ const Source = {
   "passkey-create": "passkey-create",
 } as const;
 
-interface GenerateOTPResponse {
-  otp: string;
-  expiresAt: number;
-}
-interface ErrorResponse {
-  code: number;
-}
+const generateOTPResponseSchema = v.object({
+  otp: v.string(),
+  expiresAt: v.number(),
+});
+
+const errorResponseSchema = v.object({
+  code: v.number(),
+});
 
 const makeRequest = async (
   publicSubjectId: string,
@@ -47,7 +49,7 @@ When(
         const res = await makeRequest(publicSubjectId, defaultBody);
         const after = Math.floor(Date.now() / 1000);
         expect(res.status).toBe(200);
-        const body = (await res.json()) as GenerateOTPResponse;
+        const body = v.parse(generateOTPResponseSchema, await res.json());
         expect(body.otp).toMatch(/^\d{6}$/);
         expect(body.expiresAt).toBeGreaterThanOrEqual(before + 900);
         expect(body.expiresAt).toBeLessThanOrEqual(after + 900);
@@ -55,16 +57,20 @@ When(
       },
     );
 
+    await $test.step("Wait 1 second", () => sleep(1_000));
+
     await $test.step(
       "Default params again: reuses the same OTP and expiresAt",
       async () => {
         const res = await makeRequest(publicSubjectId, defaultBody);
         expect(res.status).toBe(200);
-        const body = (await res.json()) as GenerateOTPResponse;
+        const body = v.parse(generateOTPResponseSchema, await res.json());
         expect(body.otp).toBe(firstOtp);
         expect(body.expiresAt).toBe(firstExpiresAt);
       },
     );
+
+    await $test.step("Wait 1 second", () => sleep(1_000));
 
     const { otp: secondOtp, expiresAt: secondExpiresAt } = await $test.step(
       "reissueUnusedUnexpiredOTP=false, lockoutDuration=10s, maxAllowedBeforeLockout.count=3: issues a new OTP expiring in ~900s",
@@ -78,7 +84,7 @@ When(
         });
         const after = Math.floor(Date.now() / 1000);
         expect(res.status).toBe(200);
-        const body = (await res.json()) as GenerateOTPResponse;
+        const body = v.parse(generateOTPResponseSchema, await res.json());
         expect(body.otp).toMatch(/^\d{6}$/);
         expect(body.otp).not.toBe(firstOtp);
         expect(body.expiresAt).toBeGreaterThanOrEqual(before + 900);
@@ -88,19 +94,19 @@ When(
       },
     );
 
+    await $test.step("Wait 1 second", () => sleep(1_000));
+
     await $test.step(
       "Default params: locked out after 3 OTPs requested (code 1002)",
       async () => {
         const res = await makeRequest(publicSubjectId, defaultBody);
         expect(res.status).toBe(403);
-        const body = (await res.json()) as ErrorResponse;
+        const body = v.parse(errorResponseSchema, await res.json());
         expect(body.code).toBe(1002);
       },
     );
 
-    await $test.step("Wait 10 seconds for lockout to expire", () =>
-      sleep(10_000),
-    );
+    await $test.step("Wait for lockout to expire", () => sleep(9_000));
 
     const { otp: thirdOtp, expiresAt: thirdExpiresAt } = await $test.step(
       "expiresIn=4s: issues a new OTP expiring in ~4s",
@@ -112,7 +118,7 @@ When(
         });
         const after = Math.floor(Date.now() / 1000);
         expect(res.status).toBe(200);
-        const body = (await res.json()) as GenerateOTPResponse;
+        const body = v.parse(generateOTPResponseSchema, await res.json());
         expect(body.otp).toMatch(/^\d{6}$/);
         expect(body.otp).not.toBe(secondOtp);
         expect(body.expiresAt).toBeGreaterThanOrEqual(before + 4);
@@ -136,7 +142,7 @@ When(
         });
         const after = Math.floor(Date.now() / 1000);
         expect(res.status).toBe(200);
-        const body = (await res.json()) as GenerateOTPResponse;
+        const body = v.parse(generateOTPResponseSchema, await res.json());
         expect(body.otp).toMatch(/^\d{6}$/);
         expect(body.otp).not.toBe(thirdOtp);
         expect(body.expiresAt).toBeGreaterThanOrEqual(before + 900);
@@ -146,16 +152,20 @@ When(
       },
     );
 
+    await $test.step("Wait 1 second", () => sleep(1_000));
+
     await $test.step(
       "Default params: reuses the same OTP and expiresAt",
       async () => {
         const res = await makeRequest(publicSubjectId, defaultBody);
         expect(res.status).toBe(200);
-        const body = (await res.json()) as GenerateOTPResponse;
+        const body = v.parse(generateOTPResponseSchema, await res.json());
         expect(body.otp).toBe(fourthOtp);
         expect(body.expiresAt).toBe(fourthExpiresAt);
       },
     );
+
+    await $test.step("Wait 1 second", () => sleep(1_000));
 
     await $test.step(
       "maxAllowedBeforeLockout.count=1: still reuses the same OTP and expiresAt",
@@ -165,21 +175,25 @@ When(
           maxAllowedBeforeLockout: { count: 1 },
         });
         expect(res.status).toBe(200);
-        const body = (await res.json()) as GenerateOTPResponse;
+        const body = v.parse(generateOTPResponseSchema, await res.json());
         expect(body.otp).toBe(fourthOtp);
         expect(body.expiresAt).toBe(fourthExpiresAt);
       },
     );
+
+    await $test.step("Wait 1 second", () => sleep(1_000));
 
     await $test.step(
       "Default params: locked out after exceeding maxAllowedBeforeLockout (code 1002)",
       async () => {
         const res = await makeRequest(publicSubjectId, defaultBody);
         expect(res.status).toBe(403);
-        const body = (await res.json()) as ErrorResponse;
+        const body = v.parse(errorResponseSchema, await res.json());
         expect(body.code).toBe(1002);
       },
     );
+
+    await $test.step("Wait 1 second", () => sleep(1_000));
 
     await $test.step(
       "source=passkey-create: separate lockout scope, issues a new OTP expiring in ~900s",
@@ -190,7 +204,7 @@ When(
         });
         const after = Math.floor(Date.now() / 1000);
         expect(res.status).toBe(200);
-        const body = (await res.json()) as GenerateOTPResponse;
+        const body = v.parse(generateOTPResponseSchema, await res.json());
         expect(body.otp).toMatch(/^\d{6}$/);
         expect(body.otp).not.toBe(fourthOtp);
         expect(body.expiresAt).toBeGreaterThanOrEqual(before + 900);
@@ -232,7 +246,10 @@ When(
 
         for (const invalidRequest of await Promise.all(invalidRequests)) {
           expect(invalidRequest.status).toBe(400);
-          const body = (await invalidRequest.json()) as ErrorResponse;
+          const body = v.parse(
+            errorResponseSchema,
+            await invalidRequest.json(),
+          );
           expect(body.code).toBe(1001);
         }
       },
