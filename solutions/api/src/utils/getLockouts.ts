@@ -13,7 +13,7 @@ export const getLockouts = async ({
 }: {
   publicSubjectId: string;
   source: Source;
-  type?: LockoutType;
+  type?: LockoutType | undefined;
 }) => {
   const now = Math.floor(Date.now() / 1000);
 
