@@ -78,7 +78,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           )
         ) {
           return {
-            statusCode: 400,
+            statusCode: 403,
             body: JSON.stringify({
               code: 1002,
               message: LockoutType.TooManyOTPsRequested,
@@ -93,7 +93,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           )
         ) {
           return {
-            statusCode: 400,
+            statusCode: 403,
             body: JSON.stringify({
               code: 1003,
               message: LockoutType.TooManyIncorrectOTPsEntered,
@@ -108,7 +108,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           )
         ) {
           return {
-            statusCode: 400,
+            statusCode: 403,
             body: JSON.stringify({
               code: 1004,
               message: LockoutType.TooManyIncorrectPasswordsEntered,
@@ -131,7 +131,6 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
             "#source": "source",
           },
           ScanIndexForward: false,
-          ConsistentRead: true,
           Limit: 1,
         });
 
@@ -142,7 +141,8 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           existingOtp &&
           body.output.reissueUnusedUnexpiredOTP &&
           !existingOtp.used &&
-          existingOtp.expiresAt >= now + 120;
+          existingOtp.expiresAt >= now + 120 &&
+          now + body.output.expiresIn >= existingOtp.expiresAt;
 
         const otpItem = v.parse(otpsDatabaseItem, {
           id: randomUUID(),

@@ -40,7 +40,6 @@ export const getLockouts = async ({
       },
       ScanIndexForward: false,
       ExclusiveStartKey: lastEvaluatedKey,
-      ConsistentRead: true,
     });
 
     items.push(...(response.Items ?? []));

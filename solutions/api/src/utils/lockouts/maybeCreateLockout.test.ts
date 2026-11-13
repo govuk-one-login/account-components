@@ -140,7 +140,6 @@ describe("maybeCreateLockout", () => {
       ExpressionAttributeNames: {
         "#source": "source",
       },
-      ConsistentRead: true,
       ScanIndexForward: false,
       ExclusiveStartKey: undefined,
     });

@@ -48,7 +48,6 @@ const queryAllItems = async ({
       ExpressionAttributeNames: {
         "#source": "source",
       },
-      ConsistentRead: true,
       ScanIndexForward: false,
       ExclusiveStartKey: lastEvaluatedKey,
     });

@@ -208,7 +208,7 @@ describe("generate-otp handler", () => {
   });
 
   describe("lockout checks", () => {
-    it("returns 400 with code 1002 when TooManyOTPsRequested lockout exists", async () => {
+    it("returns 403 with code 1002 when TooManyOTPsRequested lockout exists", async () => {
       mockGetLockouts.mockResolvedValue([
         { type: LockoutType.TooManyOTPsRequested },
       ]);
@@ -219,7 +219,7 @@ describe("generate-otp handler", () => {
       );
 
       expect(result).toStrictEqual({
-        statusCode: 400,
+        statusCode: 403,
         body: JSON.stringify({
           code: 1002,
           message: LockoutType.TooManyOTPsRequested,
@@ -227,7 +227,7 @@ describe("generate-otp handler", () => {
       });
     });
 
-    it("returns 400 with code 1003 when TooManyIncorrectOTPsEntered lockout exists", async () => {
+    it("returns 403 with code 1003 when TooManyIncorrectOTPsEntered lockout exists", async () => {
       mockGetLockouts.mockResolvedValue([
         { type: LockoutType.TooManyIncorrectOTPsEntered },
       ]);
@@ -238,7 +238,7 @@ describe("generate-otp handler", () => {
       );
 
       expect(result).toStrictEqual({
-        statusCode: 400,
+        statusCode: 403,
         body: JSON.stringify({
           code: 1003,
           message: LockoutType.TooManyIncorrectOTPsEntered,
@@ -246,7 +246,7 @@ describe("generate-otp handler", () => {
       });
     });
 
-    it("returns 400 with code 1004 when TooManyIncorrectPasswordsEntered lockout exists", async () => {
+    it("returns 403 with code 1004 when TooManyIncorrectPasswordsEntered lockout exists", async () => {
       mockGetLockouts.mockResolvedValue([
         { type: LockoutType.TooManyIncorrectPasswordsEntered },
       ]);
@@ -257,7 +257,7 @@ describe("generate-otp handler", () => {
       );
 
       expect(result).toStrictEqual({
-        statusCode: 400,
+        statusCode: 403,
         body: JSON.stringify({
           code: 1004,
           message: LockoutType.TooManyIncorrectPasswordsEntered,
@@ -341,7 +341,6 @@ describe("generate-otp handler", () => {
           "#source": "source",
         },
         ScanIndexForward: false,
-        ConsistentRead: true,
         Limit: 1,
       });
     });
@@ -523,6 +522,34 @@ describe("generate-otp handler", () => {
       const { otp } = JSON.parse(result.body);
 
       expect(otp).not.toBe(existingOtp.otp);
+    });
+
+    it("generates new OTP when expiresIn would result in an earlier expiry than the existing OTP", async () => {
+      const existingOtp = makeExistingOtp({ expiresAt: now + 600 });
+      mockDynamoDbQuery.mockResolvedValue({ Items: [existingOtp] });
+
+      const result = await handler(
+        makeEvent(validPathParams, { ...validBody, expiresIn: 599 }),
+        mockContext,
+      );
+
+      const { otp } = JSON.parse(result.body);
+
+      expect(otp).not.toBe(existingOtp.otp);
+    });
+
+    it("reuses existing OTP when expiresIn would result in the same expiry as the existing OTP", async () => {
+      const existingOtp = makeExistingOtp({ expiresAt: now + 600 });
+      mockDynamoDbQuery.mockResolvedValue({ Items: [existingOtp] });
+
+      const result = await handler(
+        makeEvent(validPathParams, { ...validBody, expiresIn: 600 }),
+        mockContext,
+      );
+
+      const { otp } = JSON.parse(result.body);
+
+      expect(otp).toBe(existingOtp.otp);
     });
 
     it("generates new OTP when existing OTP expires within 120 seconds", async () => {
