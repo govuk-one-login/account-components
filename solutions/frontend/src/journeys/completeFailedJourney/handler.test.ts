@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { FastifyRequest, FastifyReply } from "fastify";
+import { Scope } from "../../../../commons/utils/commonTypes.js";
 
 const mockCompleteJourney = vi.fn();
 const mockCompleteAllJourneyActionsUnsuccessfully = vi.fn();
@@ -27,6 +28,9 @@ describe("completeFailedJourneyHandler", () => {
         journeyActions: [{ action: "temp-account-delete-action" }],
       },
       method: "GET",
+      log: {
+        info: vi.fn(),
+      } as unknown as FastifyRequest["log"],
     } as unknown as Partial<FastifyRequest>;
     mockReply = {};
   });
@@ -196,6 +200,62 @@ describe("completeFailedJourneyHandler", () => {
           mockReply as FastifyReply,
         ),
       ).rejects.toThrow();
+    });
+  });
+
+  describe("passkeyCreate scope logging", () => {
+    beforeEach(() => {
+      mockCompleteJourney.mockResolvedValue(mockReply);
+    });
+
+    it("should log 'Skipped from set up passkey screen' when scope is passkeyCreate and error is UserAbortedJourney", async () => {
+      mockRequest.query = {
+        error_code: "1002",
+        error_description: "UserAbortedJourney",
+      };
+      // @ts-expect-error
+      mockRequest.session.claims = { scope: Scope.passkeyCreate };
+
+      await completeFailedJourneyHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockRequest.log?.info).toHaveBeenCalledWith(
+        "Skipped from set up passkey screen",
+      );
+    });
+
+    it("should log 'Backed out from set up passkey screen' when scope is passkeyCreate and error is UserBackedOutOfJourney", async () => {
+      mockRequest.query = {
+        error_code: "1003",
+        error_description: "UserBackedOutOfJourney",
+      };
+      // @ts-expect-error
+      mockRequest.session.claims = { scope: Scope.passkeyCreate };
+
+      await completeFailedJourneyHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockRequest.log?.info).toHaveBeenCalledWith(
+        "Backed out from set up passkey screen",
+      );
+    });
+
+    it("should not log passkey screen messages when scope is not passkeyCreate", async () => {
+      mockRequest.query = {
+        error_code: "1002",
+        error_description: "UserAbortedJourney",
+      };
+
+      await completeFailedJourneyHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockRequest.log?.info).not.toHaveBeenCalled();
     });
   });
 });

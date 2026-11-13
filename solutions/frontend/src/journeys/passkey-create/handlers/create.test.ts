@@ -237,6 +237,29 @@ describe("passkey-create handlers", () => {
       );
     });
 
+    it("should log 'Set up passkey screen viewed' when showErrorUi is false", async () => {
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockRequest.log?.info).toHaveBeenCalledWith(
+        "Set up passkey screen viewed",
+      );
+    });
+
+    it("should log 'Set up passkey error screen viewed' when showErrorUi is true", async () => {
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        true,
+      );
+
+      expect(mockRequest.log?.info).toHaveBeenCalledWith(
+        "Set up passkey error screen viewed",
+      );
+    });
+
     it("should send passkey registration generated audit event with the registration options", async () => {
       await getHandler(
         mockRequest as FastifyRequest,
@@ -755,6 +778,25 @@ describe("passkey-create handlers", () => {
           false,
         );
       });
+
+      it("should log 'Skipped from set up passkey error screen' when skip is selected", async () => {
+        mockRequest.body = {
+          action: "skip",
+          registrationResponse: JSON.stringify({}),
+        };
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [{ action: "passkey-create" }];
+        mockCompleteJourney.mockResolvedValue(mockReply);
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockRequest.log?.info).toHaveBeenCalledWith(
+          "Skipped from set up passkey error screen",
+        );
+      });
     });
 
     describe("register action", () => {
@@ -880,6 +922,18 @@ describe("passkey-create handlers", () => {
           mockReply,
           true,
         );
+      });
+
+      it("should log 'Passkey added' on successful registration", async () => {
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [{ action: "passkey-create" }];
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockRequest.log?.info).toHaveBeenCalledWith("Passkey added");
       });
 
       it("should handle passkey without attestation signature", async () => {
