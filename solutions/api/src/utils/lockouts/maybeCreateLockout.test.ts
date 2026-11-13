@@ -131,11 +131,10 @@ describe("maybeCreateLockout", () => {
       TableName: "checks-table",
       IndexName: "publicSubjectId-index",
       KeyConditionExpression: "publicSubjectId = :publicSubjectId",
-      FilterExpression: "#source = :source AND createdAt > :createdSince",
+      FilterExpression: "#source = :source",
       ExpressionAttributeValues: {
         ":publicSubjectId": "sub-123",
         ":source": Source["account-delete"],
-        ":createdSince": NOW_SECONDS - baseInput.window,
       },
       ExpressionAttributeNames: {
         "#source": "source",
@@ -168,6 +167,23 @@ describe("maybeCreateLockout", () => {
   });
 
   describe("mostRecent mode (default)", () => {
+    it("excludes items outside the window", async () => {
+      const items = [
+        makeItem({ id: "1" }),
+        makeItem({ id: "2" }),
+        makeItem({ id: "3", createdAt: NOW_SECONDS - baseInput.window }),
+      ];
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
+
+      const result = await maybeCreateLockout(baseInput);
+
+      expect(result).toBeUndefined();
+      expect(mockTransactWrite).not.toHaveBeenCalled();
+    });
+
     it("uses the most recent itemCountForLockout items as contributing items", async () => {
       const items = [
         makeItem({ id: "1" }),
@@ -234,6 +250,23 @@ describe("maybeCreateLockout", () => {
   });
 
   describe("any mode", () => {
+    it("excludes items outside the window", async () => {
+      const items = [
+        makeItem({ id: "1" }),
+        makeItem({ id: "2" }),
+        makeItem({ id: "3", createdAt: NOW_SECONDS - baseInput.window }),
+      ];
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
+
+      const result = await maybeCreateLockout({ ...baseInput, mode: "Any" });
+
+      expect(result).toBeUndefined();
+      expect(mockTransactWrite).not.toHaveBeenCalled();
+    });
+
     it("uses all qualifying items within the window as contributing items", async () => {
       const items = [
         makeItem({ id: "1" }),
@@ -297,6 +330,26 @@ describe("maybeCreateLockout", () => {
   });
 
   describe("consecutive mode", () => {
+    it("stops the consecutive run when an item is outside the window", async () => {
+      const items = [
+        makeItem({ id: "1" }),
+        makeItem({ id: "2" }),
+        makeItem({ id: "3", createdAt: NOW_SECONDS - baseInput.window }),
+      ];
+      mockQuery.mockResolvedValue({
+        Items: items,
+        LastEvaluatedKey: undefined,
+      });
+
+      const result = await maybeCreateLockout({
+        ...baseInput,
+        mode: "Consecutive",
+      });
+
+      expect(result).toBeUndefined();
+      expect(mockTransactWrite).not.toHaveBeenCalled();
+    });
+
     it("uses the first consecutive run of qualifying items as contributing items", async () => {
       const items = [
         makeItem({ id: "1", successful: true }),
