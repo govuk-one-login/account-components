@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import assert from "node:assert";
 import type { APIGatewayProxyEvent } from "aws-lambda/trigger/api-gateway-proxy.js";
 import type { Context } from "aws-lambda";
@@ -65,7 +65,8 @@ const makeEvent = (
 const validBody = { source: Source["account-delete"] };
 const validPathParams = { publicSubjectId: "subject-123" };
 
-const now = Math.floor(Date.now() / 1000);
+const NOW = new Date("2025-01-01T00:00:00.000Z");
+const now = Math.floor(NOW.getTime() / 1000);
 
 const makeExistingOtp = (overrides: Record<string, unknown> = {}) => ({
   id: "existing-otp-id",
@@ -82,10 +83,16 @@ const makeExistingOtp = (overrides: Record<string, unknown> = {}) => ({
 describe("generate-otp handler", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers();
+    vi.setSystemTime(NOW);
     mockGetLockouts.mockResolvedValue([]);
     mockDynamoDbQuery.mockResolvedValue({ Items: [] });
     mockDynamoDbPut.mockResolvedValue({});
     mockMaybeCreateLockout.mockResolvedValue(undefined);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe("request validation", () => {
@@ -296,33 +303,25 @@ describe("generate-otp handler", () => {
     });
 
     it("uses default expiresIn of 900 seconds when not specified", async () => {
-      const before = Math.floor(Date.now() / 1000);
-
       const result = await handler(
         makeEvent(validPathParams, validBody),
         mockContext,
       );
 
-      const after = Math.floor(Date.now() / 1000);
       const { expiresAt } = JSON.parse(result.body);
 
-      expect(expiresAt).toBeGreaterThanOrEqual(before + 900);
-      expect(expiresAt).toBeLessThanOrEqual(after + 900);
+      expect(expiresAt).toBe(now + 900);
     });
 
     it("uses provided expiresIn when specified", async () => {
-      const before = Math.floor(Date.now() / 1000);
-
       const result = await handler(
         makeEvent(validPathParams, { ...validBody, expiresIn: 300 }),
         mockContext,
       );
 
-      const after = Math.floor(Date.now() / 1000);
       const { expiresAt } = JSON.parse(result.body);
 
-      expect(expiresAt).toBeGreaterThanOrEqual(before + 300);
-      expect(expiresAt).toBeLessThanOrEqual(after + 300);
+      expect(expiresAt).toBe(now + 300);
     });
 
     it("queries DynamoDB with correct parameters", async () => {
@@ -346,11 +345,8 @@ describe("generate-otp handler", () => {
     });
 
     it("puts the new OTP item in DynamoDB with correct fields", async () => {
-      const before = Math.floor(Date.now() / 1000);
-
       await handler(makeEvent(validPathParams, validBody), mockContext);
 
-      const after = Math.floor(Date.now() / 1000);
       const call = mockDynamoDbPut.mock.calls[0];
       assert.ok(call);
       const { Item } = call[0] as { Item: Record<string, unknown> };
@@ -358,12 +354,8 @@ describe("generate-otp handler", () => {
       expect(Item["publicSubjectId"]).toBe("subject-123");
       expect(Item["source"]).toBe(Source["account-delete"]);
       expect(Item["used"]).toBe(false);
-      expect(Item["createdAt"]).toBeGreaterThanOrEqual(before);
-      expect(Item["createdAt"]).toBeLessThanOrEqual(after);
-      expect(Item["keepUntil"]).toBeGreaterThanOrEqual(
-        before + oneYearInSeconds,
-      );
-      expect(Item["keepUntil"]).toBeLessThanOrEqual(after + oneYearInSeconds);
+      expect(Item["createdAt"]).toBe(now);
+      expect(Item["keepUntil"]).toBe(now + oneYearInSeconds);
       expect(mockDynamoDbPut).toHaveBeenCalledWith(
         expect.objectContaining({
           TableName: "otps-table",
