@@ -34,8 +34,6 @@ describe("getDynamoDbClient", () => {
       DynamoDBClient: vi.fn(function () {
         return mockDynamoDbClient;
       }),
-      QueryCommand: mockCommands.QueryCommand,
-      ScanCommand: mockCommands.ScanCommand,
     }));
     // @ts-expect-error
     vi.doMock(import("@aws-sdk/lib-dynamodb"), () => ({
@@ -46,6 +44,8 @@ describe("getDynamoDbClient", () => {
       GetCommand: mockCommands.GetCommand,
       DeleteCommand: mockCommands.DeleteCommand,
       UpdateCommand: mockCommands.UpdateCommand,
+      QueryCommand: mockCommands.QueryCommand,
+      ScanCommand: mockCommands.ScanCommand,
       BatchWriteCommand: mockCommands.BatchWriteCommand,
       BatchGetCommand: mockCommands.BatchGetCommand,
       TransactWriteCommand: mockCommands.TransactWriteCommand,

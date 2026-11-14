@@ -10,14 +10,14 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-        const pathParamsResult = v.safeParse(
+        const pathParams = v.safeParse(
           v.object({
             publicSubjectId: v.string(),
           }),
           e.pathParameters,
         );
 
-        const queryParamsResult = v.safeParse(
+        const queryParams = v.safeParse(
           v.object({
             source: v.enum(Source),
             type: v.optional(v.enum(LockoutType)),
@@ -25,7 +25,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           e.queryStringParameters,
         );
 
-        if (!pathParamsResult.success || !queryParamsResult.success) {
+        if (!pathParams.success || !queryParams.success) {
           return {
             statusCode: 400,
             body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
@@ -36,9 +36,9 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           statusCode: 200,
           body: JSON.stringify(
             await getLockouts({
-              publicSubjectId: pathParamsResult.output.publicSubjectId,
-              source: queryParamsResult.output.source,
-              type: queryParamsResult.output.type,
+              publicSubjectId: pathParams.output.publicSubjectId,
+              source: queryParams.output.source,
+              type: queryParams.output.type,
             }),
           ),
         };

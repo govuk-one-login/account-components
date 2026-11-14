@@ -23,13 +23,11 @@ const queryAllItems = async ({
   publicSubjectIdGsiName,
   publicSubjectId,
   source,
-  createdSince,
 }: {
   tableName: string;
   publicSubjectIdGsiName: string;
   publicSubjectId: string;
   source: Source;
-  createdSince: number;
 }) => {
   const items: Record<string, AttributeValue>[] = [];
   let lastEvaluatedKey: Record<string, AttributeValue> | undefined = undefined;
@@ -39,16 +37,14 @@ const queryAllItems = async ({
       TableName: tableName,
       IndexName: publicSubjectIdGsiName,
       KeyConditionExpression: "publicSubjectId = :publicSubjectId",
-      FilterExpression: "#source = :source AND createdAt > :createdSince",
+      FilterExpression: "#source = :source",
       ExpressionAttributeValues: {
         ":publicSubjectId": publicSubjectId,
         ":source": source,
-        ":createdSince": createdSince,
       },
       ExpressionAttributeNames: {
         "#source": "source",
       },
-      ConsistentRead: true,
       ScanIndexForward: false,
       ExclusiveStartKey: lastEvaluatedKey,
     });
@@ -65,21 +61,34 @@ const getLockoutContributingItems = <ItemSchema extends ItemSchemaBase>({
   validatedItems,
   itemShouldContributeToLockout,
   itemCountForLockout,
+  window,
+  nowInSeconds,
 }: {
   mode: Mode;
   validatedItems: v.InferOutput<ItemSchema>[];
   itemShouldContributeToLockout: ItemShouldContributeToLockout<ItemSchema>;
   itemCountForLockout: number;
+  window: number;
+  nowInSeconds: number;
 }) => {
   let lockoutContributingItems: v.InferOutput<ItemSchema>[] = [];
+
+  const itemIsInWindow = (item: v.InferOutput<ItemSchema>) => {
+    return item.createdAt > nowInSeconds - window;
+  };
 
   if (mode === "MostRecent") {
     lockoutContributingItems = validatedItems
       .slice(0, itemCountForLockout)
-      .filter((item) => itemShouldContributeToLockout(item));
+      .filter(
+        (item) => itemIsInWindow(item) && itemShouldContributeToLockout(item),
+      );
   } else if (mode === "Consecutive") {
     for (const item of validatedItems) {
-      if (lockoutContributingItems.length === itemCountForLockout) {
+      if (
+        !itemIsInWindow(item) ||
+        lockoutContributingItems.length === itemCountForLockout
+      ) {
         break;
       }
       if (itemShouldContributeToLockout(item)) {
@@ -90,7 +99,9 @@ const getLockoutContributingItems = <ItemSchema extends ItemSchemaBase>({
     }
   } else {
     lockoutContributingItems = validatedItems
-      .filter((item) => itemShouldContributeToLockout(item))
+      .filter(
+        (item) => itemIsInWindow(item) && itemShouldContributeToLockout(item),
+      )
       .slice(0, itemCountForLockout);
   }
 
@@ -117,9 +128,9 @@ export const maybeCreateLockout = async <ItemSchema extends ItemSchemaBase>({
   publicSubjectIdGsiName: string;
   itemSchema: ItemSchema;
   itemShouldContributeToLockout: ItemShouldContributeToLockout<ItemSchema>;
-  itemCountForLockout?: number;
-  window?: number;
-  duration?: number;
+  itemCountForLockout?: number | undefined;
+  window?: number | undefined;
+  duration?: number | undefined;
   mode?: Mode;
 }) => {
   const nowInSeconds = Math.floor(Date.now() / 1000);
@@ -129,7 +140,6 @@ export const maybeCreateLockout = async <ItemSchema extends ItemSchemaBase>({
     publicSubjectIdGsiName,
     publicSubjectId,
     source,
-    createdSince: nowInSeconds - window,
   });
 
   if (allItems.length < itemCountForLockout) return;
@@ -140,6 +150,8 @@ export const maybeCreateLockout = async <ItemSchema extends ItemSchemaBase>({
     validatedItems,
     itemShouldContributeToLockout,
     itemCountForLockout,
+    window,
+    nowInSeconds,
   });
 
   if (lockoutContributingItems.length < itemCountForLockout) {

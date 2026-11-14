@@ -36,6 +36,7 @@ export enum Lang {
 }
 
 export enum Source {
+  "passkey-create" = "passkey-create",
   "account-delete" = "account-delete",
 }
 
