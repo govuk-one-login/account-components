@@ -79,7 +79,7 @@ When(
         const res = await makeRequest(publicSubjectId, {
           ...defaultBody,
           reissueUnusedUnexpiredOTP: false,
-          lockoutDuration: 10,
+          lockoutDuration: 5,
           maxAllowedBeforeLockout: { count: 3 },
         });
         const after = Math.floor(Date.now() / 1000);

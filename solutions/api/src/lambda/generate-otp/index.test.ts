@@ -299,7 +299,7 @@ describe("generate-otp handler", () => {
       };
 
       expect(responseBody.otp).toMatch(/^\d{6}$/);
-      expect(responseBody.expiresAt).toBeTypeOf("number");
+      expect(responseBody.expiresAt).toBe(now + 900);
     });
 
     it("uses default expiresIn of 900 seconds when not specified", async () => {
@@ -340,7 +340,6 @@ describe("generate-otp handler", () => {
           "#source": "source",
         },
         ScanIndexForward: false,
-        Limit: 1,
       });
     });
 
@@ -499,6 +498,7 @@ describe("generate-otp handler", () => {
 
       const { otp } = JSON.parse(result.body);
 
+      expect(otp).toMatch(/^\d{6}$/);
       expect(otp).not.toBe(existingOtp.otp);
     });
 
@@ -513,6 +513,7 @@ describe("generate-otp handler", () => {
 
       const { otp } = JSON.parse(result.body);
 
+      expect(otp).toMatch(/^\d{6}$/);
       expect(otp).not.toBe(existingOtp.otp);
     });
 
@@ -527,6 +528,7 @@ describe("generate-otp handler", () => {
 
       const { otp } = JSON.parse(result.body);
 
+      expect(otp).toMatch(/^\d{6}$/);
       expect(otp).not.toBe(existingOtp.otp);
     });
 
@@ -555,6 +557,7 @@ describe("generate-otp handler", () => {
 
       const { otp } = JSON.parse(result.body);
 
+      expect(otp).toMatch(/^\d{6}$/);
       expect(otp).not.toBe(existingOtp.otp);
     });
 
@@ -582,9 +585,10 @@ describe("generate-otp handler", () => {
 
       expect(result.statusCode).toBe(200);
 
-      const { otp } = JSON.parse(result.body);
+      const { otp, expiresAt } = JSON.parse(result.body);
 
       expect(otp).toMatch(/^\d{6}$/);
+      expect(expiresAt).toBe(now + 900);
     });
   });
 

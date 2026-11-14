@@ -131,7 +131,6 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
             "#source": "source",
           },
           ScanIndexForward: false,
-          Limit: 1,
         });
 
         const otps = v.parse(v.array(otpsDatabaseItem), otpsResult.Items);
