@@ -9,7 +9,7 @@ import {
 } from "../../../../commons/utils/constants.js";
 
 const mockContext = {} as unknown as Context;
-const mockGetLockouts = vi.fn();
+const mockGetLockoutErrorResponse = vi.fn();
 const mockDynamoDbQuery = vi.fn();
 const mockDynamoDbPut = vi.fn();
 const mockMaybeCreateLockout = vi.fn();
@@ -29,8 +29,8 @@ vi.mock(
   }),
 );
 
-vi.mock(import("../../utils/getLockouts.js"), () => ({
-  getLockouts: mockGetLockouts,
+vi.mock(import("../../utils/getLockoutErrorResponse.js"), () => ({
+  getLockoutErrorResponse: mockGetLockoutErrorResponse,
 }));
 
 // @ts-expect-error
@@ -87,7 +87,7 @@ describe("check-otp handler", () => {
     vi.clearAllMocks();
     vi.useFakeTimers();
     vi.setSystemTime(NOW);
-    mockGetLockouts.mockResolvedValue([]);
+    mockGetLockoutErrorResponse.mockResolvedValue(undefined);
     mockDynamoDbQuery.mockResolvedValue({ Items: [makeExistingOtp()] });
     mockDynamoDbPut.mockResolvedValue({});
     mockMaybeCreateLockout.mockResolvedValue(undefined);
@@ -220,69 +220,83 @@ describe("check-otp handler", () => {
   });
 
   describe("lockout checks", () => {
-    it("calls getLockouts with publicSubjectId and source", async () => {
-      await handler(makeEvent(validPathParams, validBody), mockContext);
-
-      expect(mockGetLockouts).toHaveBeenCalledWith({
-        publicSubjectId: "subject-123",
-        source: Source["account-delete"],
-      });
-    });
-
-    it("returns 403 with code 1002 when TooManyOTPsRequested lockout exists", async () => {
-      mockGetLockouts.mockResolvedValue([
-        { type: LockoutType.TooManyOTPsRequested },
-      ]);
-
-      const result = await handler(
-        makeEvent(validPathParams, validBody),
-        mockContext,
-      );
-
-      expect(result).toStrictEqual({
-        statusCode: 403,
-        body: JSON.stringify({
-          code: 1002,
-          message: LockoutType.TooManyOTPsRequested,
-        }),
-      });
-    });
-
-    it("returns 403 with code 1003 when TooManyIncorrectOTPsEntered lockout exists", async () => {
-      mockGetLockouts.mockResolvedValue([
-        { type: LockoutType.TooManyIncorrectOTPsEntered },
-      ]);
-
-      const result = await handler(
-        makeEvent(validPathParams, validBody),
-        mockContext,
-      );
-
-      expect(result).toStrictEqual({
+    it("returns the lockout error response when getLockoutErrorResponse returns one", async () => {
+      const lockoutResponse = {
         statusCode: 403,
         body: JSON.stringify({
           code: 1003,
           message: LockoutType.TooManyIncorrectOTPsEntered,
         }),
-      });
-    });
-
-    it("returns 403 with code 1004 when TooManyIncorrectPasswordsEntered lockout exists", async () => {
-      mockGetLockouts.mockResolvedValue([
-        { type: LockoutType.TooManyIncorrectPasswordsEntered },
-      ]);
+      };
+      mockGetLockoutErrorResponse.mockResolvedValue(lockoutResponse);
 
       const result = await handler(
         makeEvent(validPathParams, validBody),
         mockContext,
       );
 
-      expect(result).toStrictEqual({
-        statusCode: 403,
-        body: JSON.stringify({
-          code: 1004,
-          message: LockoutType.TooManyIncorrectPasswordsEntered,
+      expect(result).toStrictEqual(lockoutResponse);
+    });
+
+    it("calls getLockoutErrorResponse with publicSubjectId, source and default lockoutsToCheckFor", async () => {
+      await handler(makeEvent(validPathParams, validBody), mockContext);
+
+      expect(mockGetLockoutErrorResponse).toHaveBeenCalledWith({
+        publicSubjectId: "subject-123",
+        source: Source["account-delete"],
+        lockoutsToCheckFor: [LockoutType.TooManyIncorrectOTPsEntered],
+      });
+    });
+
+    it("calls getLockoutErrorResponse with provided lockoutsToCheckFor", async () => {
+      await handler(
+        makeEvent(validPathParams, {
+          ...validBody,
+          lockoutsToCheckFor: [
+            LockoutType.TooManyOTPsRequested,
+            LockoutType.TooManyIncorrectOTPsEntered,
+          ],
         }),
+        mockContext,
+      );
+
+      expect(mockGetLockoutErrorResponse).toHaveBeenCalledWith(
+        expect.objectContaining({
+          lockoutsToCheckFor: [
+            LockoutType.TooManyOTPsRequested,
+            LockoutType.TooManyIncorrectOTPsEntered,
+          ],
+        }),
+      );
+    });
+
+    it("returns 400 when lockoutsToCheckFor contains an invalid value", async () => {
+      const result = await handler(
+        makeEvent(validPathParams, {
+          ...validBody,
+          lockoutsToCheckFor: ["invalid-lockout-type"],
+        }),
+        mockContext,
+      );
+
+      expect(result).toStrictEqual({
+        statusCode: 400,
+        body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
+      });
+    });
+
+    it("returns 400 when lockoutsToCheckFor does not include TooManyIncorrectOTPsEntered", async () => {
+      const result = await handler(
+        makeEvent(validPathParams, {
+          ...validBody,
+          lockoutsToCheckFor: [LockoutType.TooManyOTPsRequested],
+        }),
+        mockContext,
+      );
+
+      expect(result).toStrictEqual({
+        statusCode: 400,
+        body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
       });
     });
   });

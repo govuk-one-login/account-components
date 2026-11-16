@@ -8,12 +8,12 @@ import {
   oneYearInSeconds,
   Source,
 } from "../../../../commons/utils/constants.js";
-import { getLockouts } from "../../utils/getLockouts.js";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import { otpsDatabaseItem } from "../../../../commons/utils/schemas.js";
 import { randomInt, randomUUID } from "node:crypto";
 import { maybeCreateLockout } from "../../utils/lockouts/maybeCreateLockout.js";
 import assert from "node:assert";
+import { getLockoutErrorResponse } from "../../utils/getLockoutErrorResponse.js";
 
 const dynamodbClient = getDynamoDbClient();
 
@@ -45,6 +45,15 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
               lockoutDuration: v.optional(
                 v.pipe(v.number(), v.integer(), v.gtValue(0)),
               ),
+              lockoutsToCheckFor: v.optional(
+                v.pipe(
+                  v.array(v.enum(LockoutType)),
+                  v.check((arr) =>
+                    arr.includes(LockoutType.TooManyOTPsRequested),
+                  ),
+                ),
+                [LockoutType.TooManyOTPsRequested],
+              ),
               maxAllowedBeforeLockout: v.optional(
                 v.object({
                   count: v.optional(
@@ -67,53 +76,14 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           };
         }
 
-        const lockouts = await getLockouts({
+        const lockoutErrorResponse = await getLockoutErrorResponse({
           publicSubjectId: pathParams.output.publicSubjectId,
+          lockoutsToCheckFor: body.output.lockoutsToCheckFor,
           source: body.output.source,
         });
 
-        if (
-          lockouts.some(
-            (lockout) => lockout.type === LockoutType.TooManyOTPsRequested,
-          )
-        ) {
-          return {
-            statusCode: 403,
-            body: JSON.stringify({
-              code: 1002,
-              message: LockoutType.TooManyOTPsRequested,
-            }),
-          };
-        }
-
-        if (
-          lockouts.some(
-            (lockout) =>
-              lockout.type === LockoutType.TooManyIncorrectOTPsEntered,
-          )
-        ) {
-          return {
-            statusCode: 403,
-            body: JSON.stringify({
-              code: 1003,
-              message: LockoutType.TooManyIncorrectOTPsEntered,
-            }),
-          };
-        }
-
-        if (
-          lockouts.some(
-            (lockout) =>
-              lockout.type === LockoutType.TooManyIncorrectPasswordsEntered,
-          )
-        ) {
-          return {
-            statusCode: 403,
-            body: JSON.stringify({
-              code: 1004,
-              message: LockoutType.TooManyIncorrectPasswordsEntered,
-            }),
-          };
+        if (lockoutErrorResponse) {
+          return lockoutErrorResponse;
         }
 
         const now = Math.floor(Date.now() / 1000);
