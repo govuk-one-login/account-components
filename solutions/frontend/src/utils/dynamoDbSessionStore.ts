@@ -107,7 +107,7 @@ export class DynamoDbSessionStore implements SessionStore {
         UpdateExpression:
           "SET #session = :session, #expires = :expires, #generation = :newGeneration",
         ConditionExpression:
-          "attribute_exists(#id) AND #generation = :expectedGeneration",
+          "attribute_exists(#id) AND (#generation = :expectedGeneration OR attribute_not_exists(#generation))",
         ExpressionAttributeNames: {
           "#id": "id",
           "#session": "session",
