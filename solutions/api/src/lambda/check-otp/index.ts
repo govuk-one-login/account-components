@@ -25,8 +25,6 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
       async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-        assert.ok(process.env["OTPS_TABLE_NAME"]);
-        assert.ok(process.env["OTPS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME"]);
         assert.ok(process.env["OTP_CHECKS_TABLE_NAME"]);
         assert.ok(process.env["OTP_CHECKS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME"]);
 
