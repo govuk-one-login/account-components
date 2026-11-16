@@ -7,10 +7,7 @@ import {
   parseAuthenticatorData,
   convertAAGUIDToString,
 } from "@simplewebauthn/server/helpers";
-import type {
-  AuthenticatorTransportFuture,
-  RegistrationResponseJSON,
-} from "@simplewebauthn/server";
+import type { RegistrationResponseJSON } from "@simplewebauthn/server";
 import { logger } from "../../../../../../commons/utils/logger/index.js";
 
 type HyphenatedCredentialDeviceType = "single-device" | "multi-device";
@@ -23,7 +20,7 @@ interface RegistrationResponseInfo {
   userVerified: boolean | undefined;
   publicKeyAlgorithm: number | undefined;
   credentialDeviceType: HyphenatedCredentialDeviceType | undefined;
-  credentialTransports: AuthenticatorTransportFuture[] | undefined;
+  credentialTransports: string[] | undefined;
   fmt: AttestationFormat | undefined;
 }
 
