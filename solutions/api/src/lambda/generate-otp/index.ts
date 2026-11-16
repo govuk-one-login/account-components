@@ -137,7 +137,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
         const existingOtp = otps[0];
 
         const reuseOtp =
-          existingOtp &&
+          !!existingOtp &&
           body.output.reissueUnusedUnexpiredOTP &&
           !existingOtp.used &&
           existingOtp.expiresAt >= now + 120 &&
