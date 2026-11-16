@@ -11,7 +11,8 @@ import {
   supportedAlgorithmIDs,
   type postBodySchema,
 } from "../../handlers/create.js";
-import type { InferOutput } from "valibot";
+import * as v from "valibot";
+import { logger } from "../../../../../../commons/utils/logger/index.js";
 
 export const passkeyRegistrationFailureReason = [
   "JavaScriptNotEnabled",
@@ -25,6 +26,18 @@ export const passkeyRegistrationFailureReason = [
   "TypeError",
   "UnknownError",
 ] as const;
+
+const transportsSchema = v.array(
+  v.picklist([
+    "usb",
+    "nfc",
+    "ble",
+    "smart-card",
+    "hybrid",
+    "internal",
+    "cable",
+  ]),
+);
 
 const buildRegistrationRequest = (
   registrationOptions: PublicKeyCredentialCreationOptionsJSON,
@@ -54,41 +67,65 @@ const buildRegistrationRequest = (
 const buildExcludedCredentials = (
   registrationOptions: PublicKeyCredentialCreationOptionsJSON,
 ) =>
-  registrationOptions.excludeCredentials?.map((cred) => ({
-    passkey_credential_id: cred.id,
-    ...(cred.transports !== undefined && {
-      passkey_credential_transports: cred.transports,
-    }),
-  })) ?? [];
+  registrationOptions.excludeCredentials?.map((cred) => {
+    let transports: v.InferOutput<typeof transportsSchema> | undefined;
+
+    if (cred.transports !== undefined) {
+      try {
+        transports = v.parse(transportsSchema, cred.transports);
+      } catch (error) {
+        logger.error("Invalid credential transports", { error });
+      }
+    }
+
+    return {
+      passkey_credential_id: cred.id,
+      ...(transports !== undefined && {
+        passkey_credential_transports: transports,
+      }),
+    };
+  }) ?? [];
 
 const buildResponseInfoPasskeyFields = (
   responseInfo: ReturnType<typeof extractRegistrationResponseInfo>,
-) => ({
-  ...(responseInfo.aaguid !== undefined && {
-    passkey_aaguid: responseInfo.aaguid,
-  }),
-  ...(responseInfo.counter !== undefined && {
-    passkey_counter: responseInfo.counter,
-  }),
-  ...(responseInfo.credentialBackedUp !== undefined && {
-    passkey_credential_backed_up: responseInfo.credentialBackedUp,
-  }),
-  ...(responseInfo.credentialDeviceType !== undefined && {
-    passkey_credential_device_type: responseInfo.credentialDeviceType,
-  }),
-  ...(responseInfo.credentialTransports !== undefined && {
-    passkey_credential_transports: responseInfo.credentialTransports,
-  }),
-  ...(responseInfo.fmt !== undefined && {
-    passkey_fmt: responseInfo.fmt,
-  }),
-  ...(responseInfo.publicKeyAlgorithm !== undefined && {
-    passkey_public_key_algorithm: responseInfo.publicKeyAlgorithm,
-  }),
-  ...(responseInfo.userVerified !== undefined && {
-    passkey_user_verified: responseInfo.userVerified,
-  }),
-});
+) => {
+  let transports: v.InferOutput<typeof transportsSchema> | undefined;
+
+  if (responseInfo.credentialTransports !== undefined) {
+    try {
+      transports = v.parse(transportsSchema, responseInfo.credentialTransports);
+    } catch (error) {
+      logger.error("Invalid credential transports", { error });
+    }
+  }
+
+  return {
+    ...(responseInfo.aaguid !== undefined && {
+      passkey_aaguid: responseInfo.aaguid,
+    }),
+    ...(responseInfo.counter !== undefined && {
+      passkey_counter: responseInfo.counter,
+    }),
+    ...(responseInfo.credentialBackedUp !== undefined && {
+      passkey_credential_backed_up: responseInfo.credentialBackedUp,
+    }),
+    ...(responseInfo.credentialDeviceType !== undefined && {
+      passkey_credential_device_type: responseInfo.credentialDeviceType,
+    }),
+    ...(transports !== undefined && {
+      passkey_credential_transports: transports,
+    }),
+    ...(responseInfo.fmt !== undefined && {
+      passkey_fmt: responseInfo.fmt,
+    }),
+    ...(responseInfo.publicKeyAlgorithm !== undefined && {
+      passkey_public_key_algorithm: responseInfo.publicKeyAlgorithm,
+    }),
+    ...(responseInfo.userVerified !== undefined && {
+      passkey_user_verified: responseInfo.userVerified,
+    }),
+  };
+};
 
 const getBaseEventProps = (request: FastifyRequest, reply: FastifyReply) => {
   assert.ok(request.session.claims);
@@ -114,7 +151,7 @@ const getBaseEventProps = (request: FastifyRequest, reply: FastifyReply) => {
 
 const buildEnrolmentEventPayload = (
   registrationOptions: PublicKeyCredentialCreationOptionsJSON,
-  registrationResponse?: InferOutput<
+  registrationResponse?: v.InferOutput<
     typeof postBodySchema
   >["registrationResponse"],
 ) => {
@@ -203,7 +240,7 @@ export const sendPasskeyRegistrationFailedAuditEvent = async (
 export const sendPasskeyRegistrationSuccessfulAuditEvent = async (
   request: FastifyRequest,
   reply: FastifyReply,
-  registrationResponse: InferOutput<
+  registrationResponse: v.InferOutput<
     typeof postBodySchema
   >["registrationResponse"],
 ) => {
@@ -240,7 +277,7 @@ export const sendPasskeyEnrolmentFailedAuditEvent = async (
   request: FastifyRequest,
   reply: FastifyReply,
   registrationOptions: PublicKeyCredentialCreationOptionsJSON,
-  registrationResponse?: InferOutput<
+  registrationResponse?: v.InferOutput<
     typeof postBodySchema
   >["registrationResponse"],
   registrationFailureReason?: (typeof passkeyRegistrationFailureReason)[number],
@@ -286,7 +323,7 @@ export const sendPasskeyEnrolmentSuccessfulAuditEvent = async (
   request: FastifyRequest,
   reply: FastifyReply,
   registrationOptions: PublicKeyCredentialCreationOptionsJSON,
-  registrationResponse: InferOutput<
+  registrationResponse: v.InferOutput<
     typeof postBodySchema
   >["registrationResponse"],
   passkeyCount: number,

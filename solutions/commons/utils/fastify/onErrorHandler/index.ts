@@ -4,6 +4,7 @@ import { metrics } from "../../metrics/index.js";
 
 import { MetricUnit } from "@aws-lambda-powertools/metrics";
 import { isFastifyError } from "../isFastifyError/index.js";
+import { isExpectedError } from "../../isExpectedError/index.js";
 
 type ErrorHandler = Parameters<FastifyInstance["setErrorHandler"]>[0];
 
@@ -11,7 +12,7 @@ export const onError = async (
   error: Parameters<ErrorHandler>[0],
   request: Parameters<ErrorHandler>[1],
   reply: Parameters<ErrorHandler>[2],
-  pathToTemplate = "handlers/onError/index.njk",
+  pathToTemplate?: string,
 ): Promise<ReturnType<ErrorHandler>> => {
   const msg = "ERROR_CAUGHT_BY_GLOBAL_ERROR_HANDLER";
 
@@ -28,11 +29,20 @@ export const onError = async (
     statusCode = 400;
   }
 
+  if (isExpectedError(error)) {
+    logger = request.log.warn;
+    statusCode = error.statusCode ?? 200;
+  }
+
   logger(error, msg);
   metrics.addMetric(msg, MetricUnit.Count, 1);
 
   reply.statusCode = statusCode;
   assert.ok(reply.render);
-  await reply.render(pathToTemplate);
+  if (pathToTemplate) {
+    await reply.render(pathToTemplate);
+  } else {
+    reply.send("An error occurred");
+  }
   return reply;
 };

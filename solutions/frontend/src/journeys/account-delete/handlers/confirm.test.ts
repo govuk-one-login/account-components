@@ -6,13 +6,16 @@ const mockCompleteJourney = vi.fn();
 const mockCompleteJourneyActionSuccessfully = vi.fn();
 
 // @ts-expect-error
-vi.mock(import("../../../utils/accountManagementApiClient.js"), () => ({
-  AccountManagementApiClient: vi.fn().mockImplementation(function () {
-    return {
-      deleteAccount: mockDeleteAccount,
-    };
+vi.mock(
+  import("../../../../../commons/utils/apiClients/accountManagementApiClient.js"),
+  () => ({
+    AccountManagementApiClient: vi.fn().mockImplementation(function () {
+      return {
+        deleteAccount: mockDeleteAccount,
+      };
+    }),
   }),
-}));
+);
 
 vi.mock(import("../../utils/completeJourney.js"), () => ({
   completeJourney: mockCompleteJourney,
@@ -38,7 +41,7 @@ describe("confirm handlers", () => {
         claims: {
           account_management_api_access_token: "test-token",
           account_data_api_access_token: "test-adapi-token",
-          email: "test@example.com",
+          public_sub: "test-public-sub",
           redirect_uri: "https://example.com/callback",
           state: "test-state",
         },
@@ -93,7 +96,7 @@ describe("confirm handlers", () => {
 
       expect(mockDeleteAccount).toHaveBeenCalledWith(
         "test-adapi-token",
-        "test@example.com",
+        "test-public-sub",
       );
       expect(mockCompleteJourneyActionSuccessfully).toHaveBeenCalledWith(
         {
@@ -126,7 +129,7 @@ describe("confirm handlers", () => {
 
       expect(mockDeleteAccount).toHaveBeenCalledWith(
         "test-adapi-token",
-        "test@example.com",
+        "test-public-sub",
       );
       expect(mockCompleteJourney).not.toHaveBeenCalled();
     });

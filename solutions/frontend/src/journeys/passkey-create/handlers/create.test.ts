@@ -70,12 +70,15 @@ vi.mock(import("../utils/auditEvents/index.js"), async (importOriginal) => ({
 }));
 
 // @ts-expect-error
-vi.mock(import("../../../utils/accountDataApiClient.js"), () => ({
-  AccountDataApiClient: class {
-    getPasskeys = mockGetPasskeys;
-    createPasskey = mockCreatePasskey;
-  },
-}));
+vi.mock(
+  import("../../../../../commons/utils/apiClients/accountDataApiClient.js"),
+  () => ({
+    AccountDataApiClient: class {
+      getPasskeys = mockGetPasskeys;
+      createPasskey = mockCreatePasskey;
+    },
+  }),
+);
 
 // @ts-expect-error
 vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
@@ -108,7 +111,7 @@ vi.mock(import("../utils/extractRegistrationResponseInfo/index.js"), () => ({
 
 // @ts-expect-error
 vi.mock(
-  import("../../../utils/accountInterventionsServiceApiClient.js"),
+  import("../../../../../commons/utils/apiClients/accountInterventionsServiceApiClient.js"),
   () => ({
     AccountInterventionsServiceApiClient: class {
       getUserAisStatus = mockGetUserAisStatus;
@@ -229,7 +232,31 @@ describe("passkey-create handlers", () => {
           showErrorUi: false,
           stringsSuffix: "_signedOut",
           formAction: "/cannot-set-up-passkey",
+          analytics: {},
         }),
+      );
+    });
+
+    it("should log 'Set up passkey screen viewed' when showErrorUi is false", async () => {
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+      );
+
+      expect(mockRequest.log?.info).toHaveBeenCalledWith(
+        "Set up passkey screen viewed",
+      );
+    });
+
+    it("should log 'Set up passkey error screen viewed' when showErrorUi is true", async () => {
+      await getHandler(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        true,
+      );
+
+      expect(mockRequest.log?.info).toHaveBeenCalledWith(
+        "Set up passkey error screen viewed",
       );
     });
 
@@ -286,6 +313,7 @@ describe("passkey-create handlers", () => {
           showErrorUi: true,
           stringsSuffix: "_signedOut",
           formAction: "/cannot-set-up-passkey",
+          analytics: { reason: "GetHandler" },
         }),
       );
     });
@@ -667,6 +695,7 @@ describe("passkey-create handlers", () => {
             errors: expect.any(Object),
             errorList: expect.any(Array),
             formAction: "/cannot-set-up-passkey",
+            analytics: { reason: "ActionNotSpecified" },
           }),
         );
       });
@@ -683,6 +712,7 @@ describe("passkey-create handlers", () => {
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
             showErrorUi: true,
+            analytics: { reason: "InvalidRequestBody" },
           }),
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
@@ -699,11 +729,6 @@ describe("passkey-create handlers", () => {
           "PasskeyCreateError",
           "Count",
           1,
-        );
-        expect(mockReply.analytics).toStrictEqual(
-          expect.objectContaining({
-            reason: "InvalidRequestBody",
-          }),
         );
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
@@ -751,6 +776,25 @@ describe("passkey-create handlers", () => {
           mockRequest,
           mockReply,
           false,
+        );
+      });
+
+      it("should log 'Skipped from set up passkey error screen' when skip is selected", async () => {
+        mockRequest.body = {
+          action: "skip",
+          registrationResponse: JSON.stringify({}),
+        };
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [{ action: "passkey-create" }];
+        mockCompleteJourney.mockResolvedValue(mockReply);
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockRequest.log?.info).toHaveBeenCalledWith(
+          "Skipped from set up passkey error screen",
         );
       });
     });
@@ -880,6 +924,18 @@ describe("passkey-create handlers", () => {
         );
       });
 
+      it("should log 'Passkey added' on successful registration", async () => {
+        // @ts-expect-error
+        mockRequest.session.journeyActions = [{ action: "passkey-create" }];
+
+        await postHandler(
+          mockRequest as FastifyRequest,
+          mockReply as FastifyReply,
+        );
+
+        expect(mockRequest.log?.info).toHaveBeenCalledWith("Passkey added");
+      });
+
       it("should handle passkey without attestation signature", async () => {
         // @ts-expect-error
         mockRequest.session.journeyActions = [{ action: "passkey-create" }];
@@ -994,6 +1050,7 @@ describe("passkey-create handlers", () => {
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
             showErrorUi: true,
+            analytics: { reason: "VerificationError" },
           }),
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
@@ -1052,6 +1109,7 @@ describe("passkey-create handlers", () => {
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
             showErrorUi: true,
+            analytics: { reason: "VerificationFailed" },
           }),
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
@@ -1154,6 +1212,7 @@ describe("passkey-create handlers", () => {
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
             showErrorUi: true,
+            analytics: { reason: "UnknownError" },
           }),
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(
@@ -1177,11 +1236,6 @@ describe("passkey-create handlers", () => {
           "PasskeyCreateError",
           "Count",
           1,
-        );
-        expect(mockReply.analytics).toStrictEqual(
-          expect.objectContaining({
-            reason: "UnknownError",
-          }),
         );
         expect(
           mockSendPasskeyRegistrationFailedAuditEvent,
@@ -1362,6 +1416,7 @@ describe("passkey-create handlers", () => {
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
             showErrorUi: true,
+            analytics: { reason: "UserHasMaximumNumberOfPasskeys" },
           }),
         );
         expect(mockRequest.log?.warn).toHaveBeenCalledWith(

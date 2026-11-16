@@ -10,7 +10,7 @@ import {
   isoUint8Array,
 } from "@simplewebauthn/server/helpers";
 import { completeJourney } from "../../utils/completeJourney.js";
-import { AccountDataApiClient } from "../../../utils/accountDataApiClient.js";
+import { AccountDataApiClient } from "../../../../../commons/utils/apiClients/accountDataApiClient.js";
 import {
   getFormErrors,
   getFormErrorsList,
@@ -39,7 +39,7 @@ import {
   passkeyRegistrationFailureReason,
 } from "../utils/auditEvents/index.js";
 import { extractRegistrationResponseInfo } from "../utils/extractRegistrationResponseInfo/index.js";
-import { AccountInterventionsServiceApiClient } from "../../../utils/accountInterventionsServiceApiClient.js";
+import { AccountInterventionsServiceApiClient } from "../../../../../commons/utils/apiClients/accountInterventionsServiceApiClient.js";
 import { Scope } from "../../../../../commons/utils/commonTypes.js";
 
 export const postBodySchema = v.object({
@@ -72,6 +72,13 @@ const setRegistrationOptions = async (
     rpName: process.env["PASSKEYS_RP_NAME"],
     rpID: process.env["PASSKEYS_RP_ID"],
     userName: request.session.claims.email,
+    /*
+      Despite the spec allowing display name to be an empty string (which
+      is what SimpleWebauthN defaults to if userDisplayName is not set)
+      LastPass seems to require it to be set to a non-empty string.
+      Therefore we set it to the user's email address.
+    */
+    userDisplayName: request.session.claims.email,
     userID: isoUint8Array.fromUTF8String(request.session.claims.public_sub),
     attestationType: "direct",
     authenticatorSelection: {
@@ -111,6 +118,7 @@ const render = async (
   reply: FastifyReply,
   options?: {
     showErrorUi?: boolean;
+    analytics?: FastifyReply["analytics"];
     [key: string]: unknown;
   },
 ) => {
@@ -158,7 +166,14 @@ const render = async (
     contentId: reply.client?.consider_user_logged_in
       ? contentIds.loggedIn
       : contentIds.notLoggedIn,
+    ...options?.analytics,
   };
+
+  if (options?.showErrorUi) {
+    request.log.info("Set up passkey error screen viewed");
+  } else {
+    request.log.info("Set up passkey screen viewed");
+  }
 
   await reply.render("journeys/passkey-create/templates/create.njk", {
     ...options,
@@ -222,6 +237,11 @@ export async function getHandler(
 
   await render(request, reply, {
     showErrorUi,
+    analytics: showErrorUi
+      ? {
+          reason: "GetHandler",
+        }
+      : {},
   });
   return reply;
 }
@@ -249,11 +269,6 @@ export async function postHandler(
     const invalidRequestBodyErrorReason = "InvalidRequestBody";
     addErrorMetric(invalidRequestBodyErrorReason);
 
-    reply.analytics = {
-      ...reply.analytics,
-      reason: invalidRequestBodyErrorReason,
-    };
-
     await sendPasskeyRegistrationFailedAuditEvent(
       request,
       reply,
@@ -269,6 +284,9 @@ export async function postHandler(
 
     await render(request, reply, {
       showErrorUi: true,
+      analytics: {
+        reason: invalidRequestBodyErrorReason,
+      },
     });
     return reply;
   }
@@ -289,11 +307,16 @@ export async function postHandler(
       showErrorUi: true,
       errors: formErrors,
       errorList: getFormErrorsList(formErrors),
+      analytics: {
+        reason: "ActionNotSpecified",
+      },
     });
     return reply;
   }
 
   if (body.action === "skip") {
+    request.log.info("Skipped from set up passkey error screen");
+
     await completeAllJourneyActionsUnsuccessfully(
       unsuccessfulJourneyActionErrors.userAbortedJourney,
       request,
@@ -321,11 +344,6 @@ export async function postHandler(
       body.registrationError,
     );
 
-    reply.analytics = {
-      ...reply.analytics,
-      reason,
-    };
-
     await sendPasskeyRegistrationFailedAuditEvent(request, reply, reason);
     await sendPasskeyEnrolmentFailedAuditEvent(
       request,
@@ -337,6 +355,9 @@ export async function postHandler(
 
     await render(request, reply, {
       showErrorUi: true,
+      analytics: {
+        reason,
+      },
     });
     return reply;
   }
@@ -376,6 +397,9 @@ export async function postHandler(
 
     await render(request, reply, {
       showErrorUi: true,
+      analytics: {
+        reason: "VerificationError",
+      },
     });
     return reply;
   }
@@ -395,6 +419,9 @@ export async function postHandler(
 
     await render(request, reply, {
       showErrorUi: true,
+      analytics: {
+        reason: "VerificationFailed",
+      },
     });
     return reply;
   }
@@ -448,6 +475,9 @@ export async function postHandler(
 
     await render(request, reply, {
       showErrorUi: true,
+      analytics: {
+        reason: "UserHasMaximumNumberOfPasskeys",
+      },
     });
 
     return reply;
@@ -534,6 +564,8 @@ export async function postHandler(
     body.registrationResponse,
     getPasskeysResult.result.passkeys.length + 1,
   );
+
+  request.log.info("Passkey added");
 
   await completeJourneyActionSuccessfully<"passkeyCreate">(
     {

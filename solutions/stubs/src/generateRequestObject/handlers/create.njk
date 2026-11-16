@@ -122,13 +122,16 @@
                             <option value="successful">Successful</option>
                             <option value="too_many_otps_requested">Too many OTPs requested</option>
                             <option value="too_many_incorrect_otps_entered">Too many incorrect OTPs entered</option>
+                            <option value="too_many_incorrect_passwords_entered">Too many incorrect passwords entered</option>
                         </select>
                     </label>
                     <label class="api_scenario_selector">
                         Check OTP
                         <select name="internal_api_checkOTP_scenario">
                             <option value="successful">Successful</option>
-                            <option value="too_many_incorrect_otps_entered">Too many incorrect OTPs entered</option>                            
+                            <option value="too_many_otps_requested">Too many OTPs requested</option>
+                            <option value="too_many_incorrect_otps_entered">Too many incorrect OTPs entered</option>
+                            <option value="too_many_incorrect_passwords_entered">Too many incorrect passwords entered</option>                         
                             <option value="incorrect_otp">Incorrect OTP</option>
                         </select>
                     </label>   
@@ -136,13 +139,15 @@
                         Check password
                         <select name="internal_api_checkPassword_scenario">
                             <option value="successful">Successful</option>
-                            <option value="too_many_incorrect_passwords_entered">Too many incorrect passwords entered</option>                            
+                            <option value="too_many_otps_requested">Too many OTPs requested</option>
+                            <option value="too_many_incorrect_otps_entered">Too many incorrect OTPs entered</option>
+                            <option value="too_many_incorrect_passwords_entered">Too many incorrect passwords entered</option>                         
                             <option value="incorrect_password">Incorrect password</option>                            
                         </select>
                     </label>  
                     <label class="api_scenario_selector">
-                        Get lockout status
-                        <select name="internal_api_lockoutStatus_scenario">
+                        Get lockouts
+                        <select name="internal_api_lockouts_scenario">
                             <option value="not_locked_out">Not locked out</option>
                             <option value="locked_out_too_many_otps_requested">Locked out - too many OTPs requested</option>                            
                             <option value="locked_out_too_many_incorrect_otps_entered">Locked out - too many incorrect OTPs entered</option>                            

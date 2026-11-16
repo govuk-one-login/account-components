@@ -1,17 +1,15 @@
 import { expect, it, describe, vi, afterEach, beforeEach } from "vitest";
 import { onNotFound } from "./index.js";
-import type { FastifyRequest, FastifyReply } from "fastify";
+import type { FastifyReply } from "fastify";
 
 describe("onNotFound handler", () => {
-  let mockRequest: FastifyRequest;
   let mockReply: FastifyReply;
 
   beforeEach(() => {
-    mockRequest = {} as unknown as FastifyRequest;
-
     mockReply = {
       statusCode: 200,
       render: vi.fn(),
+      send: vi.fn(),
     } as unknown as FastifyReply;
   });
 
@@ -20,24 +18,24 @@ describe("onNotFound handler", () => {
   });
 
   it("sets status code to 404", async () => {
-    await onNotFound(mockRequest, mockReply);
+    await onNotFound(mockReply);
 
     expect(mockReply.statusCode).toBe(404);
   });
 
-  it("renders the default not found template", async () => {
-    await onNotFound(mockRequest, mockReply);
+  it("sends default not found message when no pathToTemplate provided", async () => {
+    await onNotFound(mockReply);
 
-    expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(
-      "handlers/onNotFound/index.njk",
-    );
+    expect(mockReply.send).toHaveBeenCalledExactlyOnceWith("Not found");
+    expect(mockReply.render).not.toHaveBeenCalled();
   });
 
   it("renders custom template when pathToTemplate is provided", async () => {
     const customPath = "custom/error/404.njk";
 
-    await onNotFound(mockRequest, mockReply, customPath);
+    await onNotFound(mockReply, customPath);
 
     expect(mockReply.render).toHaveBeenCalledExactlyOnceWith(customPath);
+    expect(mockReply.send).not.toHaveBeenCalled();
   });
 });

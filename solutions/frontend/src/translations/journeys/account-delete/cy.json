@@ -1,1 +1,73 @@
-{}
+{
+  "introduction": {
+    "pageTitle": "Bydd angen i chi ddileu eich GOV.UK One Login yn barhaol",
+    "heading": "Bydd angen i chi ddileu eich GOV.UK One Login yn barhaol",
+    "paragraphs": [
+      "Ni allwn fod yn siŵr mae chi sy’n ceisio mewngofnodi.",
+      "Bydd angen i chi ddileu eich GOV.UK One Login yn barhaol ac ni fyddwch bellach yn gallu cyrchu'r gwasanaethau rydych wedi'u defnyddio gydag ef.",
+      "Ar ôl i chi ddileu eich GOV.UK One Login, gallwch greu un newydd.",
+      "Ond yn gyntaf, rydym angen i chi gadarnhau rhai manylion."
+    ],
+    "buttonLabel": "Dechrau",
+    "exitJourneyLinkText": "Ewch yn ôl a cheisiwch roi eich cod diogelwch eto"
+  },
+  "resendEmailVerificationCode": {
+    "pageTitle": "Cael cod diogelwch",
+    "heading": "Cael cod diogelwch",
+    "emailAddress": "Rydym wedi anfon e-bost at <strong>{{emailAddress}}</strong>",
+    "paragraphs": [
+      "Efallai y bydd eich e-bost yn cymryd ychydig funudau i gyrraedd. Os nad ydych yn cael e-bost, gwiriwch eich ffolder sbam."
+    ],
+    "buttonLabel": "Cael cod diogelwch"
+  },
+  "verifyEmailAddress": {
+    "pageTitle": "Rhowch y cod a anfonwyd i'ch cyfeiriad e-bost",
+    "heading": "Rhowch y cod a anfonwyd i'ch cyfeiriad e-bost",
+    "paragraph1": "Mae angen i chi gadarnhau mai hwn yw eich cyfeiriad e-bost cyn y gallwch ddileu eich GOV.UK One Login.",
+    "emailAddress": "Rydym wedi anfon e-bost at <strong>{{emailAddress}}</strong>",
+    "heading2": "Gwiriwch eich e-bost",
+    "paragraphs2": [
+      "Mae'r e-bost yn cynnwys cod diogelwch 6 digid.",
+      "Efallai y bydd eich e-bost yn cymryd ychydig funudau i gyrraedd. Os nad ydych yn cael e-bost, gwiriwch eich ffolder sbam.",
+      "Bydd y cod yn dod i ben ar ôl 15 munud."
+    ],
+    "codeInputLabel": "Rhowch y cod 6 digid",
+    "buttonLabel": "Parhau",
+    "problemsWithTheCodeSummary": "Problemau gyda'r cod?",
+    "problemsWithTheCode": "Gallwn <a href=\"{{resendCodeLinkUrl}}\" class=\"govuk-link govuk-link--no-visited-state\">anfon y cod eto</a> os nad yw'r cod yn gweithio neu os nad ydych wedi ei dderbyn.",
+    "formErrors": {
+      "empty": "Rhowch y cod",
+      "invalidFormat": "Rhowch y cod gan ddefnyddio 6 digid yn unig",
+      "incorrect": "Nid yw'r cod a roddwyd gennych yn gywir, neu efallai ei fod wedi dod i ben, ceisiwch ei roi eto neu gofynnwch am god newydd"
+    }
+  },
+  "enterPassword": {
+    "pageTitle": "Rhowch eich cyfrinair",
+    "inputLabel": "Rhowch eich cyfrinair",
+    "buttonLabel": "Parhau",
+    "formErrors": {
+      "empty": "Rhowch eich cyfrinair",
+      "incorrect": "Rhowch y cyfrinair cywir"
+    }
+  },
+  "confirm": {
+    "pageTitle": "Dileu eich GOV.UK One Login",
+    "heading": "Dileu eich GOV.UK One Login",
+    "paragraphs1": [
+      "Gallwch nawr ddileu eich GOV.UK One Login yn barhaol.",
+      "Ni fyddwch bellach yn gallu cyrchu'r gwasanaethau rydych chi wedi'u defnyddio gydag ef.",
+      "Bydd hyn yn dileu'n barhaol:"
+    ],
+    "listItems": [
+      "eich manylion mewngofnodi",
+      "y cofnod o ba wasanaethau rydych wedi'u cyrchu gyda GOV.UK One Login a phryd"
+    ],
+    "paragraphs2": [
+      "Ni fydd yn effeithio ar gyfrifon y llywodraeth nad ydych yn cyrchu gyda GOV.UK One Login, fel Porth y Llywodraeth neu Gredyd Cynhwysol.",
+      "Ar ôl dileu eich GOV.UK One Login, gallwch greu un newydd gan ddefnyddio'r un cyfeiriad e-bost."
+    ],
+    "deleteButtonLabel": "Dileu eich GOV.UK One Login",
+    "cancelButtonLabel": "Canslo a rhoi cynnig ar fewngofnodi eto",
+    "contactLinkText": "Cysylltwch â thîm GOV.UK One Login (agor mewn tab newydd)"
+  }
+}

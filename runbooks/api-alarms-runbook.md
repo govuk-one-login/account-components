@@ -15,8 +15,8 @@ This runbook covers the following second line production alarms for the Account 
 - [ApiCheckOTPLambdaLogErrorAlarm](#ApiCheckOTPLambdaLogErrorAlarm)
 - [ApiCheckPasswordLambdaErrorsAlarm](#ApiCheckPasswordLambdaErrorsAlarm)
 - [ApiCheckPasswordLambdaLogErrorAlarm](#ApiCheckPasswordLambdaLogErrorAlarm)
-- [ApiLockoutStatusLambdaErrorsAlarm](#ApiLockoutStatusLambdaErrorsAlarm)
-- [ApiLockoutStatusLambdaLogErrorAlarm](#ApiLockoutStatusLambdaLogErrorAlarm)
+- [ApiLockoutsLambdaErrorsAlarm](#ApiLockoutsLambdaErrorsAlarm)
+- [ApiLockoutsLambdaLogErrorAlarm](#ApiLockoutsLambdaLogErrorAlarm)
 
 These alarms are owned by the **Home team** in the **Accounts pod**.
 
@@ -215,26 +215,26 @@ These alarms may indicate a P3 incident. Out-of-hours escalation and support is 
 4. Check downstream service health (DynamoDB, KMS).
 5. Check whether a recent deployment correlates with the start of errors.
 
-### ApiLockoutStatusLambdaErrorsAlarm
+### ApiLockoutsLambdaErrorsAlarm
 
-**What it means:** The Lockout Status Lambda function is producing invocation errors (unhandled exceptions or timeouts).
+**What it means:** The Lockouts Lambda function is producing invocation errors (unhandled exceptions or timeouts).
 
 **Investigation steps:**
 
 1. Check the `amc-dashboard` CloudWatch dashboard.
-2. Check the Lockout Status Lambda logs at `/aws/lambda/amc/ApiLockoutStatusLambda` for stack traces or timeout messages.
+2. Check the Lockouts Lambda logs at `/aws/lambda/amc/ApiLockoutsLambda` for stack traces or timeout messages.
 3. Check Lambda metrics (duration, memory usage, concurrent executions) for resource exhaustion.
 4. Check downstream dependencies (e.g. DynamoDB, KMS) for availability issues.
 5. Check whether a recent deployment correlates with the start of errors.
 
-### ApiLockoutStatusLambdaLogErrorAlarm
+### ApiLockoutsLambdaLogErrorAlarm
 
-**What it means:** The Lockout Status Lambda is logging ERROR or CRITICAL level messages at an elevated rate.
+**What it means:** The Lockouts Lambda is logging ERROR or CRITICAL level messages at an elevated rate.
 
 **Investigation steps:**
 
 1. Check the `amc-dashboard` CloudWatch dashboard.
-2. Check the Lockout Status Lambda logs at `/aws/lambda/amc/ApiLockoutStatusLambda` — filter for `level = "ERROR"` or `level = "CRITICAL"` to identify the specific error messages.
+2. Check the Lockouts Lambda logs at `/aws/lambda/amc/ApiLockoutsLambda` — filter for `level = "ERROR"` or `level = "CRITICAL"` to identify the specific error messages.
 3. Check whether errors relate to lockout retrieval.
 4. Check downstream service health (DynamoDB, KMS).
 5. Check whether a recent deployment correlates with the start of errors.

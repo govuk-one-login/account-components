@@ -7,7 +7,7 @@ import {
   getFormErrorsList,
 } from "../../../utils/formErrorsHelpers.js";
 import * as v from "valibot";
-import { AccountManagementApiClient } from "../../../utils/accountManagementApiClient.js";
+import { AccountManagementApiClient } from "../../../../../commons/utils/apiClients/accountManagementApiClient.js";
 import { Scope } from "../../../../../commons/utils/commonTypes.js";
 
 const render = async (

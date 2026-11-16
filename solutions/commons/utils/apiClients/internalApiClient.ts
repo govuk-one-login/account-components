@@ -5,12 +5,11 @@ import * as v from "valibot";
 import type { Source } from "../../../commons/utils/constants.js";
 import { LockoutType } from "../../../commons/utils/constants.js";
 import { getEnvironment } from "../../../commons/utils/getEnvironment/index.js";
+import { lockoutsDatabaseItem } from "../schemas.js";
 
-const defaultMaxAllowedBeforeLockout = {
-  count: 6,
-  window: 10800,
-};
-const defaultLockoutDuration = 900;
+const unixEpochTimeInSecondsToDate = v.transform(
+  (value: number) => new Date(value * 1000),
+);
 
 export class InternalApiClient extends JsonApiClient {
   private readonly baseUrl: string;
@@ -38,25 +37,20 @@ export class InternalApiClient extends JsonApiClient {
     }
   }
 
-  async generateOTP(
-    publicSubjectId: string,
-    {
-      reissueUnusedUnexpiredOTP = true,
-      expiresIn = 900,
-      maxAllowedBeforeLockout = defaultMaxAllowedBeforeLockout,
-      lockoutDuration = defaultLockoutDuration,
-      ...body
-    }: {
-      source: Source;
-      reissueUnusedUnexpiredOTP?: boolean;
-      expiresIn?: number;
-      maxAllowedBeforeLockout?: {
-        count: number;
-        window: number;
-      };
-      lockoutDuration?: number;
-    },
-  ) {
+  async generateOTP({
+    publicSubjectId,
+    ...body
+  }: {
+    publicSubjectId: string;
+    source: Source;
+    reissueUnusedUnexpiredOTP?: boolean;
+    expiresIn?: number;
+    maxAllowedBeforeLockout?: {
+      count: number;
+      window: number;
+    };
+    lockoutDuration?: number;
+  }) {
     return this.logOnError("generateOTP", async () => {
       try {
         const response = await this.fetch(
@@ -64,13 +58,7 @@ export class InternalApiClient extends JsonApiClient {
           {
             method: "POST",
             headers: this.commonHeaders,
-            body: JSON.stringify({
-              reissueUnusedUnexpiredOTP,
-              expiresIn,
-              maxAllowedBeforeLockout,
-              lockoutDuration,
-              ...body,
-            }),
+            body: JSON.stringify(body),
           },
         );
 
@@ -78,13 +66,14 @@ export class InternalApiClient extends JsonApiClient {
           "1001": "InvalidRequest",
           "1002": LockoutType.TooManyOTPsRequested,
           "1003": LockoutType.TooManyIncorrectOTPsEntered,
+          "1004": LockoutType.TooManyIncorrectPasswordsEntered,
         } as const;
 
         return await InternalApiClient.processResponse(
           response,
           v.object({
             otp: v.string(),
-            expires: v.number(),
+            expiresAt: v.pipe(v.number(), unixEpochTimeInSecondsToDate),
           }),
           errorsCodesMap,
         );
@@ -97,22 +86,19 @@ export class InternalApiClient extends JsonApiClient {
     });
   }
 
-  async checkOTP(
-    publicSubjectId: string,
-    {
-      maxAllowedBeforeLockout = defaultMaxAllowedBeforeLockout,
-      lockoutDuration = defaultLockoutDuration,
-      ...body
-    }: {
-      otp: string;
-      source: Source;
-      maxAllowedBeforeLockout?: {
-        count: number;
-        window: number;
-      };
-      lockoutDuration?: number;
-    },
-  ) {
+  async checkOTP({
+    publicSubjectId,
+    ...body
+  }: {
+    publicSubjectId: string;
+    otp: string;
+    source: Source;
+    maxAllowedBeforeLockout?: {
+      count: number;
+      window: number;
+    };
+    lockoutDuration?: number;
+  }) {
     return this.logOnError("checkOTP", async () => {
       try {
         const response = await this.fetch(
@@ -120,18 +106,16 @@ export class InternalApiClient extends JsonApiClient {
           {
             method: "POST",
             headers: this.commonHeaders,
-            body: JSON.stringify({
-              maxAllowedBeforeLockout,
-              lockoutDuration,
-              ...body,
-            }),
+            body: JSON.stringify(body),
           },
         );
 
         const errorsCodesMap = {
           "1001": "InvalidRequest",
-          "1002": LockoutType.TooManyIncorrectOTPsEntered,
-          "1003": "InvalidOTP",
+          "1002": LockoutType.TooManyOTPsRequested,
+          "1003": LockoutType.TooManyIncorrectOTPsEntered,
+          "1004": LockoutType.TooManyIncorrectPasswordsEntered,
+          "1005": "InvalidOTP",
         } as const;
 
         return await InternalApiClient.processResponse(
@@ -148,22 +132,19 @@ export class InternalApiClient extends JsonApiClient {
     });
   }
 
-  async checkPassword(
-    publicSubjectId: string,
-    {
-      maxAllowedBeforeLockout = defaultMaxAllowedBeforeLockout,
-      lockoutDuration = defaultLockoutDuration,
-      ...body
-    }: {
-      password: string;
-      source: Source;
-      maxAllowedBeforeLockout?: {
-        count: number;
-        window: number;
-      };
-      lockoutDuration?: number;
-    },
-  ) {
+  async checkPassword({
+    publicSubjectId,
+    ...body
+  }: {
+    publicSubjectId: string;
+    password: string;
+    source: Source;
+    maxAllowedBeforeLockout?: {
+      count: number;
+      window: number;
+    };
+    lockoutDuration?: number;
+  }) {
     return this.logOnError("checkPassword", async () => {
       try {
         const response = await this.fetch(
@@ -171,18 +152,16 @@ export class InternalApiClient extends JsonApiClient {
           {
             method: "POST",
             headers: this.commonHeaders,
-            body: JSON.stringify({
-              maxAllowedBeforeLockout,
-              lockoutDuration,
-              ...body,
-            }),
+            body: JSON.stringify(body),
           },
         );
 
         const errorsCodesMap = {
           "1001": "InvalidRequest",
-          "1002": LockoutType.TooManyIncorrectPasswordsEntered,
-          "1003": "InvalidPassword",
+          "1002": LockoutType.TooManyOTPsRequested,
+          "1003": LockoutType.TooManyIncorrectOTPsEntered,
+          "1004": LockoutType.TooManyIncorrectPasswordsEntered,
+          "1005": "InvalidPassword",
         } as const;
 
         return await InternalApiClient.processResponse(
@@ -199,19 +178,20 @@ export class InternalApiClient extends JsonApiClient {
     });
   }
 
-  async getLockoutStatus(
-    publicSubjectId: string,
-    parameters: {
-      source: Source;
-      lockoutType?: LockoutType;
-    },
-  ) {
-    return this.logOnError("getLockoutStatus", async () => {
+  async getLockouts({
+    publicSubjectId,
+    ...parameters
+  }: {
+    publicSubjectId: string;
+    source: Source;
+    type?: LockoutType;
+  }) {
+    return this.logOnError("getLockouts", async () => {
       try {
         const queryString = new URLSearchParams(parameters);
 
         const response = await this.fetch(
-          `${this.baseUrl}/lockout-status/${publicSubjectId}?${queryString.toString()}`,
+          `${this.baseUrl}/lockouts/${publicSubjectId}?${queryString.toString()}`,
           {
             headers: this.commonHeaders,
           },
@@ -223,15 +203,19 @@ export class InternalApiClient extends JsonApiClient {
 
         return await InternalApiClient.processResponse(
           response,
-          v.variant("isLockedOut", [
-            v.object({
-              isLockedOut: v.literal(false),
+          v.array(
+            v.looseObject({
+              ...lockoutsDatabaseItem.entries,
+              lockedOutAt: v.pipe(
+                lockoutsDatabaseItem.entries.lockedOutAt,
+                unixEpochTimeInSecondsToDate,
+              ),
+              lockedOutUntil: v.pipe(
+                lockoutsDatabaseItem.entries.lockedOutUntil,
+                unixEpochTimeInSecondsToDate,
+              ),
             }),
-            v.object({
-              isLockedOut: v.literal(true),
-              lockoutType: v.enum(LockoutType),
-            }),
-          ]),
+          ),
           errorsCodesMap,
         );
       } catch (error) {

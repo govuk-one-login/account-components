@@ -52,6 +52,18 @@ Parameters:
     Type: String
     Description: The name of the alerting stack that contains SNS topics for alarms
     Default: "build-notifications"
+  LockoutsTablePublicSubjectIdIndexName:
+    Type: String
+    Default: "PublicSubjectId_Index"
+  OTPsTablePublicSubjectIdIndexName:
+    Type: String
+    Default: "PublicSubjectId_Index"
+  OTPChecksTablePublicSubjectIdIndexName:
+    Type: String
+    Default: "PublicSubjectId_Index"
+  PasswordChecksTablePublicSubjectIdIndexName:
+    Type: String
+    Default: "PublicSubjectId_Index"
 
 Mappings:
   EnvironmentConfiguration:
@@ -79,6 +91,7 @@ Mappings:
       securityUrl: https://home.dev.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.dev.account.gov.uk/account-data-api
+      internalApiUrl: https://stubs.manage.dev.account.gov.uk/internal-api
       notifyDontSendEmailsTo: "^(perftest.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyTemplateIds: |
         {
@@ -116,6 +129,7 @@ Mappings:
       securityUrl: https://home.build.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.build.account.gov.uk/account-data-api
+      internalApiUrl: https://stubs.manage.build.account.gov.uk/internal-api
       notifyDontSendEmailsTo: "^(perftest.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyTemplateIds: |
         {
@@ -155,6 +169,7 @@ Mappings:
       securityUrl: https://home.staging.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://7xgl7lexy4.execute-api.eu-west-2.amazonaws.com/staging
+      internalApiUrl: https://2hdyiuvtug.execute-api.eu-west-2.amazonaws.com/v1
       notifyDontSendEmailsTo: "^(perftest.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
       notifyTemplateIds: |
         {
@@ -194,6 +209,7 @@ Mappings:
       securityUrl: https://home.integration.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://hoidt6wujb.execute-api.eu-west-2.amazonaws.com/integration
+      internalApiUrl: https://votf1tvl36.execute-api.eu-west-2.amazonaws.com/v1
       notifyDontSendEmailsTo: ""
       notifyTemplateIds: |
         {
@@ -233,6 +249,7 @@ Mappings:
       securityUrl: https://home.account.gov.uk/security
       dynatraceRumUrl: ""
       accountDataApiUrl: https://0218o1p9tj.execute-api.eu-west-2.amazonaws.com/production
+      internalApiUrl: https://h06vqhfzgi.execute-api.eu-west-2.amazonaws.com/v1
       notifyDontSendEmailsTo: ""
       notifyTemplateIds: |
         {
@@ -913,7 +930,7 @@ Resources:
         - AttributeName: id
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: PublicSubjectIdIndex
+        - IndexName: !Ref LockoutsTablePublicSubjectIdIndexName
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
@@ -927,6 +944,9 @@ Resources:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
         SSEEnabled: true
         SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: keepUntil
+        Enabled: true
 
   OTPsTable:
     Type: AWS::DynamoDB::Table
@@ -942,17 +962,17 @@ Resources:
           AttributeType: S
         - AttributeName: publicSubjectId
           AttributeType: S
-        - AttributeName: generatedAt
+        - AttributeName: createdAt
           AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: PublicSubjectIdIndex
+        - IndexName: !Ref OTPsTablePublicSubjectIdIndexName
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
-            - AttributeName: generatedAt
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
@@ -962,6 +982,9 @@ Resources:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
         SSEEnabled: true
         SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: keepUntil
+        Enabled: true
 
   OTPChecksTable:
     Type: AWS::DynamoDB::Table
@@ -977,17 +1000,17 @@ Resources:
           AttributeType: S
         - AttributeName: publicSubjectId
           AttributeType: S
-        - AttributeName: checkedAt
+        - AttributeName: createdAt
           AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: PublicSubjectIdIndex
+        - IndexName: !Ref OTPChecksTablePublicSubjectIdIndexName
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
-            - AttributeName: checkedAt
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
@@ -997,6 +1020,9 @@ Resources:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
         SSEEnabled: true
         SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: keepUntil
+        Enabled: true
 
   PasswordChecksTable:
     Type: AWS::DynamoDB::Table
@@ -1012,17 +1038,17 @@ Resources:
           AttributeType: S
         - AttributeName: publicSubjectId
           AttributeType: S
-        - AttributeName: checkedAt
+        - AttributeName: createdAt
           AttributeType: N
       KeySchema:
         - AttributeName: id
           KeyType: HASH
       GlobalSecondaryIndexes:
-        - IndexName: PublicSubjectIdIndex
+        - IndexName: !Ref PasswordChecksTablePublicSubjectIdIndexName
           KeySchema:
             - AttributeName: publicSubjectId
               KeyType: HASH
-            - AttributeName: checkedAt
+            - AttributeName: createdAt
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
@@ -1032,6 +1058,9 @@ Resources:
         KMSMasterKeyId: !GetAtt DynamoDbSSEKey.Arn
         SSEEnabled: true
         SSEType: KMS
+      TimeToLiveSpecification:
+        AttributeName: keepUntil
+        Enabled: true
 
   SecretsKmsKey:
     Type: AWS::KMS::Key
@@ -1610,13 +1639,13 @@ Resources:
               - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/generate-otp/*"
               - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/check-otp/*"
               - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/POST/check-password/*"
-              - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/GET/lockout-status/*"
+              - !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:*/*/GET/lockouts/*"
             Condition:
               StringNotEquals:
                 aws:sourceVpce:
                   Fn::ImportValue: !Sub "${VpcStackName}-ExecuteApiGatewayEndpointId"
       Variables:
-        ApiDomain: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+        ApiBaseUrl: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
         AuthorizeEndpointUrl:
           !FindInMap [
             EnvironmentConfiguration,
@@ -1685,7 +1714,7 @@ Resources:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiCheckPasswordLambda.Alias}/invocations"
-          /lockout-status/{publicSubjectId}:
+          /lockouts/{publicSubjectId}:
             get:
               parameters:
                 - name: publicSubjectId
@@ -1696,7 +1725,7 @@ Resources:
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
-                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiLockoutStatusLambda.Alias}/invocations"
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ApiLockoutsLambda.Alias}/invocations"
           /.well-known/jwks.json:
             get:
               responses:
@@ -1764,8 +1793,8 @@ Resources:
                         {
                             "issuer": "$stageVariables.IssuerUrl",
                             "authorization_endpoint": "$stageVariables.AuthorizeEndpointUrl",
-                            "token_endpoint": "$stageVariables.ApiDomain/token",
-                            "jwks_uri": "$stageVariables.ApiDomain/.well-known/jwks.json",
+                            "token_endpoint": "$stageVariables.ApiBaseUrl/token",
+                            "jwks_uri": "$stageVariables.ApiBaseUrl/.well-known/jwks.json",
                             "response_types_supported": ["code"],
                             "token_endpoint_auth_methods_supported": ["private_key_jwt"],
                             "token_endpoint_auth_signing_alg_values_supported": ["ES256"],
@@ -1997,6 +2026,8 @@ Resources:
         Variables:
           OTPS_TABLE_NAME: !Ref OTPsTable
           LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+          OTPS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref OTPsTablePublicSubjectIdIndexName
+          LOCKOUTS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref LockoutsTablePublicSubjectIdIndexName
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -2006,14 +2037,14 @@ Resources:
                 - dynamodb:PutItem
               Resource:
                 - !GetAtt LockoutsTable.Arn
-                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${LockoutsTable.Arn}/index/${LockoutsTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - dynamodb:Query
                 - dynamodb:PutItem
               Resource:
                 - !GetAtt OTPsTable.Arn
-                - !Sub "${OTPsTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${OTPsTable.Arn}/index/${OTPsTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - kms:Decrypt
@@ -2066,6 +2097,9 @@ Resources:
           OTPS_TABLE_NAME: !Ref OTPsTable
           OTP_CHECKS_TABLE_NAME: !Ref OTPChecksTable
           LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+          OTPS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref OTPsTablePublicSubjectIdIndexName
+          OTP_CHECKS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref OTPChecksTablePublicSubjectIdIndexName
+          LOCKOUTS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref LockoutsTablePublicSubjectIdIndexName
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -2075,20 +2109,20 @@ Resources:
                 - dynamodb:PutItem
               Resource:
                 - !GetAtt LockoutsTable.Arn
-                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${LockoutsTable.Arn}/index/${LockoutsTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - dynamodb:Query
               Resource:
                 - !GetAtt OTPsTable.Arn
-                - !Sub "${OTPsTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${OTPsTable.Arn}/index/${OTPsTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - dynamodb:Query
                 - dynamodb:PutItem
               Resource:
                 - !GetAtt OTPChecksTable.Arn
-                - !Sub "${OTPChecksTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${OTPChecksTable.Arn}/index/${OTPChecksTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - kms:Decrypt
@@ -2140,6 +2174,8 @@ Resources:
         Variables:
           PASSWORD_CHECKS_TABLE_NAME: !Ref PasswordChecksTable
           LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+          PASSWORD_CHECKS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref PasswordChecksTablePublicSubjectIdIndexName
+          LOCKOUTS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref LockoutsTablePublicSubjectIdIndexName
           ACCOUNT_DATA_API_URL:
             !FindInMap [
               EnvironmentConfiguration,
@@ -2155,14 +2191,14 @@ Resources:
                 - dynamodb:PutItem
               Resource:
                 - !GetAtt LockoutsTable.Arn
-                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${LockoutsTable.Arn}/index/${LockoutsTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - dynamodb:Query
                 - dynamodb:PutItem
               Resource:
                 - !GetAtt PasswordChecksTable.Arn
-                - !Sub "${PasswordChecksTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${PasswordChecksTable.Arn}/index/${PasswordChecksTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - kms:Decrypt
@@ -2192,27 +2228,28 @@ Resources:
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
 
-  ApiLockoutStatusLambdaLogGroup:
+  ApiLockoutsLambdaLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiLockoutStatusLambda"
+      LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/ApiLockoutsLambda"
       RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
 
-  ApiLockoutStatusLambda:
+  ApiLockoutsLambda:
     Type: AWS::Serverless::Function
     Properties:
       DeploymentPreference:
         Alarms:
-          - !Ref ApiLockoutStatusLambdaErrorsAlarm
-          - !Ref ApiLockoutStatusLambdaAvailabilityAlarm
-          - !Ref ApiLockoutStatusLambdaLogErrorAlarm
+          - !Ref ApiLockoutsLambdaErrorsAlarm
+          - !Ref ApiLockoutsLambdaAvailabilityAlarm
+          - !Ref ApiLockoutsLambdaLogErrorAlarm
       LoggingConfig:
-        LogGroup: !Ref ApiLockoutStatusLambdaLogGroup
+        LogGroup: !Ref ApiLockoutsLambdaLogGroup
       Handler: index.handler
       Environment:
         Variables:
           LOCKOUTS_TABLE_NAME: !Ref LockoutsTable
+          LOCKOUTS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME: !Ref LockoutsTablePublicSubjectIdIndexName
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -2221,7 +2258,7 @@ Resources:
                 - dynamodb:Query
               Resource:
                 - !GetAtt LockoutsTable.Arn
-                - !Sub "${LockoutsTable.Arn}/index/PublicSubjectIdIndex"
+                - !Sub "${LockoutsTable.Arn}/index/${LockoutsTablePublicSubjectIdIndexName}"
             - Effect: Allow
               Action:
                 - kms:Decrypt
@@ -2230,11 +2267,11 @@ Resources:
       # When CloudFormation executes this template these events are ignored
       # and the DefinitionBody on the API Gateways takes precedence.
       Events:
-        LockoutStatus:
+        Lockouts:
           Type: Api
           Properties:
             RestApiId: !Ref ApiApiGateway
-            Path: /lockout-status/{publicSubjectId}
+            Path: /lockouts/{publicSubjectId}
             Method: GET
     Metadata:
       BuildMethod: esbuild
@@ -2246,7 +2283,7 @@ Resources:
         Target: "es2024"
         Sourcemap: true
         EntryPoints:
-          - solutions/api/src/lambda/lockout-status/index.ts
+          - solutions/api/src/lambda/lockouts/index.ts
         Banner:
           - js=import { createRequire } from 'module'; const require = createRequire(import.meta.url); # Required in order to use AWS Lambda Powertools
 
@@ -2298,10 +2335,10 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
 
-  ApiLockoutStatusLambdaPermission:
+  ApiLockoutsLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
-      FunctionName: !Ref ApiLockoutStatusLambda.Alias
+      FunctionName: !Ref ApiLockoutsLambda.Alias
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ApiApiGateway}/*/*"
@@ -2434,7 +2471,7 @@ Resources:
       EvaluationPeriods: 5
       DatapointsToAlarm: 5
       TreatMissingData: notBreaching
-      ActionsEnabled: false
+      ActionsEnabled: true
       AlarmActions:
         - !If
           - IsProduction
@@ -2674,7 +2711,7 @@ Resources:
       EvaluationPeriods: 5
       DatapointsToAlarm: 5
       TreatMissingData: notBreaching
-      ActionsEnabled: false
+      ActionsEnabled: true
       AlarmActions:
         - !If
           - IsProduction
@@ -3266,15 +3303,15 @@ Resources:
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
           - !Ref AWS::NoValue
 
-  ApiLockoutStatusLambdaErrorsAlarm:
+  ApiLockoutsLambdaErrorsAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: "AMC lockout status lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      AlarmDescription: "AMC lockouts lambda is producing invocation errors. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
       Namespace: AWS/Lambda
       MetricName: Errors
       Dimensions:
         - Name: FunctionName
-          Value: !Ref ApiLockoutStatusLambda
+          Value: !Ref ApiLockoutsLambda
       Statistic: Sum
       Period: 60
       EvaluationPeriods: 3
@@ -3288,14 +3325,14 @@ Resources:
           - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiLockoutStatusLambdaAvailabilityAlarm:
+  ApiLockoutsLambdaAvailabilityAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       Metrics:
         - Id: errors
           MetricStat:
             Metric:
-              Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+              Namespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
               MetricName: 5XXResponseCount
             Period: 60
             Stat: Sum
@@ -3303,7 +3340,7 @@ Resources:
         - Id: total
           MetricStat:
             Metric:
-              Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+              Namespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
               MetricName: ResponseCount
             Period: 60
             Stat: Sum
@@ -3320,11 +3357,11 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiLockoutStatusLambdaLogErrorAlarm:
+  ApiLockoutsLambdaLogErrorAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      AlarmDescription: "AMC lockout status lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
-      Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+      AlarmDescription: "AMC lockouts lambda is logging ERROR or CRITICAL level messages at an elevated rate. Runbook: https://github.com/govuk-one-login/account-components/blob/main/runbooks/api-alarms-runbook.md"
+      Namespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
       MetricName: ErrorAndCriticalLogCount
       Statistic: Sum
       Period: 60
@@ -3339,14 +3376,14 @@ Resources:
           - Fn::ImportValue: !Sub ${AlertsStackName}-SecondLineAlertsTopicArn
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiLockoutStatusLambdaThrottlesAlarm:
+  ApiLockoutsLambdaThrottlesAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       Namespace: AWS/Lambda
       MetricName: Throttles
       Dimensions:
         - Name: FunctionName
-          Value: !Ref ApiLockoutStatusLambda
+          Value: !Ref ApiLockoutsLambda
       Statistic: Sum
       Period: 60
       EvaluationPeriods: 5
@@ -3357,14 +3394,14 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiLockoutStatusLambdaDurationAlarm:
+  ApiLockoutsLambdaDurationAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       Namespace: AWS/Lambda
       MetricName: Duration
       Dimensions:
         - Name: FunctionName
-          Value: !Ref ApiLockoutStatusLambda
+          Value: !Ref ApiLockoutsLambda
       ExtendedStatistic: p90
       Period: 60
       EvaluationPeriods: 15
@@ -3375,25 +3412,25 @@ Resources:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
 
-  ApiLockoutStatusLambdaColdStartInitDurationMetricFilter:
+  ApiLockoutsLambdaColdStartInitDurationMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      LogGroupName: !Ref ApiLockoutsLambdaLogGroup
       FilterPattern: '{ $.type = "platform.report" && $.record.metrics.initDurationMs > 0 }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
           MetricName: ColdStartInitDurationMs
           MetricValue: $.record.metrics.initDurationMs
           Unit: Milliseconds
 
-  ApiLockoutStatusLambdaColdStartDurationAnomalyAlarm:
+  ApiLockoutsLambdaColdStartDurationAnomalyAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
       Metrics:
         - Id: initDuration
           MetricStat:
             Metric:
-              Namespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+              Namespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
               MetricName: ColdStartInitDurationMs
             Period: 300
             Stat: p90
@@ -3443,13 +3480,13 @@ Resources:
           MetricName: CriticalLogCount
           MetricValue: "1"
 
-  ApiLockoutStatusLambdaLogCriticalMetricFilter:
+  ApiLockoutsLambdaLogCriticalMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      LogGroupName: !Ref ApiLockoutsLambdaLogGroup
       FilterPattern: '{ $.level = "CRITICAL" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
           MetricName: CriticalLogCount
           MetricValue: "1"
 
@@ -3483,13 +3520,13 @@ Resources:
           MetricName: ErrorLogCount
           MetricValue: "1"
 
-  ApiLockoutStatusLambdaLogErrorMetricFilter:
+  ApiLockoutsLambdaLogErrorMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      LogGroupName: !Ref ApiLockoutsLambdaLogGroup
       FilterPattern: '{ $.level = "ERROR" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
           MetricName: ErrorLogCount
           MetricValue: "1"
 
@@ -3523,13 +3560,13 @@ Resources:
           MetricName: WarnLogCount
           MetricValue: "1"
 
-  ApiLockoutStatusLambdaLogWarnMetricFilter:
+  ApiLockoutsLambdaLogWarnMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      LogGroupName: !Ref ApiLockoutsLambdaLogGroup
       FilterPattern: '{ $.level = "WARN" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
           MetricName: WarnLogCount
           MetricValue: "1"
 
@@ -3563,13 +3600,13 @@ Resources:
           MetricName: RequestLogCount
           MetricValue: "1"
 
-  ApiLockoutStatusLambdaLogRequestMetricFilter:
+  ApiLockoutsLambdaLogRequestMetricFilter:
     Type: AWS::Logs::MetricFilter
     Properties:
-      LogGroupName: !Ref ApiLockoutStatusLambdaLogGroup
+      LogGroupName: !Ref ApiLockoutsLambdaLogGroup
       FilterPattern: '{ $.message = "Request" }'
       MetricTransformations:
-        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutStatusLambda"
+        - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
           MetricName: RequestLogCount
           MetricValue: "1"
 
@@ -3866,7 +3903,21 @@ Resources:
               !Ref Environment,
               splitTestsCookieOverride,
             ]
-          INTERNAL_API_URL: !Sub "https://${ApiApiGateway}.execute-api.${AWS::Region}.amazonaws.com/${ApiStageName}"
+          # Rather than dynamically building the API URL as is done elsewhere in the template we must
+          # provide it as a per-environment hardcoded string. This serves two purposes: the first is that
+          # it means we can use the stub URL in dev and build; the second and more important is that it
+          # prevents deployment of this Lambda from being dependent on the the deployment of the API and
+          # associated resources. If we used the dynamically built API URL the deployment would have to wait
+          # until API Gateway has deployed and also until all Lambdas used by the API Gateway have deployed.
+          # This can take a long time if canaries are in use on those Lambdas which results in very slow
+          # deployments which sometimes even timeout, especially when this Lambda also uses a canary which
+          # can't start until after all of the previously mentioned resources have deployed.
+          INTERNAL_API_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              internalApiUrl,
+            ]
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -4201,7 +4252,7 @@ Resources:
       EvaluationPeriods: 5
       DatapointsToAlarm: 5
       TreatMissingData: notBreaching
-      ActionsEnabled: false
+      ActionsEnabled: true
       AlarmActions:
         - !If
           - IsProduction
@@ -4224,44 +4275,35 @@ Resources:
             Stat: Sum
           ReturnData: true
         - Id: band
-          Expression: ANOMALY_DETECTION_BAND(traffic, 2)
+          Expression: ANOMALY_DETECTION_BAND(traffic, 3)
           ReturnData: true
       ComparisonOperator: GreaterThanUpperThreshold
       ThresholdMetricId: band
       EvaluationPeriods: 5
       DatapointsToAlarm: 5
       TreatMissingData: notBreaching
-      ActionsEnabled: false
+      ActionsEnabled: true
       AlarmActions:
         - !If
           - IsProduction
           - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
           - !Ref AWS::NoValue
 
-  FrontendApiGatewayLowTrafficAnomalyAlarm:
+  FrontendApiGatewayLowTrafficAlarm:
     Type: AWS::CloudWatch::Alarm
     Properties:
-      Metrics:
-        - Id: traffic
-          MetricStat:
-            Metric:
-              Namespace: AWS/ApiGateway
-              MetricName: Count
-              Dimensions:
-                - Name: ApiName
-                  Value: !Sub "${AWS::StackName}-frontend"
-            Period: 300
-            Stat: Sum
-          ReturnData: true
-        - Id: band
-          Expression: ANOMALY_DETECTION_BAND(traffic, 2)
-          ReturnData: true
-      ComparisonOperator: LessThanLowerThreshold
-      ThresholdMetricId: band
+      Namespace: AWS/ApiGateway
+      MetricName: Count
+      Dimensions:
+        - Name: ApiName
+          Value: !Sub "${AWS::StackName}-frontend"
+      Period: 300
+      Statistic: Sum
+      Threshold: 100
+      ComparisonOperator: LessThanThreshold
       EvaluationPeriods: 5
       DatapointsToAlarm: 5
       TreatMissingData: notBreaching
-      ActionsEnabled: false
       AlarmActions:
         - !If
           - IsProduction
@@ -5560,10 +5602,10 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"RequestLogCount\"', 'Sum')),0)", "id": "request__total" } ]
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutsLambda\" MetricName=\"RequestLogCount\"', 'Sum')),0)", "id": "request__total" } ]
                 ],
                 "view": "timeSeries",
-                "title": "Lockout status lambda requests",
+                "title": "Lockouts lambda requests",
                 "region": "${AWS::Region}"
               },
               "width": 12,
@@ -5573,12 +5615,12 @@ Resources:
               "type": "metric",
               "properties": {
                 "metrics": [
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
-                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutStatusLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutsLambda\" MetricName=\"CriticalLogCount\"', 'Sum')),0)", "id": "critical__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutsLambda\" MetricName=\"ErrorLogCount\"', 'Sum')),0)", "id": "error__total" } ],
+                  [ { "expression": "FILL(SUM(SEARCH('Namespace=\"${AWS::StackName}/ApiLockoutsLambda\" MetricName=\"WarnLogCount\"', 'Sum')),0)", "id": "warn__total" } ]
                 ],
                 "view": "timeSeries",
-                "title": "Lockout status lambda warnings/errors",
+                "title": "Lockouts lambda warnings/errors",
                 "region": "${AWS::Region}"
               },
               "width": 12,
@@ -5587,9 +5629,9 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutStatusLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutsLambda' | filter type = \"platform.report\" | fields coalesce(record.metrics.initDurationMs, 0) as InitDuration, coalesce(record.metrics.durationMs, 0) as Duration | stats pct(InitDuration + Duration, 90) as P90TotalDuration by bin(5m)",
                 "view": "bar",
-                "title": "Lockout status lambda duration (p90) in milliseconds",
+                "title": "Lockouts lambda duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
               "width": 8,
@@ -5598,9 +5640,9 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutStatusLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutsLambda' | filter type = \"platform.report\" | stats (count(record.metrics.initDurationMs)/count(*))*100 as ColdStartRatePercent by bin(5m)",
                 "view": "bar",
-                "title": "Lockout status lambda cold start rate (%)",
+                "title": "Lockouts lambda cold start rate (%)",
                 "region": "${AWS::Region}"
               },
               "width": 8,
@@ -5609,9 +5651,9 @@ Resources:
             {
               "type": "log",
               "properties": {
-                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutStatusLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
+                "query": "SOURCE '/aws/lambda/${AWS::StackName}/ApiLockoutsLambda' | filter type = \"platform.report\" | stats pct(record.metrics.initDurationMs, 90) as ColdStartP90Duration by bin(5m)",
                 "view": "bar",
-                "title": "Lockout status lambda cold start duration (p90) in milliseconds",
+                "title": "Lockouts lambda cold start duration (p90) in milliseconds",
                 "region": "${AWS::Region}"
               },
               "width": 8,

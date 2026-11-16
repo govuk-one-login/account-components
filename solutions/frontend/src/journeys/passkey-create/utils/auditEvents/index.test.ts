@@ -9,6 +9,7 @@ const mockCreateEvent = vi.fn((_, props) => props);
 const mockGetCommonAuditEventProps = vi.fn();
 const mockSendAuditEvent = vi.fn();
 const mockExtractRegistrationResponseInfo = vi.fn();
+const mockLoggerError = vi.fn();
 
 vi.mock(import("@govuk-one-login/event-catalogue-utils"), () => ({
   createEvent: mockCreateEvent,
@@ -21,6 +22,11 @@ vi.mock(import("../../../../../../commons/utils/auditEvents/index.js"), () => ({
 
 vi.mock(import("../extractRegistrationResponseInfo/index.js"), () => ({
   extractRegistrationResponseInfo: mockExtractRegistrationResponseInfo,
+}));
+
+// @ts-expect-error
+vi.mock(import("../../../../../../commons/utils/logger/index.js"), () => ({
+  logger: { error: mockLoggerError },
 }));
 
 // @ts-expect-error
@@ -173,6 +179,30 @@ describe("passkey-create audit events", () => {
             },
           }),
         }),
+      );
+    });
+
+    it("omits passkey_credential_transports for excluded credentials with invalid transports", async () => {
+      await sendPasskeyRegistrationGeneratedAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        {
+          ...registrationOptions,
+          excludeCredentials: [
+            { id: "cred-1", transports: ["invalid-transport" as never] },
+          ],
+        } as unknown as PublicKeyCredentialCreationOptionsJSON,
+      );
+
+      const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
+
+      expect(
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+        eventPayload.restricted.passkey.passkey_excluded_credentials[0],
+      ).not.toHaveProperty("passkey_credential_transports");
+      expect(mockLoggerError).toHaveBeenCalledWith(
+        "Invalid credential transports",
+        expect.anything(),
       );
     });
 
@@ -333,6 +363,37 @@ describe("passkey-create audit events", () => {
         credentialTransports: ["hybrid", "internal"],
         fmt: "packed",
       });
+    });
+
+    it("omits passkey_credential_transports when credentialTransports are invalid", async () => {
+      mockExtractRegistrationResponseInfo.mockReturnValue({
+        credentialId: "credential-id-base64url",
+        aaguid: "00000000-0000-0000-0000-000000000000",
+        counter: 0,
+        credentialBackedUp: true,
+        userVerified: true,
+        publicKeyAlgorithm: -7,
+        credentialDeviceType: "multi-device",
+        credentialTransports: ["invalid-transport"],
+        fmt: "packed",
+      });
+
+      await sendPasskeyRegistrationSuccessfulAuditEvent(
+        mockRequest as FastifyRequest,
+        mockReply as FastifyReply,
+        registrationResponse,
+      );
+
+      const eventPayload = mockCreateEvent.mock.calls[0]?.[1];
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      expect(eventPayload.extensions.passkey).not.toHaveProperty(
+        "passkey_credential_transports",
+      );
+      expect(mockLoggerError).toHaveBeenCalledWith(
+        "Invalid credential transports",
+        expect.anything(),
+      );
     });
 
     it("sends audit event with registration response info", async () => {

@@ -55,21 +55,16 @@ export const accountManagementApi = function (app: FastifyInstance) {
     },
   );
 
-  app.post(
+  app.delete(
     paths.accountManagementApi.deleteAccount,
     async function (request, reply) {
-      if (!request.headers.authorization) {
-        reply.status(401);
-        reply.send();
-        return reply;
-      }
-
       if (!request.headers["x-adapi-accesstoken"]) {
         reply.status(401);
         reply.send();
         return reply;
       }
 
+      reply.status(204);
       reply.send();
       return reply;
     },

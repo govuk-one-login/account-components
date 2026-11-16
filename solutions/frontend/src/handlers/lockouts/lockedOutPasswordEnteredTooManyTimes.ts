@@ -4,7 +4,7 @@ import assert from "node:assert";
 const render = async (reply: FastifyReply, options?: object) => {
   assert.ok(reply.render);
   await reply.render(
-    "journeys/account-delete/templates/lockedOutPasswordEnteredTooManyTimes.njk",
+    "handlers/lockouts/lockedOutPasswordEnteredTooManyTimes.njk",
     options,
   );
 };

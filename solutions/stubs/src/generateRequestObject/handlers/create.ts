@@ -53,8 +53,8 @@ export const requestBodySchema = v.object({
   internal_api_generateOTP_scenario: v.string(),
   internal_api_checkOTP_scenario: v.string(),
   internal_api_checkPassword_scenario: v.string(),
-  internal_api_lockoutStatus_scenario: v.string(),
   split_test_bucket_assignments: v.string(),
+  internal_api_lockouts_scenario: v.string(),
 });
 
 export async function createRequestObjectGet(
