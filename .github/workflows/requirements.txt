@@ -13,12 +13,12 @@ arrow==1.4.0 \
 attrs==26.1.0 \
     --hash=sha256:c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309 \
     --hash=sha256:d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32
-aws-lambda-builders==1.67.0 \
-    --hash=sha256:5dc24d16433e5d45d2efb1469e9ff50e9a1a322fc7d8ca056304e9067cf679a5 \
-    --hash=sha256:822a5ba74ad65369ce1d1ab9b63f833ea7292b9cd8b355fa8ea3fc1c4bcef087
-aws-sam-cli==1.170.0 \
-    --hash=sha256:24ebaf5ecba38dc1758089968cb89ab61e124b84e92a344fc7a2771a47f4d0bf \
-    --hash=sha256:5fbaadba4beada832ad6fba1edeb8a1b32bb7a8fcff28168e47f788064e4f878
+aws-lambda-builders==1.68.0 \
+    --hash=sha256:89b23de84ac51b917b331b39eb0f52954f60305af2f5cdf63deec051b063e679 \
+    --hash=sha256:b3fda238575ccf3736e5729f06865a72615f0267dafeec81c9fe4c4d882c291f
+aws-sam-cli==1.171.0 \
+    --hash=sha256:9587af0e2d60f0e73e8fc472fd6064e0ccfea58102bcbe1ada66b61146df66d4 \
+    --hash=sha256:a801db3778b87138ef6411832c4afc44e6763a223a16bf83067d018826fe88f9
 aws-sam-translator==1.115.0 \
     --hash=sha256:9766852bd212baa94f240b0b98b82ab1ed5857034bcc87cce5bfc782043d9902 \
     --hash=sha256:9be2d7b04041a64e89ed3fb1186f948377ecc118033a8a7538f271d4bcab0afa
