@@ -4,25 +4,10 @@ import { PasskeyCreateState } from "../journeys/utils/stateMachines/passkey-crea
 import { TestingJourneyState } from "../journeys/utils/stateMachines/testing-journey.js";
 import { Scope } from "../../../commons/utils/commonTypes.js";
 import { analyticsDefaults } from "./constants.js";
-import type { AppConfigSchema } from "../../../config/schema/types.js";
 
 export type PathsMap = Record<
   string,
-  {
-    path: `/${string}`;
-    analytics?: Omit<FastifyReply["analytics"], "contentId"> & {
-      contentId?:
-        | NonNullable<FastifyReply["analytics"]>["contentId"]
-        | {
-            [Test in keyof AppConfigSchema["split_tests"]]: [
-              Test,
-              {
-                [Bucket in keyof AppConfigSchema["split_tests"][Test]]: string;
-              },
-            ];
-          }[keyof AppConfigSchema["split_tests"]];
-    };
-  }
+  { path: `/${string}`; analytics?: FastifyReply["analytics"] }
 >;
 
 const testingJourneyAnalyticsDefaults: FastifyReply["analytics"] = {
@@ -47,17 +32,7 @@ export const paths = {
       [TestingJourneyState.passwordNotProvided]: {
         step1: {
           path: "/testing-journey/step-1",
-          analytics: {
-            ...testingJourneyAnalyticsDefaults,
-            contentId: [
-              "testingJourneySplitTest",
-              {
-                bucket1: "testingJourneySplitTest-bucket1-contentId",
-                bucket2: "testingJourneySplitTest-bucket2-contentId",
-                bucket3: "testingJourneySplitTest-bucket3-contentId",
-              },
-            ],
-          },
+          analytics: testingJourneyAnalyticsDefaults,
         },
         enterPassword: {
           path: "/testing-journey/enter-password",
