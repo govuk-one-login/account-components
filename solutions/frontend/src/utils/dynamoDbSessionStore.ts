@@ -30,14 +30,14 @@ export class DynamoDbSessionStore implements SessionStore {
   }
 
   set(
-    sessionId: string,
+    sessionStoreId: string,
     session: Session,
     callback: (err: unknown) => void,
   ): void {
     dynamoDbClient
       .update({
         TableName: this.tableName,
-        Key: { id: sessionId },
+        Key: { id: sessionStoreId },
         UpdateExpression:
           "SET #session = :session, #expires = :expires, #generation = :generation",
         ExpressionAttributeNames: {
@@ -48,7 +48,7 @@ export class DynamoDbSessionStore implements SessionStore {
         ExpressionAttributeValues: {
           ":session": JSON.stringify(session),
           ":expires": session.expires ?? this.defaultSessionLength,
-          ":generation": getGeneration(session, sessionId),
+          ":generation": getGeneration(session, sessionStoreId),
         },
       })
       .then(() => {
@@ -60,14 +60,14 @@ export class DynamoDbSessionStore implements SessionStore {
   }
 
   get(
-    sessionId: string,
+    sessionStoreId: string,
     callback: (err: unknown, session: Session | null) => void,
   ): void {
     dynamoDbClient
       .get({
         TableName: this.tableName,
         Key: {
-          id: sessionId,
+          id: sessionStoreId,
         },
         ConsistentRead: true,
       })
@@ -77,7 +77,7 @@ export class DynamoDbSessionStore implements SessionStore {
           return;
         }
         if (session.Item["expires"] < Math.floor(Date.now() / 1000)) {
-          this.destroy(sessionId, (error) => {
+          this.destroy(sessionStoreId, (error) => {
             callback(error, null);
           });
           return;
@@ -138,12 +138,12 @@ export class DynamoDbSessionStore implements SessionStore {
       });
   }
 
-  destroy(sessionId: string, callback: (err: unknown) => void): void {
+  destroy(sessionStoreId: string, callback: (err: unknown) => void): void {
     dynamoDbClient
       .delete({
         TableName: this.tableName,
         Key: {
-          id: sessionId,
+          id: sessionStoreId,
         },
       })
       .then(() => {
