@@ -365,6 +365,7 @@ describe("internalApiClient", () => {
           type: "TooManyOTPsRequested",
           lockedOutAt: unixSeconds,
           lockedOutUntil: unixSeconds,
+          keepUntil: unixSeconds,
         },
       ]);
 
@@ -376,6 +377,7 @@ describe("internalApiClient", () => {
           type: "TooManyOTPsRequested",
           lockedOutAt: new Date(unixSeconds * 1000),
           lockedOutUntil: new Date(unixSeconds * 1000),
+          keepUntil: unixSeconds,
         },
       ]);
     });

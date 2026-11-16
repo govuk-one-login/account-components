@@ -2,18 +2,46 @@ import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { metricsAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/metrics/index.js";
 import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
 import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
+import * as v from "valibot";
+import { LockoutType, Source } from "../../../../commons/utils/constants.js";
+import { getLockouts } from "../../utils/getLockouts.js";
 
 export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
     metricsAPIGatewayProxyHandlerWrapper(
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      async (_e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-        return Promise.resolve({
-          statusCode: 200,
-          body: JSON.stringify({
-            TODO: "TODO",
+      async (e: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+        const pathParamsResult = v.safeParse(
+          v.object({
+            publicSubjectId: v.string(),
           }),
-        });
+          e.pathParameters,
+        );
+
+        const queryParamsResult = v.safeParse(
+          v.object({
+            source: v.enum(Source),
+            type: v.optional(v.enum(LockoutType)),
+          }),
+          e.queryStringParameters,
+        );
+
+        if (!pathParamsResult.success || !queryParamsResult.success) {
+          return {
+            statusCode: 400,
+            body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
+          };
+        }
+
+        return {
+          statusCode: 200,
+          body: JSON.stringify(
+            await getLockouts({
+              publicSubjectId: pathParamsResult.output.publicSubjectId,
+              source: queryParamsResult.output.source,
+              type: queryParamsResult.output.type,
+            }),
+          ),
+        };
       },
     ),
   ),

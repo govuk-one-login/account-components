@@ -49,5 +49,31 @@
       "paragraph2": "Canslo'r dudalen hon a rhoi cynnig arall.",
       "buttonText": "Ewch i hafan GOV.UK"
     }
+  },
+  "lockouts": {
+    "lockedOutSecurityCodeEnteredTooManyTimes": {
+      "pageTitle": "Rydych wedi rhoi'r cod diogelwch anghywir ormod o weithiau",
+      "heading": "Rydych wedi rhoi'r cod diogelwch anghywir ormod o weithiau",
+      "paragraphs": [
+        "Mae angen i chi aros 15 munud.",
+        "Yna gallwch <a href=\"{{exitLinkUrl}}\" class=\"govuk-link govuk-link--no-visited-state\">roi cynnig ar fewngofnodi eto</a>."
+      ]
+    },
+    "lockedOutPasswordEnteredTooManyTimes": {
+      "pageTitle": "Rydych wedi rhoi'r cyfrinair anghywir ormod o weithiau",
+      "heading": "Rydych wedi rhoi'r cyfrinair anghywir ormod o weithiau",
+      "paragraphs": [
+        "Mae angen i chi aros 15 munud.",
+        "Yna gallwch <a href=\"{{exitLinkUrl}}\" class=\"govuk-link govuk-link--no-visited-state\">roi cynnig ar fewngofnodi eto</a>."
+      ]
+    },
+    "lockedOutSecurityCodeRequestedTooManyTimes": {
+      "pageTitle": "Rydych wedi gofyn am ail anfon y cod diogelwch ormod o weithiau",
+      "heading": "Rydych wedi gofyn am ail anfon y cod diogelwch ormod o weithiau",
+      "paragraphs": [
+        "Mae angen i chi aros 15 munud.",
+        "Yna gallwch <a href=\"{{exitLinkUrl}}\" class=\"govuk-link govuk-link--no-visited-state\">roi cynnig ar fewngofnodi eto</a>."
+      ]
+    }
   }
 }
