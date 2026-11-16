@@ -10,7 +10,7 @@ import {
 
 const mockContext = {} as unknown as Context;
 const mockGetLockoutErrorResponse = vi.fn();
-const mockDynamoDbQuery = vi.fn();
+const mockGetLatestOtp = vi.fn();
 const mockDynamoDbPut = vi.fn();
 const mockMaybeCreateLockout = vi.fn();
 
@@ -29,8 +29,12 @@ vi.mock(
   }),
 );
 
-vi.mock(import("../../utils/getLockoutErrorResponse.js"), () => ({
+vi.mock(import("../../utils/lockouts/getLockoutErrorResponse.js"), () => ({
   getLockoutErrorResponse: mockGetLockoutErrorResponse,
+}));
+
+vi.mock(import("../../utils/getLatestOtp.js"), () => ({
+  getLatestOtp: mockGetLatestOtp,
 }));
 
 // @ts-expect-error
@@ -38,7 +42,6 @@ vi.mock(
   import("../../../../commons/utils/awsClient/dynamodbClient/index.js"),
   () => ({
     getDynamoDbClient: () => ({
-      query: mockDynamoDbQuery,
       put: mockDynamoDbPut,
     }),
   }),
@@ -86,7 +89,7 @@ describe("generate-otp handler", () => {
     vi.useFakeTimers();
     vi.setSystemTime(NOW);
     mockGetLockoutErrorResponse.mockResolvedValue(undefined);
-    mockDynamoDbQuery.mockResolvedValue({ Items: [] });
+    mockGetLatestOtp.mockResolvedValue(undefined);
     mockDynamoDbPut.mockResolvedValue({});
     mockMaybeCreateLockout.mockResolvedValue(undefined);
   });
@@ -298,7 +301,7 @@ describe("generate-otp handler", () => {
 
   describe("oTP generation", () => {
     it("returns 200 with a new otp and expiresAt when no existing OTP", async () => {
-      mockDynamoDbQuery.mockResolvedValue({ Items: [] });
+      mockGetLatestOtp.mockResolvedValue(undefined);
 
       const result = await handler(
         makeEvent(validPathParams, validBody),
@@ -338,22 +341,12 @@ describe("generate-otp handler", () => {
       expect(expiresAt).toBe(now + 300);
     });
 
-    it("queries DynamoDB with correct parameters", async () => {
+    it("calls getLatestOtp with correct parameters", async () => {
       await handler(makeEvent(validPathParams, validBody), mockContext);
 
-      expect(mockDynamoDbQuery).toHaveBeenCalledWith({
-        TableName: "otps-table",
-        IndexName: "otps-gsi",
-        KeyConditionExpression: "publicSubjectId = :publicSubjectId",
-        FilterExpression: "#source = :source",
-        ExpressionAttributeValues: {
-          ":publicSubjectId": "subject-123",
-          ":source": Source["account-delete"],
-        },
-        ExpressionAttributeNames: {
-          "#source": "source",
-        },
-        ScanIndexForward: false,
+      expect(mockGetLatestOtp).toHaveBeenCalledWith({
+        publicSubjectId: "subject-123",
+        source: Source["account-delete"],
       });
     });
 
@@ -451,7 +444,7 @@ describe("generate-otp handler", () => {
   describe("oTP reuse", () => {
     it("reuses existing OTP when reissueUnusedUnexpiredOTP is true (default) and OTP is unused and not near expiry", async () => {
       const existingOtp = makeExistingOtp({ expiresAt: now + 600 });
-      mockDynamoDbQuery.mockResolvedValue({ Items: [existingOtp] });
+      mockGetLatestOtp.mockResolvedValue(existingOtp);
 
       const result = await handler(
         makeEvent(validPathParams, validBody),
@@ -469,7 +462,7 @@ describe("generate-otp handler", () => {
 
     it("writes the reused otp and expiresAt to DynamoDB when reusing", async () => {
       const existingOtp = makeExistingOtp({ expiresAt: now + 600 });
-      mockDynamoDbQuery.mockResolvedValue({ Items: [existingOtp] });
+      mockGetLatestOtp.mockResolvedValue(existingOtp);
 
       await handler(makeEvent(validPathParams, validBody), mockContext);
 
@@ -483,7 +476,7 @@ describe("generate-otp handler", () => {
 
     it("reuses existing OTP when reissueUnusedUnexpiredOTP is explicitly true", async () => {
       const existingOtp = makeExistingOtp({ expiresAt: now + 600 });
-      mockDynamoDbQuery.mockResolvedValue({ Items: [existingOtp] });
+      mockGetLatestOtp.mockResolvedValue(existingOtp);
 
       const result = await handler(
         makeEvent(validPathParams, {
@@ -500,7 +493,7 @@ describe("generate-otp handler", () => {
 
     it("generates new OTP when reissueUnusedUnexpiredOTP is false", async () => {
       const existingOtp = makeExistingOtp({ expiresAt: now + 600 });
-      mockDynamoDbQuery.mockResolvedValue({ Items: [existingOtp] });
+      mockGetLatestOtp.mockResolvedValue(existingOtp);
 
       const result = await handler(
         makeEvent(validPathParams, {
@@ -518,7 +511,7 @@ describe("generate-otp handler", () => {
 
     it("generates new OTP when existing OTP is already used", async () => {
       const existingOtp = makeExistingOtp({ used: true, expiresAt: now + 600 });
-      mockDynamoDbQuery.mockResolvedValue({ Items: [existingOtp] });
+      mockGetLatestOtp.mockResolvedValue(existingOtp);
 
       const result = await handler(
         makeEvent(validPathParams, validBody),
@@ -533,7 +526,7 @@ describe("generate-otp handler", () => {
 
     it("generates new OTP when expiresIn would result in an earlier expiry than the existing OTP", async () => {
       const existingOtp = makeExistingOtp({ expiresAt: now + 600 });
-      mockDynamoDbQuery.mockResolvedValue({ Items: [existingOtp] });
+      mockGetLatestOtp.mockResolvedValue(existingOtp);
 
       const result = await handler(
         makeEvent(validPathParams, { ...validBody, expiresIn: 599 }),
@@ -548,7 +541,7 @@ describe("generate-otp handler", () => {
 
     it("reuses existing OTP when expiresIn would result in the same expiry as the existing OTP", async () => {
       const existingOtp = makeExistingOtp({ expiresAt: now + 600 });
-      mockDynamoDbQuery.mockResolvedValue({ Items: [existingOtp] });
+      mockGetLatestOtp.mockResolvedValue(existingOtp);
 
       const result = await handler(
         makeEvent(validPathParams, { ...validBody, expiresIn: 600 }),
@@ -562,7 +555,7 @@ describe("generate-otp handler", () => {
 
     it("generates new OTP when existing OTP expires within 120 seconds", async () => {
       const existingOtp = makeExistingOtp({ expiresAt: now + 119 });
-      mockDynamoDbQuery.mockResolvedValue({ Items: [existingOtp] });
+      mockGetLatestOtp.mockResolvedValue(existingOtp);
 
       const result = await handler(
         makeEvent(validPathParams, validBody),
@@ -577,7 +570,7 @@ describe("generate-otp handler", () => {
 
     it("reuses existing OTP when it expires exactly at now + 120", async () => {
       const existingOtp = makeExistingOtp({ expiresAt: now + 120 });
-      mockDynamoDbQuery.mockResolvedValue({ Items: [existingOtp] });
+      mockGetLatestOtp.mockResolvedValue(existingOtp);
 
       const result = await handler(
         makeEvent(validPathParams, validBody),
@@ -590,7 +583,7 @@ describe("generate-otp handler", () => {
     });
 
     it("generates new OTP when no existing OTP is found", async () => {
-      mockDynamoDbQuery.mockResolvedValue({ Items: [] });
+      mockGetLatestOtp.mockResolvedValue(undefined);
 
       const result = await handler(
         makeEvent(validPathParams, validBody),

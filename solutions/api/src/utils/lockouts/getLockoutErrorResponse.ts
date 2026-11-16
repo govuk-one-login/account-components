@@ -1,6 +1,6 @@
 import type { APIGatewayProxyResult } from "aws-lambda";
-import type { Source } from "../../../commons/utils/constants.js";
-import { LockoutType } from "../../../commons/utils/constants.js";
+import type { Source } from "../../../../commons/utils/constants.js";
+import { LockoutType } from "../../../../commons/utils/constants.js";
 import { getLockouts } from "./getLockouts.js";
 
 const lockoutErrorCodes: Record<LockoutType, number> = {

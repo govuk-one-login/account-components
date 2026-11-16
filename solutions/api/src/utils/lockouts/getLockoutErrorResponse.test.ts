@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { Source, LockoutType } from "../../../commons/utils/constants.js";
+import { Source, LockoutType } from "../../../../commons/utils/constants.js";
 
 const mockGetLockouts = vi.fn();
 
