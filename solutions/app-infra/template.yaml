@@ -1244,7 +1244,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref NotificationsServiceLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      FilterPattern: '{ ($.level = "ERROR" || $.level = "CRITICAL") && $.message != %ExperimentalWarning% }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
           MetricName: ErrorAndCriticalLogCount
@@ -1283,7 +1283,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref NotificationsServiceLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" }'
+      FilterPattern: '{ $.level = "ERROR" && $.message != %ExperimentalWarning% }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/NotificationsServiceLambda"
           MetricName: ErrorLogCountByContext
@@ -2492,7 +2492,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiTokenLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" }'
+      FilterPattern: '{ $.level = "ERROR" && $.message != %ExperimentalWarning% }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
           MetricName: ErrorLogCountByContext
@@ -2537,7 +2537,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiTokenLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      FilterPattern: '{ ($.level = "ERROR" || $.level = "CRITICAL") && $.message != %ExperimentalWarning% }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiTokenLambda"
           MetricName: ErrorAndCriticalLogCount
@@ -2732,7 +2732,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" }'
+      FilterPattern: '{ $.level = "ERROR" && $.message != %ExperimentalWarning% }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: ErrorLogCountByContext
@@ -2777,7 +2777,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiJourneyOutcomeLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      FilterPattern: '{ ($.level = "ERROR" || $.level = "CRITICAL") && $.message != %ExperimentalWarning% }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiJourneyOutcomeLambda"
           MetricName: ErrorAndCriticalLogCount
@@ -3489,7 +3489,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiGenerateOTPLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" }'
+      FilterPattern: '{ $.level = "ERROR" && $.message != %ExperimentalWarning% }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiGenerateOTPLambda"
           MetricName: ErrorLogCount
@@ -3499,7 +3499,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiCheckOTPLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" }'
+      FilterPattern: '{ $.level = "ERROR" && $.message != %ExperimentalWarning% }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckOTPLambda"
           MetricName: ErrorLogCount
@@ -3509,7 +3509,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiCheckPasswordLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" }'
+      FilterPattern: '{ $.level = "ERROR" && $.message != %ExperimentalWarning% }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiCheckPasswordLambda"
           MetricName: ErrorLogCount
@@ -3519,7 +3519,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref ApiLockoutsLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" }'
+      FilterPattern: '{ $.level = "ERROR" && $.message != %ExperimentalWarning% }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/ApiLockoutsLambda"
           MetricName: ErrorLogCount
@@ -4061,7 +4061,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref FrontendLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" }'
+      FilterPattern: '{ $.level = "ERROR" && $.message != %ExperimentalWarning% }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
           MetricName: ErrorLogCountByContext
@@ -4112,7 +4112,7 @@ Resources:
     Type: AWS::Logs::MetricFilter
     Properties:
       LogGroupName: !Ref FrontendLambdaLogGroup
-      FilterPattern: '{ $.level = "ERROR" || $.level = "CRITICAL" }'
+      FilterPattern: '{ ($.level = "ERROR" || $.level = "CRITICAL") && $.message != %ExperimentalWarning% }'
       MetricTransformations:
         - MetricNamespace: !Sub "${AWS::StackName}/FrontendLambda"
           MetricName: ErrorAndCriticalLogCount
