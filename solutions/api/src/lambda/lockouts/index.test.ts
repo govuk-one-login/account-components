@@ -21,7 +21,7 @@ vi.mock(
   }),
 );
 
-vi.mock(import("../../utils/getLockouts.js"), () => ({
+vi.mock(import("../../utils/lockouts/getLockouts.js"), () => ({
   getLockouts: mockGetLockouts,
 }));
 
