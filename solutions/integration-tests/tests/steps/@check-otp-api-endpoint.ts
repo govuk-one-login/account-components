@@ -53,6 +53,8 @@ const checkOTP = async (
 
 const defaultSource = Source["account-delete"];
 
+const incorrectOtp = "XXXXXX";
+
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 When(
@@ -60,58 +62,66 @@ When(
   async ({ scenarioData, $test }) => {
     const publicSubjectId = scenarioData.id;
 
-    await $test.step(
-      "Invalid requests: all return 400 with code 1001",
-      async () => {
-        const invalidRequests = [
-          checkOTP(publicSubjectId, {}),
-          checkOTP(publicSubjectId, { otp: "123456" }),
-          checkOTP(publicSubjectId, { source: defaultSource }),
-          checkOTP(publicSubjectId, {
-            otp: "123456",
-            source: "invalid-source",
-          }),
-          checkOTP(publicSubjectId, {
-            otp: "123456",
-            source: defaultSource,
-            lockoutDuration: 0,
-          }),
-          checkOTP(publicSubjectId, {
-            otp: "123456",
-            source: defaultSource,
-            lockoutDuration: 1.5,
-          }),
-          checkOTP(publicSubjectId, {
-            otp: "123456",
-            source: defaultSource,
-            maxAllowedBeforeLockout: { count: 0 },
-          }),
-          checkOTP(publicSubjectId, {
-            otp: "123456",
-            source: defaultSource,
-            maxAllowedBeforeLockout: { count: 1.5 },
-          }),
-          checkOTP(publicSubjectId, {
-            otp: "123456",
-            source: defaultSource,
-            maxAllowedBeforeLockout: { window: 0 },
-          }),
-          checkOTP(publicSubjectId, {
-            otp: "123456",
-            source: defaultSource,
-            maxAllowedBeforeLockout: { window: 1.5 },
-          }),
-        ];
+    await $test.step("Invalid requests", async () => {
+      const invalidRequests = [
+        checkOTP(publicSubjectId, {}),
+        checkOTP(publicSubjectId, { otp: "123456" }),
+        checkOTP(publicSubjectId, { source: defaultSource }),
+        checkOTP(publicSubjectId, {
+          otp: "123456",
+          source: "invalid-source",
+        }),
+        checkOTP(publicSubjectId, {
+          otp: "123456",
+          source: defaultSource,
+          lockoutDuration: 0,
+        }),
+        checkOTP(publicSubjectId, {
+          otp: "123456",
+          source: defaultSource,
+          lockoutDuration: 1.5,
+        }),
+        checkOTP(publicSubjectId, {
+          otp: "123456",
+          source: defaultSource,
+          maxAllowedBeforeLockout: { count: 0 },
+        }),
+        checkOTP(publicSubjectId, {
+          otp: "123456",
+          source: defaultSource,
+          maxAllowedBeforeLockout: { count: 1.5 },
+        }),
+        checkOTP(publicSubjectId, {
+          otp: "123456",
+          source: defaultSource,
+          maxAllowedBeforeLockout: { window: 0 },
+        }),
+        checkOTP(publicSubjectId, {
+          otp: "123456",
+          source: defaultSource,
+          maxAllowedBeforeLockout: { window: 1.5 },
+        }),
+      ];
 
-        for (const invalidRequest of await Promise.all(invalidRequests)) {
-          expect(invalidRequest.status).toBe(400);
-          const body = v.parse(
-            errorResponseSchema,
-            await invalidRequest.json(),
-          );
-          expect(body.code).toBe(1001);
-        }
-      },
+      for (const invalidRequest of await Promise.all(invalidRequests)) {
+        expect(invalidRequest.status).toBe(400);
+        const body = v.parse(errorResponseSchema, await invalidRequest.json());
+        expect(body.code).toBe(1001);
+      }
+    });
+
+    await $test.step("No OTPs: invalid OTP response", async () => {
+      const res = await checkOTP(publicSubjectId, {
+        otp: incorrectOtp,
+        source: defaultSource,
+      });
+      expect(res.status).toBe(401);
+      const body = v.parse(errorResponseSchema, await res.json());
+      expect(body.code).toBe(1005);
+    });
+
+    await $test.step("Wait long enough for OTP checks GSI to update", () =>
+      sleep(1_000),
     );
 
     const { otp } = await $test.step("Generate an OTP", async () =>
@@ -120,25 +130,131 @@ When(
       }),
     );
 
-    await $test.step("Wrong OTP: returns 401 with code 1005", async () => {
+    const { otp: otpDifferentSource } = await $test.step(
+      "Generate an OTP with a different source",
+      async () =>
+        generateOTP(publicSubjectId, {
+          source: Source["passkey-create"],
+        }),
+    );
+
+    await $test.step("Wrong OTP: invalid OTP response", async () => {
       const res = await checkOTP(publicSubjectId, {
-        otp: "00000X",
+        otp: incorrectOtp,
         source: defaultSource,
-        lockoutDuration: 5,
-        maxAllowedBeforeLockout: { count: 3 },
       });
       expect(res.status).toBe(401);
       const body = v.parse(errorResponseSchema, await res.json());
       expect(body.code).toBe(1005);
     });
 
+    await $test.step("Wait long enough for OTP checks GSI to update", () =>
+      sleep(1_000),
+    );
+
     await $test.step(
-      "Wrong OTP again: returns 401 with code 1005",
+      "Wrong OTP again, maxAllowedBeforeLockout.count=2: invalid OTP response, should create lockout",
       async () => {
         const res = await checkOTP(publicSubjectId, {
-          otp: "000000",
+          otp: incorrectOtp,
           source: defaultSource,
           lockoutDuration: 5,
+          maxAllowedBeforeLockout: { count: 2 },
+        });
+        expect(res.status).toBe(401);
+        const body = v.parse(errorResponseSchema, await res.json());
+        expect(body.code).toBe(1005);
+      },
+    );
+
+    await $test.step(
+      "Wait long enough for OTP checks GSI and lockouts GSI to update",
+      () => sleep(1_000),
+    );
+
+    await $test.step("Correct OTP: locked out", async () => {
+      const res = await checkOTP(publicSubjectId, {
+        otp,
+        source: defaultSource,
+      });
+      expect(res.status).toBe(403);
+      const body = v.parse(errorResponseSchema, await res.json());
+      expect(body.code).toBe(1003);
+    });
+
+    await $test.step(
+      "Correct OTP for different source: successful response",
+      async () => {
+        const res = await checkOTP(publicSubjectId, {
+          otp: otpDifferentSource,
+          source: Source["passkey-create"],
+        });
+        expect(res.status).toBe(204);
+      },
+    );
+
+    await $test.step(
+      "Wait for lockout to expire and for OTP checks GSI to update",
+      () => sleep(6_000),
+    );
+
+    await $test.step(
+      "Wrong OTP again: invalid OTP response, does not consider unsuccessful checks which have already contributed to lockouts and so does not create lockout",
+      async () => {
+        const res = await checkOTP(publicSubjectId, {
+          otp: incorrectOtp,
+          source: defaultSource,
+          maxAllowedBeforeLockout: { count: 2 },
+        });
+        expect(res.status).toBe(401);
+        const body = v.parse(errorResponseSchema, await res.json());
+        expect(body.code).toBe(1005);
+      },
+    );
+
+    await $test.step("Wait long enough for OTP checks GSI to update", () =>
+      sleep(1_000),
+    );
+
+    await $test.step("Correct OTP: successful response", async () => {
+      const res = await checkOTP(publicSubjectId, {
+        otp,
+        source: defaultSource,
+      });
+      expect(res.status).toBe(204);
+    });
+
+    await $test.step("Wait long enough for OTP checks GSI to update", () =>
+      sleep(1_000),
+    );
+
+    await $test.step("Correct OTP again: invalid OTP response", async () => {
+      const res = await checkOTP(publicSubjectId, {
+        otp,
+        source: defaultSource,
+        maxAllowedBeforeLockout: { count: 2 },
+      });
+      expect(res.status).toBe(401);
+      const body = v.parse(errorResponseSchema, await res.json());
+      expect(body.code).toBe(1005);
+    });
+
+    await $test.step("Wait long enough for OTP checks GSI to update", () =>
+      sleep(1_000),
+    );
+
+    const { otp: newOtp } = await $test.step("Generate another OTP", async () =>
+      generateOTP(publicSubjectId, {
+        source: defaultSource,
+      }),
+    );
+
+    await $test.step(
+      "Wrong OTP: invalid OTP response, does not consider unsuccessful checks before successful check and so does not create lockout",
+      async () => {
+        const res = await checkOTP(publicSubjectId, {
+          otp: incorrectOtp,
+          source: defaultSource,
           maxAllowedBeforeLockout: { count: 3 },
         });
         expect(res.status).toBe(401);
@@ -148,52 +264,17 @@ When(
     );
 
     await $test.step(
-      "Wrong OTP a third time: locked out (code 1003)",
-      async () => {
-        const res = await checkOTP(publicSubjectId, {
-          otp: "000000",
-          source: defaultSource,
-          lockoutDuration: 5,
-          maxAllowedBeforeLockout: { count: 3 },
-        });
-        expect(res.status).toBe(403);
-        const body = v.parse(errorResponseSchema, await res.json());
-        expect(body.code).toBe(1003);
-      },
+      "Wait for longer than next window and for OTP checks GSI to update",
+      () => sleep(5_000),
     );
 
     await $test.step(
-      "Correct OTP while locked out: still returns 403 with code 1003",
+      "Wrong OTP: invalid OTP response, does not consider checks outside of window and so does not create lockout",
       async () => {
         const res = await checkOTP(publicSubjectId, {
-          otp,
+          otp: incorrectOtp,
           source: defaultSource,
-        });
-        expect(res.status).toBe(403);
-        const body = v.parse(errorResponseSchema, await res.json());
-        expect(body.code).toBe(1003);
-      },
-    );
-
-    await $test.step("Wait for lockout to expire", () => sleep(6_000));
-
-    await $test.step(
-      "Correct OTP after lockout expires: returns 204",
-      async () => {
-        const res = await checkOTP(publicSubjectId, {
-          otp,
-          source: defaultSource,
-        });
-        expect(res.status).toBe(204);
-      },
-    );
-
-    await $test.step(
-      "Same OTP again (already used): returns 401 with code 1005",
-      async () => {
-        const res = await checkOTP(publicSubjectId, {
-          otp,
-          source: defaultSource,
+          maxAllowedBeforeLockout: { count: 2, window: 4 },
         });
         expect(res.status).toBe(401);
         const body = v.parse(errorResponseSchema, await res.json());
@@ -201,39 +282,37 @@ When(
       },
     );
 
-    await $test.step(
-      "source=passkey-create: separate lockout scope, wrong OTP returns 401 not 403",
-      async () => {
-        const { otp: passkeyOtp } = await generateOTP(publicSubjectId, {
-          source: Source["passkey-create"],
-        });
-        const res = await checkOTP(publicSubjectId, {
-          otp: passkeyOtp,
-          source: Source["passkey-create"],
-        });
-        expect(res.status).toBe(204);
-      },
+    await $test.step("Wait long enough for OTP checks GSI to update", () =>
+      sleep(1_000),
     );
 
-    await $test.step(
-      "Generate a short-lived OTP (expiresIn=3s) and wait for it to expire",
-      async () => {
-        const { otp: shortLivedOtp } = await generateOTP(publicSubjectId, {
-          source: defaultSource,
-          reissueUnusedUnexpiredOTP: false,
-          expiresIn: 3,
-        });
+    await $test.step("Correct OTP: successful response", async () => {
+      const res = await checkOTP(publicSubjectId, {
+        otp: newOtp,
+        source: defaultSource,
+      });
+      expect(res.status).toBe(204);
+    });
 
-        await sleep(4_000);
-
-        const res = await checkOTP(publicSubjectId, {
-          otp: shortLivedOtp,
+    const { otp: shortLivedOtp } = await $test.step(
+      "Generate a short-lived OTP",
+      async () =>
+        generateOTP(publicSubjectId, {
           source: defaultSource,
-        });
-        expect(res.status).toBe(401);
-        const body = v.parse(errorResponseSchema, await res.json());
-        expect(body.code).toBe(1005);
-      },
+          expiresIn: 2,
+        }),
     );
+
+    await $test.step("Wait for short-lived OTP to expire", () => sleep(3_000));
+
+    await $test.step("Expired OTP: invalid OTP response", async () => {
+      const res = await checkOTP(publicSubjectId, {
+        otp: shortLivedOtp,
+        source: defaultSource,
+      });
+      expect(res.status).toBe(401);
+      const body = v.parse(errorResponseSchema, await res.json());
+      expect(body.code).toBe(1005);
+    });
   },
 );

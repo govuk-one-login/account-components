@@ -42,47 +42,41 @@ When(
   async ({ scenarioData, $test }) => {
     const publicSubjectId = scenarioData.id;
 
-    await $test.step(
-      "Invalid requests: all return 400 with code 1001",
-      async () => {
-        const invalidRequests = [
-          makeRequest(publicSubjectId, {}),
-          makeRequest(publicSubjectId, { source: "invalid-source" }),
-          makeRequest(publicSubjectId, { ...defaultBody, expiresIn: 0 }),
-          makeRequest(publicSubjectId, { ...defaultBody, expiresIn: 1.5 }),
-          makeRequest(publicSubjectId, { ...defaultBody, lockoutDuration: 0 }),
-          makeRequest(publicSubjectId, {
-            ...defaultBody,
-            lockoutDuration: 1.5,
-          }),
-          makeRequest(publicSubjectId, {
-            ...defaultBody,
-            maxAllowedBeforeLockout: { count: 0 },
-          }),
-          makeRequest(publicSubjectId, {
-            ...defaultBody,
-            maxAllowedBeforeLockout: { count: 1.5 },
-          }),
-          makeRequest(publicSubjectId, {
-            ...defaultBody,
-            maxAllowedBeforeLockout: { window: 0 },
-          }),
-          makeRequest(publicSubjectId, {
-            ...defaultBody,
-            maxAllowedBeforeLockout: { window: 1.5 },
-          }),
-        ];
+    await $test.step("Invalid requests", async () => {
+      const invalidRequests = [
+        makeRequest(publicSubjectId, {}),
+        makeRequest(publicSubjectId, { source: "invalid-source" }),
+        makeRequest(publicSubjectId, { ...defaultBody, expiresIn: 0 }),
+        makeRequest(publicSubjectId, { ...defaultBody, expiresIn: 1.5 }),
+        makeRequest(publicSubjectId, { ...defaultBody, lockoutDuration: 0 }),
+        makeRequest(publicSubjectId, {
+          ...defaultBody,
+          lockoutDuration: 1.5,
+        }),
+        makeRequest(publicSubjectId, {
+          ...defaultBody,
+          maxAllowedBeforeLockout: { count: 0 },
+        }),
+        makeRequest(publicSubjectId, {
+          ...defaultBody,
+          maxAllowedBeforeLockout: { count: 1.5 },
+        }),
+        makeRequest(publicSubjectId, {
+          ...defaultBody,
+          maxAllowedBeforeLockout: { window: 0 },
+        }),
+        makeRequest(publicSubjectId, {
+          ...defaultBody,
+          maxAllowedBeforeLockout: { window: 1.5 },
+        }),
+      ];
 
-        for (const invalidRequest of await Promise.all(invalidRequests)) {
-          expect(invalidRequest.status).toBe(400);
-          const body = v.parse(
-            errorResponseSchema,
-            await invalidRequest.json(),
-          );
-          expect(body.code).toBe(1001);
-        }
-      },
-    );
+      for (const invalidRequest of await Promise.all(invalidRequests)) {
+        expect(invalidRequest.status).toBe(400);
+        const body = v.parse(errorResponseSchema, await invalidRequest.json());
+        expect(body.code).toBe(1001);
+      }
+    });
 
     const { otp: firstOtp, expiresAt: firstExpiresAt } = await $test.step(
       "Default params: issues a new 6-digit OTP expiring in ~900s",
