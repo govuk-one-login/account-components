@@ -1,7 +1,10 @@
-import type { LockoutType, Source } from "../../../commons/utils/constants.js";
-import { getDynamoDbClient } from "../../../commons/utils/awsClient/dynamodbClient/index.js";
+import type {
+  LockoutType,
+  Source,
+} from "../../../../commons/utils/constants.js";
+import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import type { QueryOutput } from "@aws-sdk/client-dynamodb";
-import { lockoutsDatabaseItem } from "../../../commons/utils/schemas.js";
+import { lockoutsDatabaseItem } from "../../../../commons/utils/schemas.js";
 import * as v from "valibot";
 
 const dynamodbClient = getDynamoDbClient();

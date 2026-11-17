@@ -4,7 +4,7 @@ import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/l
 import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
 import * as v from "valibot";
 import { LockoutType, Source } from "../../../../commons/utils/constants.js";
-import { getLockouts } from "../../utils/getLockouts.js";
+import { getLockouts } from "../../utils/lockouts/getLockouts.js";
 
 export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(

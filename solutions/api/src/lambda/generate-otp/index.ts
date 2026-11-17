@@ -6,14 +6,15 @@ import * as v from "valibot";
 import {
   LockoutType,
   oneYearInSeconds,
-  Source,
 } from "../../../../commons/utils/constants.js";
-import { getLockouts } from "../../utils/getLockouts.js";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import { otpsDatabaseItem } from "../../../../commons/utils/schemas.js";
 import { randomInt, randomUUID } from "node:crypto";
+import { getLatestOtp } from "../../utils/getLatestOtp.js";
 import { maybeCreateLockout } from "../../utils/lockouts/maybeCreateLockout.js";
 import assert from "node:assert";
+import { getLockoutErrorResponse } from "../../utils/lockouts/getLockoutErrorResponse.js";
+import { getBaseBodySchemaForEndpointWithLockouts } from "../../utils/lockouts/getBaseBodySchemaForEndpointWithLockouts.js";
 
 const dynamodbClient = getDynamoDbClient();
 
@@ -36,24 +37,15 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
             v.string(),
             v.parseJson(),
             v.object({
-              source: v.enum(Source),
+              ...getBaseBodySchemaForEndpointWithLockouts({
+                lockoutTypesToAlwaysCheckFor: [
+                  LockoutType.TooManyOTPsRequested,
+                ],
+              }).entries,
               reissueUnusedUnexpiredOTP: v.optional(v.boolean(), true),
               expiresIn: v.optional(
                 v.pipe(v.number(), v.integer(), v.gtValue(0)),
                 900,
-              ),
-              lockoutDuration: v.optional(
-                v.pipe(v.number(), v.integer(), v.gtValue(0)),
-              ),
-              maxAllowedBeforeLockout: v.optional(
-                v.object({
-                  count: v.optional(
-                    v.pipe(v.number(), v.integer(), v.gtValue(0)),
-                  ),
-                  window: v.optional(
-                    v.pipe(v.number(), v.integer(), v.gtValue(0)),
-                  ),
-                }),
               ),
             }),
           ),
@@ -67,74 +59,22 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           };
         }
 
-        const lockouts = await getLockouts({
+        const lockoutErrorResponse = await getLockoutErrorResponse({
           publicSubjectId: pathParams.output.publicSubjectId,
+          lockoutsToCheckFor: body.output.lockoutsToCheckFor,
           source: body.output.source,
         });
 
-        if (
-          lockouts.some(
-            (lockout) => lockout.type === LockoutType.TooManyOTPsRequested,
-          )
-        ) {
-          return {
-            statusCode: 403,
-            body: JSON.stringify({
-              code: 1002,
-              message: LockoutType.TooManyOTPsRequested,
-            }),
-          };
-        }
-
-        if (
-          lockouts.some(
-            (lockout) =>
-              lockout.type === LockoutType.TooManyIncorrectOTPsEntered,
-          )
-        ) {
-          return {
-            statusCode: 403,
-            body: JSON.stringify({
-              code: 1003,
-              message: LockoutType.TooManyIncorrectOTPsEntered,
-            }),
-          };
-        }
-
-        if (
-          lockouts.some(
-            (lockout) =>
-              lockout.type === LockoutType.TooManyIncorrectPasswordsEntered,
-          )
-        ) {
-          return {
-            statusCode: 403,
-            body: JSON.stringify({
-              code: 1004,
-              message: LockoutType.TooManyIncorrectPasswordsEntered,
-            }),
-          };
+        if (lockoutErrorResponse) {
+          return lockoutErrorResponse;
         }
 
         const now = Math.floor(Date.now() / 1000);
 
-        const otpsResult = await dynamodbClient.query({
-          TableName: process.env["OTPS_TABLE_NAME"],
-          IndexName: process.env["OTPS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME"],
-          KeyConditionExpression: "publicSubjectId = :publicSubjectId",
-          FilterExpression: "#source = :source",
-          ExpressionAttributeValues: {
-            ":publicSubjectId": pathParams.output.publicSubjectId,
-            ":source": body.output.source,
-          },
-          ExpressionAttributeNames: {
-            "#source": "source",
-          },
-          ScanIndexForward: false,
+        const existingOtp = await getLatestOtp({
+          publicSubjectId: pathParams.output.publicSubjectId,
+          source: body.output.source,
         });
-
-        const otps = v.parse(v.array(otpsDatabaseItem), otpsResult.Items);
-        const existingOtp = otps[0];
 
         const reuseOtp =
           !!existingOtp &&

@@ -4,13 +4,15 @@ import {
   type Source,
 } from "../../../../commons/utils/constants.js";
 import * as v from "valibot";
-import type { itemWithLockouts } from "../../../../commons/utils/schemas.js";
+import type { databaseItemWithLockouts } from "../../../../commons/utils/schemas.js";
 import { lockoutsDatabaseItem } from "../../../../commons/utils/schemas.js";
 import { randomUUID } from "node:crypto";
 import { getDynamoDbClient } from "../../../../commons/utils/awsClient/dynamodbClient/index.js";
 import type { AttributeValue } from "@aws-sdk/client-dynamodb";
 
-type ItemSchemaBase = v.GenericSchema<v.InferOutput<typeof itemWithLockouts>>;
+type ItemSchemaBase = v.GenericSchema<
+  v.InferOutput<typeof databaseItemWithLockouts>
+>;
 type Mode = "MostRecent" | "Consecutive" | "Any";
 type ItemShouldContributeToLockout<ItemSchema extends ItemSchemaBase> = (
   item: v.InferOutput<ItemSchema>,
