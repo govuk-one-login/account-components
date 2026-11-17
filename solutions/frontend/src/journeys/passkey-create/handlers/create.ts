@@ -49,6 +49,11 @@ export const postBodySchema = v.object({
   registrationResponse: v.pipe(v.string(), v.parseJson()),
 });
 
+const registrationErrorReasonSchema = v.fallback(
+  v.picklist(passkeyRegistrationFailureReason),
+  "UnknownError",
+);
+
 export const supportedAlgorithmIDs = [
   -7, // ES256
   -8, // EdDSA
@@ -118,6 +123,9 @@ const render = async (
   reply: FastifyReply,
   options?: {
     showErrorUi?: boolean;
+    registrationErrorReason?: v.InferOutput<
+      typeof registrationErrorReasonSchema
+    >;
     analytics?: FastifyReply["analytics"];
     [key: string]: unknown;
   },
@@ -339,24 +347,29 @@ export async function postHandler(
     metrics.addMetadata("ClientErrorName", body.registrationError);
     addErrorMetric("ClientError");
 
-    const reason = v.parse(
-      v.fallback(v.picklist(passkeyRegistrationFailureReason), "UnknownError"),
+    const registrationErrorReason = v.parse(
+      registrationErrorReasonSchema,
       body.registrationError,
     );
 
-    await sendPasskeyRegistrationFailedAuditEvent(request, reply, reason);
+    await sendPasskeyRegistrationFailedAuditEvent(
+      request,
+      reply,
+      registrationErrorReason,
+    );
     await sendPasskeyEnrolmentFailedAuditEvent(
       request,
       reply,
       registrationOptions,
       undefined,
-      reason,
+      registrationErrorReason,
     );
 
     await render(request, reply, {
       showErrorUi: true,
+      registrationErrorReason,
       analytics: {
-        reason,
+        reason: registrationErrorReason,
       },
     });
     return reply;
