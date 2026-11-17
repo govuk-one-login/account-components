@@ -153,7 +153,7 @@ When(
     );
 
     await $test.step(
-      "Wrong OTP, maxAllowedBeforeLockout.count=2: invalid OTP response, should create lockout",
+      "Wrong OTP, maxAllowedBeforeLockout.count=2: invalid OTP response, creates lockout",
       async () => {
         const res = await checkOTP(publicSubjectId, {
           otp: incorrectOtp,
@@ -199,7 +199,7 @@ When(
     );
 
     await $test.step(
-      "Wrong OTP, maxAllowedBeforeLockout.count=2: invalid OTP response, should not consider unsuccessful checks which have already contributed to lockouts and so should not create lockout",
+      "Wrong OTP, maxAllowedBeforeLockout.count=2: invalid OTP response, does not consider unsuccessful checks which have already contributed to lockouts and so does not create lockout",
       async () => {
         const res = await checkOTP(publicSubjectId, {
           otp: incorrectOtp,
@@ -229,7 +229,7 @@ When(
     );
 
     await $test.step(
-      "Correct but used OTP, maxAllowedBeforeLockout.count=2: invalid OTP response, should not consider unsuccessful checks from before successful check and so should not create lockout",
+      "Correct but used OTP, maxAllowedBeforeLockout.count=2: invalid OTP response, does not consider unsuccessful checks from before successful check and so does not create lockout",
       async () => {
         const res = await checkOTP(publicSubjectId, {
           otp,
@@ -254,7 +254,7 @@ When(
     );
 
     await $test.step(
-      "Wrong OTP, maxAllowedBeforeLockout.count=2, maxAllowedBeforeLockout.window=4: invalid OTP response, should not consider checks outside of window and so should not create lockout",
+      "Wrong OTP, maxAllowedBeforeLockout.count=2, maxAllowedBeforeLockout.window=4: invalid OTP response, does not consider checks outside of window and so does not create lockout",
       async () => {
         const res = await checkOTP(publicSubjectId, {
           otp: incorrectOtp,

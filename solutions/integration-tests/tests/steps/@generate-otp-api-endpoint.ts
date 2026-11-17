@@ -113,7 +113,7 @@ When(
     );
 
     const { otp: secondOtp, expiresAt: secondExpiresAt } = await $test.step(
-      "Generate OTP reissueUnusedUnexpiredOTP=false, maxAllowedBeforeLockout.count=3: issues a new OTP expiring in ~900s, should create lockout",
+      "Generate OTP reissueUnusedUnexpiredOTP=false, maxAllowedBeforeLockout.count=3: issues a new OTP expiring in ~900s, creates lockout",
       async () => {
         const before = Math.floor(Date.now() / 1000);
         const res = await makeRequest(publicSubjectId, {
@@ -168,12 +168,13 @@ When(
       },
     );
 
-    await $test.step("Wait for OTP to expire and for OTPs GSI to update", () =>
-      sleep(5_000),
+    await $test.step(
+      "Wait for longer than next window, for OTP to expire and for OTPs GSI to update",
+      () => sleep(5_000),
     );
 
     const { otp: fourthOtp, expiresAt: fourthExpiresAt } = await $test.step(
-      "Generate OTP, maxAllowedBeforeLockout.count=2, window=4: issues a new OTP expiring in ~900s",
+      "Generate OTP, maxAllowedBeforeLockout.count=2, maxAllowedBeforeLockout.window=4: issues a new OTP expiring in ~900s (does not reissue expired OTP), does not consider OTPs outside of window and so does not create lockout",
       async () => {
         const before = Math.floor(Date.now() / 1000);
         const res = await makeRequest(publicSubjectId, {
@@ -192,10 +193,12 @@ When(
       },
     );
 
-    await $test.step("Wait 1 second", () => sleep(1_000));
+    await $test.step("Wait long enough for OTPs GSI to update", () =>
+      sleep(1_000),
+    );
 
     await $test.step(
-      "Default params: reuses the same OTP and expiresAt",
+      "Generate OTP: reuses the same OTP and expiresAt",
       async () => {
         const res = await makeRequest(publicSubjectId, defaultBody);
         expect(res.status).toBe(200);
@@ -205,10 +208,12 @@ When(
       },
     );
 
-    await $test.step("Wait 1 second", () => sleep(1_000));
+    await $test.step("Wait long enough for OTPs GSI to update", () =>
+      sleep(1_000),
+    );
 
     await $test.step(
-      "maxAllowedBeforeLockout.count=1: still reuses the same OTP and expiresAt",
+      "Generate OTP, maxAllowedBeforeLockout.count=1: reuses the same OTP and expiresAt, creates lockout",
       async () => {
         const res = await makeRequest(publicSubjectId, {
           ...defaultBody,
@@ -221,20 +226,24 @@ When(
       },
     );
 
-    await $test.step("Wait 1 second", () => sleep(1_000));
-
     await $test.step(
-      "Default params: locked out after exceeding maxAllowedBeforeLockout (code 1002)",
-      async () => {
-        const res = await makeRequest(publicSubjectId, defaultBody);
-        expect(res.status).toBe(403);
-        const body = v.parse(errorResponseSchema, await res.json());
-        expect(body.code).toBe(1002);
-      },
+      "Wait long enough for OTPs GSI and lockouts GSI to update",
+      () => sleep(1_000),
+    );
+
+    await $test.step("Generate OTP: locked out", async () => {
+      const res = await makeRequest(publicSubjectId, defaultBody);
+      expect(res.status).toBe(403);
+      const body = v.parse(errorResponseSchema, await res.json());
+      expect(body.code).toBe(1002);
+    });
+
+    await $test.step("Wait long enough for OTPs GSI to update", () =>
+      sleep(1_000),
     );
 
     await $test.step(
-      "source=passkey-create: separate lockout scope, issues a new OTP expiring in ~900s",
+      "Generate OTP for different source: issues a new OTP expiring in ~900s (does not consider lockouts for other sources)",
       async () => {
         const before = Math.floor(Date.now() / 1000);
         const res = await makeRequest(publicSubjectId, {
