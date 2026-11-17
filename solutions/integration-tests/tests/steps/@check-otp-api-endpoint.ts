@@ -153,7 +153,7 @@ When(
     );
 
     await $test.step(
-      "Wrong OTP again, maxAllowedBeforeLockout.count=2: invalid OTP response, should create lockout",
+      "Wrong OTP, maxAllowedBeforeLockout.count=2: invalid OTP response, should create lockout",
       async () => {
         const res = await checkOTP(publicSubjectId, {
           otp: incorrectOtp,
@@ -199,7 +199,7 @@ When(
     );
 
     await $test.step(
-      "Wrong OTP again: invalid OTP response, does not consider unsuccessful checks which have already contributed to lockouts and so does not create lockout",
+      "Wrong OTP, maxAllowedBeforeLockout.count=2: invalid OTP response, should not consider unsuccessful checks which have already contributed to lockouts and so should not create lockout",
       async () => {
         const res = await checkOTP(publicSubjectId, {
           otp: incorrectOtp,
@@ -228,19 +228,18 @@ When(
       sleep(1_000),
     );
 
-    await $test.step("Correct OTP again: invalid OTP response", async () => {
-      const res = await checkOTP(publicSubjectId, {
-        otp,
-        source: defaultSource,
-        maxAllowedBeforeLockout: { count: 2 },
-      });
-      expect(res.status).toBe(401);
-      const body = v.parse(errorResponseSchema, await res.json());
-      expect(body.code).toBe(1005);
-    });
-
-    await $test.step("Wait long enough for OTP checks GSI to update", () =>
-      sleep(1_000),
+    await $test.step(
+      "Correct but used OTP, maxAllowedBeforeLockout.count=2: invalid OTP response, should not consider unsuccessful checks from before successful check and so should not create lockout",
+      async () => {
+        const res = await checkOTP(publicSubjectId, {
+          otp,
+          source: defaultSource,
+          maxAllowedBeforeLockout: { count: 2 },
+        });
+        expect(res.status).toBe(401);
+        const body = v.parse(errorResponseSchema, await res.json());
+        expect(body.code).toBe(1005);
+      },
     );
 
     const { otp: newOtp } = await $test.step("Generate another OTP", async () =>
@@ -250,26 +249,12 @@ When(
     );
 
     await $test.step(
-      "Wrong OTP: invalid OTP response, does not consider unsuccessful checks before successful check and so does not create lockout",
-      async () => {
-        const res = await checkOTP(publicSubjectId, {
-          otp: incorrectOtp,
-          source: defaultSource,
-          maxAllowedBeforeLockout: { count: 3 },
-        });
-        expect(res.status).toBe(401);
-        const body = v.parse(errorResponseSchema, await res.json());
-        expect(body.code).toBe(1005);
-      },
-    );
-
-    await $test.step(
       "Wait for longer than next window and for OTP checks GSI to update",
       () => sleep(5_000),
     );
 
     await $test.step(
-      "Wrong OTP: invalid OTP response, does not consider checks outside of window and so does not create lockout",
+      "Wrong OTP, maxAllowedBeforeLockout.count=2, maxAllowedBeforeLockout.window=4: invalid OTP response, should not consider checks outside of window and so should not create lockout",
       async () => {
         const res = await checkOTP(publicSubjectId, {
           otp: incorrectOtp,
@@ -303,7 +288,10 @@ When(
         }),
     );
 
-    await $test.step("Wait for short-lived OTP to expire", () => sleep(3_000));
+    await $test.step(
+      "Wait for short-lived OTP to expire and for OTP checks GSI to update",
+      () => sleep(3_000),
+    );
 
     await $test.step("Expired OTP: invalid OTP response", async () => {
       const res = await checkOTP(publicSubjectId, {
