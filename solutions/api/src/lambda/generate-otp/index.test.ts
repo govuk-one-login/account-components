@@ -553,7 +553,7 @@ describe("generate-otp handler", () => {
       expect(otp).toBe(existingOtp.otp);
     });
 
-    it("generates new OTP when existing OTP expires within 120 seconds", async () => {
+    it("generates new OTP when existing OTP expires in less than 120 seconds", async () => {
       const existingOtp = makeExistingOtp({ expiresAt: now + 119 });
       mockGetLatestOtp.mockResolvedValue(existingOtp);
 

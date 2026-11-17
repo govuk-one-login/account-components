@@ -516,7 +516,7 @@ describe("check-otp handler", () => {
   });
 
   describe("oTP expiry boundary", () => {
-    it("returns 204 when OTP expires exactly at now", async () => {
+    it("returns 204 when OTP has not yet expired", async () => {
       mockGetLatestOtp.mockResolvedValue(
         makeExistingOtp({ expiresAt: now + 1 }),
       );
