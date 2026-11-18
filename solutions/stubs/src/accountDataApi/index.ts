@@ -21,4 +21,13 @@ export const accountDataApi = function (fastify: FastifyInstance) {
       );
     },
   );
+
+  fastify.post(
+    paths.accountDataApi.verifyPassword,
+    async function (request, reply) {
+      return (
+        await import("./handlers/verifyPassword.js")
+      ).verifyPasswordPostHandler(request, reply);
+    },
+  );
 };
