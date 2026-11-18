@@ -104,10 +104,9 @@ When(
         }),
       ];
 
-      for (const invalidRequest of invalidRequests) {
-        const i = await invalidRequest;
-        expect(i.status).toBe(400);
-        const body = v.parse(errorResponseSchema, await i.json());
+      for (const invalidRequest of await Promise.all(invalidRequests)) {
+        expect(invalidRequest.status).toBe(400);
+        const body = v.parse(errorResponseSchema, await invalidRequest.json());
         expect(body.code).toBe(1001);
       }
     });
