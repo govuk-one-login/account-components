@@ -16,6 +16,8 @@ export const paths = {
       "/account-data-api/accounts/:publicSubjectId/authenticators/passkeys",
     createPasskey:
       "/account-data-api/accounts/:publicSubjectId/authenticators/passkeys",
+    verifyPassword:
+      "/account-data-api/accounts/:publicSubjectId/authenticators/password/verify",
   },
   accountInterventionsServiceApi: {
     getUserAisStatus: "/account-interventions-service-api/ais/:commonSubjectId",

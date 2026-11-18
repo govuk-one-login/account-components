@@ -10,6 +10,8 @@ vi.mock(import("../utils/paths.js"), () => ({
         "/account-data-api/accounts/:publicSubjectId/authenticators/passkeys",
       createPasskey:
         "/account-data-api/accounts/:publicSubjectId/authenticators/passkeys",
+      verifyPassword:
+        "/account-data-api/accounts/:publicSubjectId/authenticators/password/verify",
     },
   },
 }));
@@ -17,6 +19,10 @@ vi.mock(import("../utils/paths.js"), () => ({
 vi.mock(import("./handlers/passkeys.js"), () => ({
   passkeysGetHandler: vi.fn(),
   passkeysPostHandler: vi.fn(),
+}));
+
+vi.mock(import("./handlers/verifyPassword.js"), () => ({
+  verifyPasswordPostHandler: vi.fn(),
 }));
 
 describe("accountDataApi", () => {
@@ -37,9 +43,13 @@ describe("accountDataApi", () => {
       "/account-data-api/accounts/:publicSubjectId/authenticators/passkeys",
       expect.any(Function),
     );
-    expect(mockApp.post).toHaveBeenCalledTimes(1);
+    expect(mockApp.post).toHaveBeenCalledTimes(2);
     expect(mockApp.post).toHaveBeenCalledWith(
       "/account-data-api/accounts/:publicSubjectId/authenticators/passkeys",
+      expect.any(Function),
+    );
+    expect(mockApp.post).toHaveBeenCalledWith(
+      "/account-data-api/accounts/:publicSubjectId/authenticators/password/verify",
       expect.any(Function),
     );
   });
@@ -70,5 +80,23 @@ describe("accountDataApi", () => {
     await registeredHandler(mockRequest, mockReply);
 
     expect(passkeysPostHandler).toHaveBeenCalledWith(mockRequest, mockReply);
+  });
+
+  it("should call verifyPasswordPostHandler when verify password POST route is invoked", async () => {
+    const { verifyPasswordPostHandler } =
+      await import("./handlers/verifyPassword.js");
+    accountDataApi(mockApp);
+
+    const registeredHandler = vi.mocked(mockApp.post).mock
+      .calls[1]![1] as unknown as (...args: any) => any;
+    const mockRequest = {};
+    const mockReply = {};
+
+    await registeredHandler(mockRequest, mockReply);
+
+    expect(verifyPasswordPostHandler).toHaveBeenCalledWith(
+      mockRequest,
+      mockReply,
+    );
   });
 });
