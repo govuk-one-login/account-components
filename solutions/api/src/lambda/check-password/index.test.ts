@@ -90,7 +90,7 @@ const validPathParams = { publicSubjectId: "subject-123" };
 const validBody = {
   password: "correct-password", // pragma: allowlist secret
   source: Source["account-delete"],
-}; // pragma: allowlist secret
+};
 
 const NOW = new Date("2025-01-01T00:00:00.000Z");
 const now = Math.floor(NOW.getTime() / 1000);
@@ -172,9 +172,9 @@ describe("check-password handler", () => {
     it("returns 400 when source is invalid", async () => {
       const result = await handler(
         makeEvent(validPathParams, {
-          password: "correct-password",
+          password: "correct-password", // pragma: allowlist secret
           source: "invalid-source",
-        }), // pragma: allowlist secret
+        }),
         mockContext,
       );
 
