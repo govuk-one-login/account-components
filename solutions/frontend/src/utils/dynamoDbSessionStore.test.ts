@@ -20,36 +20,40 @@ const { DynamoDbSessionStore } = await import("./dynamoDbSessionStore.js");
 describe("dynamoDbSessionStore", () => {
   let store: InstanceType<typeof DynamoDbSessionStore>;
   const tableName = "test-sessions-table";
+  const mockNow = 1000000;
+  const defaultExpiry = mockNow + 300;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.spyOn(Date, "now").mockReturnValue(mockNow * 1000);
     store = new DynamoDbSessionStore(tableName);
   });
 
   describe("set", () => {
     it("updates session with default expiry when session.expires is undefined", async () => {
-      const sessionId = "test-session-id";
+      const sessionStoreId = "test-session-id";
       const session = {} as Session;
       const callback = vi.fn();
-      const mockNow = 1000000;
 
-      vi.spyOn(Date, "now").mockReturnValue(mockNow * 1000);
       mockDynamoDbClient.update.mockResolvedValue({});
 
-      store.set(sessionId, session, callback);
+      store.set(sessionStoreId, session, callback);
 
       await vi.waitFor(() => {
         expect(mockDynamoDbClient.update).toHaveBeenCalledWith({
           TableName: tableName,
-          Key: { id: sessionId },
-          UpdateExpression: "SET #session = :session, #expires = :expires",
+          Key: { id: sessionStoreId },
+          UpdateExpression:
+            "SET #session = :session, #expires = :expires, #generation = :generation",
           ExpressionAttributeNames: {
             "#session": "session",
             "#expires": "expires",
+            "#generation": "__fastifySessionMetadataGeneration",
           },
           ExpressionAttributeValues: {
             ":session": JSON.stringify(session),
-            ":expires": 1000300,
+            ":expires": defaultExpiry,
+            ":generation": sessionStoreId,
           },
         });
         expect(callback).toHaveBeenCalledWith(null);
@@ -57,42 +61,68 @@ describe("dynamoDbSessionStore", () => {
     });
 
     it("updates session with provided expiry when session.expires is set", async () => {
-      const sessionId = "test-session-id";
+      const sessionStoreId = "test-session-id";
       const customExpiry = 2000000;
       const session = { expires: customExpiry } as Session;
       const callback = vi.fn();
 
       mockDynamoDbClient.update.mockResolvedValue({});
 
-      store.set(sessionId, session, callback);
+      store.set(sessionStoreId, session, callback);
 
       await vi.waitFor(() => {
         expect(mockDynamoDbClient.update).toHaveBeenCalledWith({
           TableName: tableName,
-          Key: { id: sessionId },
-          UpdateExpression: "SET #session = :session, #expires = :expires",
+          Key: { id: sessionStoreId },
+          UpdateExpression:
+            "SET #session = :session, #expires = :expires, #generation = :generation",
           ExpressionAttributeNames: {
             "#session": "session",
             "#expires": "expires",
+            "#generation": "__fastifySessionMetadataGeneration",
           },
           ExpressionAttributeValues: {
             ":session": JSON.stringify(session),
             ":expires": customExpiry,
+            ":generation": sessionStoreId,
           },
         });
         expect(callback).toHaveBeenCalledWith(null);
       });
     });
 
+    it("uses __fastifySessionMetadata.generation when present", async () => {
+      const sessionStoreId = "test-session-id";
+      const generation = "new-session-id";
+      const session = {
+        __fastifySessionMetadata: { generation },
+      } as unknown as Session;
+      const callback = vi.fn();
+
+      mockDynamoDbClient.update.mockResolvedValue({});
+
+      store.set(sessionStoreId, session, callback);
+
+      await vi.waitFor(() => {
+        expect(mockDynamoDbClient.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            ExpressionAttributeValues: expect.objectContaining({
+              ":generation": generation,
+            }),
+          }),
+        );
+      });
+    });
+
     it("calls callback with error when update fails", async () => {
-      const sessionId = "test-session-id";
+      const sessionStoreId = "test-session-id";
       const session = {} as Session;
       const callback = vi.fn();
       const error = new Error("DynamoDB error");
 
       mockDynamoDbClient.update.mockRejectedValue(error);
 
-      store.set(sessionId, session, callback);
+      store.set(sessionStoreId, session, callback);
 
       await vi.waitFor(() => {
         expect(callback).toHaveBeenCalledWith(error);
@@ -102,17 +132,17 @@ describe("dynamoDbSessionStore", () => {
 
   describe("get", () => {
     it("returns null when session item does not exist", async () => {
-      const sessionId = "test-session-id";
+      const sessionStoreId = "test-session-id";
       const callback = vi.fn();
 
       mockDynamoDbClient.get.mockResolvedValue({});
 
-      store.get(sessionId, callback);
+      store.get(sessionStoreId, callback);
 
       await vi.waitFor(() => {
         expect(mockDynamoDbClient.get).toHaveBeenCalledWith({
           TableName: tableName,
-          Key: { id: sessionId },
+          Key: { id: sessionStoreId },
           ConsistentRead: true,
         });
         expect(callback).toHaveBeenCalledWith(null, null);
@@ -120,12 +150,10 @@ describe("dynamoDbSessionStore", () => {
     });
 
     it("destroys expired session and returns null", async () => {
-      const sessionId = "test-session-id";
+      const sessionStoreId = "test-session-id";
       const callback = vi.fn();
-      const mockNow = 2000000;
-      const expiredTime = 1000000;
+      const expiredTime = mockNow - 1;
 
-      vi.spyOn(Date, "now").mockReturnValue(mockNow * 1000);
       mockDynamoDbClient.get.mockResolvedValue({
         Item: {
           session: JSON.stringify({ userId: "123" }),
@@ -134,25 +162,23 @@ describe("dynamoDbSessionStore", () => {
       });
       mockDynamoDbClient.delete.mockResolvedValue({});
 
-      store.get(sessionId, callback);
+      store.get(sessionStoreId, callback);
 
       await vi.waitFor(() => {
         expect(mockDynamoDbClient.delete).toHaveBeenCalledWith({
           TableName: tableName,
-          Key: { id: sessionId },
+          Key: { id: sessionStoreId },
         });
         expect(callback).toHaveBeenCalledWith(null, null);
       });
     });
 
     it("returns error when destroy fails for expired session", async () => {
-      const sessionId = "test-session-id";
+      const sessionStoreId = "test-session-id";
       const callback = vi.fn();
-      const mockNow = 2000000;
-      const expiredTime = 1000000;
+      const expiredTime = mockNow - 1;
       const error = new Error("Delete failed");
 
-      vi.spyOn(Date, "now").mockReturnValue(mockNow * 1000);
       mockDynamoDbClient.get.mockResolvedValue({
         Item: {
           session: JSON.stringify({ userId: "123" }),
@@ -161,7 +187,7 @@ describe("dynamoDbSessionStore", () => {
       });
       mockDynamoDbClient.delete.mockRejectedValue(error);
 
-      store.get(sessionId, callback);
+      store.get(sessionStoreId, callback);
 
       await vi.waitFor(() => {
         expect(callback).toHaveBeenCalledWith(error, null);
@@ -169,13 +195,11 @@ describe("dynamoDbSessionStore", () => {
     });
 
     it("returns valid session when not expired", async () => {
-      const sessionId = "test-session-id";
+      const sessionStoreId = "test-session-id";
       const callback = vi.fn();
-      const mockNow = 1000000;
-      const futureTime = 2000000;
+      const futureTime = mockNow + 1;
       const sessionData = { userId: "123" };
 
-      vi.spyOn(Date, "now").mockReturnValue(mockNow * 1000);
       mockDynamoDbClient.get.mockResolvedValue({
         Item: {
           session: JSON.stringify(sessionData),
@@ -183,7 +207,7 @@ describe("dynamoDbSessionStore", () => {
         },
       });
 
-      store.get(sessionId, callback);
+      store.get(sessionStoreId, callback);
 
       await vi.waitFor(() => {
         expect(callback).toHaveBeenCalledWith(null, sessionData);
@@ -191,13 +215,13 @@ describe("dynamoDbSessionStore", () => {
     });
 
     it("calls callback with error when get fails", async () => {
-      const sessionId = "test-session-id";
+      const sessionStoreId = "test-session-id";
       const callback = vi.fn();
       const error = new Error("DynamoDB error");
 
       mockDynamoDbClient.get.mockRejectedValue(error);
 
-      store.get(sessionId, callback);
+      store.get(sessionStoreId, callback);
 
       await vi.waitFor(() => {
         expect(callback).toHaveBeenCalledWith(error, null);
@@ -205,32 +229,171 @@ describe("dynamoDbSessionStore", () => {
     });
   });
 
+  describe("compareAndSet", () => {
+    it("updates session when session exists and generation matches", async () => {
+      const sessionStoreId = "test-session-store-id";
+      const expectedGeneration = "old-session-id";
+      const generation = "new-session-id";
+      const session = {
+        __fastifySessionMetadata: { generation },
+      } as unknown as Session;
+      const callback = vi.fn();
+
+      mockDynamoDbClient.update.mockResolvedValue({});
+
+      store.compareAndSet(
+        sessionStoreId,
+        expectedGeneration,
+        session,
+        callback,
+      );
+
+      await vi.waitFor(() => {
+        expect(mockDynamoDbClient.update).toHaveBeenCalledWith({
+          TableName: tableName,
+          Key: { id: sessionStoreId },
+          UpdateExpression:
+            "SET #session = :session, #expires = :expires, #generation = :newGeneration",
+          ConditionExpression:
+            "attribute_exists(#id) AND (#generation = :expectedGeneration OR attribute_not_exists(#generation))",
+          ExpressionAttributeNames: {
+            "#id": "id",
+            "#session": "session",
+            "#expires": "expires",
+            "#generation": "__fastifySessionMetadataGeneration",
+          },
+          ExpressionAttributeValues: {
+            ":session": JSON.stringify(session),
+            ":expires": defaultExpiry,
+            ":expectedGeneration": expectedGeneration,
+            ":newGeneration": generation,
+          },
+        });
+        expect(callback).toHaveBeenCalledWith(null);
+      });
+    });
+
+    it("falls back to sessionStoreId as generation when __fastifySessionMetadata is absent", async () => {
+      const sessionStoreId = "test-session-store-id";
+      const expectedGeneration = "old-session-id";
+      const session = {} as Session;
+      const callback = vi.fn();
+
+      mockDynamoDbClient.update.mockResolvedValue({});
+
+      store.compareAndSet(
+        sessionStoreId,
+        expectedGeneration,
+        session,
+        callback,
+      );
+
+      await vi.waitFor(() => {
+        expect(mockDynamoDbClient.update).toHaveBeenCalledWith(
+          expect.objectContaining({
+            ExpressionAttributeValues: expect.objectContaining({
+              ":newGeneration": sessionStoreId,
+            }),
+          }),
+        );
+        expect(callback).toHaveBeenCalledWith(null);
+      });
+    });
+
+    it("succeeds for existing sessions without a generation attribute", async () => {
+      const sessionStoreId = "test-session-store-id";
+      const expectedGeneration = "old-session-id";
+      const session = {} as Session;
+      const callback = vi.fn();
+
+      // DynamoDB allows the update when attribute_not_exists(#generation) matches
+      mockDynamoDbClient.update.mockResolvedValue({});
+
+      store.compareAndSet(
+        sessionStoreId,
+        expectedGeneration,
+        session,
+        callback,
+      );
+
+      await vi.waitFor(() => {
+        expect(callback).toHaveBeenCalledWith(null);
+      });
+    });
+
+    it("calls callback with ENOENT error when session does not exist or generation does not match", async () => {
+      const sessionStoreId = "test-session-store-id";
+      const expectedGeneration = "old-session-id";
+      const session = {} as Session;
+      const callback = vi.fn();
+      const conditionalError = Object.assign(new Error("Condition failed"), {
+        name: "ConditionalCheckFailedException",
+      });
+
+      mockDynamoDbClient.update.mockRejectedValue(conditionalError);
+
+      store.compareAndSet(
+        sessionStoreId,
+        expectedGeneration,
+        session,
+        callback,
+      );
+
+      await vi.waitFor(() => {
+        expect(callback).toHaveBeenCalledWith(
+          expect.objectContaining({ code: "ENOENT" }),
+        );
+      });
+    });
+
+    it("calls callback with error when update fails for a non-conditional reason", async () => {
+      const sessionStoreId = "test-session-store-id";
+      const expectedGeneration = "old-session-id";
+      const session = {} as Session;
+      const callback = vi.fn();
+      const error = new Error("DynamoDB error");
+
+      mockDynamoDbClient.update.mockRejectedValue(error);
+
+      store.compareAndSet(
+        sessionStoreId,
+        expectedGeneration,
+        session,
+        callback,
+      );
+
+      await vi.waitFor(() => {
+        expect(callback).toHaveBeenCalledWith(error);
+      });
+    });
+  });
+
   describe("destroy", () => {
     it("deletes session successfully", async () => {
-      const sessionId = "test-session-id";
+      const sessionStoreId = "test-session-id";
       const callback = vi.fn();
 
       mockDynamoDbClient.delete.mockResolvedValue({});
 
-      store.destroy(sessionId, callback);
+      store.destroy(sessionStoreId, callback);
 
       await vi.waitFor(() => {
         expect(mockDynamoDbClient.delete).toHaveBeenCalledWith({
           TableName: tableName,
-          Key: { id: sessionId },
+          Key: { id: sessionStoreId },
         });
         expect(callback).toHaveBeenCalledWith(null);
       });
     });
 
     it("calls callback with error when delete fails", async () => {
-      const sessionId = "test-session-id";
+      const sessionStoreId = "test-session-id";
       const callback = vi.fn();
       const error = new Error("DynamoDB error");
 
       mockDynamoDbClient.delete.mockRejectedValue(error);
 
-      store.destroy(sessionId, callback);
+      store.destroy(sessionStoreId, callback);
 
       await vi.waitFor(() => {
         expect(callback).toHaveBeenCalledWith(error);

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { Source, LockoutType } from "../../../commons/utils/constants.js";
+import { Source, LockoutType } from "../../../../commons/utils/constants.js";
 
 const mockQuery = vi.fn();
 
 // @ts-expect-error
 vi.mock(
-  import("../../../commons/utils/awsClient/dynamodbClient/index.js"),
+  import("../../../../commons/utils/awsClient/dynamodbClient/index.js"),
   () => ({
     getDynamoDbClient: () => ({ query: mockQuery }),
   }),

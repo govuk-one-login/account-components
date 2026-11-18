@@ -1,7 +1,7 @@
 import * as v from "valibot";
 import { LockoutType, Source } from "./constants.js";
 
-export const itemWithLockouts = v.object({
+export const databaseItemWithLockouts = v.object({
   publicSubjectId: v.string(),
   source: v.enum(Source),
   createdAt: v.number(),
@@ -21,21 +21,21 @@ export const otpsDatabaseItem = v.looseObject({
   otp: v.string(),
   used: v.boolean(),
   keepUntil: v.number(),
-  ...itemWithLockouts.entries,
+  ...databaseItemWithLockouts.entries,
 });
 
 export const otpChecksDatabaseItem = v.looseObject({
   id: v.string(),
   successful: v.boolean(),
   keepUntil: v.number(),
-  ...itemWithLockouts.entries,
+  ...databaseItemWithLockouts.entries,
 });
 
 export const passwordChecksDatabaseItem = v.looseObject({
   id: v.string(),
   successful: v.boolean(),
   keepUntil: v.number(),
-  ...itemWithLockouts.entries,
+  ...databaseItemWithLockouts.entries,
 });
 
 export const lockoutsDatabaseItem = v.looseObject({

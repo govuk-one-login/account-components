@@ -49,11 +49,11 @@ const createDynamoDbClient = () => {
       return await docClient.send(new UpdateCommand(params));
     },
     query: async (params: QueryCommandInput) => {
-      const { QueryCommand } = await import("@aws-sdk/client-dynamodb");
+      const { QueryCommand } = await import("@aws-sdk/lib-dynamodb");
       return await docClient.send(new QueryCommand(params));
     },
     scan: async (params: ScanCommandInput) => {
-      const { ScanCommand } = await import("@aws-sdk/client-dynamodb");
+      const { ScanCommand } = await import("@aws-sdk/lib-dynamodb");
       return await docClient.send(new ScanCommand(params));
     },
     batchWrite: async (params: BatchWriteCommandInput) => {

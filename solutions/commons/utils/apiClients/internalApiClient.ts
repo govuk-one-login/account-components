@@ -50,6 +50,7 @@ export class InternalApiClient extends JsonApiClient {
       window: number;
     };
     lockoutDuration?: number;
+    lockoutsToCheckFor?: LockoutType[];
   }) {
     return this.logOnError("generateOTP", async () => {
       try {
@@ -98,6 +99,7 @@ export class InternalApiClient extends JsonApiClient {
       window: number;
     };
     lockoutDuration?: number;
+    lockoutsToCheckFor?: LockoutType[];
   }) {
     return this.logOnError("checkOTP", async () => {
       try {
@@ -144,6 +146,7 @@ export class InternalApiClient extends JsonApiClient {
       window: number;
     };
     lockoutDuration?: number;
+    lockoutsToCheckFor?: LockoutType[];
   }) {
     return this.logOnError("checkPassword", async () => {
       try {
