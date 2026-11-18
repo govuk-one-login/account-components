@@ -49,7 +49,7 @@ describe("verifyPasswordPostHandler", () => {
 
   it("should return verified false when token has unsuccessful_verification scenario", async () => {
     vi.mocked(decodeJwt).mockReturnValue({
-      verifyPassword_scenario: "unsuccessful_verification",
+      verifyPassword_scenario: "unsuccessful_verification", // pragma: allowlist secret
     });
 
     mockRequest.headers = { authorization: "Bearer token" };

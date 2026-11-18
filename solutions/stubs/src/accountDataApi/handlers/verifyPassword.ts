@@ -15,7 +15,9 @@ export async function verifyPasswordPostHandler(
   if (token) {
     const claims = decodeJwt(token);
 
-    if (claims["verifyPassword_scenario"] === "unsuccessful_verification") {
+    if (
+      claims["verifyPassword_scenario"] === "unsuccessful_verification" // pragma: allowlist secret
+    ) {
       reply.send({
         verified: false,
       });
