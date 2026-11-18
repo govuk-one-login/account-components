@@ -69,7 +69,7 @@ vi.mock(
   }),
 );
 
-process.env["PASSWORD_CHECKS_TABLE_NAME"] = "password-checks-table";
+process.env["PASSWORD_CHECKS_TABLE_NAME"] = "password-checks-table"; // pragma: allowlist secret
 process.env["PASSWORD_CHECKS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME"] =
   "password-checks-gsi";
 
@@ -88,7 +88,7 @@ const makeEvent = (
 
 const validPathParams = { publicSubjectId: "subject-123" };
 const validBody = {
-  password: "correct-password",
+  password: "correct-password", // pragma: allowlist secret
   source: Source["account-delete"],
 }; // pragma: allowlist secret
 

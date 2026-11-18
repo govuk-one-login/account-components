@@ -46,7 +46,7 @@ const checkPassword = async (
 };
 
 const defaultSource = Source["account-delete"];
-const password = "pa55w0rd";
+const password = "pa55w0rd"; // pragma: allowlist secret
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
