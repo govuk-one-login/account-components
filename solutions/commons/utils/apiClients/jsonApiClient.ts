@@ -2,6 +2,7 @@ import * as v from "valibot";
 import { logger } from "../../../commons/utils/logger/index.js";
 import { getPropsFromAPIGatewayEvent } from "../../../commons/utils/getPropsFromAPIGatewayEvent/index.js";
 import type { APIGatewayProxyEvent } from "aws-lambda";
+import { getSafeValibotIssues } from "../getSafeValibotIssues/index.js";
 
 export abstract class JsonApiClient {
   private readonly errorScope: string;
@@ -138,14 +139,7 @@ export abstract class JsonApiClient {
           error: "ErrorValidatingResponseBody",
           rawResponse: response,
           errorDetails: {
-            issues: body.issues.map((issue) => ({
-              kind: issue.kind,
-              type: issue.type,
-              expected: issue.expected,
-              path: issue.path
-                ?.map((item) => ("key" in item ? item.key : undefined))
-                .join("."),
-            })),
+            issues: getSafeValibotIssues(body.issues),
           },
         };
       }
@@ -181,14 +175,7 @@ export abstract class JsonApiClient {
         error: "ErrorValidatingErrorResponseBody",
         rawResponse: response,
         errorDetails: {
-          issues: body.issues.map((issue) => ({
-            kind: issue.kind,
-            type: issue.type,
-            expected: issue.expected,
-            path: issue.path
-              ?.map((item) => ("key" in item ? item.key : undefined))
-              .join("."),
-          })),
+          issues: getSafeValibotIssues(body.issues),
         },
       };
     }

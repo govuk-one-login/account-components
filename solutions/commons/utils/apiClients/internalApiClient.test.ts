@@ -279,6 +279,8 @@ describe("internalApiClient", () => {
   });
 
   describe("checkPassword", () => {
+    const adapiAccessToken = "test-adapi-token"; // pragma: allowlist secret
+
     it("should make correct API call with explicit values", async () => {
       const client = new InternalApiClient(undefined, mockEvent);
       const body = {
@@ -290,13 +292,20 @@ describe("internalApiClient", () => {
 
       mockThisFetch.mockResolvedValueOnce(new Response());
 
-      await client.checkPassword({ publicSubjectId, ...body });
+      await client.checkPassword({
+        adapiAccessToken,
+        publicSubjectId,
+        ...body,
+      });
 
       expect(mockThisFetch).toHaveBeenCalledWith(
         `https://internal.example.com/check-password/${publicSubjectId}`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "x-adapi-accesstoken": adapiAccessToken,
+          },
           body: JSON.stringify({
             ...commonBody,
             password: "hunter2", // pragma: allowlist secret
@@ -313,6 +322,7 @@ describe("internalApiClient", () => {
       mockThisFetch.mockResolvedValueOnce(new Response());
 
       await client.checkPassword({
+        adapiAccessToken,
         publicSubjectId,
         ...commonBody,
         password: "hunter2", // pragma: allowlist secret
@@ -338,6 +348,7 @@ describe("internalApiClient", () => {
       mockThisFetch.mockRejectedValueOnce(error);
 
       const result = await client.checkPassword({
+        adapiAccessToken,
         publicSubjectId,
         ...commonBody,
         password: "hunter2", // pragma: allowlist secret

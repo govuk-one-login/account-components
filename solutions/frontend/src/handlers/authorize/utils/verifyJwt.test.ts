@@ -26,6 +26,7 @@ import {
 import * as v from "valibot";
 import assert from "node:assert";
 import type { FastifyReply } from "fastify";
+import { logger } from "../../../../../commons/utils/logger/index.js";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -42,6 +43,17 @@ vi.mock(import("./common.js"), async () => {
 vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
   logger: { warn: vi.fn(), error: vi.fn() },
 }));
+
+const mockGetSafeValibotIssues = vi.hoisted(() =>
+  vi.fn().mockReturnValue("mocked-issues"),
+);
+
+vi.mock(
+  import("../../../../../commons/utils/getSafeValibotIssues/index.js"),
+  () => ({
+    getSafeValibotIssues: mockGetSafeValibotIssues,
+  }),
+);
 
 // @ts-expect-error
 vi.mock(import("../../../../../commons/utils/metrics/index.js"), () => ({
@@ -455,6 +467,16 @@ describe("verifyJwt", () => {
     );
     expect(vi.mocked(result.reply.redirect).mock.calls[0]?.[0]).toContain(
       "error_description=E1008",
+    );
+    expect(mockGetSafeValibotIssues).toHaveBeenCalledWith(
+      expect.arrayContaining([expect.objectContaining({ kind: "schema" })]),
+    );
+    expect(vi.mocked(logger.warn)).toHaveBeenCalledWith(
+      "InvalidRequestObject",
+      {
+        client_id: client.client_id,
+        issues: "mocked-issues",
+      },
     );
   });
 

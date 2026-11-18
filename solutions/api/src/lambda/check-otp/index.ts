@@ -1,6 +1,9 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { metricsAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/metrics/index.js";
-import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
+import {
+  logger,
+  loggerAPIGatewayProxyHandlerWrapper,
+} from "../../../../commons/utils/logger/index.js";
 import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
 import * as v from "valibot";
 import {
@@ -18,6 +21,7 @@ import { maybeCreateLockout } from "../../utils/lockouts/maybeCreateLockout.js";
 import assert from "node:assert";
 import { getLockoutErrorResponse } from "../../utils/lockouts/getLockoutErrorResponse.js";
 import { getBaseBodySchemaForEndpointWithLockouts } from "../../utils/lockouts/getBaseBodySchemaForEndpointWithLockouts.js";
+import { getSafeValibotIssues } from "../../../../commons/utils/getSafeValibotIssues/index.js";
 
 const dynamodbClient = getDynamoDbClient();
 
@@ -35,6 +39,16 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           e.pathParameters,
         );
 
+        if (!pathParams.success) {
+          logger.info("Invalid path parameters", {
+            issues: getSafeValibotIssues(pathParams.issues),
+          });
+          return {
+            statusCode: 400,
+            body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
+          };
+        }
+
         const body = v.safeParse(
           v.pipe(
             v.string(),
@@ -51,7 +65,10 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           e.body,
         );
 
-        if (!pathParams.success || !body.success) {
+        if (!body.success) {
+          logger.info("Invalid body", {
+            issues: getSafeValibotIssues(body.issues),
+          });
           return {
             statusCode: 400,
             body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),

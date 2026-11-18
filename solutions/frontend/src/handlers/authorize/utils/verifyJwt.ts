@@ -18,6 +18,7 @@ import { getAppConfig } from "../../../../../commons/utils/getAppConfig/index.js
 import type { FastifyReply } from "fastify";
 import { jwtVerifyAlgorithms } from "../../../../../commons/utils/constants.js";
 import { journeys } from "../../../journeys/utils/config.js";
+import { getSafeValibotIssues } from "../../../../../commons/utils/getSafeValibotIssues/index.js";
 
 const handleJwtError = (
   reply: FastifyReply,
@@ -276,9 +277,7 @@ const checkClaims = async (
   if (!claimsResult.success) {
     logger.warn("InvalidRequestObject", {
       client_id: client.client_id,
-      claims_with_issues: claimsResult.issues.map((issue) =>
-        v.getDotPath(issue),
-      ),
+      issues: getSafeValibotIssues(claimsResult.issues),
     });
     addAuthorizeErrorMetric("InvalidRequestObject");
 
