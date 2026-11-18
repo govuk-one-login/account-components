@@ -3,6 +3,7 @@ import { bdd } from "./fixtures.js";
 import { getApiBaseUrl } from "../../utils/getApiBaseUrl.js";
 import * as v from "valibot";
 import { UnsecuredJWT } from "jose";
+import { randomUUID } from "node:crypto";
 
 const { When } = bdd;
 
@@ -54,6 +55,7 @@ When(
   "I run the check password endpoint scenario",
   async ({ scenarioData, $test }) => {
     const publicSubjectId = scenarioData.id;
+    const otherPublicSubjectId = randomUUID();
 
     await $test.step("Invalid requests", async () => {
       const invalidRequests = [
@@ -143,6 +145,21 @@ When(
     await $test.step(
       "Wait long enough for password checks GSI and lockouts GSI to update",
       () => sleep(1_000),
+    );
+
+    await $test.step(
+      "Correct password for different publicSubjectId: successful response",
+      async () => {
+        const res = await checkPassword(
+          otherPublicSubjectId,
+          {
+            password,
+            source: defaultSource,
+          },
+          getAdapiApiAccessToken("successful_verification"),
+        );
+        expect(res.status).toBe(204);
+      },
     );
 
     await $test.step("Correct password: locked out", async () => {

@@ -2,6 +2,7 @@ import { expect } from "@playwright/test";
 import { bdd } from "./fixtures.js";
 import { getApiBaseUrl } from "../../utils/getApiBaseUrl.js";
 import * as v from "valibot";
+import { randomUUID } from "node:crypto";
 
 const { When } = bdd;
 
@@ -61,6 +62,7 @@ When(
   "I run the check OTP endpoint scenario",
   async ({ scenarioData, $test }) => {
     const publicSubjectId = scenarioData.id;
+    const otherPublicSubjectId = randomUUID();
 
     await $test.step("Invalid requests", async () => {
       const invalidRequests = [
@@ -170,6 +172,25 @@ When(
     await $test.step(
       "Wait long enough for OTP checks GSI and lockouts GSI to update",
       () => sleep(1_000),
+    );
+
+    const { otp: otpOtherSubject } = await $test.step(
+      "Generate an OTP for a different publicSubjectId",
+      async () =>
+        generateOTP(otherPublicSubjectId, {
+          source: defaultSource,
+        }),
+    );
+
+    await $test.step(
+      "Correct OTP for different publicSubjectId: successful response",
+      async () => {
+        const res = await checkOTP(otherPublicSubjectId, {
+          otp: otpOtherSubject,
+          source: defaultSource,
+        });
+        expect(res.status).toBe(204);
+      },
     );
 
     await $test.step("Correct OTP: locked out", async () => {
