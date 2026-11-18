@@ -2,6 +2,7 @@ import { expect } from "@playwright/test";
 import { bdd } from "./fixtures.js";
 import { getApiBaseUrl } from "../../utils/getApiBaseUrl.js";
 import * as v from "valibot";
+import { UnsecuredJWT } from "jose";
 
 const { When } = bdd;
 
@@ -16,17 +17,29 @@ const errorResponseSchema = v.object({
   code: v.number(),
 });
 
+const getAdapiApiAccessToken = (
+  verifyPasswordScenario:
+    | "successful_verification"
+    | "unsuccessful_verification" = "unsuccessful_verification",
+) => {
+  return new UnsecuredJWT({
+    verifyPassword_scenario: verifyPasswordScenario,
+  }).encode();
+};
+
 const checkPassword = async (
   publicSubjectId: string,
   body: Record<string, unknown>,
-  noAdapiToken = false,
+  adapiAccessToken: ReturnType<
+    typeof getAdapiApiAccessToken
+  > | null = getAdapiApiAccessToken(),
 ) => {
   const baseUrl = await getApiBaseUrl();
   return fetch(`${baseUrl}${checkPasswordEndpointPath}/${publicSubjectId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(noAdapiToken ? {} : { "x-adapi-accesstoken": "fake-adapi-token" }),
+      ...(!adapiAccessToken ? {} : { "x-adapi-accesstoken": adapiAccessToken }),
     },
     body: JSON.stringify(body),
   });
@@ -53,7 +66,7 @@ When(
             password,
             source: defaultSource,
           },
-          true,
+          null,
         ),
         checkPassword(publicSubjectId, {
           password,
@@ -91,15 +104,15 @@ When(
         }),
       ];
 
-      for (const invalidRequest of await Promise.all(invalidRequests)) {
-        expect(invalidRequest.status).toBe(400);
-        const body = v.parse(errorResponseSchema, await invalidRequest.json());
+      for (const invalidRequest of invalidRequests) {
+        const i = await invalidRequest;
+        expect(i.status).toBe(400);
+        const body = v.parse(errorResponseSchema, await i.json());
         expect(body.code).toBe(1001);
       }
     });
 
     await $test.step("Wrong password: invalid password response", async () => {
-      // TODO make sure ADAPI responds with incorrect password response
       const res = await checkPassword(publicSubjectId, {
         password,
         source: defaultSource,
@@ -116,7 +129,6 @@ When(
     await $test.step(
       "Wrong password, maxAllowedBeforeLockout.count=2: invalid password response, creates lockout",
       async () => {
-        // TODO make sure ADAPI responds with incorrect password response
         const res = await checkPassword(publicSubjectId, {
           password,
           source: defaultSource,
@@ -135,24 +147,30 @@ When(
     );
 
     await $test.step("Correct password: locked out", async () => {
-      // TODO make sure ADAPI responds with correct password response
-      const res = await checkPassword(publicSubjectId, {
-        password,
-        source: defaultSource,
-      });
+      const res = await checkPassword(
+        publicSubjectId,
+        {
+          password,
+          source: defaultSource,
+        },
+        getAdapiApiAccessToken("successful_verification"),
+      );
       expect(res.status).toBe(403);
       const body = v.parse(errorResponseSchema, await res.json());
-      expect(body.code).toBe(1003);
+      expect(body.code).toBe(1004);
     });
 
     await $test.step(
       "Correct password for different source: successful response",
       async () => {
-        // TODO make sure ADAPI responds with correct password response
-        const res = await checkPassword(publicSubjectId, {
-          password,
-          source: Source["passkey-create"],
-        });
+        const res = await checkPassword(
+          publicSubjectId,
+          {
+            password,
+            source: Source["passkey-create"],
+          },
+          getAdapiApiAccessToken("successful_verification"),
+        );
         expect(res.status).toBe(204);
       },
     );
@@ -163,10 +181,10 @@ When(
     );
 
     await $test.step(
-      "Wrong OTP, maxAllowedBeforeLockout.count=2: invalid OTP response, does not consider unsuccessful checks which have already contributed to lockouts and so does not create lockout",
+      "Wrong password, maxAllowedBeforeLockout.count=2: invalid password response, does not consider unsuccessful checks which have already contributed to lockouts and so does not create lockout",
       async () => {
-        const res = await checkOTP(publicSubjectId, {
-          otp: incorrectOtp,
+        const res = await checkPassword(publicSubjectId, {
+          password,
           source: defaultSource,
           maxAllowedBeforeLockout: { count: 2 },
         });
@@ -176,27 +194,31 @@ When(
       },
     );
 
-    await $test.step("Wait long enough for OTP checks GSI to update", () =>
+    await $test.step("Wait long enough for password checks GSI to update", () =>
       sleep(1_000),
     );
 
-    await $test.step("Correct OTP: successful response", async () => {
-      const res = await checkOTP(publicSubjectId, {
-        otp,
-        source: defaultSource,
-      });
+    await $test.step("Correct password: successful response", async () => {
+      const res = await checkPassword(
+        publicSubjectId,
+        {
+          password,
+          source: defaultSource,
+        },
+        getAdapiApiAccessToken("successful_verification"),
+      );
       expect(res.status).toBe(204);
     });
 
-    await $test.step("Wait long enough for OTP checks GSI to update", () =>
+    await $test.step("Wait long enough for password checks GSI to update", () =>
       sleep(1_000),
     );
 
     await $test.step(
-      "Correct but used OTP, maxAllowedBeforeLockout.count=2: invalid OTP response, does not consider unsuccessful checks from before successful check and so does not create lockout",
+      "Wrong password, maxAllowedBeforeLockout.count=2: invalid password response, does not consider unsuccessful checks from before successful check and so does not create lockout",
       async () => {
-        const res = await checkOTP(publicSubjectId, {
-          otp,
+        const res = await checkPassword(publicSubjectId, {
+          password,
           source: defaultSource,
           maxAllowedBeforeLockout: { count: 2 },
         });
@@ -206,22 +228,16 @@ When(
       },
     );
 
-    const { otp: newOtp } = await $test.step("Generate another OTP", async () =>
-      generateOTP(publicSubjectId, {
-        source: defaultSource,
-      }),
-    );
-
     await $test.step(
-      "Wait for longer than next window and for OTP checks GSI to update",
+      "Wait for longer than next window and for password checks GSI to update",
       () => sleep(5_000),
     );
 
     await $test.step(
-      "Wrong OTP, maxAllowedBeforeLockout.count=2, maxAllowedBeforeLockout.window=4: invalid OTP response, does not consider checks outside of window and so does not create lockout",
+      "Wrong password, maxAllowedBeforeLockout.count=2, maxAllowedBeforeLockout.window=4: invalid password response, does not consider checks outside of window and so does not create lockout",
       async () => {
-        const res = await checkOTP(publicSubjectId, {
-          otp: incorrectOtp,
+        const res = await checkPassword(publicSubjectId, {
+          password,
           source: defaultSource,
           maxAllowedBeforeLockout: { count: 2, window: 4 },
         });
@@ -231,40 +247,20 @@ When(
       },
     );
 
-    await $test.step("Wait long enough for OTP checks GSI to update", () =>
+    await $test.step("Wait long enough for password checks GSI to update", () =>
       sleep(1_000),
     );
 
-    await $test.step("Correct OTP: successful response", async () => {
-      const res = await checkOTP(publicSubjectId, {
-        otp: newOtp,
-        source: defaultSource,
-      });
-      expect(res.status).toBe(204);
-    });
-
-    const { otp: shortLivedOtp } = await $test.step(
-      "Generate a short-lived OTP",
-      async () =>
-        generateOTP(publicSubjectId, {
+    await $test.step("Correct password: successful response", async () => {
+      const res = await checkPassword(
+        publicSubjectId,
+        {
+          password,
           source: defaultSource,
-          expiresIn: 2,
-        }),
-    );
-
-    await $test.step(
-      "Wait for short-lived OTP to expire and for OTP checks GSI to update",
-      () => sleep(3_000),
-    );
-
-    await $test.step("Expired OTP: invalid OTP response", async () => {
-      const res = await checkOTP(publicSubjectId, {
-        otp: shortLivedOtp,
-        source: defaultSource,
-      });
-      expect(res.status).toBe(401);
-      const body = v.parse(errorResponseSchema, await res.json());
-      expect(body.code).toBe(1005);
+        },
+        getAdapiApiAccessToken("successful_verification"),
+      );
+      expect(res.status).toBe(204);
     });
   },
 );
