@@ -139,6 +139,28 @@ describe("internalApiClient", () => {
       );
     });
 
+    it("should include lockoutsToCheckFor in request body when provided", async () => {
+      const client = new InternalApiClient(undefined, mockEvent);
+
+      mockThisFetch.mockResolvedValueOnce(new Response());
+
+      await client.generateOTP({
+        publicSubjectId,
+        ...commonBody,
+        lockoutsToCheckFor: ["TooManyOTPsRequested" as any],
+      });
+
+      expect(mockThisFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          body: JSON.stringify({
+            ...commonBody,
+            lockoutsToCheckFor: ["TooManyOTPsRequested"],
+          }),
+        }),
+      );
+    });
+
     it("should return unknown error when fetch throws", async () => {
       const client = new InternalApiClient(undefined, mockEvent);
       const error = new Error("Network error");
@@ -211,6 +233,30 @@ describe("internalApiClient", () => {
       );
     });
 
+    it("should include lockoutsToCheckFor in request body when provided", async () => {
+      const client = new InternalApiClient(undefined, mockEvent);
+
+      mockThisFetch.mockResolvedValueOnce(new Response());
+
+      await client.checkOTP({
+        publicSubjectId,
+        ...commonBody,
+        otp: "123456",
+        lockoutsToCheckFor: ["TooManyIncorrectOTPsEntered" as any],
+      });
+
+      expect(mockThisFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          body: JSON.stringify({
+            ...commonBody,
+            otp: "123456",
+            lockoutsToCheckFor: ["TooManyIncorrectOTPsEntered"],
+          }),
+        }),
+      );
+    });
+
     it("should return unknown error when fetch throws", async () => {
       const client = new InternalApiClient(undefined, mockEvent);
       const error = new Error("Network error");
@@ -258,6 +304,30 @@ describe("internalApiClient", () => {
             lockoutDuration: 600,
           }),
         },
+      );
+    });
+
+    it("should include lockoutsToCheckFor in request body when provided", async () => {
+      const client = new InternalApiClient(undefined, mockEvent);
+
+      mockThisFetch.mockResolvedValueOnce(new Response());
+
+      await client.checkPassword({
+        publicSubjectId,
+        ...commonBody,
+        password: "hunter2", // pragma: allowlist secret
+        lockoutsToCheckFor: ["TooManyIncorrectPasswordsEntered" as any],
+      });
+
+      expect(mockThisFetch).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({
+          body: JSON.stringify({
+            ...commonBody,
+            password: "hunter2", // pragma: allowlist secret
+            lockoutsToCheckFor: ["TooManyIncorrectPasswordsEntered"],
+          }),
+        }),
       );
     });
 
@@ -365,6 +435,7 @@ describe("internalApiClient", () => {
           type: "TooManyOTPsRequested",
           lockedOutAt: unixSeconds,
           lockedOutUntil: unixSeconds,
+          keepUntil: unixSeconds,
         },
       ]);
 
@@ -376,6 +447,7 @@ describe("internalApiClient", () => {
           type: "TooManyOTPsRequested",
           lockedOutAt: new Date(unixSeconds * 1000),
           lockedOutUntil: new Date(unixSeconds * 1000),
+          keepUntil: unixSeconds,
         },
       ]);
     });

@@ -44,6 +44,10 @@ const createDynamoDbClient = () => {
       const { UpdateCommand } = await import("@aws-sdk/lib-dynamodb");
       return await docClient.send(new UpdateCommand(params));
     },
+    query: async (params: QueryCommandInput) => {
+      const { QueryCommand } = await import("@aws-sdk/lib-dynamodb");
+      return await docClient.send(new QueryCommand(params));
+    },
     transactWrite: async (params: TransactWriteCommandInput) => {
       const { TransactWriteCommand } = await import("@aws-sdk/lib-dynamodb");
       return await docClient.send(new TransactWriteCommand(params));

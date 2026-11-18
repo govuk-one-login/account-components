@@ -169,6 +169,12 @@ const render = async (
     ...options?.analytics,
   };
 
+  if (options?.showErrorUi) {
+    request.log.info("Set up passkey error screen viewed");
+  } else {
+    request.log.info("Set up passkey screen viewed");
+  }
+
   await reply.render("journeys/passkey-create/templates/create.njk", {
     ...options,
     registrationOptions: JSON.stringify(registrationOptions),
@@ -309,6 +315,8 @@ export async function postHandler(
   }
 
   if (body.action === "skip") {
+    request.log.info("Skipped from set up passkey error screen");
+
     await completeAllJourneyActionsUnsuccessfully(
       unsuccessfulJourneyActionErrors.userAbortedJourney,
       request,
@@ -556,6 +564,8 @@ export async function postHandler(
     body.registrationResponse,
     getPasskeysResult.result.passkeys.length + 1,
   );
+
+  request.log.info("Passkey added");
 
   await completeJourneyActionSuccessfully<"passkeyCreate">(
     {

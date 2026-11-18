@@ -50,6 +50,7 @@ export class InternalApiClient extends JsonApiClient {
       window: number;
     };
     lockoutDuration?: number;
+    lockoutsToCheckFor?: LockoutType[];
   }) {
     return this.logOnError("generateOTP", async () => {
       try {
@@ -66,6 +67,7 @@ export class InternalApiClient extends JsonApiClient {
           "1001": "InvalidRequest",
           "1002": LockoutType.TooManyOTPsRequested,
           "1003": LockoutType.TooManyIncorrectOTPsEntered,
+          "1004": LockoutType.TooManyIncorrectPasswordsEntered,
         } as const;
 
         return await InternalApiClient.processResponse(
@@ -97,6 +99,7 @@ export class InternalApiClient extends JsonApiClient {
       window: number;
     };
     lockoutDuration?: number;
+    lockoutsToCheckFor?: LockoutType[];
   }) {
     return this.logOnError("checkOTP", async () => {
       try {
@@ -111,8 +114,10 @@ export class InternalApiClient extends JsonApiClient {
 
         const errorsCodesMap = {
           "1001": "InvalidRequest",
-          "1002": LockoutType.TooManyIncorrectOTPsEntered,
-          "1003": "InvalidOTP",
+          "1002": LockoutType.TooManyOTPsRequested,
+          "1003": LockoutType.TooManyIncorrectOTPsEntered,
+          "1004": LockoutType.TooManyIncorrectPasswordsEntered,
+          "1005": "InvalidOTP",
         } as const;
 
         return await InternalApiClient.processResponse(
@@ -141,6 +146,7 @@ export class InternalApiClient extends JsonApiClient {
       window: number;
     };
     lockoutDuration?: number;
+    lockoutsToCheckFor?: LockoutType[];
   }) {
     return this.logOnError("checkPassword", async () => {
       try {
@@ -155,8 +161,10 @@ export class InternalApiClient extends JsonApiClient {
 
         const errorsCodesMap = {
           "1001": "InvalidRequest",
-          "1002": LockoutType.TooManyIncorrectPasswordsEntered,
-          "1003": "InvalidPassword",
+          "1002": LockoutType.TooManyOTPsRequested,
+          "1003": LockoutType.TooManyIncorrectOTPsEntered,
+          "1004": LockoutType.TooManyIncorrectPasswordsEntered,
+          "1005": "InvalidPassword",
         } as const;
 
         return await InternalApiClient.processResponse(

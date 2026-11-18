@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components API
-  version: 0.0.20
+  version: 0.0.22
   contact:
     name: GDS - DI Accounts Pod - Home Team
     email: one-login-home-team@digital.cabinet-office.gov.uk
@@ -316,6 +316,12 @@ paths:
                   type: integer
                   default: 900
                   description: If the request results in a lockout, the number of seconds the lockout applies for
+                lockoutsToCheckFor:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/LockoutType"
+                  default: ["TooManyOTPsRequested"]
+                  description: The types of lockout to check for before generating an OTP
                 maxAllowedBeforeLockout:
                   type: object
                   properties:
@@ -382,6 +388,10 @@ paths:
                   value:
                     code: 1003
                     message: TooManyIncorrectOTPsEntered
+                TooManyIncorrectPasswordsEntered:
+                  value:
+                    code: 1004
+                    message: TooManyIncorrectPasswordsEntered
         "500":
           description: Internal server error
 
@@ -410,6 +420,12 @@ paths:
                   type: integer
                   default: 900
                   description: If the request results in a lockout, the number of seconds the lockout applies for
+                lockoutsToCheckFor:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/LockoutType"
+                  default: ["TooManyIncorrectOTPsEntered"]
+                  description: The types of lockout to check for before checking an OTP
                 maxAllowedBeforeLockout:
                   type: object
                   properties:
@@ -454,10 +470,18 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
               examples:
-                TooManyIncorrectOTPsEntered:
+                TooManyOTPsRequested:
                   value:
                     code: 1002
+                    message: TooManyOTPsRequested
+                TooManyIncorrectOTPsEntered:
+                  value:
+                    code: 1003
                     message: TooManyIncorrectOTPsEntered
+                TooManyIncorrectPasswordsEntered:
+                  value:
+                    code: 1004
+                    message: TooManyIncorrectPasswordsEntered
         "401":
           description: Unauthorized
           content:
@@ -467,7 +491,7 @@ paths:
               examples:
                 InvalidOTP:
                   value:
-                    code: 1003
+                    code: 1005
                     message: InvalidOTP
         "500":
           description: Internal server error
@@ -496,6 +520,12 @@ paths:
                   type: integer
                   default: 900
                   description: If the request results in a lockout, the number of seconds the lockout applies for
+                lockoutsToCheckFor:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/LockoutType"
+                  default: ["TooManyIncorrectPasswordsEntered"]
+                  description: The types of lockout to check for before checking a password
                 maxAllowedBeforeLockout:
                   type: object
                   properties:
@@ -540,9 +570,17 @@ paths:
               schema:
                 $ref: "#/components/schemas/ApiError"
               examples:
-                TooManyIncorrectPasswordsEntered:
+                TooManyOTPsRequested:
                   value:
                     code: 1002
+                    message: TooManyOTPsRequested
+                TooManyIncorrectOTPsEntered:
+                  value:
+                    code: 1003
+                    message: TooManyIncorrectOTPsEntered
+                TooManyIncorrectPasswordsEntered:
+                  value:
+                    code: 1004
                     message: TooManyIncorrectPasswordsEntered
         "401":
           description: Unauthorized
@@ -553,7 +591,7 @@ paths:
               examples:
                 InvalidPassword:
                   value:
-                    code: 1003
+                    code: 1005
                     message: InvalidPassword
         "500":
           description: Internal server error

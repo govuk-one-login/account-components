@@ -44,6 +44,7 @@ export async function generateRequestObjectPost(
     await generateAccessToken({
       getPasskeys_scenario: body.account_data_api_getPasskeys_scenario,
       createPasskey_scenario: body.account_data_api_createPasskey_scenario,
+      verifyPassword_scenario: body.account_data_api_verifyPassword_scenario,
     });
   authorizeRequestObject.account_interventions_service_api_access_token =
     await generateAccessToken({
