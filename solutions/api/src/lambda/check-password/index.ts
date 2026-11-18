@@ -19,6 +19,7 @@ import { getLockoutErrorResponse } from "../../utils/lockouts/getLockoutErrorRes
 import { getBaseBodySchemaForEndpointWithLockouts } from "../../utils/lockouts/getBaseBodySchemaForEndpointWithLockouts.js";
 import { AccountDataApiClient } from "../../../../commons/utils/apiClients/accountDataApiClient.js";
 import { getSafeValibotIssues } from "../../../../commons/utils/getSafeValibotIssues/index.js";
+import { invalidRequestResponse } from "../../utils/common.js";
 
 const dynamodbClient = getDynamoDbClient();
 
@@ -42,10 +43,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           logger.info("Invalid headers", {
             issues: getSafeValibotIssues(headers.issues),
           });
-          return {
-            statusCode: 400,
-            body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
-          };
+          return invalidRequestResponse;
         }
 
         const pathParams = v.safeParse(
@@ -59,10 +57,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           logger.info("Invalid path parameters", {
             issues: getSafeValibotIssues(pathParams.issues),
           });
-          return {
-            statusCode: 400,
-            body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
-          };
+          return invalidRequestResponse;
         }
 
         const body = v.safeParse(
@@ -85,10 +80,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           logger.info("Invalid body", {
             issues: getSafeValibotIssues(body.issues),
           });
-          return {
-            statusCode: 400,
-            body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
-          };
+          return invalidRequestResponse;
         }
 
         const lockoutErrorResponse = await getLockoutErrorResponse({
