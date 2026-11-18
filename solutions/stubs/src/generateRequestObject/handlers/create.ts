@@ -48,6 +48,7 @@ export const requestBodySchema = v.object({
   account_management_api_verifyOtpChallenge_scenario: v.string(),
   account_data_api_createPasskey_scenario: v.string(),
   account_data_api_getPasskeys_scenario: v.string(),
+  account_data_api_verifyPassword_scenario: v.string(),
   account_interventions_service_api_access_token_getUserAisStatus_scenario:
     v.string(),
   internal_api_generateOTP_scenario: v.string(),
