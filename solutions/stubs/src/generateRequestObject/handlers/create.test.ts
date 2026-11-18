@@ -103,7 +103,7 @@ describe("createRequestObjectPost", () => {
         account_management_api_verifyOtpChallenge_scenario: "successful",
         account_data_api_createPasskey_scenario: "successful",
         account_data_api_getPasskeys_scenario: "successful",
-        account_data_api_verifyPassword_scenario: "successful_verification",
+        account_data_api_verifyPassword_scenario: "successful_verification", // pragma: allowlist secret
         account_interventions_service_api_access_token_getUserAisStatus_scenario:
           "no_interventions",
         internal_api_generateOTP_scenario: "successful",
