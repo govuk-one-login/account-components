@@ -224,7 +224,7 @@ When(
       });
       expect(res.status).toBe(403);
       const body = v.parse(errorResponseSchema, await res.json());
-      expect(body.code).toBe(1003);
+      expect(body.code).toBe(1002);
     });
 
     await $test.step(
