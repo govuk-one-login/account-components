@@ -276,6 +276,57 @@ describe("internalApiClient", () => {
         errorDetails: error,
       });
     });
+
+    it("should pass a schema that accepts valid=true", async () => {
+      const { JsonApiClient } = await import("./jsonApiClient.js");
+      const client = new InternalApiClient(undefined, mockEvent);
+
+      mockThisFetch.mockResolvedValueOnce(new Response());
+
+      await client.checkOTP({ publicSubjectId, ...commonBody, otp: "123456" });
+
+      // @ts-expect-error
+      const schema = vi.mocked(JsonApiClient.processResponse).mock
+        .calls[0]?.[1];
+      assert.ok(schema);
+
+      const v = await import("valibot");
+      const result = v.parse(schema, { valid: true });
+
+      expect(result).toStrictEqual({ valid: true });
+    });
+
+    it("should pass a schema that accepts valid=false with optional lockout", async () => {
+      const { JsonApiClient } = await import("./jsonApiClient.js");
+      const client = new InternalApiClient(undefined, mockEvent);
+      const unixSeconds = 1704067200;
+
+      mockThisFetch.mockResolvedValueOnce(new Response());
+
+      await client.checkOTP({ publicSubjectId, ...commonBody, otp: "123456" });
+
+      // @ts-expect-error
+      const schema = vi.mocked(JsonApiClient.processResponse).mock
+        .calls[0]?.[1];
+      assert.ok(schema);
+
+      const v = await import("valibot");
+      const lockout = {
+        id: "lockout-id",
+        publicSubjectId,
+        source: "account-delete",
+        type: "TooManyIncorrectOTPsEntered",
+        lockedOutAt: unixSeconds,
+        lockedOutUntil: unixSeconds,
+        keepUntil: unixSeconds,
+      };
+
+      expect(v.parse(schema, { valid: false })).toStrictEqual({ valid: false });
+      expect(v.parse(schema, { valid: false, lockout })).toStrictEqual({
+        valid: false,
+        lockout,
+      });
+    });
   });
 
   describe("checkPassword", () => {
@@ -359,6 +410,67 @@ describe("internalApiClient", () => {
         error: "UnknownError",
         rawResponse: undefined,
         errorDetails: error,
+      });
+    });
+
+    it("should pass a schema that accepts valid=true", async () => {
+      const { JsonApiClient } = await import("./jsonApiClient.js");
+      const client = new InternalApiClient(undefined, mockEvent);
+
+      mockThisFetch.mockResolvedValueOnce(new Response());
+
+      await client.checkPassword({
+        adapiAccessToken,
+        publicSubjectId,
+        ...commonBody,
+        password: "hunter2",
+      }); // pragma: allowlist secret
+
+      // @ts-expect-error
+      const schema = vi.mocked(JsonApiClient.processResponse).mock
+        .calls[0]?.[1];
+      assert.ok(schema);
+
+      const v = await import("valibot");
+      const result = v.parse(schema, { valid: true });
+
+      expect(result).toStrictEqual({ valid: true });
+    });
+
+    it("should pass a schema that accepts valid=false with optional lockout", async () => {
+      const { JsonApiClient } = await import("./jsonApiClient.js");
+      const client = new InternalApiClient(undefined, mockEvent);
+      const unixSeconds = 1704067200;
+
+      mockThisFetch.mockResolvedValueOnce(new Response());
+
+      await client.checkPassword({
+        adapiAccessToken,
+        publicSubjectId,
+        ...commonBody,
+        password: "hunter2",
+      }); // pragma: allowlist secret
+
+      // @ts-expect-error
+      const schema = vi.mocked(JsonApiClient.processResponse).mock
+        .calls[0]?.[1];
+      assert.ok(schema);
+
+      const v = await import("valibot");
+      const lockout = {
+        id: "lockout-id",
+        publicSubjectId,
+        source: "account-delete",
+        type: "TooManyIncorrectPasswordsEntered",
+        lockedOutAt: unixSeconds,
+        lockedOutUntil: unixSeconds,
+        keepUntil: unixSeconds,
+      };
+
+      expect(v.parse(schema, { valid: false })).toStrictEqual({ valid: false });
+      expect(v.parse(schema, { valid: false, lockout })).toStrictEqual({
+        valid: false,
+        lockout,
       });
     });
   });

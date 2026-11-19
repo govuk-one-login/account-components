@@ -116,7 +116,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           ConditionExpression: "attribute_not_exists(id)",
         });
 
-        await maybeCreateLockout({
+        const lockout = await maybeCreateLockout({
           publicSubjectId: pathParams.output.publicSubjectId,
           source: body.output.source,
           type: LockoutType.TooManyOTPsRequested,
@@ -136,6 +136,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           body: JSON.stringify({
             otp: otpItem.otp,
             expiresAt: otpItem.expiresAt,
+            lockout,
           }),
         };
       },

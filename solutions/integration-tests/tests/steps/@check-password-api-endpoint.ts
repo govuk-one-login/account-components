@@ -18,6 +18,20 @@ const errorResponseSchema = v.object({
   code: v.number(),
 });
 
+const lockoutSchema = v.object({
+  id: v.string(),
+  publicSubjectId: v.string(),
+  lockedOutAt: v.number(),
+  lockedOutUntil: v.number(),
+  source: v.string(),
+  type: v.string(),
+});
+
+const checkPasswordResponseSchema = v.object({
+  valid: v.boolean(),
+  lockout: v.optional(lockoutSchema),
+});
+
 const getAdapiApiAccessToken = (
   verifyPasswordScenario:
     | "successful_verification"
@@ -118,9 +132,10 @@ When(
         password,
         source: defaultSource,
       });
-      expect(res.status).toBe(401);
-      const body = v.parse(errorResponseSchema, await res.json());
-      expect(body.code).toBe(1005);
+      expect(res.status).toBe(200);
+      const body = v.parse(checkPasswordResponseSchema, await res.json());
+      expect(body.valid).toBe(false);
+      expect(body.lockout).toBeUndefined();
     });
 
     await $test.step("Wait long enough for password checks GSI to update", () =>
@@ -130,15 +145,22 @@ When(
     await $test.step(
       "Wrong password, maxAllowedBeforeLockout.count=2: invalid password response, creates lockout",
       async () => {
+        const before = Math.floor(Date.now() / 1000);
         const res = await checkPassword(publicSubjectId, {
           password,
           source: defaultSource,
           lockoutDuration: 5,
           maxAllowedBeforeLockout: { count: 2 },
         });
-        expect(res.status).toBe(401);
-        const body = v.parse(errorResponseSchema, await res.json());
-        expect(body.code).toBe(1005);
+        const after = Math.floor(Date.now() / 1000);
+        expect(res.status).toBe(200);
+        const body = v.parse(checkPasswordResponseSchema, await res.json());
+        expect(body.valid).toBe(false);
+        expect(body.lockout?.publicSubjectId).toBe(publicSubjectId);
+        expect(body.lockout?.source).toBe(defaultSource);
+        expect(body.lockout?.type).toBe("TooManyIncorrectPasswordsEntered");
+        expect(body.lockout?.lockedOutUntil).toBeGreaterThanOrEqual(before + 5);
+        expect(body.lockout?.lockedOutUntil).toBeLessThanOrEqual(after + 5);
       },
     );
 
@@ -158,7 +180,9 @@ When(
           },
           getAdapiApiAccessToken("successful_verification"),
         );
-        expect(res.status).toBe(204);
+        expect(res.status).toBe(200);
+        const body = v.parse(checkPasswordResponseSchema, await res.json());
+        expect(body.valid).toBe(true);
       },
     );
 
@@ -187,7 +211,9 @@ When(
           },
           getAdapiApiAccessToken("successful_verification"),
         );
-        expect(res.status).toBe(204);
+        expect(res.status).toBe(200);
+        const body = v.parse(checkPasswordResponseSchema, await res.json());
+        expect(body.valid).toBe(true);
       },
     );
 
@@ -204,9 +230,10 @@ When(
           source: defaultSource,
           maxAllowedBeforeLockout: { count: 2 },
         });
-        expect(res.status).toBe(401);
-        const body = v.parse(errorResponseSchema, await res.json());
-        expect(body.code).toBe(1005);
+        expect(res.status).toBe(200);
+        const body = v.parse(checkPasswordResponseSchema, await res.json());
+        expect(body.valid).toBe(false);
+        expect(body.lockout).toBeUndefined();
       },
     );
 
@@ -223,7 +250,9 @@ When(
         },
         getAdapiApiAccessToken("successful_verification"),
       );
-      expect(res.status).toBe(204);
+      expect(res.status).toBe(200);
+      const body = v.parse(checkPasswordResponseSchema, await res.json());
+      expect(body.valid).toBe(true);
     });
 
     await $test.step("Wait long enough for password checks GSI to update", () =>
@@ -238,9 +267,10 @@ When(
           source: defaultSource,
           maxAllowedBeforeLockout: { count: 2 },
         });
-        expect(res.status).toBe(401);
-        const body = v.parse(errorResponseSchema, await res.json());
-        expect(body.code).toBe(1005);
+        expect(res.status).toBe(200);
+        const body = v.parse(checkPasswordResponseSchema, await res.json());
+        expect(body.valid).toBe(false);
+        expect(body.lockout).toBeUndefined();
       },
     );
 
@@ -257,9 +287,10 @@ When(
           source: defaultSource,
           maxAllowedBeforeLockout: { count: 2, window: 4 },
         });
-        expect(res.status).toBe(401);
-        const body = v.parse(errorResponseSchema, await res.json());
-        expect(body.code).toBe(1005);
+        expect(res.status).toBe(200);
+        const body = v.parse(checkPasswordResponseSchema, await res.json());
+        expect(body.valid).toBe(false);
+        expect(body.lockout).toBeUndefined();
       },
     );
 
@@ -276,7 +307,9 @@ When(
         },
         getAdapiApiAccessToken("successful_verification"),
       );
-      expect(res.status).toBe(204);
+      expect(res.status).toBe(200);
+      const body = v.parse(checkPasswordResponseSchema, await res.json());
+      expect(body.valid).toBe(true);
     });
   },
 );

@@ -117,12 +117,19 @@ export class InternalApiClient extends JsonApiClient {
           "1002": LockoutType.TooManyOTPsRequested,
           "1003": LockoutType.TooManyIncorrectOTPsEntered,
           "1004": LockoutType.TooManyIncorrectPasswordsEntered,
-          "1005": "InvalidOTP",
         } as const;
 
         return await InternalApiClient.processResponse(
           response,
-          InternalApiClient.undefinedSchema,
+          v.variant("valid", [
+            v.object({
+              valid: v.literal(true),
+            }),
+            v.object({
+              valid: v.literal(false),
+              lockout: v.optional(lockoutsDatabaseItem),
+            }),
+          ]),
           errorsCodesMap,
         );
       } catch (error) {
@@ -168,12 +175,19 @@ export class InternalApiClient extends JsonApiClient {
           "1002": LockoutType.TooManyOTPsRequested,
           "1003": LockoutType.TooManyIncorrectOTPsEntered,
           "1004": LockoutType.TooManyIncorrectPasswordsEntered,
-          "1005": "InvalidPassword",
         } as const;
 
         return await InternalApiClient.processResponse(
           response,
-          InternalApiClient.undefinedSchema,
+          v.variant("valid", [
+            v.object({
+              valid: v.literal(true),
+            }),
+            v.object({
+              valid: v.literal(false),
+              lockout: v.optional(lockoutsDatabaseItem),
+            }),
+          ]),
           errorsCodesMap,
         );
       } catch (error) {

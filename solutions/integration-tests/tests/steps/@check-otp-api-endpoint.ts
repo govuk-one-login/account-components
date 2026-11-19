@@ -18,9 +18,24 @@ const errorResponseSchema = v.object({
   code: v.number(),
 });
 
+const lockoutSchema = v.object({
+  id: v.string(),
+  publicSubjectId: v.string(),
+  lockedOutAt: v.number(),
+  lockedOutUntil: v.number(),
+  source: v.string(),
+  type: v.string(),
+});
+
 const generateOTPResponseSchema = v.object({
   otp: v.string(),
   expiresAt: v.number(),
+  lockout: v.optional(lockoutSchema),
+});
+
+const checkOTPResponseSchema = v.object({
+  valid: v.boolean(),
+  lockout: v.optional(lockoutSchema),
 });
 
 const generateOTP = async (
@@ -117,9 +132,10 @@ When(
         otp: incorrectOtp,
         source: defaultSource,
       });
-      expect(res.status).toBe(401);
-      const body = v.parse(errorResponseSchema, await res.json());
-      expect(body.code).toBe(1005);
+      expect(res.status).toBe(200);
+      const body = v.parse(checkOTPResponseSchema, await res.json());
+      expect(body.valid).toBe(false);
+      expect(body.lockout).toBeUndefined();
     });
 
     await $test.step("Wait long enough for OTP checks GSI to update", () =>
@@ -145,9 +161,10 @@ When(
         otp: incorrectOtp,
         source: defaultSource,
       });
-      expect(res.status).toBe(401);
-      const body = v.parse(errorResponseSchema, await res.json());
-      expect(body.code).toBe(1005);
+      expect(res.status).toBe(200);
+      const body = v.parse(checkOTPResponseSchema, await res.json());
+      expect(body.valid).toBe(false);
+      expect(body.lockout).toBeUndefined();
     });
 
     await $test.step("Wait long enough for OTP checks GSI to update", () =>
@@ -157,15 +174,22 @@ When(
     await $test.step(
       "Wrong OTP, maxAllowedBeforeLockout.count=2: invalid OTP response, creates lockout",
       async () => {
+        const before = Math.floor(Date.now() / 1000);
         const res = await checkOTP(publicSubjectId, {
           otp: incorrectOtp,
           source: defaultSource,
           lockoutDuration: 5,
           maxAllowedBeforeLockout: { count: 2 },
         });
-        expect(res.status).toBe(401);
-        const body = v.parse(errorResponseSchema, await res.json());
-        expect(body.code).toBe(1005);
+        const after = Math.floor(Date.now() / 1000);
+        expect(res.status).toBe(200);
+        const body = v.parse(checkOTPResponseSchema, await res.json());
+        expect(body.valid).toBe(false);
+        expect(body.lockout?.publicSubjectId).toBe(publicSubjectId);
+        expect(body.lockout?.source).toBe(defaultSource);
+        expect(body.lockout?.type).toBe("TooManyIncorrectOTPsEntered");
+        expect(body.lockout?.lockedOutUntil).toBeGreaterThanOrEqual(before + 5);
+        expect(body.lockout?.lockedOutUntil).toBeLessThanOrEqual(after + 5);
       },
     );
 
@@ -189,7 +213,9 @@ When(
           otp: otpOtherSubject,
           source: defaultSource,
         });
-        expect(res.status).toBe(204);
+        expect(res.status).toBe(200);
+        const body = v.parse(checkOTPResponseSchema, await res.json());
+        expect(body.valid).toBe(true);
       },
     );
 
@@ -210,7 +236,9 @@ When(
           otp: otpDifferentSource,
           source: Source["passkey-create"],
         });
-        expect(res.status).toBe(204);
+        expect(res.status).toBe(200);
+        const body = v.parse(checkOTPResponseSchema, await res.json());
+        expect(body.valid).toBe(true);
       },
     );
 
@@ -227,9 +255,10 @@ When(
           source: defaultSource,
           maxAllowedBeforeLockout: { count: 2 },
         });
-        expect(res.status).toBe(401);
-        const body = v.parse(errorResponseSchema, await res.json());
-        expect(body.code).toBe(1005);
+        expect(res.status).toBe(200);
+        const body = v.parse(checkOTPResponseSchema, await res.json());
+        expect(body.valid).toBe(false);
+        expect(body.lockout).toBeUndefined();
       },
     );
 
@@ -242,7 +271,9 @@ When(
         otp,
         source: defaultSource,
       });
-      expect(res.status).toBe(204);
+      expect(res.status).toBe(200);
+      const body = v.parse(checkOTPResponseSchema, await res.json());
+      expect(body.valid).toBe(true);
     });
 
     await $test.step("Wait long enough for OTP checks GSI to update", () =>
@@ -257,9 +288,10 @@ When(
           source: defaultSource,
           maxAllowedBeforeLockout: { count: 2 },
         });
-        expect(res.status).toBe(401);
-        const body = v.parse(errorResponseSchema, await res.json());
-        expect(body.code).toBe(1005);
+        expect(res.status).toBe(200);
+        const body = v.parse(checkOTPResponseSchema, await res.json());
+        expect(body.valid).toBe(false);
+        expect(body.lockout).toBeUndefined();
       },
     );
 
@@ -282,9 +314,10 @@ When(
           source: defaultSource,
           maxAllowedBeforeLockout: { count: 2, window: 4 },
         });
-        expect(res.status).toBe(401);
-        const body = v.parse(errorResponseSchema, await res.json());
-        expect(body.code).toBe(1005);
+        expect(res.status).toBe(200);
+        const body = v.parse(checkOTPResponseSchema, await res.json());
+        expect(body.valid).toBe(false);
+        expect(body.lockout).toBeUndefined();
       },
     );
 
@@ -297,7 +330,9 @@ When(
         otp: newOtp,
         source: defaultSource,
       });
-      expect(res.status).toBe(204);
+      expect(res.status).toBe(200);
+      const body = v.parse(checkOTPResponseSchema, await res.json());
+      expect(body.valid).toBe(true);
     });
 
     const { otp: shortLivedOtp } = await $test.step(
@@ -319,9 +354,10 @@ When(
         otp: shortLivedOtp,
         source: defaultSource,
       });
-      expect(res.status).toBe(401);
-      const body = v.parse(errorResponseSchema, await res.json());
-      expect(body.code).toBe(1005);
+      expect(res.status).toBe(200);
+      const body = v.parse(checkOTPResponseSchema, await res.json());
+      expect(body.valid).toBe(false);
+      expect(body.lockout).toBeUndefined();
     });
   },
 );

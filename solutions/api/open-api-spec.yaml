@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components API
-  version: 0.0.22
+  version: 0.0.23
   contact:
     name: GDS - DI Accounts Pod - Home Team
     email: one-login-home-team@digital.cabinet-office.gov.uk
@@ -361,6 +361,8 @@ paths:
                     type: integer
                     description: Unix epoch time in seconds when the token expires
                     example: 1682959031
+                  lockout:
+                    $ref: "#/components/schemas/Lockout"
                 required: [otp, expiresAt]
         "400":
           description: Bad request
@@ -450,8 +452,36 @@ paths:
         - $ref: "#/components/parameters/XForwardedFor"
         - $ref: "#/components/parameters/UserLanguage"
       responses:
-        "204":
-          description: OTP is valid
+        "200":
+          description: OTP check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    description: Whether the OTP was valid
+                  lockout:
+                    $ref: "#/components/schemas/Lockout"
+                required: [valid]
+              examples:
+                Valid:
+                  value:
+                    valid: true
+                Invalid:
+                  value:
+                    valid: false
+                InvalidWithLockout:
+                  value:
+                    valid: false
+                    lockout:
+                      id: "00000000-0000-0000-0000-000000000000"
+                      publicSubjectId: "subject-123"
+                      lockedOutAt: 1795099902
+                      lockedOutUntil: 1795099999
+                      source: account-delete
+                      type: TooManyIncorrectOTPsEntered
         "400":
           description: Bad request
           content:
@@ -482,17 +512,6 @@ paths:
                   value:
                     code: 1004
                     message: TooManyIncorrectPasswordsEntered
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiError"
-              examples:
-                InvalidOTP:
-                  value:
-                    code: 1005
-                    message: InvalidOTP
         "500":
           description: Internal server error
 
@@ -550,8 +569,36 @@ paths:
         - $ref: "#/components/parameters/XForwardedFor"
         - $ref: "#/components/parameters/UserLanguage"
       responses:
-        "204":
-          description: Password is valid
+        "200":
+          description: Password check result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valid:
+                    type: boolean
+                    description: Whether the password was valid
+                  lockout:
+                    $ref: "#/components/schemas/Lockout"
+                required: [valid]
+              examples:
+                Valid:
+                  value:
+                    valid: true
+                Invalid:
+                  value:
+                    valid: false
+                InvalidWithLockout:
+                  value:
+                    valid: false
+                    lockout:
+                      id: "00000000-0000-0000-0000-000000000000"
+                      publicSubjectId: "subject-123"
+                      lockedOutAt: 1795099902
+                      lockedOutUntil: 1795099999
+                      source: account-delete
+                      type: TooManyIncorrectPasswordsEntered
         "400":
           description: Bad request
           content:
@@ -582,17 +629,6 @@ paths:
                   value:
                     code: 1004
                     message: TooManyIncorrectPasswordsEntered
-        "401":
-          description: Unauthorized
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ApiError"
-              examples:
-                InvalidPassword:
-                  value:
-                    code: 1005
-                    message: InvalidPassword
         "500":
           description: Internal server error
 
@@ -843,6 +879,27 @@ components:
           example: Invalid request parameters
       required:
         - code
+
+    Lockout:
+      type: object
+      properties:
+        id:
+          type: string
+        publicSubjectId:
+          type: string
+        lockedOutAt:
+          type: string
+          format: date-time
+          description: ISO 8601 datetime when the lockout was created
+        lockedOutUntil:
+          type: string
+          format: date-time
+          description: ISO 8601 datetime when the lockout expires
+        source:
+          $ref: "#/components/schemas/Source"
+        type:
+          $ref: "#/components/schemas/LockoutType"
+      required: [id, publicSubjectId, lockedOutAt, lockedOutUntil, source, type]
 
     TokenResponse:
       type: object

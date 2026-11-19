@@ -388,13 +388,16 @@ describe("check-password handler", () => {
   });
 
   describe("successful password check", () => {
-    it("returns 204 when password is correct", async () => {
+    it("returns 200 with valid=true when password is correct", async () => {
       const result = await handler(
         makeEvent(validPathParams, validBody),
         mockContext,
       );
 
-      expect(result).toStrictEqual({ statusCode: 204, body: "" });
+      expect(result).toStrictEqual({
+        statusCode: 200,
+        body: JSON.stringify({ valid: true }),
+      });
     });
 
     it("writes a password check record with successful=true", async () => {
@@ -423,7 +426,7 @@ describe("check-password handler", () => {
   });
 
   describe("failed password check", () => {
-    it("returns 401 with code 1005 when password is incorrect", async () => {
+    it("returns 200 with valid=false when password is incorrect", async () => {
       mockVerifyPassword.mockResolvedValue({
         success: true,
         result: { verified: false },
@@ -435,9 +438,32 @@ describe("check-password handler", () => {
       );
 
       expect(result).toStrictEqual({
-        statusCode: 401,
-        body: JSON.stringify({ code: 1005, message: "InvalidPassword" }),
+        statusCode: 200,
+        body: JSON.stringify({ valid: false, lockout: undefined }),
       });
+    });
+
+    it("includes lockout in response body when lockout is created", async () => {
+      const lockout = {
+        type: LockoutType.TooManyIncorrectPasswordsEntered,
+        id: "lockout-1",
+      };
+      mockVerifyPassword.mockResolvedValue({
+        success: true,
+        result: { verified: false },
+      });
+      mockMaybeCreateLockout.mockResolvedValue(lockout);
+
+      const result = await handler(
+        makeEvent(validPathParams, validBody),
+        mockContext,
+      );
+
+      const { lockout: responseLockout } = JSON.parse(result.body) as {
+        lockout: unknown;
+      };
+
+      expect(responseLockout).toStrictEqual(lockout);
     });
 
     it("throws when verifyPassword call fails", async () => {

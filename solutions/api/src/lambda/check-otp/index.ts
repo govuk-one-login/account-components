@@ -119,12 +119,14 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           });
 
           return {
-            statusCode: 204,
-            body: "",
+            statusCode: 200,
+            body: JSON.stringify({
+              valid: true,
+            }),
           };
         }
 
-        await maybeCreateLockout({
+        const lockout = await maybeCreateLockout({
           publicSubjectId: pathParams.output.publicSubjectId,
           source: body.output.source,
           type: LockoutType.TooManyIncorrectOTPsEntered,
@@ -140,8 +142,11 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
         });
 
         return {
-          statusCode: 401,
-          body: JSON.stringify({ code: 1005, message: "InvalidOTP" }),
+          statusCode: 200,
+          body: JSON.stringify({
+            valid: false,
+            lockout,
+          }),
         };
       },
     ),

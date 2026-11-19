@@ -127,12 +127,14 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
 
         if (verifyPasswordResponse.result.verified) {
           return {
-            statusCode: 204,
-            body: "",
+            statusCode: 200,
+            body: JSON.stringify({
+              valid: true,
+            }),
           };
         }
 
-        await maybeCreateLockout({
+        const lockout = await maybeCreateLockout({
           publicSubjectId: pathParams.output.publicSubjectId,
           source: body.output.source,
           type: LockoutType.TooManyIncorrectPasswordsEntered,
@@ -148,8 +150,11 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
         });
 
         return {
-          statusCode: 401,
-          body: JSON.stringify({ code: 1005, message: "InvalidPassword" }),
+          statusCode: 200,
+          body: JSON.stringify({
+            valid: false,
+            lockout,
+          }),
         };
       },
     ),
