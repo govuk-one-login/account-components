@@ -319,59 +319,14 @@ describe("check-password handler", () => {
       expect(result).toStrictEqual(lockoutResponse);
     });
 
-    it("calls getLockoutErrorResponse with publicSubjectId, source and default lockoutsToCheckFor", async () => {
+    it("calls getLockoutErrorResponse with publicSubjectId, source and TooManyIncorrectPasswordsEntered", async () => {
       await handler(makeEvent(validPathParams, validBody), mockContext);
 
       expect(mockGetLockoutErrorResponse).toHaveBeenCalledWith({
         publicSubjectId: "subject-123",
         source: Source["account-delete"],
-        lockoutsToCheckFor: [LockoutType.TooManyIncorrectPasswordsEntered],
-      });
-    });
-
-    it("calls getLockoutErrorResponse with provided lockoutsToCheckFor", async () => {
-      await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: [LockoutType.TooManyIncorrectPasswordsEntered],
-        }),
-        mockContext,
-      );
-
-      expect(mockGetLockoutErrorResponse).toHaveBeenCalledWith(
-        expect.objectContaining({
-          lockoutsToCheckFor: [LockoutType.TooManyIncorrectPasswordsEntered],
-        }),
-      );
-    });
-
-    it("returns 400 when lockoutsToCheckFor contains an invalid value", async () => {
-      const result = await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: ["invalid-lockout-type"],
-        }),
-        mockContext,
-      );
-
-      expect(result).toStrictEqual({
-        statusCode: 400,
-        body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
-      });
-    });
-
-    it("returns 400 when lockoutsToCheckFor does not include TooManyIncorrectPasswordsEntered", async () => {
-      const result = await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: [LockoutType.TooManyOTPsRequested],
-        }),
-        mockContext,
-      );
-
-      expect(result).toStrictEqual({
-        statusCode: 400,
-        body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
+        lockoutToCheckFor: LockoutType.TooManyIncorrectPasswordsEntered,
+        errorCode: 1002,
       });
     });
   });

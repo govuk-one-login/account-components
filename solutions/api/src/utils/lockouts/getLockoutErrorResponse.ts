@@ -1,38 +1,34 @@
 import type { APIGatewayProxyResult } from "aws-lambda";
 import type { Source } from "../../../../commons/utils/constants.js";
-import { LockoutType } from "../../../../commons/utils/constants.js";
+import type { LockoutType } from "../../../../commons/utils/constants.js";
 import { getLockouts } from "./getLockouts.js";
-
-const lockoutErrorCodes: Record<LockoutType, number> = {
-  [LockoutType.TooManyOTPsRequested]: 1002,
-  [LockoutType.TooManyIncorrectOTPsEntered]: 1003,
-  [LockoutType.TooManyIncorrectPasswordsEntered]: 1004,
-};
 
 export const getLockoutErrorResponse = async ({
   publicSubjectId,
-  lockoutsToCheckFor,
+  lockoutToCheckFor,
   source,
+  errorCode,
 }: {
   publicSubjectId: string;
-  lockoutsToCheckFor: LockoutType[];
+  lockoutToCheckFor: LockoutType;
   source: Source;
+  errorCode: number;
 }): Promise<APIGatewayProxyResult | undefined> => {
-  for (const lockoutType of lockoutsToCheckFor) {
-    const lockouts = await getLockouts({
-      publicSubjectId,
-      source,
-      type: lockoutType,
-    });
-    if (lockouts.length) {
-      return {
-        statusCode: 403,
-        body: JSON.stringify({
-          code: lockoutErrorCodes[lockoutType],
-          message: lockoutType,
-        }),
-      };
-    }
+  const lockouts = await getLockouts({
+    publicSubjectId,
+    source,
+    type: lockoutToCheckFor,
+  });
+
+  if (lockouts.length) {
+    return {
+      statusCode: 403,
+      body: JSON.stringify({
+        code: errorCode,
+        message: lockoutToCheckFor,
+      }),
+    };
   }
+
   return undefined;
 };

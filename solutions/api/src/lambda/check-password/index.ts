@@ -16,7 +16,7 @@ import { randomUUID } from "node:crypto";
 import { maybeCreateLockout } from "../../utils/lockouts/maybeCreateLockout.js";
 import assert from "node:assert";
 import { getLockoutErrorResponse } from "../../utils/lockouts/getLockoutErrorResponse.js";
-import { getBaseBodySchemaForEndpointWithLockouts } from "../../utils/lockouts/getBaseBodySchemaForEndpointWithLockouts.js";
+import { baseBodySchemaForEndpointWithLockouts } from "../../utils/lockouts/baseBodySchemaForEndpointWithLockouts.js";
 import { AccountDataApiClient } from "../../../../commons/utils/apiClients/accountDataApiClient.js";
 import { getSafeValibotIssues } from "../../../../commons/utils/getSafeValibotIssues/index.js";
 import { invalidRequestResponse } from "../../utils/common.js";
@@ -65,11 +65,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
             v.string(),
             v.parseJson(),
             v.object({
-              ...getBaseBodySchemaForEndpointWithLockouts({
-                lockoutTypesToAlwaysCheckFor: [
-                  LockoutType.TooManyIncorrectPasswordsEntered,
-                ],
-              }).entries,
+              ...baseBodySchemaForEndpointWithLockouts.entries,
               password: v.string(),
             }),
           ),
@@ -85,8 +81,9 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
 
         const lockoutErrorResponse = await getLockoutErrorResponse({
           publicSubjectId: pathParams.output.publicSubjectId,
-          lockoutsToCheckFor: body.output.lockoutsToCheckFor,
+          lockoutToCheckFor: LockoutType.TooManyIncorrectPasswordsEntered,
           source: body.output.source,
+          errorCode: 1002,
         });
 
         if (lockoutErrorResponse) {

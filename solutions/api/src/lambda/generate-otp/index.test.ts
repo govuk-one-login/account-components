@@ -276,65 +276,14 @@ describe("generate-otp handler", () => {
       expect(result).toStrictEqual(lockoutResponse);
     });
 
-    it("calls getLockoutErrorResponse with publicSubjectId, source and default lockoutsToCheckFor", async () => {
+    it("calls getLockoutErrorResponse with publicSubjectId, source and TooManyOTPsRequested", async () => {
       await handler(makeEvent(validPathParams, validBody), mockContext);
 
       expect(mockGetLockoutErrorResponse).toHaveBeenCalledWith({
         publicSubjectId: "subject-123",
         source: Source["account-delete"],
-        lockoutsToCheckFor: [LockoutType.TooManyOTPsRequested],
-      });
-    });
-
-    it("calls getLockoutErrorResponse with provided lockoutsToCheckFor", async () => {
-      await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: [
-            LockoutType.TooManyOTPsRequested,
-            LockoutType.TooManyIncorrectOTPsEntered,
-          ],
-        }),
-        mockContext,
-      );
-
-      expect(mockGetLockoutErrorResponse).toHaveBeenCalledWith(
-        expect.objectContaining({
-          lockoutsToCheckFor: [
-            LockoutType.TooManyOTPsRequested,
-            LockoutType.TooManyIncorrectOTPsEntered,
-          ],
-        }),
-      );
-    });
-
-    it("returns 400 when lockoutsToCheckFor contains an invalid value", async () => {
-      const result = await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: ["invalid-lockout-type"],
-        }),
-        mockContext,
-      );
-
-      expect(result).toStrictEqual({
-        statusCode: 400,
-        body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
-      });
-    });
-
-    it("returns 400 when lockoutsToCheckFor does not include TooManyOTPsRequested", async () => {
-      const result = await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: [LockoutType.TooManyIncorrectOTPsEntered],
-        }),
-        mockContext,
-      );
-
-      expect(result).toStrictEqual({
-        statusCode: 400,
-        body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
+        lockoutToCheckFor: LockoutType.TooManyOTPsRequested,
+        errorCode: 1002,
       });
     });
   });
