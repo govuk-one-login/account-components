@@ -477,7 +477,6 @@ paths:
                     valid: false
                     lockout:
                       id: "00000000-0000-0000-0000-000000000000"
-                      publicSubjectId: "subject-123"
                       lockedOutAt: 1795099902
                       lockedOutUntil: 1795099999
                       source: account-delete
@@ -594,7 +593,6 @@ paths:
                     valid: false
                     lockout:
                       id: "00000000-0000-0000-0000-000000000000"
-                      publicSubjectId: "subject-123"
                       lockedOutAt: 1795099902
                       lockedOutUntil: 1795099999
                       source: account-delete
