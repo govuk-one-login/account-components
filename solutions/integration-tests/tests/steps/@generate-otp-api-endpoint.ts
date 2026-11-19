@@ -15,7 +15,6 @@ const Source = {
 
 const lockoutSchema = v.object({
   id: v.string(),
-  publicSubjectId: v.string(),
   lockedOutAt: v.number(),
   lockedOutUntil: v.number(),
   source: v.string(),
@@ -142,7 +141,6 @@ When(
         expect(body.expiresAt).toBeGreaterThanOrEqual(before + 900);
         expect(body.expiresAt).toBeLessThanOrEqual(after + 900);
         expect(body.expiresAt).not.toBe(firstExpiresAt);
-        expect(body.lockout?.publicSubjectId).toBe(publicSubjectId);
         expect(body.lockout?.source).toBe(Source["account-delete"]);
         expect(body.lockout?.type).toBe("TooManyOTPsRequested");
         expect(body.lockout?.lockedOutUntil).toBeGreaterThanOrEqual(before + 5);
@@ -242,7 +240,6 @@ When(
         const body = v.parse(generateOTPResponseSchema, await res.json());
         expect(body.otp).toBe(fourthOtp);
         expect(body.expiresAt).toBe(fourthExpiresAt);
-        expect(body.lockout?.publicSubjectId).toBe(publicSubjectId);
         expect(body.lockout?.source).toBe(Source["account-delete"]);
         expect(body.lockout?.type).toBe("TooManyOTPsRequested");
         expect(body.lockout?.lockedOutUntil).toBeGreaterThanOrEqual(

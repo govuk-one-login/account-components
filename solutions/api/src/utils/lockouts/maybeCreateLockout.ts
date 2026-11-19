@@ -199,8 +199,10 @@ export const maybeCreateLockout = async <ItemSchema extends ItemSchemaBase>({
   });
 
   return {
-    ...lockout,
-    lockedOutAt: new Date(lockout.lockedOutAt * 1000),
-    lockedOutUntil: new Date(lockout.lockedOutUntil * 1000),
+    id: lockout.id,
+    lockedOutAt: lockout.lockedOutAt,
+    lockedOutUntil: lockout.lockedOutUntil,
+    source: lockout.source,
+    type: lockout.type,
   };
 };

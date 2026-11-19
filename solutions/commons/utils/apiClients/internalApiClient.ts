@@ -11,6 +11,20 @@ const unixEpochTimeInSecondsToDate = v.transform(
   (value: number) => new Date(value * 1000),
 );
 
+const lockoutSchema = v.looseObject({
+  id: lockoutsDatabaseItem.entries.id,
+  lockedOutAt: v.pipe(
+    lockoutsDatabaseItem.entries.lockedOutAt,
+    unixEpochTimeInSecondsToDate,
+  ),
+  lockedOutUntil: v.pipe(
+    lockoutsDatabaseItem.entries.lockedOutUntil,
+    unixEpochTimeInSecondsToDate,
+  ),
+  type: lockoutsDatabaseItem.entries.type,
+  source: lockoutsDatabaseItem.entries.source,
+});
+
 export class InternalApiClient extends JsonApiClient {
   private readonly baseUrl: string;
   private readonly commonHeaders: NonNullable<RequestInit["headers"]>;
@@ -127,7 +141,7 @@ export class InternalApiClient extends JsonApiClient {
             }),
             v.object({
               valid: v.literal(false),
-              lockout: v.optional(lockoutsDatabaseItem),
+              lockout: v.optional(lockoutSchema),
             }),
           ]),
           errorsCodesMap,
@@ -185,7 +199,7 @@ export class InternalApiClient extends JsonApiClient {
             }),
             v.object({
               valid: v.literal(false),
-              lockout: v.optional(lockoutsDatabaseItem),
+              lockout: v.optional(lockoutSchema),
             }),
           ]),
           errorsCodesMap,
@@ -224,19 +238,7 @@ export class InternalApiClient extends JsonApiClient {
 
         return await InternalApiClient.processResponse(
           response,
-          v.array(
-            v.looseObject({
-              ...lockoutsDatabaseItem.entries,
-              lockedOutAt: v.pipe(
-                lockoutsDatabaseItem.entries.lockedOutAt,
-                unixEpochTimeInSecondsToDate,
-              ),
-              lockedOutUntil: v.pipe(
-                lockoutsDatabaseItem.entries.lockedOutUntil,
-                unixEpochTimeInSecondsToDate,
-              ),
-            }),
-          ),
+          v.array(lockoutSchema),
           errorsCodesMap,
         );
       } catch (error) {

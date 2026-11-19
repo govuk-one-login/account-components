@@ -20,7 +20,6 @@ const errorResponseSchema = v.object({
 
 const lockoutSchema = v.object({
   id: v.string(),
-  publicSubjectId: v.string(),
   lockedOutAt: v.number(),
   lockedOutUntil: v.number(),
   source: v.string(),
@@ -156,7 +155,6 @@ When(
         expect(res.status).toBe(200);
         const body = v.parse(checkPasswordResponseSchema, await res.json());
         expect(body.valid).toBe(false);
-        expect(body.lockout?.publicSubjectId).toBe(publicSubjectId);
         expect(body.lockout?.source).toBe(defaultSource);
         expect(body.lockout?.type).toBe("TooManyIncorrectPasswordsEntered");
         expect(body.lockout?.lockedOutUntil).toBeGreaterThanOrEqual(before + 5);

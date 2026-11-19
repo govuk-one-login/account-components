@@ -632,7 +632,7 @@ paths:
         "500":
           description: Internal server error
 
-  /lockout/{publicSubjectId}:
+  /lockouts/{publicSubjectId}:
     get:
       summary: Lockouts endpoint
       description: Get the lockouts for the account
@@ -672,31 +672,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  required:
-                    [
-                      id,
-                      publicSubjectId,
-                      lockedOutAt,
-                      lockedOutUntil,
-                      source,
-                      type,
-                    ]
-                  properties:
-                    id:
-                      type: string
-                    publicSubjectId:
-                      type: string
-                    lockedOutAt:
-                      type: number
-                      description: Unix epoch time in seconds when the lockout was created
-                    lockedOutUntil:
-                      type: number
-                      description: Unix epoch time in seconds when the lockout expires
-                    source:
-                      $ref: "#/components/schemas/Source"
-                    type:
-                      $ref: "#/components/schemas/LockoutType"
+                  $ref: "#/components/schemas/Lockout"
         "400":
           description: Bad request
           content:
@@ -885,21 +861,19 @@ components:
       properties:
         id:
           type: string
-        publicSubjectId:
-          type: string
         lockedOutAt:
-          type: string
-          format: date-time
-          description: ISO 8601 datetime when the lockout was created
+          type: integer
+          description: Unix epoch time in seconds when the lockout was created
+          example: 1682959031
         lockedOutUntil:
-          type: string
-          format: date-time
-          description: ISO 8601 datetime when the lockout expires
+          type: integer
+          description: Unix epoch time in seconds when the lockout expires
+          example: 1682959931
         source:
           $ref: "#/components/schemas/Source"
         type:
           $ref: "#/components/schemas/LockoutType"
-      required: [id, publicSubjectId, lockedOutAt, lockedOutUntil, source, type]
+      required: [id, lockedOutAt, lockedOutUntil, source, type]
 
     TokenResponse:
       type: object

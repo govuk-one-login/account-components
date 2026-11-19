@@ -324,7 +324,11 @@ describe("internalApiClient", () => {
       expect(v.parse(schema, { valid: false })).toStrictEqual({ valid: false });
       expect(v.parse(schema, { valid: false, lockout })).toStrictEqual({
         valid: false,
-        lockout,
+        lockout: {
+          ...lockout,
+          lockedOutAt: new Date(unixSeconds * 1000),
+          lockedOutUntil: new Date(unixSeconds * 1000),
+        },
       });
     });
   });
@@ -470,7 +474,11 @@ describe("internalApiClient", () => {
       expect(v.parse(schema, { valid: false })).toStrictEqual({ valid: false });
       expect(v.parse(schema, { valid: false, lockout })).toStrictEqual({
         valid: false,
-        lockout,
+        lockout: {
+          ...lockout,
+          lockedOutAt: new Date(unixSeconds * 1000),
+          lockedOutUntil: new Date(unixSeconds * 1000),
+        },
       });
     });
   });
