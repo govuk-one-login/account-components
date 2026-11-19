@@ -413,20 +413,33 @@ describe("generate-otp handler", () => {
     });
 
     it("includes lockout in response body", async () => {
-      const lockout = { type: LockoutType.TooManyOTPsRequested, id: "lockout-1" };
+      const lockout = {
+        type: LockoutType.TooManyOTPsRequested,
+        id: "lockout-1",
+      };
       mockMaybeCreateLockout.mockResolvedValue(lockout);
 
-      const result = await handler(makeEvent(validPathParams, validBody), mockContext);
+      const result = await handler(
+        makeEvent(validPathParams, validBody),
+        mockContext,
+      );
 
-      const { lockout: responseLockout } = JSON.parse(result.body) as { lockout: unknown };
+      const { lockout: responseLockout } = JSON.parse(result.body) as {
+        lockout: unknown;
+      };
 
       expect(responseLockout).toStrictEqual(lockout);
     });
 
     it("includes null lockout in response body when no lockout created", async () => {
-      const result = await handler(makeEvent(validPathParams, validBody), mockContext);
+      const result = await handler(
+        makeEvent(validPathParams, validBody),
+        mockContext,
+      );
 
-      const { lockout: responseLockout } = JSON.parse(result.body) as { lockout: unknown };
+      const { lockout: responseLockout } = JSON.parse(result.body) as {
+        lockout: unknown;
+      };
 
       expect(responseLockout).toBeNull();
     });
