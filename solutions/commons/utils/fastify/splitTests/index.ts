@@ -49,11 +49,11 @@ export const setSplitTestBucketAssignments = async (
       let cumulative = 0;
       for (const [bucket, { percentage }] of Object.entries(buckets)) {
         cumulative += percentage;
-        if (roll <= cumulative) return [[testName, bucket]];
+        if (roll < cumulative) return [[testName, bucket]];
       }
       // Unreachable: Math.random() returns a value in [0, 1) so roll is always in [0, 100).
-      // Since percentages are validated to sum to 100, cumulative will reach 100 on the
-      // last bucket, meaning roll <= cumulative will always be true before the loop ends.
+      // Since config:validate enforces that percentages sum to 100, cumulative will always have
+      // reached 100 by the last bucket, meaning roll < cumulative will always be true before the loop ends.
       // The fallback is required by TypeScript as it cannot infer that the loop will always
       // return a value.
       return [];

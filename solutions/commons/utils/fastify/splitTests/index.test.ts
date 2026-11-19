@@ -44,13 +44,13 @@ describe("setSplitTestBucketAssignments", () => {
   it.each([
     [0, "bucket1"],
     [0.49, "bucket1"],
-    [0.5, "bucket1"],
-    [0.500001, "bucket2"],
+    [0.4999, "bucket1"],
+    [0.5, "bucket2"],
     [0.79, "bucket2"],
-    [0.8, "bucket2"],
-    [0.800001, "bucket3"],
+    [0.7999, "bucket2"],
+    [0.8, "bucket3"],
     [0.99, "bucket3"],
-    [1, "bucket3"],
+    [0.9999, "bucket3"],
   ] as const)(
     "assigns correct bucket when Math.random() returns %f",
     async (random, expectedBucket) => {

@@ -58,24 +58,9 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "bucket1": {
-              "type": "object",
-              "properties": { "percentage": { "type": "number" } },
-              "required": ["percentage"],
-              "additionalProperties": false
-            },
-            "bucket2": {
-              "type": "object",
-              "properties": { "percentage": { "type": "number" } },
-              "required": ["percentage"],
-              "additionalProperties": false
-            },
-            "bucket3": {
-              "type": "object",
-              "properties": { "percentage": { "type": "number" } },
-              "required": ["percentage"],
-              "additionalProperties": false
-            }
+            "bucket1": { "$ref": "#/$defs/splitTestBucket" },
+            "bucket2": { "$ref": "#/$defs/splitTestBucket" },
+            "bucket3": { "$ref": "#/$defs/splitTestBucket" }
           },
           "required": ["bucket1", "bucket2", "bucket3"]
         }
@@ -95,6 +80,12 @@
     "split_tests"
   ],
   "$defs": {
+    "splitTestBucket": {
+      "type": "object",
+      "properties": { "percentage": { "type": "number", "minimum": 0 } },
+      "required": ["percentage"],
+      "additionalProperties": false
+    },
     "analytics": {
       "type": "object",
       "properties": {

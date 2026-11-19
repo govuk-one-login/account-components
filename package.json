@@ -121,7 +121,7 @@
     "watch:config-schema": "npm run generate-config-types && chokidar \"./solutions/config/schema/config.json\" -c \"npm run generate-config-types\"",
     "watch:config-schema-if-not-running-all": "[ -n \"$RUN_ALL\" ] && sleep infinity || npm run watch:config-schema",
     "run:all": "bash solutions/local-aws/provision.sh && RUN_ALL=1 concurrently 'npm run run:frontend' 'npm run run:stubs' 'npm run run:api' 'npm run watch:config-schema' --kill-others",
-    "config:validate": "for f in solutions/config/*.json; do (jsonschema validate solutions/config/schema/config.json $f) || exit 1; done",
+    "config:validate": "for f in solutions/config/*.json; do (jsonschema validate solutions/config/schema/config.json $f) || exit 1; jq -e '[.split_tests[] | [.[].percentage] | add] | all(. == 100)' $f > /dev/null || { echo \"Split test percentages in $f do not sum to 100\"; exit 1; }; done",
     "api-specs:validate": "redocly lint solutions/**/open-api-spec.yaml",
     "audit": "npm audit --audit-level=moderate --omit=dev && npm audit signatures && cd solutions/integration-tests && npm run audit"
   }
