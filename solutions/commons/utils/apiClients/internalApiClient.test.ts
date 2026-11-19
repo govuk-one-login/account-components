@@ -427,8 +427,8 @@ describe("internalApiClient", () => {
         adapiAccessToken,
         publicSubjectId,
         ...commonBody,
-        password: "hunter2",
-      }); // pragma: allowlist secret
+        password: "hunter2", // pragma: allowlist secret
+      });
 
       // @ts-expect-error
       const schema = vi.mocked(JsonApiClient.processResponse).mock
@@ -452,8 +452,8 @@ describe("internalApiClient", () => {
         adapiAccessToken,
         publicSubjectId,
         ...commonBody,
-        password: "hunter2",
-      }); // pragma: allowlist secret
+        password: "hunter2", // pragma: allowlist secret
+      });
 
       // @ts-expect-error
       const schema = vi.mocked(JsonApiClient.processResponse).mock
