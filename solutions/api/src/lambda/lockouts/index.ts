@@ -5,6 +5,7 @@ import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons
 import * as v from "valibot";
 import { LockoutType, Source } from "../../../../commons/utils/constants.js";
 import { getLockouts } from "../../utils/lockouts/getLockouts.js";
+import { invalidRequestResponse } from "../../utils/common.js";
 
 export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
   loggerAPIGatewayProxyHandlerWrapper(
@@ -26,10 +27,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
         );
 
         if (!pathParams.success || !queryParams.success) {
-          return {
-            statusCode: 400,
-            body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
-          };
+          return invalidRequestResponse;
         }
 
         return {

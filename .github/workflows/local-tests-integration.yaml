@@ -140,7 +140,7 @@ jobs:
             "ApiCheckPasswordLambda": {
               "LOCKOUTS_TABLE_NAME": "amc-Lockouts",
               "PASSWORD_CHECKS_TABLE_NAME": "amc-Password-Checks",
-              "ACCOUNT_DATA_API_URL": "http://localhost:6003/account-data-api",
+              "ACCOUNT_DATA_API_URL": "http://host.docker.internal:6003/account-data-api",
               "PASSWORD_CHECKS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME": "PublicSubjectId_Index",
               "LOCKOUTS_TABLE_PUBLIC_SUBJECT_ID_INDEX_NAME": "PublicSubjectId_Index"                 
             }

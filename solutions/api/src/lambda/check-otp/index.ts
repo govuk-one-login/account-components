@@ -1,6 +1,9 @@
 import type { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { metricsAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/metrics/index.js";
-import { loggerAPIGatewayProxyHandlerWrapper } from "../../../../commons/utils/logger/index.js";
+import {
+  logger,
+  loggerAPIGatewayProxyHandlerWrapper,
+} from "../../../../commons/utils/logger/index.js";
 import { normalizeAPIGatewayProxyEventHandlerWrapper } from "../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js";
 import * as v from "valibot";
 import {
@@ -17,7 +20,9 @@ import { getLatestOtp } from "../../utils/getLatestOtp.js";
 import { maybeCreateLockout } from "../../utils/lockouts/maybeCreateLockout.js";
 import assert from "node:assert";
 import { getLockoutErrorResponse } from "../../utils/lockouts/getLockoutErrorResponse.js";
-import { getBaseBodySchemaForEndpointWithLockouts } from "../../utils/lockouts/getBaseBodySchemaForEndpointWithLockouts.js";
+import { baseBodySchemaForEndpointWithLockouts } from "../../utils/lockouts/baseBodySchemaForEndpointWithLockouts.js";
+import { getSafeValibotIssues } from "../../../../commons/utils/getSafeValibotIssues/index.js";
+import { invalidRequestResponse } from "../../utils/common.js";
 
 const dynamodbClient = getDynamoDbClient();
 
@@ -35,33 +40,37 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           e.pathParameters,
         );
 
+        if (!pathParams.success) {
+          logger.info("Invalid path parameters", {
+            issues: getSafeValibotIssues(pathParams.issues),
+          });
+          return invalidRequestResponse;
+        }
+
         const body = v.safeParse(
           v.pipe(
             v.string(),
             v.parseJson(),
             v.object({
-              ...getBaseBodySchemaForEndpointWithLockouts({
-                lockoutTypesToAlwaysCheckFor: [
-                  LockoutType.TooManyIncorrectOTPsEntered,
-                ],
-              }).entries,
+              ...baseBodySchemaForEndpointWithLockouts.entries,
               otp: v.string(),
             }),
           ),
           e.body,
         );
 
-        if (!pathParams.success || !body.success) {
-          return {
-            statusCode: 400,
-            body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
-          };
+        if (!body.success) {
+          logger.info("Invalid body", {
+            issues: getSafeValibotIssues(body.issues),
+          });
+          return invalidRequestResponse;
         }
 
         const lockoutErrorResponse = await getLockoutErrorResponse({
           publicSubjectId: pathParams.output.publicSubjectId,
-          lockoutsToCheckFor: body.output.lockoutsToCheckFor,
+          lockoutToCheckFor: LockoutType.TooManyIncorrectOTPsEntered,
           source: body.output.source,
+          errorCode: 1002,
         });
 
         if (lockoutErrorResponse) {
@@ -107,12 +116,14 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
           });
 
           return {
-            statusCode: 204,
-            body: "",
+            statusCode: 200,
+            body: JSON.stringify({
+              valid: true,
+            }),
           };
         }
 
-        await maybeCreateLockout({
+        const lockout = await maybeCreateLockout({
           publicSubjectId: pathParams.output.publicSubjectId,
           source: body.output.source,
           type: LockoutType.TooManyIncorrectOTPsEntered,
@@ -128,8 +139,11 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
         });
 
         return {
-          statusCode: 401,
-          body: JSON.stringify({ code: 1005, message: "InvalidOTP" }),
+          statusCode: 200,
+          body: JSON.stringify({
+            valid: false,
+            lockout,
+          }),
         };
       },
     ),
