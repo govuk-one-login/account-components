@@ -101,3 +101,8 @@ export function getApiBaseUrlWithStage(event: APIGatewayProxyEvent): string {
 
   return `https://${host}/${stage}`;
 }
+
+export const invalidRequestResponse = {
+  statusCode: 400,
+  body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
+} as const;

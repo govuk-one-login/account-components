@@ -135,9 +135,11 @@ export class InternalApiClient extends JsonApiClient {
   }
 
   async checkPassword({
+    adapiAccessToken,
     publicSubjectId,
     ...body
   }: {
+    adapiAccessToken: string;
     publicSubjectId: string;
     password: string;
     source: Source;
@@ -154,7 +156,9 @@ export class InternalApiClient extends JsonApiClient {
           `${this.baseUrl}/check-password/${publicSubjectId}`,
           {
             method: "POST",
-            headers: this.commonHeaders,
+            headers: Object.assign({}, this.commonHeaders, {
+              "x-adapi-accesstoken": adapiAccessToken,
+            }),
             body: JSON.stringify(body),
           },
         );

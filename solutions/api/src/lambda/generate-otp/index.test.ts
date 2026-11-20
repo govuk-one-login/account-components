@@ -18,9 +18,21 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
   metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
+const mockLoggerInfo = vi.fn();
+
+// @ts-expect-error
 vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
   loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
+  logger: { info: mockLoggerInfo },
 }));
+
+// @ts-expect-error
+vi.mock(
+  import("../../../../commons/utils/getSafeValibotIssues/index.js"),
+  () => ({
+    getSafeValibotIssues: (issues: unknown) => issues,
+  }),
+);
 
 vi.mock(
   import("../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js"),
@@ -92,6 +104,7 @@ describe("generate-otp handler", () => {
     mockGetLatestOtp.mockResolvedValue(undefined);
     mockDynamoDbPut.mockResolvedValue({});
     mockMaybeCreateLockout.mockResolvedValue(undefined);
+    mockLoggerInfo.mockReset();
   });
 
   afterEach(() => {
@@ -214,6 +227,33 @@ describe("generate-otp handler", () => {
         statusCode: 400,
         body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
       });
+    });
+
+    it("logs invalid path parameters", async () => {
+      await handler(makeEvent(null, validBody), mockContext);
+
+      expect(mockLoggerInfo).toHaveBeenCalledWith(
+        "Invalid path parameters",
+        expect.objectContaining({ issues: expect.anything() }),
+      );
+    });
+
+    it("logs invalid body", async () => {
+      await handler(makeEvent(validPathParams, null), mockContext);
+
+      expect(mockLoggerInfo).toHaveBeenCalledWith(
+        "Invalid body",
+        expect.objectContaining({ issues: expect.anything() }),
+      );
+    });
+
+    it("does not log invalid body when path parameters are invalid", async () => {
+      await handler(makeEvent(null, validBody), mockContext);
+
+      expect(mockLoggerInfo).not.toHaveBeenCalledWith(
+        "Invalid body",
+        expect.anything(),
+      );
     });
   });
 

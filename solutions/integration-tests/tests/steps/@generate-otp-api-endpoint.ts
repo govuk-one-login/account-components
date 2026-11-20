@@ -2,6 +2,7 @@ import { expect } from "@playwright/test";
 import { bdd } from "./fixtures.js";
 import { getApiBaseUrl } from "../../utils/getApiBaseUrl.js";
 import * as v from "valibot";
+import { randomUUID } from "node:crypto";
 
 const { When } = bdd;
 
@@ -41,6 +42,7 @@ When(
   "I run the generate OTP endpoint scenario",
   async ({ scenarioData, $test }) => {
     const publicSubjectId = scenarioData.id;
+    const otherPublicSubjectId = randomUUID();
 
     await $test.step("Invalid requests", async () => {
       const invalidRequests = [
@@ -238,8 +240,18 @@ When(
       expect(body.code).toBe(1002);
     });
 
-    await $test.step("Wait long enough for OTPs GSI to update", () =>
-      sleep(1_000),
+    await $test.step(
+      "Generate OTP for different publicSubjectId: issues a new OTP expiring in ~900s",
+      async () => {
+        const before = Math.floor(Date.now() / 1000);
+        const res = await makeRequest(otherPublicSubjectId, defaultBody);
+        const after = Math.floor(Date.now() / 1000);
+        expect(res.status).toBe(200);
+        const body = v.parse(generateOTPResponseSchema, await res.json());
+        expect(body.otp).toMatch(/^\d{6}$/);
+        expect(body.expiresAt).toBeGreaterThanOrEqual(before + 900);
+        expect(body.expiresAt).toBeLessThanOrEqual(after + 900);
+      },
     );
 
     await $test.step(
