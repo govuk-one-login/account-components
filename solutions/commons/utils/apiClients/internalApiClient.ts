@@ -11,6 +11,20 @@ const unixEpochTimeInSecondsToDate = v.transform(
   (value: number) => new Date(value * 1000),
 );
 
+const lockoutSchema = v.looseObject({
+  id: lockoutsDatabaseItem.entries.id,
+  lockedOutAt: v.pipe(
+    lockoutsDatabaseItem.entries.lockedOutAt,
+    unixEpochTimeInSecondsToDate,
+  ),
+  lockedOutUntil: v.pipe(
+    lockoutsDatabaseItem.entries.lockedOutUntil,
+    unixEpochTimeInSecondsToDate,
+  ),
+  type: lockoutsDatabaseItem.entries.type,
+  source: lockoutsDatabaseItem.entries.source,
+});
+
 export class InternalApiClient extends JsonApiClient {
   private readonly baseUrl: string;
   private readonly commonHeaders: NonNullable<RequestInit["headers"]>;
@@ -50,7 +64,6 @@ export class InternalApiClient extends JsonApiClient {
       window: number;
     };
     lockoutDuration?: number;
-    lockoutsToCheckFor?: LockoutType[];
   }) {
     return this.logOnError("generateOTP", async () => {
       try {
@@ -66,8 +79,6 @@ export class InternalApiClient extends JsonApiClient {
         const errorsCodesMap = {
           "1001": "InvalidRequest",
           "1002": LockoutType.TooManyOTPsRequested,
-          "1003": LockoutType.TooManyIncorrectOTPsEntered,
-          "1004": LockoutType.TooManyIncorrectPasswordsEntered,
         } as const;
 
         return await InternalApiClient.processResponse(
@@ -75,6 +86,12 @@ export class InternalApiClient extends JsonApiClient {
           v.object({
             otp: v.string(),
             expiresAt: v.pipe(v.number(), unixEpochTimeInSecondsToDate),
+            lockout: v.optional(
+              v.looseObject({
+                ...lockoutSchema.entries,
+                type: v.literal(LockoutType.TooManyOTPsRequested),
+              }),
+            ),
           }),
           errorsCodesMap,
         );
@@ -99,7 +116,6 @@ export class InternalApiClient extends JsonApiClient {
       window: number;
     };
     lockoutDuration?: number;
-    lockoutsToCheckFor?: LockoutType[];
   }) {
     return this.logOnError("checkOTP", async () => {
       try {
@@ -114,15 +130,25 @@ export class InternalApiClient extends JsonApiClient {
 
         const errorsCodesMap = {
           "1001": "InvalidRequest",
-          "1002": LockoutType.TooManyOTPsRequested,
-          "1003": LockoutType.TooManyIncorrectOTPsEntered,
-          "1004": LockoutType.TooManyIncorrectPasswordsEntered,
-          "1005": "InvalidOTP",
+          "1002": LockoutType.TooManyIncorrectOTPsEntered,
         } as const;
 
         return await InternalApiClient.processResponse(
           response,
-          InternalApiClient.undefinedSchema,
+          v.variant("valid", [
+            v.object({
+              valid: v.literal(true),
+            }),
+            v.object({
+              valid: v.literal(false),
+              lockout: v.optional(
+                v.looseObject({
+                  ...lockoutSchema.entries,
+                  type: v.literal(LockoutType.TooManyIncorrectOTPsEntered),
+                }),
+              ),
+            }),
+          ]),
           errorsCodesMap,
         );
       } catch (error) {
@@ -135,9 +161,11 @@ export class InternalApiClient extends JsonApiClient {
   }
 
   async checkPassword({
+    adapiAccessToken,
     publicSubjectId,
     ...body
   }: {
+    adapiAccessToken: string;
     publicSubjectId: string;
     password: string;
     source: Source;
@@ -146,7 +174,6 @@ export class InternalApiClient extends JsonApiClient {
       window: number;
     };
     lockoutDuration?: number;
-    lockoutsToCheckFor?: LockoutType[];
   }) {
     return this.logOnError("checkPassword", async () => {
       try {
@@ -154,22 +181,34 @@ export class InternalApiClient extends JsonApiClient {
           `${this.baseUrl}/check-password/${publicSubjectId}`,
           {
             method: "POST",
-            headers: this.commonHeaders,
+            headers: Object.assign({}, this.commonHeaders, {
+              "x-adapi-accesstoken": adapiAccessToken,
+            }),
             body: JSON.stringify(body),
           },
         );
 
         const errorsCodesMap = {
           "1001": "InvalidRequest",
-          "1002": LockoutType.TooManyOTPsRequested,
-          "1003": LockoutType.TooManyIncorrectOTPsEntered,
-          "1004": LockoutType.TooManyIncorrectPasswordsEntered,
-          "1005": "InvalidPassword",
+          "1002": LockoutType.TooManyIncorrectPasswordsEntered,
         } as const;
 
         return await InternalApiClient.processResponse(
           response,
-          InternalApiClient.undefinedSchema,
+          v.variant("valid", [
+            v.object({
+              valid: v.literal(true),
+            }),
+            v.object({
+              valid: v.literal(false),
+              lockout: v.optional(
+                v.looseObject({
+                  ...lockoutSchema.entries,
+                  type: v.literal(LockoutType.TooManyIncorrectPasswordsEntered),
+                }),
+              ),
+            }),
+          ]),
           errorsCodesMap,
         );
       } catch (error) {
@@ -206,19 +245,7 @@ export class InternalApiClient extends JsonApiClient {
 
         return await InternalApiClient.processResponse(
           response,
-          v.array(
-            v.looseObject({
-              ...lockoutsDatabaseItem.entries,
-              lockedOutAt: v.pipe(
-                lockoutsDatabaseItem.entries.lockedOutAt,
-                unixEpochTimeInSecondsToDate,
-              ),
-              lockedOutUntil: v.pipe(
-                lockoutsDatabaseItem.entries.lockedOutUntil,
-                unixEpochTimeInSecondsToDate,
-              ),
-            }),
-          ),
+          v.array(lockoutSchema),
           errorsCodesMap,
         );
       } catch (error) {

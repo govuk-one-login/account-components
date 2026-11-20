@@ -2,6 +2,7 @@ import { expect } from "@playwright/test";
 import { bdd } from "./fixtures.js";
 import { getApiBaseUrl } from "../../utils/getApiBaseUrl.js";
 import * as v from "valibot";
+import { randomUUID } from "node:crypto";
 
 const { When } = bdd;
 
@@ -12,9 +13,18 @@ const Source = {
   "passkey-create": "passkey-create",
 } as const;
 
+const lockoutSchema = v.object({
+  id: v.string(),
+  lockedOutAt: v.number(),
+  lockedOutUntil: v.number(),
+  source: v.string(),
+  type: v.string(),
+});
+
 const generateOTPResponseSchema = v.object({
   otp: v.string(),
   expiresAt: v.number(),
+  lockout: v.optional(lockoutSchema),
 });
 
 const errorResponseSchema = v.object({
@@ -41,6 +51,7 @@ When(
   "I run the generate OTP endpoint scenario",
   async ({ scenarioData, $test }) => {
     const publicSubjectId = scenarioData.id;
+    const otherPublicSubjectId = randomUUID();
 
     await $test.step("Invalid requests", async () => {
       const invalidRequests = [
@@ -130,6 +141,10 @@ When(
         expect(body.expiresAt).toBeGreaterThanOrEqual(before + 900);
         expect(body.expiresAt).toBeLessThanOrEqual(after + 900);
         expect(body.expiresAt).not.toBe(firstExpiresAt);
+        expect(body.lockout?.source).toBe(Source["account-delete"]);
+        expect(body.lockout?.type).toBe("TooManyOTPsRequested");
+        expect(body.lockout?.lockedOutUntil).toBeGreaterThanOrEqual(before + 5);
+        expect(body.lockout?.lockedOutUntil).toBeLessThanOrEqual(after + 5);
         return body;
       },
     );
@@ -215,14 +230,22 @@ When(
     await $test.step(
       "Generate OTP, maxAllowedBeforeLockout.count=1: reuses the same OTP and expiresAt, creates lockout",
       async () => {
+        const before = Math.floor(Date.now() / 1000);
         const res = await makeRequest(publicSubjectId, {
           ...defaultBody,
           maxAllowedBeforeLockout: { count: 1 },
         });
+        const after = Math.floor(Date.now() / 1000);
         expect(res.status).toBe(200);
         const body = v.parse(generateOTPResponseSchema, await res.json());
         expect(body.otp).toBe(fourthOtp);
         expect(body.expiresAt).toBe(fourthExpiresAt);
+        expect(body.lockout?.source).toBe(Source["account-delete"]);
+        expect(body.lockout?.type).toBe("TooManyOTPsRequested");
+        expect(body.lockout?.lockedOutUntil).toBeGreaterThanOrEqual(
+          before + 900,
+        );
+        expect(body.lockout?.lockedOutUntil).toBeLessThanOrEqual(after + 900);
       },
     );
 
@@ -238,8 +261,18 @@ When(
       expect(body.code).toBe(1002);
     });
 
-    await $test.step("Wait long enough for OTPs GSI to update", () =>
-      sleep(1_000),
+    await $test.step(
+      "Generate OTP for different publicSubjectId: issues a new OTP expiring in ~900s",
+      async () => {
+        const before = Math.floor(Date.now() / 1000);
+        const res = await makeRequest(otherPublicSubjectId, defaultBody);
+        const after = Math.floor(Date.now() / 1000);
+        expect(res.status).toBe(200);
+        const body = v.parse(generateOTPResponseSchema, await res.json());
+        expect(body.otp).toMatch(/^\d{6}$/);
+        expect(body.expiresAt).toBeGreaterThanOrEqual(before + 900);
+        expect(body.expiresAt).toBeLessThanOrEqual(after + 900);
+      },
     );
 
     await $test.step(

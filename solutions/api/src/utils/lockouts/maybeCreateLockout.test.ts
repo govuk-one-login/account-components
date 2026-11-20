@@ -199,11 +199,10 @@ describe("maybeCreateLockout", () => {
 
       expect(result).toMatchObject({
         id: "test-uuid",
-        publicSubjectId: "sub-123",
         source: Source["account-delete"],
         type: LockoutType.TooManyIncorrectOTPsEntered,
-        lockedOutAt: NOW,
-        lockedOutUntil: new Date(NOW.getTime() + 900 * 1000),
+        lockedOutAt: NOW_SECONDS,
+        lockedOutUntil: NOW_SECONDS + 900,
       });
 
       const updatedIds = getTransactItems()
@@ -596,7 +595,7 @@ describe("maybeCreateLockout", () => {
         });
     });
 
-    it("returns lockout with Date objects for timestamps", async () => {
+    it("returns lockout with numeric timestamps", async () => {
       const items = [
         makeItem({ id: "1" }),
         makeItem({ id: "2" }),
@@ -609,10 +608,8 @@ describe("maybeCreateLockout", () => {
 
       const result = await maybeCreateLockout(baseInput);
 
-      expect(result?.lockedOutAt).toStrictEqual(NOW);
-      expect(result?.lockedOutUntil).toStrictEqual(
-        new Date(NOW.getTime() + 900 * 1000),
-      );
+      expect(result?.lockedOutAt).toBe(NOW_SECONDS);
+      expect(result?.lockedOutUntil).toBe(NOW_SECONDS + 900);
     });
 
     it("uses the duration parameter to calculate lockedOutUntil", async () => {
@@ -628,9 +625,7 @@ describe("maybeCreateLockout", () => {
 
       const result = await maybeCreateLockout({ ...baseInput, duration: 1800 });
 
-      expect(result?.lockedOutUntil).toStrictEqual(
-        new Date(NOW.getTime() + 1800 * 1000),
-      );
+      expect(result?.lockedOutUntil).toBe(NOW_SECONDS + 1800);
     });
   });
 });

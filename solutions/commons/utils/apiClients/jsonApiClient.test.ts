@@ -8,6 +8,9 @@ const mockLogger = vi.hoisted(() => ({
 }));
 
 const mockGetPropsFromAPIGatewayEvent = vi.hoisted(() => vi.fn());
+const mockGetSafeValibotIssues = vi.hoisted(() =>
+  vi.fn().mockReturnValue("mocked-issues"),
+);
 
 // @ts-expect-error
 vi.mock(import("../../../commons/utils/logger/index.js"), () => ({
@@ -20,6 +23,11 @@ vi.mock(
     getPropsFromAPIGatewayEvent: mockGetPropsFromAPIGatewayEvent,
   }),
 );
+
+vi.mock(import("../getSafeValibotIssues/index.js"), () => ({
+  getSafeValibotIssues: mockGetSafeValibotIssues,
+}));
+
 class TestJsonApiClient extends JsonApiClient {
   public get testFetch() {
     return this.fetch;
@@ -455,29 +463,13 @@ describe("jsonApiClient", () => {
           success: false,
           error: "ErrorValidatingResponseBody",
           rawResponse: response,
-          errorDetails: {
-            issues: [
-              {
-                kind: "schema",
-                type: "number",
-                expected: "number",
-                path: "id",
-              },
-              {
-                expected: '"prop"',
-                kind: "schema",
-                path: "nested.prop",
-                type: "object",
-              },
-              {
-                expected: "number",
-                kind: "schema",
-                path: "list.2",
-                type: "number",
-              },
-            ],
-          },
+          errorDetails: { issues: "mocked-issues" },
         });
+        expect(mockGetSafeValibotIssues).toHaveBeenCalledWith(
+          expect.arrayContaining([
+            expect.objectContaining({ kind: "schema", type: "number" }),
+          ]),
+        );
       });
     });
 
@@ -597,17 +589,11 @@ describe("jsonApiClient", () => {
           success: false,
           error: "ErrorValidatingErrorResponseBody",
           rawResponse: response,
-          errorDetails: {
-            issues: [
-              {
-                kind: "schema",
-                type: "object",
-                expected: '"message"',
-                path: "message",
-              },
-            ],
-          },
+          errorDetails: { issues: "mocked-issues" },
         });
+        expect(mockGetSafeValibotIssues).toHaveBeenCalledWith(
+          expect.arrayContaining([expect.objectContaining({ kind: "schema" })]),
+        );
       });
 
       it("should handle error response with wrong field types", async () => {
@@ -629,23 +615,11 @@ describe("jsonApiClient", () => {
           success: false,
           error: "ErrorValidatingErrorResponseBody",
           rawResponse: response,
-          errorDetails: {
-            issues: [
-              {
-                kind: "schema",
-                type: "number",
-                expected: "number",
-                path: "code",
-              },
-              {
-                kind: "schema",
-                type: "string",
-                expected: "string",
-                path: "message",
-              },
-            ],
-          },
+          errorDetails: { issues: "mocked-issues" },
         });
+        expect(mockGetSafeValibotIssues).toHaveBeenCalledWith(
+          expect.arrayContaining([expect.objectContaining({ kind: "schema" })]),
+        );
       });
 
       it("should handle error response with no code field", async () => {

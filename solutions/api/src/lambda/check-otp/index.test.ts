@@ -18,9 +18,21 @@ vi.mock(import("../../../../commons/utils/metrics/index.js"), () => ({
   metricsAPIGatewayProxyHandlerWrapper: (fn) => fn,
 }));
 
+const mockLoggerInfo = vi.fn();
+
+// @ts-expect-error
 vi.mock(import("../../../../commons/utils/logger/index.js"), () => ({
   loggerAPIGatewayProxyHandlerWrapper: (fn) => fn,
+  logger: { info: mockLoggerInfo },
 }));
+
+// @ts-expect-error
+vi.mock(
+  import("../../../../commons/utils/getSafeValibotIssues/index.js"),
+  () => ({
+    getSafeValibotIssues: (issues: unknown) => issues,
+  }),
+);
 
 vi.mock(
   import("../../../../commons/utils/normalizeAPIGatewayProxyEventHandlerWrapper/index.js"),
@@ -94,6 +106,7 @@ describe("check-otp handler", () => {
     mockGetLatestOtp.mockResolvedValue(makeExistingOtp());
     mockDynamoDbPut.mockResolvedValue({});
     mockMaybeCreateLockout.mockResolvedValue(undefined);
+    mockLoggerInfo.mockReset();
   });
 
   afterEach(() => {
@@ -220,6 +233,33 @@ describe("check-otp handler", () => {
         body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
       });
     });
+
+    it("logs invalid path parameters", async () => {
+      await handler(makeEvent(null, validBody), mockContext);
+
+      expect(mockLoggerInfo).toHaveBeenCalledWith(
+        "Invalid path parameters",
+        expect.objectContaining({ issues: expect.anything() }),
+      );
+    });
+
+    it("logs invalid body", async () => {
+      await handler(makeEvent(validPathParams, null), mockContext);
+
+      expect(mockLoggerInfo).toHaveBeenCalledWith(
+        "Invalid body",
+        expect.objectContaining({ issues: expect.anything() }),
+      );
+    });
+
+    it("does not log invalid body when path parameters are invalid", async () => {
+      await handler(makeEvent(null, validBody), mockContext);
+
+      expect(mockLoggerInfo).not.toHaveBeenCalledWith(
+        "Invalid body",
+        expect.anything(),
+      );
+    });
   });
 
   describe("lockout checks", () => {
@@ -241,65 +281,14 @@ describe("check-otp handler", () => {
       expect(result).toStrictEqual(lockoutResponse);
     });
 
-    it("calls getLockoutErrorResponse with publicSubjectId, source and default lockoutsToCheckFor", async () => {
+    it("calls getLockoutErrorResponse with publicSubjectId, source and TooManyIncorrectOTPsEntered", async () => {
       await handler(makeEvent(validPathParams, validBody), mockContext);
 
       expect(mockGetLockoutErrorResponse).toHaveBeenCalledWith({
         publicSubjectId: "subject-123",
         source: Source["account-delete"],
-        lockoutsToCheckFor: [LockoutType.TooManyIncorrectOTPsEntered],
-      });
-    });
-
-    it("calls getLockoutErrorResponse with provided lockoutsToCheckFor", async () => {
-      await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: [
-            LockoutType.TooManyOTPsRequested,
-            LockoutType.TooManyIncorrectOTPsEntered,
-          ],
-        }),
-        mockContext,
-      );
-
-      expect(mockGetLockoutErrorResponse).toHaveBeenCalledWith(
-        expect.objectContaining({
-          lockoutsToCheckFor: [
-            LockoutType.TooManyOTPsRequested,
-            LockoutType.TooManyIncorrectOTPsEntered,
-          ],
-        }),
-      );
-    });
-
-    it("returns 400 when lockoutsToCheckFor contains an invalid value", async () => {
-      const result = await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: ["invalid-lockout-type"],
-        }),
-        mockContext,
-      );
-
-      expect(result).toStrictEqual({
-        statusCode: 400,
-        body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
-      });
-    });
-
-    it("returns 400 when lockoutsToCheckFor does not include TooManyIncorrectOTPsEntered", async () => {
-      const result = await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: [LockoutType.TooManyOTPsRequested],
-        }),
-        mockContext,
-      );
-
-      expect(result).toStrictEqual({
-        statusCode: 400,
-        body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
+        lockoutToCheckFor: LockoutType.TooManyIncorrectOTPsEntered,
+        errorCode: 1002,
       });
     });
   });
@@ -316,13 +305,16 @@ describe("check-otp handler", () => {
   });
 
   describe("successful OTP check", () => {
-    it("returns 204 when OTP matches, is unused, and not expired", async () => {
+    it("returns 200 with valid=true when OTP matches, is unused, and not expired", async () => {
       const result = await handler(
         makeEvent(validPathParams, validBody),
         mockContext,
       );
 
-      expect(result).toStrictEqual({ statusCode: 204, body: "" });
+      expect(result).toStrictEqual({
+        statusCode: 200,
+        body: JSON.stringify({ valid: true }),
+      });
     });
 
     it("marks the OTP as used in DynamoDB on success", async () => {
@@ -373,7 +365,7 @@ describe("check-otp handler", () => {
   });
 
   describe("failed OTP check", () => {
-    it("returns 401 with code 1005 when OTP does not match", async () => {
+    it("returns 200 with valid=false when OTP does not match", async () => {
       mockGetLatestOtp.mockResolvedValue(makeExistingOtp({ otp: "999999" }));
 
       const result = await handler(
@@ -382,12 +374,12 @@ describe("check-otp handler", () => {
       );
 
       expect(result).toStrictEqual({
-        statusCode: 401,
-        body: JSON.stringify({ code: 1005, message: "InvalidOTP" }),
+        statusCode: 200,
+        body: JSON.stringify({ valid: false, lockout: undefined }),
       });
     });
 
-    it("returns 401 when OTP is already used", async () => {
+    it("returns 200 with valid=false when OTP is already used", async () => {
       mockGetLatestOtp.mockResolvedValue(makeExistingOtp({ used: true }));
 
       const result = await handler(
@@ -396,12 +388,12 @@ describe("check-otp handler", () => {
       );
 
       expect(result).toStrictEqual({
-        statusCode: 401,
-        body: JSON.stringify({ code: 1005, message: "InvalidOTP" }),
+        statusCode: 200,
+        body: JSON.stringify({ valid: false, lockout: undefined }),
       });
     });
 
-    it("returns 401 when OTP is expired", async () => {
+    it("returns 200 with valid=false when OTP is expired", async () => {
       mockGetLatestOtp.mockResolvedValue(
         makeExistingOtp({ expiresAt: now - 1 }),
       );
@@ -412,12 +404,12 @@ describe("check-otp handler", () => {
       );
 
       expect(result).toStrictEqual({
-        statusCode: 401,
-        body: JSON.stringify({ code: 1005, message: "InvalidOTP" }),
+        statusCode: 200,
+        body: JSON.stringify({ valid: false, lockout: undefined }),
       });
     });
 
-    it("returns 401 when no OTP exists", async () => {
+    it("returns 200 with valid=false when no OTP exists", async () => {
       mockGetLatestOtp.mockResolvedValue(undefined);
 
       const result = await handler(
@@ -426,9 +418,29 @@ describe("check-otp handler", () => {
       );
 
       expect(result).toStrictEqual({
-        statusCode: 401,
-        body: JSON.stringify({ code: 1005, message: "InvalidOTP" }),
+        statusCode: 200,
+        body: JSON.stringify({ valid: false, lockout: undefined }),
       });
+    });
+
+    it("includes lockout in response body when lockout is created", async () => {
+      const lockout = {
+        type: LockoutType.TooManyIncorrectOTPsEntered,
+        id: "lockout-1",
+      };
+      mockGetLatestOtp.mockResolvedValue(makeExistingOtp({ otp: "999999" }));
+      mockMaybeCreateLockout.mockResolvedValue(lockout);
+
+      const result = await handler(
+        makeEvent(validPathParams, validBody),
+        mockContext,
+      );
+
+      const { lockout: responseLockout } = JSON.parse(result.body) as {
+        lockout: unknown;
+      };
+
+      expect(responseLockout).toStrictEqual(lockout);
     });
 
     it("writes an OTP check record with successful=false on failure", async () => {
@@ -516,7 +528,7 @@ describe("check-otp handler", () => {
   });
 
   describe("oTP expiry boundary", () => {
-    it("returns 204 when OTP has not yet expired", async () => {
+    it("returns valid=true when OTP has not yet expired", async () => {
       mockGetLatestOtp.mockResolvedValue(
         makeExistingOtp({ expiresAt: now + 1 }),
       );
@@ -526,10 +538,12 @@ describe("check-otp handler", () => {
         mockContext,
       );
 
-      expect(result.statusCode).toBe(204);
+      const { valid } = JSON.parse(result.body) as { valid: boolean };
+
+      expect(valid).toBe(true);
     });
 
-    it("returns 401 when OTP expiresAt equals now (not strictly greater)", async () => {
+    it("returns valid=false when OTP expiresAt equals now (not strictly greater)", async () => {
       mockGetLatestOtp.mockResolvedValue(makeExistingOtp({ expiresAt: now }));
 
       const result = await handler(
@@ -537,7 +551,9 @@ describe("check-otp handler", () => {
         mockContext,
       );
 
-      expect(result.statusCode).toBe(401);
+      const { valid } = JSON.parse(result.body) as { valid: boolean };
+
+      expect(valid).toBe(false);
     });
   });
 
