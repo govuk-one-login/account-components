@@ -10,6 +10,11 @@ export type PathsMap = Record<
   { path: `/${string}`; analytics?: FastifyReply["analytics"] }
 >;
 
+const testingJourneyAnalyticsDefaults: FastifyReply["analytics"] = {
+  ...analyticsDefaults,
+  taxonomyLevel2: "testing-journey",
+};
+
 const accountDeleteAnalyticsDefaults: FastifyReply["analytics"] = {
   ...analyticsDefaults,
   taxonomyLevel2: "SSAD",
@@ -27,14 +32,17 @@ export const paths = {
       [TestingJourneyState.passwordNotProvided]: {
         step1: {
           path: "/testing-journey/step-1",
+          analytics: testingJourneyAnalyticsDefaults,
         },
         enterPassword: {
           path: "/testing-journey/enter-password",
+          analytics: testingJourneyAnalyticsDefaults,
         },
       },
       [TestingJourneyState.passwordProvided]: {
         confirm: {
           path: "/testing-journey/confirm",
+          analytics: testingJourneyAnalyticsDefaults,
         },
       },
     },
@@ -124,6 +132,8 @@ export const paths = {
     },
   },
   others: {
+    healthcheck: { path: "/healthcheck" },
+    robotsDotTxt: { path: "/robots.txt" },
     authorize: { path: "/authorize" },
     authorizeError: {
       path: "/error",

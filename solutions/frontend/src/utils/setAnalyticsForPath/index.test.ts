@@ -1,6 +1,41 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { setAnalyticsForPath } from "./index.js";
 import type { FastifyRequest, FastifyReply } from "fastify";
+
+// @ts-expect-error
+vi.mock(import("../paths.js"), () => ({
+  paths: {
+    others: {
+      authorizeError: {
+        path: "/error",
+        analytics: {
+          taxonomyLevel1: "accounts",
+          contentId: "a1a3dddd-9e65-40dc-9256-12ed597ec40e",
+        },
+      },
+    },
+    journeys: {
+      "testing-journey": {
+        PASSWORD_NOT_PROVIDED: {
+          step1: { path: "/testing-journey/step-1" },
+        },
+      },
+      "passkey-create": {
+        NOT_CREATED: {
+          setUpPasskey: {
+            path: "/set-up-passkey",
+            analytics: {
+              taxonomyLevel1: "accounts",
+              taxonomyLevel2: "manage",
+              taxonomyLevel3: "passkey",
+            },
+          },
+        },
+      },
+      "account-delete": {},
+    },
+  },
+}));
 
 describe("setAnalyticsForPath", () => {
   let reply: Partial<FastifyReply>;
