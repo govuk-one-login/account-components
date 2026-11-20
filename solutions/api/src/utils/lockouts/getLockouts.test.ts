@@ -98,12 +98,13 @@ describe("getLockouts", () => {
     });
 
     expect(result).toStrictEqual([
-      expect.objectContaining({
+      {
         id: "lockout-1",
-        publicSubjectId,
+        lockedOutAt: FAKE_NOW_S - 60,
+        lockedOutUntil: FAKE_NOW_S + 3600,
         source: Source["account-delete"],
         type: LockoutType.TooManyOTPsRequested,
-      }),
+      },
     ]);
   });
 

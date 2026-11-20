@@ -103,7 +103,7 @@ describe("generate-otp handler", () => {
     mockGetLockoutErrorResponse.mockResolvedValue(undefined);
     mockGetLatestOtp.mockResolvedValue(undefined);
     mockDynamoDbPut.mockResolvedValue({});
-    mockMaybeCreateLockout.mockResolvedValue(undefined);
+    mockMaybeCreateLockout.mockResolvedValue(null);
     mockLoggerInfo.mockReset();
   });
 
@@ -276,65 +276,14 @@ describe("generate-otp handler", () => {
       expect(result).toStrictEqual(lockoutResponse);
     });
 
-    it("calls getLockoutErrorResponse with publicSubjectId, source and default lockoutsToCheckFor", async () => {
+    it("calls getLockoutErrorResponse with publicSubjectId, source and TooManyOTPsRequested", async () => {
       await handler(makeEvent(validPathParams, validBody), mockContext);
 
       expect(mockGetLockoutErrorResponse).toHaveBeenCalledWith({
         publicSubjectId: "subject-123",
         source: Source["account-delete"],
-        lockoutsToCheckFor: [LockoutType.TooManyOTPsRequested],
-      });
-    });
-
-    it("calls getLockoutErrorResponse with provided lockoutsToCheckFor", async () => {
-      await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: [
-            LockoutType.TooManyOTPsRequested,
-            LockoutType.TooManyIncorrectOTPsEntered,
-          ],
-        }),
-        mockContext,
-      );
-
-      expect(mockGetLockoutErrorResponse).toHaveBeenCalledWith(
-        expect.objectContaining({
-          lockoutsToCheckFor: [
-            LockoutType.TooManyOTPsRequested,
-            LockoutType.TooManyIncorrectOTPsEntered,
-          ],
-        }),
-      );
-    });
-
-    it("returns 400 when lockoutsToCheckFor contains an invalid value", async () => {
-      const result = await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: ["invalid-lockout-type"],
-        }),
-        mockContext,
-      );
-
-      expect(result).toStrictEqual({
-        statusCode: 400,
-        body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
-      });
-    });
-
-    it("returns 400 when lockoutsToCheckFor does not include TooManyOTPsRequested", async () => {
-      const result = await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: [LockoutType.TooManyIncorrectOTPsEntered],
-        }),
-        mockContext,
-      );
-
-      expect(result).toStrictEqual({
-        statusCode: 400,
-        body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
+        lockoutToCheckFor: LockoutType.TooManyOTPsRequested,
+        errorCode: 1002,
       });
     });
   });
@@ -353,10 +302,12 @@ describe("generate-otp handler", () => {
       const responseBody = JSON.parse(result.body) as {
         otp: string;
         expiresAt: number;
+        lockout: null;
       };
 
       expect(responseBody.otp).toMatch(/^\d{6}$/);
       expect(responseBody.expiresAt).toBe(now + 900);
+      expect(responseBody.lockout).toBeNull();
     });
 
     it("uses default expiresIn of 900 seconds when not specified", async () => {
@@ -408,6 +359,38 @@ describe("generate-otp handler", () => {
           ConditionExpression: "attribute_not_exists(id)",
         }),
       );
+    });
+
+    it("includes lockout in response body", async () => {
+      const lockout = {
+        type: LockoutType.TooManyOTPsRequested,
+        id: "lockout-1",
+      };
+      mockMaybeCreateLockout.mockResolvedValue(lockout);
+
+      const result = await handler(
+        makeEvent(validPathParams, validBody),
+        mockContext,
+      );
+
+      const { lockout: responseLockout } = JSON.parse(result.body) as {
+        lockout: unknown;
+      };
+
+      expect(responseLockout).toStrictEqual(lockout);
+    });
+
+    it("includes null lockout in response body when no lockout created", async () => {
+      const result = await handler(
+        makeEvent(validPathParams, validBody),
+        mockContext,
+      );
+
+      const { lockout: responseLockout } = JSON.parse(result.body) as {
+        lockout: unknown;
+      };
+
+      expect(responseLockout).toBeNull();
     });
 
     it("calls maybeCreateLockout with correct parameters", async () => {
@@ -494,6 +477,7 @@ describe("generate-otp handler", () => {
       const responseBody = JSON.parse(result.body) as {
         otp: string;
         expiresAt: number;
+        lockout: null;
       };
 
       expect(responseBody.otp).toBe(existingOtp.otp);
@@ -632,10 +616,11 @@ describe("generate-otp handler", () => {
 
       expect(result.statusCode).toBe(200);
 
-      const { otp, expiresAt } = JSON.parse(result.body);
+      const { otp, expiresAt, lockout } = JSON.parse(result.body);
 
       expect(otp).toMatch(/^\d{6}$/);
       expect(expiresAt).toBe(now + 900);
+      expect(lockout).toBeNull();
     });
   });
 

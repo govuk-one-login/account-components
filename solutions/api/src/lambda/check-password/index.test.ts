@@ -319,59 +319,14 @@ describe("check-password handler", () => {
       expect(result).toStrictEqual(lockoutResponse);
     });
 
-    it("calls getLockoutErrorResponse with publicSubjectId, source and default lockoutsToCheckFor", async () => {
+    it("calls getLockoutErrorResponse with publicSubjectId, source and TooManyIncorrectPasswordsEntered", async () => {
       await handler(makeEvent(validPathParams, validBody), mockContext);
 
       expect(mockGetLockoutErrorResponse).toHaveBeenCalledWith({
         publicSubjectId: "subject-123",
         source: Source["account-delete"],
-        lockoutsToCheckFor: [LockoutType.TooManyIncorrectPasswordsEntered],
-      });
-    });
-
-    it("calls getLockoutErrorResponse with provided lockoutsToCheckFor", async () => {
-      await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: [LockoutType.TooManyIncorrectPasswordsEntered],
-        }),
-        mockContext,
-      );
-
-      expect(mockGetLockoutErrorResponse).toHaveBeenCalledWith(
-        expect.objectContaining({
-          lockoutsToCheckFor: [LockoutType.TooManyIncorrectPasswordsEntered],
-        }),
-      );
-    });
-
-    it("returns 400 when lockoutsToCheckFor contains an invalid value", async () => {
-      const result = await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: ["invalid-lockout-type"],
-        }),
-        mockContext,
-      );
-
-      expect(result).toStrictEqual({
-        statusCode: 400,
-        body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
-      });
-    });
-
-    it("returns 400 when lockoutsToCheckFor does not include TooManyIncorrectPasswordsEntered", async () => {
-      const result = await handler(
-        makeEvent(validPathParams, {
-          ...validBody,
-          lockoutsToCheckFor: [LockoutType.TooManyOTPsRequested],
-        }),
-        mockContext,
-      );
-
-      expect(result).toStrictEqual({
-        statusCode: 400,
-        body: JSON.stringify({ code: 1001, message: "InvalidRequest" }),
+        lockoutToCheckFor: LockoutType.TooManyIncorrectPasswordsEntered,
+        errorCode: 1002,
       });
     });
   });
@@ -388,13 +343,16 @@ describe("check-password handler", () => {
   });
 
   describe("successful password check", () => {
-    it("returns 204 when password is correct", async () => {
+    it("returns 200 with valid=true when password is correct", async () => {
       const result = await handler(
         makeEvent(validPathParams, validBody),
         mockContext,
       );
 
-      expect(result).toStrictEqual({ statusCode: 204, body: "" });
+      expect(result).toStrictEqual({
+        statusCode: 200,
+        body: JSON.stringify({ valid: true }),
+      });
     });
 
     it("writes a password check record with successful=true", async () => {
@@ -423,7 +381,7 @@ describe("check-password handler", () => {
   });
 
   describe("failed password check", () => {
-    it("returns 401 with code 1005 when password is incorrect", async () => {
+    it("returns 200 with valid=false when password is incorrect", async () => {
       mockVerifyPassword.mockResolvedValue({
         success: true,
         result: { verified: false },
@@ -435,9 +393,32 @@ describe("check-password handler", () => {
       );
 
       expect(result).toStrictEqual({
-        statusCode: 401,
-        body: JSON.stringify({ code: 1005, message: "InvalidPassword" }),
+        statusCode: 200,
+        body: JSON.stringify({ valid: false, lockout: undefined }),
       });
+    });
+
+    it("includes lockout in response body when lockout is created", async () => {
+      const lockout = {
+        type: LockoutType.TooManyIncorrectPasswordsEntered,
+        id: "lockout-1",
+      };
+      mockVerifyPassword.mockResolvedValue({
+        success: true,
+        result: { verified: false },
+      });
+      mockMaybeCreateLockout.mockResolvedValue(lockout);
+
+      const result = await handler(
+        makeEvent(validPathParams, validBody),
+        mockContext,
+      );
+
+      const { lockout: responseLockout } = JSON.parse(result.body) as {
+        lockout: unknown;
+      };
+
+      expect(responseLockout).toStrictEqual(lockout);
     });
 
     it("throws when verifyPassword call fails", async () => {

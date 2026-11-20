@@ -51,5 +51,11 @@ export const getLockouts = async ({
 
   const lockouts = v.parse(v.array(lockoutsDatabaseItem), items);
 
-  return lockouts;
+  return lockouts.map((lockout) => ({
+    id: lockout.id,
+    lockedOutAt: lockout.lockedOutAt,
+    lockedOutUntil: lockout.lockedOutUntil,
+    source: lockout.source,
+    type: lockout.type,
+  }));
 };

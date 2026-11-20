@@ -16,7 +16,7 @@ import { randomUUID } from "node:crypto";
 import { maybeCreateLockout } from "../../utils/lockouts/maybeCreateLockout.js";
 import assert from "node:assert";
 import { getLockoutErrorResponse } from "../../utils/lockouts/getLockoutErrorResponse.js";
-import { getBaseBodySchemaForEndpointWithLockouts } from "../../utils/lockouts/getBaseBodySchemaForEndpointWithLockouts.js";
+import { baseBodySchemaForEndpointWithLockouts } from "../../utils/lockouts/baseBodySchemaForEndpointWithLockouts.js";
 import { AccountDataApiClient } from "../../../../commons/utils/apiClients/accountDataApiClient.js";
 import { getSafeValibotIssues } from "../../../../commons/utils/getSafeValibotIssues/index.js";
 import { invalidRequestResponse } from "../../utils/common.js";
@@ -65,11 +65,7 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
             v.string(),
             v.parseJson(),
             v.object({
-              ...getBaseBodySchemaForEndpointWithLockouts({
-                lockoutTypesToAlwaysCheckFor: [
-                  LockoutType.TooManyIncorrectPasswordsEntered,
-                ],
-              }).entries,
+              ...baseBodySchemaForEndpointWithLockouts.entries,
               password: v.string(),
             }),
           ),
@@ -85,8 +81,9 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
 
         const lockoutErrorResponse = await getLockoutErrorResponse({
           publicSubjectId: pathParams.output.publicSubjectId,
-          lockoutsToCheckFor: body.output.lockoutsToCheckFor,
+          lockoutToCheckFor: LockoutType.TooManyIncorrectPasswordsEntered,
           source: body.output.source,
+          errorCode: 1002,
         });
 
         if (lockoutErrorResponse) {
@@ -127,12 +124,14 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
 
         if (verifyPasswordResponse.result.verified) {
           return {
-            statusCode: 204,
-            body: "",
+            statusCode: 200,
+            body: JSON.stringify({
+              valid: true,
+            }),
           };
         }
 
-        await maybeCreateLockout({
+        const lockout = await maybeCreateLockout({
           publicSubjectId: pathParams.output.publicSubjectId,
           source: body.output.source,
           type: LockoutType.TooManyIncorrectPasswordsEntered,
@@ -148,8 +147,11 @@ export const handler = normalizeAPIGatewayProxyEventHandlerWrapper(
         });
 
         return {
-          statusCode: 401,
-          body: JSON.stringify({ code: 1005, message: "InvalidPassword" }),
+          statusCode: 200,
+          body: JSON.stringify({
+            valid: false,
+            lockout,
+          }),
         };
       },
     ),
