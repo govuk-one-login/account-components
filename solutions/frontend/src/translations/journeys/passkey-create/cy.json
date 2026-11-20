@@ -38,9 +38,11 @@
     "error": {
       "pageTitle_signedOut": "Nid oeddem yn gallu sefydlu eich allwedd mynediad",
       "pageTitle_signedIn": "Nid oeddem yn gallu sefydlu eich allwedd mynediad",
+      "alreadyHasPasskey_pageTitle_signedOut": "Mae gennych allwedd mynediad ar gyfer y ddyfais hon yn barod",
 
       "heading_signedOut": "Nid oeddem yn gallu sefydlu eich allwedd mynediad",
       "heading_signedIn": "Nid oeddem yn gallu sefydlu eich allwedd mynediad",
+      "alreadyHasPasskey_heading_signedOut": "Mae gennych allwedd mynediad ar gyfer y ddyfais hon yn barod",
 
       "radioButtonsLegendText_signedOut": "Beth hoffech chi ei wneud?",
       "radioButtonsLegendText_signedIn": "Beth hoffech chi ei wneud?",
@@ -53,6 +55,11 @@
 
       "mustSelectAnActionErrorMessage_signedOut": "Dewiswch beth hoffech ei wneud",
       "mustSelectAnActionErrorMessage_signedIn": "Dewiswch beth hoffech ei wneud",
+
+      "alreadyHasPasskey_paragraphs_signedOut": [
+        "Gallwch ei ddefnyddio i fewngofnodi y tro nesaf.",
+        "Ni fyddwch angen eich cyfrinair GOV.UK One Login na chod diogelwch."
+      ],
 
       "buttonLabel_signedOut": "Parhau",
       "buttonLabel_signedIn": "Parhau"
