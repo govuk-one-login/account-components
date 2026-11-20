@@ -91,7 +91,8 @@ jobs:
           LOCAL_AWS_KMS_ENDPOINT=http://localhost:4567
           LOCAL_AWS_ACCESS_KEY_ID=test
           LOCAL_AWS_ACCESS_KEY=test      
-          ROOT_DOMAIN=localhost          
+          ROOT_DOMAIN=localhost
+          STUBS_OUTPUTS_TABLE_NAME=amc-StubsOutputsTable
           EOF
 
       - name: Configure API environment
@@ -149,9 +150,18 @@ jobs:
       - name: Run integration tests
         run: |
           cd solutions/integration-tests
-          touch .env
-          echo "PRE_OR_POST_DEPLOY=pre" >> .env
-          echo "PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:3000/" >> .env
+
+          cat > .env << 'EOF'
+          PRE_OR_POST_DEPLOY=pre
+          PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:3000/
+          USE_LOCAL_AWS=1
+          AWS_REGION=eu-west-2
+          LOCAL_AWS_ENDPOINT=http://localhost:4566
+          LOCAL_AWS_KMS_ENDPOINT=http://localhost:4567
+          LOCAL_AWS_ACCESS_KEY_ID=test
+          LOCAL_AWS_ACCESS_KEY=test
+          EOF
+
           npm run test
 
       - name: Upload test results artifact

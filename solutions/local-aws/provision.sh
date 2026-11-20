@@ -238,6 +238,22 @@ create_dynamodb_tables() {
       '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     --billing-mode PAY_PER_REQUEST
 
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+    --table-name "amc-StubsOutputsTable" \
+    --attribute-definitions \
+      AttributeName=id,AttributeType=S \
+      AttributeName=allItemsId,AttributeType=S \
+      AttributeName=createdAt,AttributeType=N \
+    --key-schema \
+      AttributeName=id,KeyType=HASH \
+    --global-secondary-indexes \
+      '[{"IndexName":"AllItemsIndex","KeySchema":[{"AttributeName":"allItemsId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+    --billing-mode PAY_PER_REQUEST
+
+  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb update-time-to-live \
+    --table-name "amc-StubsOutputsTable" \
+    --time-to-live-specification "Enabled=true,AttributeName=expiresAt"
+
   echo "Finished creating DynamoDB tables"
   return 0
 }
@@ -245,11 +261,25 @@ create_dynamodb_tables() {
 create_sqs_queues() {
   echo "Creating SQS queues"
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" sqs create-queue \
-    --queue-name "amc-NotificationsQueue"
+  NOTIFICATIONS_QUEUE_URL=$(aws --endpoint-url="$FLOCI_ENDPOINT" sqs create-queue \
+    --queue-name "amc-NotificationsQueue" \
+    --query 'QueueUrl' \
+    --output text)
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" sqs create-queue \
-    --queue-name "amc-TxMASQSProducerAuditEventQueue"
+  aws --endpoint-url="$FLOCI_ENDPOINT" ssm put-parameter \
+    --name "/tests/NotificationsQueueUrl" \
+    --value "$NOTIFICATIONS_QUEUE_URL" \
+    --type "String"
+
+  TXMA_QUEUE_URL=$(aws --endpoint-url="$FLOCI_ENDPOINT" sqs create-queue \
+    --queue-name "amc-TxMASQSProducerAuditEventQueue" \
+    --query 'QueueUrl' \
+    --output text)
+
+  aws --endpoint-url="$FLOCI_ENDPOINT" ssm put-parameter \
+    --name "/tests/TxMASQSProducerAuditEventQueueUrl" \
+    --value "$TXMA_QUEUE_URL" \
+    --type "String"
 
   echo "Finished creating SQS queues"
   return 0

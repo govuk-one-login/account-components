@@ -11,9 +11,6 @@ describe("getAwsClientConfig", () => {
     delete process.env["LOCAL_AWS_ENDPOINT"];
     delete process.env["LOCAL_AWS_ACCESS_KEY_ID"];
     delete process.env["LOCAL_AWS_ACCESS_KEY"];
-    delete process.env["AWS_MAX_ATTEMPTS"];
-    delete process.env["AWS_CLIENT_CONNECT_TIMEOUT"];
-    delete process.env["AWS_CLIENT_REQUEST_TIMEOUT"];
   });
 
   it("throws error when AWS_REGION is not set", () => {
@@ -28,15 +25,6 @@ describe("getAwsClientConfig", () => {
     expect(config.region).toBe("eu-west-2");
     expect(config.maxAttempts).toBe(3);
     expect(config.requestHandler).toBeDefined();
-  });
-
-  it("uses custom max attempts when set", () => {
-    process.env["AWS_REGION"] = "eu-west-2";
-    process.env["AWS_MAX_ATTEMPTS"] = "5";
-
-    const config = getAwsClientConfig();
-
-    expect(config.maxAttempts).toBe(5);
   });
 
   it("includes local AWS config when USE_LOCAL_AWS is true", () => {
