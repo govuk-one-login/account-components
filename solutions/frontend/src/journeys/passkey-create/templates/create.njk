@@ -4,10 +4,18 @@
 {% from "govuk/components/details/macro.njk" import govukDetails %}
 {% from "govuk/components/inset-text/macro.njk" import govukInsetText %}
 
-{% if showErrorUi %}        
-  {% set pageTitleName = ['journey:create.error.pageTitle', stringsSuffix] | join | translate %}
-  {% set englishPageTitleName = ['journey:create.error.pageTitle', stringsSuffix] | join | getFixedT_en %}
-  {% set heading = ['journey:create.error.heading', stringsSuffix] | join | translate %}
+{% set showAlreadyHasPasskeyErrorUI = registrationErrorReason === "InvalidStateError" and not reply.client.consider_user_logged_in %}
+
+{% if showErrorUi %}
+  {% if showAlreadyHasPasskeyErrorUI %}
+    {% set pageTitleName = ['journey:create.error.alreadyHasPasskey_pageTitle', stringsSuffix] | join | translate %}
+    {% set englishPageTitleName = ['journey:create.error.alreadyHasPasskey_pageTitle', stringsSuffix] | join | getFixedT_en %}
+    {% set heading = ['journey:create.error.alreadyHasPasskey_heading', stringsSuffix] | join | translate %}
+  {% else %}
+    {% set pageTitleName = ['journey:create.error.pageTitle', stringsSuffix] | join | translate %}
+    {% set englishPageTitleName = ['journey:create.error.pageTitle', stringsSuffix] | join | getFixedT_en %}
+    {% set heading = ['journey:create.error.heading', stringsSuffix] | join | translate %}  
+  {% endif %}
   {% set submitButtonLabel = ['journey:create.error.buttonLabel', stringsSuffix] | join | translate %}      
 {% else %}  
   {% set pageTitleName = ['journey:create.pageTitle', stringsSuffix] | join | translate %}
@@ -47,32 +55,43 @@
       summaryText: ['journey:create.detailsTitle', stringsSuffix] | join | translate,
       html: detailsHtml
     }) }}
+  {% endif %}
+
+  {% if showErrorUi and showAlreadyHasPasskeyErrorUI %} 
+    {% set paragraphs = ['journey:create.error.alreadyHasPasskey_paragraphs', stringsSuffix] | join | translate({ returnObjects: true }) %}
+    {% for paragraph in paragraphs %}
+      <p class="govuk-body">{{ paragraph }}</p>
+    {% endfor %}    
   {% endif %} 
 
   <form action="{{ formAction }}" method="post" id="verifyPasskeyForm" data-registration-options="{{ registrationOptions }}">
-    {% if showErrorUi %}        
-      {{ govukRadios({
-        name: "action",
-        fieldset: {
-          legend: {
-            text: ['journey:create.error.radioButtonsLegendText', stringsSuffix] | join | translate,
-            classes: "govuk-fieldset__legend--m"
-          }
-        },
-        items: [
-          {
-            value: "register",
-            text: ['journey:create.error.registerRadioButtonLabel', stringsSuffix] | join | translate
+    {% if showErrorUi %}   
+      {% if showAlreadyHasPasskeyErrorUI %}
+        <input type="hidden" name="action" value="skip"> 
+      {% else %}
+        {{ govukRadios({
+          name: "action",
+          fieldset: {
+            legend: {
+              text: ['journey:create.error.radioButtonsLegendText', stringsSuffix] | join | translate,
+              classes: "govuk-fieldset__legend--m"
+            }
           },
-          {
-            value: "skip",
-            text: ['journey:create.error.skipRadioButtonLabel', stringsSuffix] | join | translate
-          }
-        ],
-        errorMessage: {
-          text: errors["action"].text
-        } if(errors["action"])        
-      }) }}
+          items: [
+            {
+              value: "register",
+              text: ['journey:create.error.registerRadioButtonLabel', stringsSuffix] | join | translate
+            },
+            {
+              value: "skip",
+              text: ['journey:create.error.skipRadioButtonLabel', stringsSuffix] | join | translate
+            }
+          ],
+          errorMessage: {
+            text: errors["action"].text
+          } if(errors["action"])        
+        }) }}
+      {% endif %}
     {% else  %}
       <input type="hidden" name="action" value="register"> 
     {% endif %}  
