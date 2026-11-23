@@ -5662,3 +5662,559 @@ Resources:
             }                                                
           ]
         }
+
+  PasskeyCreateContentSplitTestDashboard:
+    Type: AWS::CloudWatch::Dashboard
+    Properties:
+      DashboardName: "passkey-create-content-split-test"
+      DashboardBody: !Sub |
+        {
+            "variables": [],
+            "widgets": [
+                {
+                    "type": "text",
+                    "x": 0,
+                    "y": 0,
+                    "width": 24,
+                    "height": 1,
+                    "properties": {
+                        "markdown": "# Total",
+                        "background": "transparent"
+                    }
+                },
+                {
+                    "type": "text",
+                    "x": 0,
+                    "y": 9,
+                    "width": 24,
+                    "height": 1,
+                    "properties": {
+                        "markdown": "# Control",
+                        "background": "transparent"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 0,
+                    "y": 1,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId)\n| filter details in [\n    \"Set up passkey screen viewed\"\n  ]\n| fields toNumber(@timestamp) as numeric_time\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1\n| stats min(t1) as time_1 by persistentSessionId\n| stats count() as started_amc_passkey_creation",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": ""
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 6,
+                    "y": 1,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId)\n\n| filter details in [\n    \"Set up passkey screen viewed\",  \n    \"Passkey added\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Passkey added\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as passkey_added",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": ""
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 18,
+                    "y": 1,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId)\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\", \n    \"Passkey added\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2,\n    if(details = \"Passkey added\", numeric_time, 9999999999999) as t3\n\n| stats min(t1) as time_1, min(t2) as time_2, min(t3) as time_3 by persistentSessionId\n\n| filter time_1 < time_2\n| filter time_2 < time_3\n| filter (time_3 - time_1) <= 600000\n\n| stats count() as passkey_added_from_error_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": ""
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 0,
+                    "y": 5,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId)\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Skipped from set up passkey screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Skipped from set up passkey screen\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as skipped_from_first_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": ""
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 8,
+                    "y": 5,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId)\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Backed out from set up passkey screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Backed out from set up passkey screen\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as backed_out_from_first_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": ""
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 16,
+                    "y": 5,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId)\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\", \n    \"Skipped from set up passkey error screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2,\n    if(details = \"Skipped from set up passkey error screen\", numeric_time, 9999999999999) as t3\n\n| stats min(t1) as time_1, min(t2) as time_2, min(t3) as time_3 by persistentSessionId\n\n| filter time_1 < time_2\n| filter time_2 < time_3\n| filter (time_3 - time_1) <= 600000\n\n| stats count() as skipped_from_error_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": ""
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 0,
+                    "y": 10,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"control\"\n| filter details in [\n    \"Set up passkey screen viewed\"\n  ]\n| fields toNumber(@timestamp) as numeric_time\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1\n| stats min(t1) as time_1 by persistentSessionId\n| stats count() as started_amc_passkey_creation",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 6,
+                    "y": 10,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"control\"\n\n| filter details in [\n    \"Set up passkey screen viewed\",  \n    \"Passkey added\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Passkey added\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as passkey_added",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 18,
+                    "y": 10,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"control\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\", \n    \"Passkey added\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2,\n    if(details = \"Passkey added\", numeric_time, 9999999999999) as t3\n\n| stats min(t1) as time_1, min(t2) as time_2, min(t3) as time_3 by persistentSessionId\n\n| filter time_1 < time_2\n| filter time_2 < time_3\n| filter (time_3 - time_1) <= 600000\n\n| stats count() as passkey_added_from_error_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 0,
+                    "y": 14,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"control\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Skipped from set up passkey screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Skipped from set up passkey screen\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as skipped_from_first_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 8,
+                    "y": 14,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"control\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Backed out from set up passkey screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Backed out from set up passkey screen\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as backed_out_from_first_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 16,
+                    "y": 14,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"control\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\", \n    \"Skipped from set up passkey error screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2,\n    if(details = \"Skipped from set up passkey error screen\", numeric_time, 9999999999999) as t3\n\n| stats min(t1) as time_1, min(t2) as time_2, min(t3) as time_3 by persistentSessionId\n\n| filter time_1 < time_2\n| filter time_2 < time_3\n| filter (time_3 - time_1) <= 600000\n\n| stats count() as skipped_from_error_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 12,
+                    "y": 1,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId)\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as error_screen_seen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 12,
+                    "y": 10,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"control\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as error_screen_seen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "text",
+                    "x": 0,
+                    "y": 18,
+                    "width": 24,
+                    "height": 1,
+                    "properties": {
+                        "markdown": "# Variant A",
+                        "background": "transparent"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 0,
+                    "y": 19,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantA\"\n| filter details in [\n    \"Set up passkey screen viewed\"\n  ]\n| fields toNumber(@timestamp) as numeric_time\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1\n| stats min(t1) as time_1 by persistentSessionId\n| stats count() as started_amc_passkey_creation",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 6,
+                    "y": 19,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantA\"\n\n| filter details in [\n    \"Set up passkey screen viewed\",  \n    \"Passkey added\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Passkey added\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as passkey_added",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 12,
+                    "y": 19,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantA\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as error_screen_seen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 18,
+                    "y": 19,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantA\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\", \n    \"Passkey added\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2,\n    if(details = \"Passkey added\", numeric_time, 9999999999999) as t3\n\n| stats min(t1) as time_1, min(t2) as time_2, min(t3) as time_3 by persistentSessionId\n\n| filter time_1 < time_2\n| filter time_2 < time_3\n| filter (time_3 - time_1) <= 600000\n\n| stats count() as passkey_added_from_error_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 0,
+                    "y": 23,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantA\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Skipped from set up passkey screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Skipped from set up passkey screen\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as skipped_from_first_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 8,
+                    "y": 23,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantA\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Backed out from set up passkey screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Backed out from set up passkey screen\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as backed_out_from_first_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 16,
+                    "y": 23,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantA\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\", \n    \"Skipped from set up passkey error screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2,\n    if(details = \"Skipped from set up passkey error screen\", numeric_time, 9999999999999) as t3\n\n| stats min(t1) as time_1, min(t2) as time_2, min(t3) as time_3 by persistentSessionId\n\n| filter time_1 < time_2\n| filter time_2 < time_3\n| filter (time_3 - time_1) <= 600000\n\n| stats count() as skipped_from_error_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "text",
+                    "x": 0,
+                    "y": 27,
+                    "width": 24,
+                    "height": 1,
+                    "properties": {
+                        "markdown": "# Variant B",
+                        "background": "transparent"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 0,
+                    "y": 28,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantB\"\n| filter details in [\n    \"Set up passkey screen viewed\"\n  ]\n| fields toNumber(@timestamp) as numeric_time\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1\n| stats min(t1) as time_1 by persistentSessionId\n| stats count() as started_amc_passkey_creation",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 6,
+                    "y": 28,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantB\"\n\n| filter details in [\n    \"Set up passkey screen viewed\",  \n    \"Passkey added\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Passkey added\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as passkey_added",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 12,
+                    "y": 28,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantB\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as error_screen_seen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 18,
+                    "y": 28,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantB\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\", \n    \"Passkey added\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2,\n    if(details = \"Passkey added\", numeric_time, 9999999999999) as t3\n\n| stats min(t1) as time_1, min(t2) as time_2, min(t3) as time_3 by persistentSessionId\n\n| filter time_1 < time_2\n| filter time_2 < time_3\n| filter (time_3 - time_1) <= 600000\n\n| stats count() as passkey_added_from_error_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 0,
+                    "y": 32,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantB\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Skipped from set up passkey screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Skipped from set up passkey screen\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as skipped_from_first_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 8,
+                    "y": 32,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantB\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Backed out from set up passkey screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Backed out from set up passkey screen\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as backed_out_from_first_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 16,
+                    "y": 32,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantB\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\", \n    \"Skipped from set up passkey error screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2,\n    if(details = \"Skipped from set up passkey error screen\", numeric_time, 9999999999999) as t3\n\n| stats min(t1) as time_1, min(t2) as time_2, min(t3) as time_3 by persistentSessionId\n\n| filter time_1 < time_2\n| filter time_2 < time_3\n| filter (time_3 - time_1) <= 600000\n\n| stats count() as skipped_from_error_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "text",
+                    "x": 0,
+                    "y": 36,
+                    "width": 24,
+                    "height": 1,
+                    "properties": {
+                        "markdown": "# Variant C",
+                        "background": "transparent"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 0,
+                    "y": 37,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantC\"\n| filter details in [\n    \"Set up passkey screen viewed\"\n  ]\n| fields toNumber(@timestamp) as numeric_time\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1\n| stats min(t1) as time_1 by persistentSessionId\n| stats count() as started_amc_passkey_creation",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 6,
+                    "y": 37,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantC\"\n\n| filter details in [\n    \"Set up passkey screen viewed\",  \n    \"Passkey added\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Passkey added\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as passkey_added",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 12,
+                    "y": 37,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantC\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as error_screen_seen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 18,
+                    "y": 37,
+                    "width": 6,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantC\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\", \n    \"Passkey added\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2,\n    if(details = \"Passkey added\", numeric_time, 9999999999999) as t3\n\n| stats min(t1) as time_1, min(t2) as time_2, min(t3) as time_3 by persistentSessionId\n\n| filter time_1 < time_2\n| filter time_2 < time_3\n| filter (time_3 - time_1) <= 600000\n\n| stats count() as passkey_added_from_error_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 0,
+                    "y": 41,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantC\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Skipped from set up passkey screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Skipped from set up passkey screen\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as skipped_from_first_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 8,
+                    "y": 41,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantC\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Backed out from set up passkey screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Backed out from set up passkey screen\", numeric_time, 9999999999999) as t2\n\n| stats min(t1) as time_1, min(t2) as time_2 by persistentSessionId\n\n| filter time_1 < time_2\n| filter (time_2 - time_1) <= 600000\n\n| stats count() as backed_out_from_first_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                },
+                {
+                    "type": "log",
+                    "x": 16,
+                    "y": 41,
+                    "width": 8,
+                    "height": 4,
+                    "properties": {
+                        "query": "SOURCE '/aws/lambda/${AWS::StackName}/FrontendLambda' |\nfilter client_id = \"auth\" and ispresent(persistentSessionId) and splitTestBucketAssignments.passkeyCreateContent = \"variantC\"\n\n| filter details in [\n    \"Set up passkey screen viewed\", \n    \"Set up passkey error screen viewed\", \n    \"Skipped from set up passkey error screen\"\n  ]\n\n| fields toNumber(@timestamp) as numeric_time\n\n| fields \n    if(details = \"Set up passkey screen viewed\", numeric_time, 9999999999999) as t1,\n    if(details = \"Set up passkey error screen viewed\", numeric_time, 9999999999999) as t2,\n    if(details = \"Skipped from set up passkey error screen\", numeric_time, 9999999999999) as t3\n\n| stats min(t1) as time_1, min(t2) as time_2, min(t3) as time_3 by persistentSessionId\n\n| filter time_1 < time_2\n| filter time_2 < time_3\n| filter (time_3 - time_1) <= 600000\n\n| stats count() as skipped_from_error_screen",
+                        "region": "eu-west-2",
+                        "stacked": false,
+                        "view": "pie",
+                        "title": "Log group: arn:aws:logs:eu-west-2:494066295151:log-group:/aws/lambda/amc/FrontendLambda"
+                    }
+                }
+            ]
+        }      

@@ -63,6 +63,16 @@
             "bucket3": { "$ref": "#/$defs/splitTestBucket" }
           },
           "required": ["bucket1", "bucket2", "bucket3"]
+        },
+        "passkeyCreateContent": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "bucket1": { "$ref": "#/$defs/splitTestBucket" },
+            "bucket2": { "$ref": "#/$defs/splitTestBucket" },
+            "bucket3": { "$ref": "#/$defs/splitTestBucket" }
+          },
+          "required": ["control", "variantA", "variantB", "variantC"]
         }
       },
       "required": ["testingJourneySplitTest"]
