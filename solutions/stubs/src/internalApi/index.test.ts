@@ -94,6 +94,25 @@ describe("internalApi", () => {
       });
     });
 
+    it("should return otp and lockout for successful_with_lockout scenario", async () => {
+      mockRequest.headers = {
+        authorization: `Bearer ${await signToken({ generateOTP_scenario: "successful_with_lockout" })}`,
+      };
+      await getHandler()(mockRequest, mockReply);
+
+      expect(mockReply.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          otp: "192837",
+          lockout: expect.objectContaining({
+            id: expect.any(String),
+            type: "TooManyOTPsRequested",
+            lockedOutAt: expect.any(Number),
+            lockedOutUntil: expect.any(Number),
+          }),
+        }),
+      );
+    });
+
     it("should return otp when token has an unrecognised scenario", async () => {
       mockRequest.headers = {
         authorization: `Bearer ${await signToken({ generateOTP_scenario: "unknown" })}`,
@@ -142,6 +161,25 @@ describe("internalApi", () => {
       expect(mockReply.send).toHaveBeenCalledWith({ valid: false });
     });
 
+    it("should return { valid: false } and lockout for incorrect_otp_with_lockout scenario", async () => {
+      mockRequest.headers = {
+        authorization: `Bearer ${await signToken({ checkOTP_scenario: "incorrect_otp_with_lockout" })}`,
+      };
+      await getHandler()(mockRequest, mockReply);
+
+      expect(mockReply.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          valid: false,
+          lockout: expect.objectContaining({
+            id: expect.any(String),
+            type: "TooManyIncorrectOTPsEntered",
+            lockedOutAt: expect.any(Number),
+            lockedOutUntil: expect.any(Number),
+          }),
+        }),
+      );
+    });
+
     it("should return { valid: true } when token has an unrecognised scenario", async () => {
       mockRequest.headers = {
         authorization: `Bearer ${await signToken({ checkOTP_scenario: "unknown" })}`,
@@ -188,6 +226,26 @@ describe("internalApi", () => {
       await getHandler()(mockRequest, mockReply);
 
       expect(mockReply.send).toHaveBeenCalledWith({ valid: false });
+    });
+
+    it("should return { valid: false } and lockout for incorrect_password_with_lockout scenario", async () => {
+      // pragma: allowlist secret
+      mockRequest.headers = {
+        authorization: `Bearer ${await signToken({ checkPassword_scenario: "incorrect_password_with_lockout" })}`, // pragma: allowlist secret
+      };
+      await getHandler()(mockRequest, mockReply);
+
+      expect(mockReply.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          valid: false,
+          lockout: expect.objectContaining({
+            id: expect.any(String),
+            type: "TooManyIncorrectPasswordsEntered",
+            lockedOutAt: expect.any(Number),
+            lockedOutUntil: expect.any(Number),
+          }),
+        }),
+      );
     });
 
     it("should return { valid: true } when token has an unrecognised scenario", async () => {

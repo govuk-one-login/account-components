@@ -10,22 +10,9 @@ const getToken = (request: FastifyRequest) =>
 
 export const internalApi = function (app: FastifyInstance) {
   app.post(paths.internalApi.generateOTP, async function (request, reply) {
-    const token = getToken(request);
-    if (token) {
-      const claims = decodeJwt(token);
-
-      if (claims["generateOTP_scenario"] === "too_many_otps_requested") {
-        reply.status(403);
-        reply.send({
-          code: 1002,
-          message: "TooManyOTPsRequested",
-        });
-        return reply;
-      }
-    }
-
     const body = v.safeParse(
       v.object({
+        source: v.optional(v.enum(Source)),
         expiresIn: v.optional(v.number()),
       }),
       request.body,
@@ -40,14 +27,61 @@ export const internalApi = function (app: FastifyInstance) {
       return reply;
     }
 
+    const otp = "192837";
+    const expiresAt =
+      Math.floor(Date.now() / 1000) + (body.output.expiresIn ?? 900);
+
+    const token = getToken(request);
+    if (token) {
+      const claims = decodeJwt(token);
+
+      if (claims["generateOTP_scenario"] === "too_many_otps_requested") {
+        reply.status(403);
+        reply.send({
+          code: 1002,
+          message: "TooManyOTPsRequested",
+        });
+        return reply;
+      } else if (claims["generateOTP_scenario"] === "successful_with_lockout") {
+        reply.send({
+          otp,
+          expiresAt,
+          lockout: {
+            id: randomUUID(),
+            source: body.output.source,
+            type: "TooManyOTPsRequested",
+            lockedOutAt: Math.floor(Date.now() / 1000) - 60 * 15,
+            lockedOutUntil: Math.floor(Date.now() / 1000) + 60 * 15,
+          },
+        });
+        return reply;
+      }
+    }
+
     reply.send({
-      otp: "192837",
-      expiresAt: Math.floor(Date.now() / 1000) + (body.output.expiresIn ?? 900),
+      otp,
+      expiresAt,
     });
     return reply;
   });
 
   app.post(paths.internalApi.checkOTP, async function (request, reply) {
+    const body = v.safeParse(
+      v.object({
+        source: v.optional(v.enum(Source)),
+      }),
+      request.body,
+    );
+
+    if (!body.success) {
+      reply.status(400);
+      reply.send({
+        code: 1001,
+        message: "InvalidRequest",
+      });
+      return reply;
+    }
+
     const token = getToken(request);
     if (token) {
       const claims = decodeJwt(token);
@@ -64,6 +98,18 @@ export const internalApi = function (app: FastifyInstance) {
           valid: false,
         });
         return reply;
+      } else if (claims["checkOTP_scenario"] === "incorrect_otp_with_lockout") {
+        reply.send({
+          valid: false,
+          lockout: {
+            id: randomUUID(),
+            source: body.output.source,
+            type: "TooManyIncorrectOTPsEntered",
+            lockedOutAt: Math.floor(Date.now() / 1000) - 60 * 15,
+            lockedOutUntil: Math.floor(Date.now() / 1000) + 60 * 15,
+          },
+        });
+        return reply;
       }
     }
 
@@ -74,6 +120,22 @@ export const internalApi = function (app: FastifyInstance) {
   });
 
   app.post(paths.internalApi.checkPassword, async function (request, reply) {
+    const body = v.safeParse(
+      v.object({
+        source: v.optional(v.enum(Source)),
+      }),
+      request.body,
+    );
+
+    if (!body.success) {
+      reply.status(400);
+      reply.send({
+        code: 1001,
+        message: "InvalidRequest",
+      });
+      return reply;
+    }
+
     const token = getToken(request);
     if (token) {
       const claims = decodeJwt(token);
@@ -88,9 +150,25 @@ export const internalApi = function (app: FastifyInstance) {
           message: "TooManyIncorrectPasswordsEntered",
         });
         return reply;
-      } else if (claims["checkPassword_scenario"] === "incorrect_password") {
+      } else if (
+        claims["checkPassword_scenario"] === "incorrect_password" // pragma: allowlist secret
+      ) {
         reply.send({
           valid: false,
+        });
+        return reply;
+      } else if (
+        claims["checkPassword_scenario"] === "incorrect_password_with_lockout" // pragma: allowlist secret
+      ) {
+        reply.send({
+          valid: false,
+          lockout: {
+            id: randomUUID(),
+            source: body.output.source,
+            type: "TooManyIncorrectPasswordsEntered",
+            lockedOutAt: Math.floor(Date.now() / 1000) - 60 * 15,
+            lockedOutUntil: Math.floor(Date.now() / 1000) + 60 * 15,
+          },
         });
         return reply;
       }

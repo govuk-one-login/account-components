@@ -115,6 +115,7 @@
                         Generate OTP
                         <select name="internal_api_generateOTP_scenario">
                             <option value="successful">Successful</option>
+                            <option value="successful_with_lockout">Successful, lockout created</option>                            
                             <option value="too_many_otps_requested">Too many OTPs requested</option>
                         </select>
                     </label>
@@ -124,6 +125,7 @@
                             <option value="successful">Successful</option>
                             <option value="too_many_incorrect_otps_entered">Too many incorrect OTPs entered</option>
                             <option value="incorrect_otp">Incorrect OTP</option>
+                            <option value="incorrect_otp_with_lockout">Incorrect OTP, lockout created</option>
                         </select>
                     </label>   
                     <label class="api_scenario_selector">
@@ -131,7 +133,8 @@
                         <select name="internal_api_checkPassword_scenario">
                             <option value="successful">Successful</option>
                             <option value="too_many_incorrect_passwords_entered">Too many incorrect passwords entered</option>                         
-                            <option value="incorrect_password">Incorrect password</option>                            
+                            <option value="incorrect_password">Incorrect password</option>
+                            <option value="incorrect_password_with_lockout">Incorrect password, lockout created</option>
                         </select>
                     </label>  
                     <label class="api_scenario_selector">
