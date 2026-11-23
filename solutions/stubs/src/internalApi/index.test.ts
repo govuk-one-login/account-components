@@ -51,7 +51,7 @@ describe("internalApi", () => {
       await getHandler()(mockRequest, mockReply);
 
       expect(mockReply.send).toHaveBeenCalledWith(
-        expect.objectContaining({ otp: "192837", expires: before + 300 }),
+        expect.objectContaining({ otp: "192837", expiresAt: before + 300 }),
       );
     });
 
@@ -60,13 +60,14 @@ describe("internalApi", () => {
       const before = Math.floor(Date.now() / 1000);
       await getHandler()(mockRequest, mockReply);
 
-      const sent = vi.mocked(mockReply.send)?.mock.calls[0]![0] as {
-        otp: string;
-        expires: number;
-      };
+      const sent = (
+        vi.mocked(mockReply.send)?.mock.calls[0] as [
+          { otp: string; expiresAt: number },
+        ]
+      )[0];
 
       expect(sent.otp).toBe("192837");
-      expect(sent.expires).toBeGreaterThanOrEqual(before + 900);
+      expect(sent.expiresAt).toBeGreaterThanOrEqual(before + 900);
     });
 
     it("should return 400 for invalid body", async () => {
