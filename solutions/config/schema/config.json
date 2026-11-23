@@ -68,9 +68,10 @@
           "type": "object",
           "additionalProperties": false,
           "properties": {
-            "bucket1": { "$ref": "#/$defs/splitTestBucket" },
-            "bucket2": { "$ref": "#/$defs/splitTestBucket" },
-            "bucket3": { "$ref": "#/$defs/splitTestBucket" }
+            "control": { "$ref": "#/$defs/splitTestBucket" },
+            "variantA": { "$ref": "#/$defs/splitTestBucket" },
+            "variantB": { "$ref": "#/$defs/splitTestBucket" },
+            "variantC": { "$ref": "#/$defs/splitTestBucket" }
           },
           "required": ["control", "variantA", "variantB", "variantC"]
         }
