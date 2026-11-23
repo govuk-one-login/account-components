@@ -3,7 +3,7 @@ openapi: 3.0.3
 
 info:
   title: Account Management Components API
-  version: 0.0.23
+  version: 0.0.24
   contact:
     name: GDS - DI Accounts Pod - Home Team
     email: one-login-home-team@digital.cabinet-office.gov.uk
@@ -594,26 +594,24 @@ paths:
       description: Get the lockouts for the account
       security: []
       operationId: lockouts
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [source]
-              properties:
-                source:
-                  $ref: "#/components/schemas/Source"
-                  description: The source to check for lockouts
-                type:
-                  $ref: "#/components/schemas/LockoutType"
-                  description: The type of lockout to check for (defaults to checking all lockout types if not specified)
       parameters:
         - name: publicSubjectId
           in: path
           required: true
           schema:
             type: string
+        - name: source
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/Source"
+          description: The source to check for lockouts
+        - name: type
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/LockoutType"
+          description: The type of lockout to check for (defaults to checking all lockout types if not specified)
         - $ref: "#/components/parameters/DiPersistentSessionId"
         - $ref: "#/components/parameters/SessionId"
         - $ref: "#/components/parameters/ClientSessionId"
@@ -776,6 +774,7 @@ components:
       type: string
       enum:
         - account-delete
+        - passkey-create
       description: Namespaces shared across various functionalities including OTP generation and verification, password verification and lockouts
 
     LockoutType:
