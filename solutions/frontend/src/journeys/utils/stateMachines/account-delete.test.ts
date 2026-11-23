@@ -76,23 +76,12 @@ describe("accountDeleteStateMachine", () => {
       );
     });
 
-    it.each([
-      "lockedOutSecurityCodeRequestedTooManyTimes",
-      "lockedOutSecurityCodeEnteredTooManyTimes",
-      "lockedOutPasswordEnteredTooManyTimes",
-    ] as const)("transitions to %s", (event) => {
+    it("transitions to lockedOutPasswordEnteredTooManyTimes", () => {
       const actor = startActor(AcountDeleteJourneyState.notAuthenticated);
-      actor.send({ type: event });
-
-      expect(actor.getSnapshot().value).toBe(AcountDeleteJourneyState[event]);
-    });
-
-    it("transitions to notAuthenticated on emailVerified", () => {
-      const actor = startActor(AcountDeleteJourneyState.notAuthenticated);
-      actor.send({ type: "emailVerified" });
+      actor.send({ type: "lockedOutPasswordEnteredTooManyTimes" });
 
       expect(actor.getSnapshot().value).toBe(
-        AcountDeleteJourneyState.notAuthenticated,
+        AcountDeleteJourneyState.lockedOutPasswordEnteredTooManyTimes,
       );
     });
   });
@@ -110,14 +99,25 @@ describe("accountDeleteStateMachine", () => {
   describe.each([
     "lockedOutSecurityCodeRequestedTooManyTimes",
     "lockedOutSecurityCodeEnteredTooManyTimes",
-    "lockedOutPasswordEnteredTooManyTimes",
   ] as const)("%s", (lockoutEvent) => {
+    it("returns to emailNotVerified on returnToStateBeforeLockout", () => {
+      const actor = startActor(AcountDeleteJourneyState.emailNotVerified);
+      actor.send({ type: lockoutEvent });
+      actor.send({ type: "returnToStateBeforeLockout" });
+
+      expect(actor.getSnapshot().value).toBe(
+        AcountDeleteJourneyState.emailNotVerified,
+      );
+    });
+  });
+
+  describe("lockedOutPasswordEnteredTooManyTimes", () => {
     it.each([
       AcountDeleteJourneyState.emailNotVerified,
       AcountDeleteJourneyState.notAuthenticated,
     ])("returns to %s on returnToStateBeforeLockout", (previousState) => {
       const actor = startActor(previousState);
-      actor.send({ type: lockoutEvent });
+      actor.send({ type: "lockedOutPasswordEnteredTooManyTimes" });
       actor.send({ type: "returnToStateBeforeLockout" });
 
       expect(actor.getSnapshot().value).toBe(previousState);
