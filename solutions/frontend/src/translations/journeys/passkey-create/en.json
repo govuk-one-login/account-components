@@ -38,9 +38,11 @@
     "error": {
       "pageTitle_signedOut": "We could not set up your passkey",
       "pageTitle_signedIn": "We could not set up your passkey",
+      "alreadyHasPasskey_pageTitle_signedOut": "You already have a passkey for this device",
 
       "heading_signedOut": "We could not set up your passkey",
       "heading_signedIn": "We could not set up your passkey",
+      "alreadyHasPasskey_heading_signedOut": "You already have a passkey for this device",
 
       "radioButtonsLegendText_signedOut": "What would you like to do?",
       "radioButtonsLegendText_signedIn": "What would you like to do?",
@@ -53,6 +55,11 @@
 
       "mustSelectAnActionErrorMessage_signedOut": "Select what you would like to do",
       "mustSelectAnActionErrorMessage_signedIn": "Select what you would like to do",
+
+      "alreadyHasPasskey_paragraphs_signedOut": [
+        "You can use it to sign in next time.",
+        "You won’t need your GOV.UK One Login password or a security code."
+      ],
 
       "buttonLabel_signedOut": "Continue",
       "buttonLabel_signedIn": "Continue"

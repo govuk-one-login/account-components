@@ -1212,6 +1212,7 @@ describe("passkey-create handlers", () => {
           "journeys/passkey-create/templates/create.njk",
           expect.objectContaining({
             showErrorUi: true,
+            registrationErrorReason: "UnknownError",
             analytics: { reason: "UnknownError" },
           }),
         );
