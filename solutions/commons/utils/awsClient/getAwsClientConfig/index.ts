@@ -5,14 +5,16 @@ import http from "node:http";
 import https from "node:https";
 import assert from "node:assert";
 
-export const getAwsClientConfig = (kms = false) => {
+export const getAwsClientConfig = () => {
   assert.ok(process.env["AWS_REGION"], "AWS_REGION is not set");
+
+  const useLocalAws = resolveEnvVarToBool("USE_LOCAL_AWS");
 
   return {
     region: process.env["AWS_REGION"],
     maxAttempts: getNumberFromEnvVar("AWS_MAX_ATTEMPTS", 3),
     ...(() => {
-      if (!resolveEnvVarToBool("USE_LOCAL_AWS")) {
+      if (!useLocalAws) {
         return {};
       }
 
@@ -28,15 +30,9 @@ export const getAwsClientConfig = (kms = false) => {
         process.env["LOCAL_AWS_ACCESS_KEY"],
         "LOCAL_AWS_ACCESS_KEY is not set",
       );
-      assert.ok(
-        process.env["LOCAL_AWS_KMS_ENDPOINT"],
-        "LOCAL_AWS_KMS_ENDPOINT is not set",
-      );
 
       return {
-        endpoint: kms
-          ? process.env["LOCAL_AWS_KMS_ENDPOINT"]
-          : process.env["LOCAL_AWS_ENDPOINT"],
+        endpoint: process.env["LOCAL_AWS_ENDPOINT"],
         credentials: {
           accessKeyId: process.env["LOCAL_AWS_ACCESS_KEY_ID"],
           secretAccessKey: process.env["LOCAL_AWS_ACCESS_KEY"],
@@ -56,6 +52,7 @@ export const getAwsClientConfig = (kms = false) => {
       httpsAgent: new https.Agent({
         keepAlive: true,
         maxSockets: 50,
+        rejectUnauthorized: !useLocalAws,
       }),
     }),
   };

@@ -9,6 +9,9 @@ const getDynamoDbClient = vi.fn(() => ({ get: mockGet, put: mockPut }));
 vi.mock(
   import("../../../../../commons/utils/awsClient/dynamodbClient/index.js"),
 );
+vi.mock(import("../../../../../commons/utils/getAppConfig/index.js"), () => ({
+  getAppConfig: vi.fn().mockResolvedValue({ jti_nonce_ttl_in_seconds: 7200 }),
+}));
 const mockGetDynamoDbClient = vi.mocked(
   await import("../../../../../commons/utils/awsClient/dynamodbClient/index.js"),
 ).getDynamoDbClient;
