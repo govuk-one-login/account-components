@@ -6,7 +6,7 @@ import type { AppConfigSchema } from "../../../config/schema/types.js";
 export async function getAppConfig(): Promise<AppConfigSchema> {
   let config: unknown;
 
-  // AWS Emulator does not support AppConfig hence reading in config directly
+  // AWS Emulator's app config implementation doesn't seem to work at the time of writing hence reading in config directly
   if (getEnvironment() === "local") {
     config = await import("../../../config/local-config.json");
   } else {
