@@ -5,7 +5,7 @@ FROM public.ecr.aws/amazonlinux/amazonlinux:2023-minimal@sha256:75a2d4226d9b98c9
 
 ARG RPM_ARCH
 
-RUN curl -fL "https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS/latest/aws-emulator-${RPM_ARCH}.rpm" -o /tmp/aws-emulator.rpm \
+RUN curl -fL --proto '=https' "https://downloads.aws.com/aws-emulator/packages/aws-emulator/LTS/latest/aws-emulator-${RPM_ARCH}.rpm" -o /tmp/aws-emulator.rpm \
     && rpm -i /tmp/aws-emulator.rpm && rm /tmp/aws-emulator.rpm \
     && mkdir -p /home/emulator && chown 1000 /home/emulator
 
