@@ -201,6 +201,13 @@ create_dynamodb_tables() {
       '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"lockedOutAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     --billing-mode PAY_PER_REQUEST
 
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
+    --table-name "amc-Lockouts"
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
+    --table-name "amc-Lockouts" \
+    --time-to-live-specification "Enabled=true,AttributeName=keepUntil"
+
   aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
     --table-name "amc-OTPs" \
     --attribute-definitions \
@@ -212,6 +219,13 @@ create_dynamodb_tables() {
     --global-secondary-indexes \
       '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     --billing-mode PAY_PER_REQUEST
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
+    --table-name "amc-OTPs"
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
+    --table-name "amc-OTPs" \
+    --time-to-live-specification "Enabled=true,AttributeName=keepUntil"
 
   aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
     --table-name "amc-OTP-Checks" \
@@ -225,6 +239,13 @@ create_dynamodb_tables() {
       '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     --billing-mode PAY_PER_REQUEST
 
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
+    --table-name "amc-OTP-Checks"
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
+    --table-name "amc-OTP-Checks" \
+    --time-to-live-specification "Enabled=true,AttributeName=keepUntil"
+
   aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
     --table-name "amc-Password-Checks" \
     --attribute-definitions \
@@ -236,6 +257,13 @@ create_dynamodb_tables() {
     --global-secondary-indexes \
       '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     --billing-mode PAY_PER_REQUEST
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
+    --table-name "amc-Password-Checks"
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
+    --table-name "amc-Password-Checks" \
+    --time-to-live-specification "Enabled=true,AttributeName=keepUntil"
 
   echo "Finished creating DynamoDB tables"
   return 0
