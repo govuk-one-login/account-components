@@ -10,7 +10,7 @@ describe("getAwsClientConfig", () => {
     delete process.env["USE_LOCAL_AWS"];
     delete process.env["LOCAL_AWS_ENDPOINT"];
     delete process.env["LOCAL_AWS_ACCESS_KEY_ID"];
-    delete process.env["LOCAL_AWS_SECRET_ACCESS_KEY"];
+    delete process.env["LOCAL_AWS_ACCESS_KEY"];
     delete process.env["LOCAL_AWS_KMS_ENDPOINT"];
     delete process.env["AWS_MAX_ATTEMPTS"];
     delete process.env["AWS_CLIENT_CONNECT_TIMEOUT"];
@@ -46,7 +46,7 @@ describe("getAwsClientConfig", () => {
     process.env["LOCAL_AWS_ENDPOINT"] = "https://localhost:9297";
     process.env["LOCAL_AWS_KMS_ENDPOINT"] = "http://localhost:4567";
     process.env["LOCAL_AWS_ACCESS_KEY_ID"] = "test";
-    process.env["LOCAL_AWS_SECRET_ACCESS_KEY"] = "test";
+    process.env["LOCAL_AWS_ACCESS_KEY"] = "test";
 
     const config = getAwsClientConfig();
 
@@ -63,7 +63,7 @@ describe("getAwsClientConfig", () => {
     process.env["LOCAL_AWS_ENDPOINT"] = "https://localhost:9297";
     process.env["LOCAL_AWS_KMS_ENDPOINT"] = "http://localhost:4567";
     process.env["LOCAL_AWS_ACCESS_KEY_ID"] = "test";
-    process.env["LOCAL_AWS_SECRET_ACCESS_KEY"] = "test";
+    process.env["LOCAL_AWS_ACCESS_KEY"] = "test";
 
     const config = getAwsClientConfig(true);
 
@@ -94,7 +94,7 @@ describe("getAwsClientConfig", () => {
     process.env["LOCAL_AWS_ACCESS_KEY_ID"] = "test";
 
     expect(() => getAwsClientConfig()).toThrow(
-      "LOCAL_AWS_SECRET_ACCESS_KEY is not set",
+      "LOCAL_AWS_ACCESS_KEY is not set",
     );
   });
 
@@ -103,7 +103,7 @@ describe("getAwsClientConfig", () => {
     process.env["USE_LOCAL_AWS"] = "true";
     process.env["LOCAL_AWS_ENDPOINT"] = "https://localhost:9297";
     process.env["LOCAL_AWS_ACCESS_KEY_ID"] = "test";
-    process.env["LOCAL_AWS_SECRET_ACCESS_KEY"] = "test";
+    process.env["LOCAL_AWS_ACCESS_KEY"] = "test";
 
     expect(() => getAwsClientConfig()).toThrow(
       "LOCAL_AWS_KMS_ENDPOINT is not set",

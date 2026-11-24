@@ -46,7 +46,7 @@ jobs:
           LOCAL_AWS_ENDPOINT=https://localhost:9297
           LOCAL_AWS_KMS_ENDPOINT=http://localhost:4567
           LOCAL_AWS_ACCESS_KEY_ID=test
-          LOCAL_AWS_SECRET_ACCESS_KEY=test # pragma: allowlist secret
+          LOCAL_AWS_ACCESS_KEY=test
           AUTHORIZE_ENDPOINT_URL=http://localhost:6002/authorize
           AUTH_CODE_TABLE_NAME=amc-AuthCode
           JOURNEY_OUTCOME_TABLE_NAME=amc-JourneyOutcome    
@@ -90,7 +90,7 @@ jobs:
           LOCAL_AWS_ENDPOINT=https://localhost:9297
           LOCAL_AWS_KMS_ENDPOINT=http://localhost:4567
           LOCAL_AWS_ACCESS_KEY_ID=test
-          LOCAL_AWS_SECRET_ACCESS_KEY=test # pragma: allowlist secret
+          LOCAL_AWS_ACCESS_KEY=test
           ROOT_DOMAIN=localhost          
           EOF
 
@@ -107,7 +107,7 @@ jobs:
               "LOCAL_AWS_ENDPOINT": "https://account-components-aws-emulator:9297",
               "LOCAL_AWS_KMS_ENDPOINT": "http://account-components-local-kms:8080",
               "LOCAL_AWS_ACCESS_KEY_ID": "test",
-              "LOCAL_AWS_SECRET_ACCESS_KEY": "test"
+              "LOCAL_AWS_ACCESS_KEY": "test"
             },
             "ApiTokenLambda": {
               "AUTH_TABLE_NAME": "amc-AuthCode",
