@@ -28,7 +28,7 @@
     "@govuk-one-login/frontend-analytics": "^4.2.4",
     "@govuk-one-login/frontend-device-intelligence": "^1.2.0",
     "@govuk-one-login/frontend-ui": "^5.3.11",
-    "@simplewebauthn/browser": "^13.3.0",
+    "@simplewebauthn/browser": "^14.0.0",
     "@simplewebauthn/server": "^14.1.0",
     "@smithy/node-http-handler": "^4.7.1",
     "aws-xray-sdk": "^3.12.0",
