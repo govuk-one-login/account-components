@@ -42,6 +42,20 @@ describe("getClientRegistry", () => {
             percentage: 20,
           },
         },
+        passkeyCreateContent: {
+          control: {
+            percentage: 100,
+          },
+          variantA: {
+            percentage: 0,
+          },
+          variantB: {
+            percentage: 0,
+          },
+          variantC: {
+            percentage: 0,
+          },
+        },
       },
     };
 
