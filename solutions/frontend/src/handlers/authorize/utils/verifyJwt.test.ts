@@ -76,6 +76,13 @@ vi.mock(import("../../../utils/getClaimsSchema.js"), () => ({
   getClaimsSchema: mockGetClaimsSchema,
 }));
 
+vi.mock(import("../../../../../commons/utils/getAppConfig/index.js"), () => ({
+  getAppConfig: vi.fn().mockResolvedValue({
+    jwks_cache_max_age: 60000,
+    jwks_http_timeout: 2500,
+  }),
+}));
+
 const mockJourneys = vi.fn();
 
 // @ts-expect-error

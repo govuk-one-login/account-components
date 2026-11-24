@@ -26,6 +26,10 @@ vi.mock(import("../../../../../commons/utils/logger/index.js"), () => ({
 }));
 const mockLoggerError = vi.mocked(logger.error);
 
+vi.mock(import("../../../../../commons/utils/getAppConfig/index.js"), () => ({
+  getAppConfig: vi.fn().mockResolvedValue({ access_token_max_age: 300 }),
+}));
+
 describe("createAccessToken", () => {
   const ORIGINAL_ENV = process.env;
   const mockApiBaseUrl = "https://example.com";

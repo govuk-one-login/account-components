@@ -22,35 +22,26 @@ describe("getAppConfig", () => {
 
   it("returns appconfig data", async () => {
     const mockGet = vi.fn().mockResolvedValue(mockConfig);
-    const mockAppConfigProvider = vi.fn().mockImplementation(() => ({
-      get: mockGet,
-    }));
-    const mockGetAppConfigClient = vi.fn().mockReturnValue({
-      client: {},
-      config: {},
-    });
 
     // @ts-expect-error
     vi.doMock(import("../getEnvironment/index.js"), () => ({
       getEnvironment: vi.fn(() => "dev"),
     }));
 
+    // @ts-expect-error
     vi.doMock(import("@aws-lambda-powertools/parameters/appconfig"), () => ({
-      AppConfigProvider: mockAppConfigProvider,
+      AppConfigProvider: class {
+        get = mockGet;
+      },
     }));
 
     vi.doMock(import("../awsClient/appconfigClient/index.js"), () => ({
-      getAppConfigClient: mockGetAppConfigClient,
+      getAppConfigClient: vi.fn().mockReturnValue({ client: {}, config: {} }),
     }));
 
     const { getAppConfig } = await import("./index.js");
     const result = await getAppConfig();
 
-    expect(mockAppConfigProvider).toHaveBeenCalledWith({
-      application: "account-components",
-      environment: "dev",
-      awsSdkV3Client: {},
-    });
     expect(mockGet).toHaveBeenCalledWith("operational", {
       transform: "json",
       maxAge: 300,
@@ -60,12 +51,8 @@ describe("getAppConfig", () => {
 
   it("passes the correct environment to AppConfigProvider", async () => {
     const mockGet = vi.fn().mockResolvedValue(mockConfig);
-    const mockAppConfigProvider = vi.fn().mockImplementation(() => ({
-      get: mockGet,
-    }));
-    const mockGetAppConfigClient = vi.fn().mockReturnValue({
-      client: {},
-      config: {},
+    const mockAppConfigProvider = vi.fn().mockImplementation(function () {
+      return { get: mockGet };
     });
 
     // @ts-expect-error
@@ -78,7 +65,7 @@ describe("getAppConfig", () => {
     }));
 
     vi.doMock(import("../awsClient/appconfigClient/index.js"), () => ({
-      getAppConfigClient: mockGetAppConfigClient,
+      getAppConfigClient: vi.fn().mockReturnValue({ client: {}, config: {} }),
     }));
 
     const { getAppConfig } = await import("./index.js");
@@ -93,12 +80,8 @@ describe("getAppConfig", () => {
 
   it("reuses the provider across calls", async () => {
     const mockGet = vi.fn().mockResolvedValue(mockConfig);
-    const mockAppConfigProvider = vi.fn().mockImplementation(() => ({
-      get: mockGet,
-    }));
-    const mockGetAppConfigClient = vi.fn().mockReturnValue({
-      client: {},
-      config: {},
+    const mockAppConfigProvider = vi.fn().mockImplementation(function () {
+      return { get: mockGet };
     });
 
     // @ts-expect-error
@@ -111,7 +94,7 @@ describe("getAppConfig", () => {
     }));
 
     vi.doMock(import("../awsClient/appconfigClient/index.js"), () => ({
-      getAppConfigClient: mockGetAppConfigClient,
+      getAppConfigClient: vi.fn().mockReturnValue({ client: {}, config: {} }),
     }));
 
     const { getAppConfig } = await import("./index.js");
