@@ -357,6 +357,8 @@ Globals:
         ENVIRONMENT: !Ref Environment
         NODE_ENV: "production"
         LOCAL_AWS_ENDPOINT: !Ref AWS::NoValue
+        LOCAL_AWS_ACCESS_KEY_ID: !Ref AWS::NoValue
+        LOCAL_AWS_ACCESS_KEY: !Ref AWS::NoValue
         LOCAL_AWS_KMS_ENDPOINT: !Ref AWS::NoValue
         AWS_LAMBDA_EXEC_WRAPPER:
           !If [IsLocal, !Ref AWS::NoValue, "/opt/dynatrace"]
