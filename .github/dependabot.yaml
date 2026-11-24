@@ -116,7 +116,7 @@ updates:
     directories:
       - "/solutions/integration-tests"
       - "/solutions/local-aws/local-kms"
-      - "/solutions/local-aws/floci"
+      - "/solutions/local-aws/aws-emulator"
     schedule:
       interval: "cron"
       cronjob: "0 3 1,15 * *"

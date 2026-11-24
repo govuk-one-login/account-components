@@ -10,7 +10,8 @@ describe("getAwsClientConfig", () => {
     delete process.env["USE_LOCAL_AWS"];
     delete process.env["LOCAL_AWS_ENDPOINT"];
     delete process.env["LOCAL_AWS_ACCESS_KEY_ID"];
-    delete process.env["LOCAL_AWS_ACCESS_KEY"];
+    delete process.env["LOCAL_AWS_SECRET_ACCESS_KEY"];
+    delete process.env["LOCAL_AWS_KMS_ENDPOINT"];
     delete process.env["AWS_MAX_ATTEMPTS"];
     delete process.env["AWS_CLIENT_CONNECT_TIMEOUT"];
     delete process.env["AWS_CLIENT_REQUEST_TIMEOUT"];
@@ -42,18 +43,31 @@ describe("getAwsClientConfig", () => {
   it("includes local AWS config when USE_LOCAL_AWS is true", () => {
     process.env["AWS_REGION"] = "eu-west-2";
     process.env["USE_LOCAL_AWS"] = "true";
-    process.env["LOCAL_AWS_ENDPOINT"] = "http://localhost:4566";
+    process.env["LOCAL_AWS_ENDPOINT"] = "https://localhost:9297";
     process.env["LOCAL_AWS_KMS_ENDPOINT"] = "http://localhost:4567";
     process.env["LOCAL_AWS_ACCESS_KEY_ID"] = "test";
-    process.env["LOCAL_AWS_ACCESS_KEY"] = "test";
+    process.env["LOCAL_AWS_SECRET_ACCESS_KEY"] = "test";
 
     const config = getAwsClientConfig();
 
-    expect(config.endpoint).toBe("http://localhost:4566");
+    expect(config.endpoint).toBe("https://localhost:9297");
     expect(config.credentials).toStrictEqual({
       accessKeyId: "test",
       secretAccessKey: "test", // pragma: allowlist secret
     });
+  });
+
+  it("uses KMS endpoint when kms=true", () => {
+    process.env["AWS_REGION"] = "eu-west-2";
+    process.env["USE_LOCAL_AWS"] = "true";
+    process.env["LOCAL_AWS_ENDPOINT"] = "https://localhost:9297";
+    process.env["LOCAL_AWS_KMS_ENDPOINT"] = "http://localhost:4567";
+    process.env["LOCAL_AWS_ACCESS_KEY_ID"] = "test";
+    process.env["LOCAL_AWS_SECRET_ACCESS_KEY"] = "test";
+
+    const config = getAwsClientConfig(true);
+
+    expect(config.endpoint).toBe("http://localhost:4567");
   });
 
   it("throws error when local AWS is enabled but endpoint is missing", () => {
@@ -63,24 +77,36 @@ describe("getAwsClientConfig", () => {
     expect(() => getAwsClientConfig()).toThrow("LOCAL_AWS_ENDPOINT is not set");
   });
 
-  it("throws error when local AWS is enabled but access key is missing", () => {
+  it("throws error when local AWS is enabled but access key ID is missing", () => {
     process.env["AWS_REGION"] = "eu-west-2";
     process.env["USE_LOCAL_AWS"] = "true";
-    process.env["LOCAL_AWS_ENDPOINT"] = "http://localhost:4566";
+    process.env["LOCAL_AWS_ENDPOINT"] = "https://localhost:9297";
 
     expect(() => getAwsClientConfig()).toThrow(
       "LOCAL_AWS_ACCESS_KEY_ID is not set",
     );
   });
 
-  it("throws error when local AWS is enabled but secret key is missing", () => {
+  it("throws error when local AWS is enabled but secret access key is missing", () => {
     process.env["AWS_REGION"] = "eu-west-2";
     process.env["USE_LOCAL_AWS"] = "true";
-    process.env["LOCAL_AWS_ENDPOINT"] = "http://localhost:4566";
+    process.env["LOCAL_AWS_ENDPOINT"] = "https://localhost:9297";
     process.env["LOCAL_AWS_ACCESS_KEY_ID"] = "test";
 
     expect(() => getAwsClientConfig()).toThrow(
-      "LOCAL_AWS_ACCESS_KEY is not set",
+      "LOCAL_AWS_SECRET_ACCESS_KEY is not set",
+    );
+  });
+
+  it("throws error when local AWS is enabled but KMS endpoint is missing", () => {
+    process.env["AWS_REGION"] = "eu-west-2";
+    process.env["USE_LOCAL_AWS"] = "true";
+    process.env["LOCAL_AWS_ENDPOINT"] = "https://localhost:9297";
+    process.env["LOCAL_AWS_ACCESS_KEY_ID"] = "test";
+    process.env["LOCAL_AWS_SECRET_ACCESS_KEY"] = "test";
+
+    expect(() => getAwsClientConfig()).toThrow(
+      "LOCAL_AWS_KMS_ENDPOINT is not set",
     );
   });
 });

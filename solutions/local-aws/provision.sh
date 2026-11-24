@@ -3,11 +3,11 @@
 set -e
 
 export AWS_PAGER=""
+export AWS_DEFAULT_REGION="eu-west-2"
 export AWS_ACCESS_KEY_ID="test"
 export AWS_SECRET_ACCESS_KEY="test" # pragma: allowlist secret
-export AWS_DEFAULT_REGION="eu-west-2"
 
-FLOCI_ENDPOINT="http://localhost:4566"
+EMULATOR_ENDPOINT="https://localhost:9297"
 KMS_ENDPOINT="http://localhost:4567"
 
 generate_keys() {
@@ -35,36 +35,41 @@ build_images() {
   echo "Building Docker images"
 
   SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  docker build -t account-components-floci -f "$SCRIPT_DIR/floci/Dockerfile" "$SCRIPT_DIR"
+
+  case "$(uname -m)" in
+    arm64|aarch64) RPM_ARCH="aarch64" ;;
+    *) RPM_ARCH="x86_64" ;;
+  esac
+
+  docker build -t account-components-aws-emulator --build-arg RPM_ARCH="$RPM_ARCH" -f "$SCRIPT_DIR/aws-emulator/Dockerfile" "$SCRIPT_DIR"
   docker build -t account-components-local-kms -f "$SCRIPT_DIR/local-kms/Dockerfile" "$SCRIPT_DIR"
 
   echo "Finished building Docker images"
   return 0
 }
 
-start_floci() {
-  echo "Starting Floci"
+start_aws_emulator() {
+  echo "Starting AWS Emulator"
 
-  docker stop account-components-floci || true && docker rm account-components-floci || true
+  docker stop account-components-aws-emulator || true && docker rm account-components-aws-emulator || true
   docker run -d \
-    -p 4566:4566 \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -e FLOCI_DEFAULT_REGION=$AWS_DEFAULT_REGION \
+    -p 9297:9297 \
     --network account-components-network \
-    --name account-components-floci \
-    account-components-floci
+    --name account-components-aws-emulator \
+    account-components-aws-emulator \
+    --auth off
 
-  until aws --endpoint-url="$FLOCI_ENDPOINT" s3 ls > /dev/null 2>&1; do
-    echo "⌛ Floci not ready yet, retrying in 2s"
+  until curl -sf --insecure "$EMULATOR_ENDPOINT/__admin/health" > /dev/null 2>&1; do
+    echo "⌛ AWS Emulator not ready yet, retrying in 2s"
     sleep 2
   done
 
-  echo "Floci is ready"
+  echo "AWS Emulator is ready"
   return 0
 }
 
-# It is necessary to to use a separate KMS solution rather than relying on Floci's.
-# Floci's KMS solution is buggy and does not work consistently across different machines.
+# It is necessary to use a separate KMS solution rather than relying on AWS Emulator's.
+# AWS Emulator's KMS solution does not work consistently across different machines.
 start_kms_local() {
   echo "Starting KMS Local"
 
@@ -85,22 +90,22 @@ create_ssm_parameters() {
 
   STRING="String"
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" ssm put-parameter \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl ssm put-parameter \
     --name "/amc/MockClientEcPrivateKey" \
     --value "${MOCK_CLIENT_EC_PRIVATE_KEY}" \
     --type "${STRING}"
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" ssm put-parameter \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl ssm put-parameter \
     --name "/amc/MockClientEcPublicKey" \
     --value "${MOCK_CLIENT_EC_PUBLIC_KEY}" \
     --type "${STRING}"
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" ssm put-parameter \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl ssm put-parameter \
     --name "/amc/MockClientRsaPrivateKey" \
     --value "${MOCK_CLIENT_RSA_PRIVATE_KEY}" \
     --type "${STRING}"
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" ssm put-parameter \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl ssm put-parameter \
     --name "/amc/MockClientRsaPublicKey" \
     --value "${MOCK_CLIENT_RSA_PUBLIC_KEY}" \
     --type "${STRING}"
@@ -142,7 +147,7 @@ create_kms_keys() {
 create_dynamodb_tables() {
   echo "Creating DynamoDB tables"
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
     --table-name "amc-JourneyOutcome" \
     --attribute-definitions \
       AttributeName=outcome_id,AttributeType=S \
@@ -150,11 +155,14 @@ create_dynamodb_tables() {
       AttributeName=outcome_id,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb update-time-to-live \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
+    --table-name "amc-JourneyOutcome"
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
     --table-name "amc-JourneyOutcome" \
     --time-to-live-specification "Enabled=true,AttributeName=expires"
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
     --table-name "amc-SessionStore" \
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
@@ -162,11 +170,14 @@ create_dynamodb_tables() {
       AttributeName=id,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb update-time-to-live \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
+    --table-name "amc-SessionStore"
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
     --table-name "amc-SessionStore" \
     --time-to-live-specification "Enabled=true,AttributeName=expires"
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
     --table-name "amc-AuthCode" \
     --attribute-definitions \
       AttributeName=code,AttributeType=S \
@@ -174,11 +185,14 @@ create_dynamodb_tables() {
       AttributeName=code,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb update-time-to-live \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
+    --table-name "amc-AuthCode"
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
     --table-name "amc-AuthCode" \
     --time-to-live-specification "Enabled=true,AttributeName=expires"
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
     --table-name "amc-ReplayAttack" \
     --attribute-definitions \
       AttributeName=nonce,AttributeType=S \
@@ -186,11 +200,14 @@ create_dynamodb_tables() {
       AttributeName=nonce,KeyType=HASH \
     --billing-mode PAY_PER_REQUEST
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb update-time-to-live \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
+    --table-name "amc-ReplayAttack"
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
     --table-name "amc-ReplayAttack" \
     --time-to-live-specification "Enabled=true,AttributeName=expires"
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
     --table-name "amc-Lockouts" \
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
@@ -202,7 +219,7 @@ create_dynamodb_tables() {
       '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"lockedOutAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     --billing-mode PAY_PER_REQUEST
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
     --table-name "amc-OTPs" \
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
@@ -214,7 +231,7 @@ create_dynamodb_tables() {
       '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     --billing-mode PAY_PER_REQUEST
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
     --table-name "amc-OTP-Checks" \
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
@@ -226,7 +243,7 @@ create_dynamodb_tables() {
       '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     --billing-mode PAY_PER_REQUEST
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb create-table \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
     --table-name "amc-Password-Checks" \
     --attribute-definitions \
       AttributeName=id,AttributeType=S \
@@ -245,10 +262,10 @@ create_dynamodb_tables() {
 create_sqs_queues() {
   echo "Creating SQS queues"
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" sqs create-queue \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl sqs create-queue \
     --queue-name "amc-NotificationsQueue"
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" sqs create-queue \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl sqs create-queue \
     --queue-name "amc-TxMASQSProducerAuditEventQueue"
 
   echo "Finished creating SQS queues"
@@ -259,7 +276,7 @@ list_resources() {
   echo "List resources"
 
   PARAM_NAMES=$(aws ssm describe-parameters \
-    --endpoint-url "$FLOCI_ENDPOINT" \
+    --endpoint-url "$EMULATOR_ENDPOINT" --no-verify-ssl \
     --query "Parameters[*].Name" \
     --output text)
 
@@ -267,7 +284,7 @@ list_resources() {
 
   for NAME in $PARAM_NAMES; do
     VALUE=$(aws ssm get-parameter \
-      --endpoint-url "$FLOCI_ENDPOINT" \
+      --endpoint-url "$EMULATOR_ENDPOINT" --no-verify-ssl \
       --name "$NAME" \
       --with-decryption \
       --query "Parameter.Value" \
@@ -276,10 +293,10 @@ list_resources() {
     echo "$NAME = $VALUE"
   done
 
-  aws --endpoint-url="$FLOCI_ENDPOINT" dynamodb list-tables
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb list-tables
   aws --endpoint-url="$KMS_ENDPOINT" kms list-keys
   aws --endpoint-url="$KMS_ENDPOINT" kms list-aliases
-  aws --endpoint-url="$FLOCI_ENDPOINT" sqs list-queues
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl sqs list-queues
 
   return 0
 }
@@ -287,7 +304,7 @@ list_resources() {
 generate_keys
 create_docker_network
 build_images
-start_floci
+start_aws_emulator
 start_kms_local
 create_ssm_parameters
 create_kms_keys
