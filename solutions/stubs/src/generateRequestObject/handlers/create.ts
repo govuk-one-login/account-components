@@ -28,7 +28,6 @@ import {
   getSplitTestBucketAssignmentsSchema,
   splitTestOverridesCookieName,
 } from "../../../../commons/utils/fastify/splitTests/index.js";
-import * as yaml from "yaml";
 
 export const requestBodySchema = v.object({
   client_id: v.string(),
@@ -158,7 +157,12 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
         v.string(),
         v.transform((splitTestBucketAssignmentsString) =>
           // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-          yaml.parse(splitTestBucketAssignmentsString),
+          Object.fromEntries(
+            splitTestBucketAssignmentsString
+              .split(/\r?\n/)
+              .map((line) => line.split(/:(.*)/).map((part) => part.trim()))
+              .filter(([key]) => key),
+          ),
         ),
         splitTestBucketAssignmentsSchema,
       ),

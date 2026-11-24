@@ -122,7 +122,7 @@ describe("createRequestObjectPost", () => {
         internal_api_generateOTP_scenario: "successful",
         internal_api_checkOTP_scenario: "successful",
         internal_api_checkPassword_scenario: "successful", // pragma: allowlist secret
-        split_test_bucket_assignments: "splitTestName: bucketName",
+        split_test_bucket_assignments: "testingJourneySplitTest: bucket1",
         internal_api_lockouts_scenario: "not_locked_out",
       },
     };
@@ -169,6 +169,64 @@ describe("createRequestObjectPost", () => {
         jwtHeader: { alg: "ES256" },
         originalRequestBody: mockRequest.body,
       }),
+    );
+  });
+
+  it("should set the split test cookie with parsed bucket assignments", async () => {
+    const { createRequestObjectPost } = await import("./create.js");
+    process.env["AUTHORIZE_URL"] = "http://localhost:6002/authorize";
+    process.env["ENVIRONMENT"] = "local";
+    const handler = createRequestObjectPost(mockFastify as FastifyInstance);
+
+    await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+    expect(mockReply.setCookie).toHaveBeenCalledWith(
+      "split_test_overrides",
+      JSON.stringify({ testingJourneySplitTest: "bucket1" }),
+      expect.objectContaining({
+        domain: "amc.example.com",
+        sameSite: "strict",
+        path: "/",
+      }),
+    );
+  });
+
+  it("should handle Windows-style line endings in bucket assignments", async () => {
+    const { createRequestObjectPost } = await import("./create.js");
+    process.env["AUTHORIZE_URL"] = "http://localhost:6002/authorize";
+    process.env["ENVIRONMENT"] = "local";
+    const handler = createRequestObjectPost(mockFastify as FastifyInstance);
+    mockRequest.body = {
+      ...(mockRequest.body as object),
+      split_test_bucket_assignments:
+        "testingJourneySplitTest: bucket1\r\nanotherTest:bucket2",
+    };
+
+    await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+    expect(mockReply.setCookie).toHaveBeenCalledWith(
+      "split_test_overrides",
+      JSON.stringify({ testingJourneySplitTest: "bucket1" }),
+      expect.any(Object),
+    );
+  });
+
+  it("should set the split test cookie with empty object when bucket assignments string is empty", async () => {
+    const { createRequestObjectPost } = await import("./create.js");
+    process.env["AUTHORIZE_URL"] = "http://localhost:6002/authorize";
+    process.env["ENVIRONMENT"] = "local";
+    const handler = createRequestObjectPost(mockFastify as FastifyInstance);
+    mockRequest.body = {
+      ...(mockRequest.body as object),
+      split_test_bucket_assignments: "",
+    };
+
+    await handler(mockRequest as FastifyRequest, mockReply as FastifyReply);
+
+    expect(mockReply.setCookie).toHaveBeenCalledWith(
+      "split_test_overrides",
+      JSON.stringify({}),
+      expect.any(Object),
     );
   });
 
