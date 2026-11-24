@@ -109,6 +109,10 @@ vi.mock(import("../utils/extractRegistrationResponseInfo/index.js"), () => ({
   extractRegistrationResponseInfo: mockExtractRegistrationResponseInfo,
 }));
 
+vi.mock(import("../../../../../commons/utils/getAppConfig/index.js"), () => ({
+  getAppConfig: vi.fn().mockResolvedValue({ max_number_of_passkeys: 5 }),
+}));
+
 // @ts-expect-error
 vi.mock(
   import("../../../../../commons/utils/apiClients/accountInterventionsServiceApiClient.js"),

@@ -64,11 +64,6 @@ export const accountDeleteStateMachine = createJourneyStateMachine<
       }),
       on: {
         authenticated: AcountDeleteJourneyState.authenticated,
-        emailVerified: AcountDeleteJourneyState.notAuthenticated,
-        lockedOutSecurityCodeRequestedTooManyTimes:
-          AcountDeleteJourneyState.lockedOutSecurityCodeRequestedTooManyTimes,
-        lockedOutSecurityCodeEnteredTooManyTimes:
-          AcountDeleteJourneyState.lockedOutSecurityCodeEnteredTooManyTimes,
         lockedOutPasswordEnteredTooManyTimes:
           AcountDeleteJourneyState.lockedOutPasswordEnteredTooManyTimes,
       },

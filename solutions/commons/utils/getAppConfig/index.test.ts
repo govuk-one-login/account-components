@@ -20,59 +20,39 @@ describe("getAppConfig", () => {
     vi.resetModules();
   });
 
-  it("returns local config when environment is local", async () => {
-    // @ts-expect-error
-    vi.doMock(import("../getEnvironment/index.js"), () => ({
-      getEnvironment: vi.fn(() => "local"),
-    }));
-
-    // @ts-expect-error
-    vi.doMock(import("../../../config/local-config.json"), () => mockConfig);
-
-    const { getAppConfig } = await import("./index.js");
-    const result = await getAppConfig();
-
-    expect(result).toStrictEqual(mockConfig);
-  });
-
-  it("returns appconfig data when environment is not local", async () => {
-    const mockRetrieveAppConfig = vi.fn().mockResolvedValue(mockConfig);
-    const mockGetAppConfigClient = vi.fn().mockReturnValue({
-      client: {},
-      config: {},
-    });
+  it("returns appconfig data", async () => {
+    const mockGet = vi.fn().mockResolvedValue(mockConfig);
 
     // @ts-expect-error
     vi.doMock(import("../getEnvironment/index.js"), () => ({
       getEnvironment: vi.fn(() => "dev"),
     }));
 
+    // @ts-expect-error
     vi.doMock(import("@aws-lambda-powertools/parameters/appconfig"), () => ({
-      getAppConfig: mockRetrieveAppConfig,
+      AppConfigProvider: class {
+        get = mockGet;
+      },
     }));
 
     vi.doMock(import("../awsClient/appconfigClient/index.js"), () => ({
-      getAppConfigClient: mockGetAppConfigClient,
+      getAppConfigClient: vi.fn().mockReturnValue({ client: {}, config: {} }),
     }));
 
     const { getAppConfig } = await import("./index.js");
     const result = await getAppConfig();
 
-    expect(mockRetrieveAppConfig).toHaveBeenCalledWith("operational", {
-      application: "account-components",
-      environment: "dev",
+    expect(mockGet).toHaveBeenCalledWith("operational", {
       transform: "json",
-      awsSdkV3Client: {},
       maxAge: 300,
     });
     expect(result).toStrictEqual(mockConfig);
   });
 
-  it("calls getAppConfig with correct parameters for production environment", async () => {
-    const mockRetrieveAppConfig = vi.fn().mockResolvedValue(mockConfig);
-    const mockGetAppConfigClient = vi.fn().mockReturnValue({
-      client: {},
-      config: {},
+  it("passes the correct environment to AppConfigProvider", async () => {
+    const mockGet = vi.fn().mockResolvedValue(mockConfig);
+    const mockAppConfigProvider = vi.fn().mockImplementation(function () {
+      return { get: mockGet };
     });
 
     // @ts-expect-error
@@ -81,22 +61,46 @@ describe("getAppConfig", () => {
     }));
 
     vi.doMock(import("@aws-lambda-powertools/parameters/appconfig"), () => ({
-      getAppConfig: mockRetrieveAppConfig,
+      AppConfigProvider: mockAppConfigProvider,
     }));
 
     vi.doMock(import("../awsClient/appconfigClient/index.js"), () => ({
-      getAppConfigClient: mockGetAppConfigClient,
+      getAppConfigClient: vi.fn().mockReturnValue({ client: {}, config: {} }),
     }));
 
     const { getAppConfig } = await import("./index.js");
     await getAppConfig();
 
-    expect(mockRetrieveAppConfig).toHaveBeenCalledWith("operational", {
+    expect(mockAppConfigProvider).toHaveBeenCalledWith({
       application: "account-components",
       environment: "production",
-      transform: "json",
       awsSdkV3Client: {},
-      maxAge: 300,
     });
+  });
+
+  it("reuses the provider across calls", async () => {
+    const mockGet = vi.fn().mockResolvedValue(mockConfig);
+    const mockAppConfigProvider = vi.fn().mockImplementation(function () {
+      return { get: mockGet };
+    });
+
+    // @ts-expect-error
+    vi.doMock(import("../getEnvironment/index.js"), () => ({
+      getEnvironment: vi.fn(() => "dev"),
+    }));
+
+    vi.doMock(import("@aws-lambda-powertools/parameters/appconfig"), () => ({
+      AppConfigProvider: mockAppConfigProvider,
+    }));
+
+    vi.doMock(import("../awsClient/appconfigClient/index.js"), () => ({
+      getAppConfigClient: vi.fn().mockReturnValue({ client: {}, config: {} }),
+    }));
+
+    const { getAppConfig } = await import("./index.js");
+    await getAppConfig();
+    await getAppConfig();
+
+    expect(mockAppConfigProvider).toHaveBeenCalledTimes(1);
   });
 });

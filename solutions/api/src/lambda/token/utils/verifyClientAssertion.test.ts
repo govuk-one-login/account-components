@@ -10,6 +10,12 @@ vi.mock(import("jose"));
 vi.mock(import("../../../../../commons/utils/getClientRegistry/index.js"));
 vi.mock(import("../../../../../commons/utils/metrics/index.js"));
 vi.mock(import("../../../../../commons/utils/logger/index.js"));
+vi.mock(import("../../../../../commons/utils/getAppConfig/index.js"), () => ({
+  getAppConfig: vi.fn().mockResolvedValue({
+    jwks_cache_max_age: 60000,
+    jwks_http_timeout: 2500,
+  }),
+}));
 
 const mockGetClientRegistry = vi.mocked(getClientRegistry);
 const mockDecodeJwt = vi.mocked(jose.decodeJwt);
