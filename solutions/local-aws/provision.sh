@@ -272,6 +272,50 @@ create_sqs_queues() {
   return 0
 }
 
+create_app_config() {
+  echo "Creating AppConfig resources"
+
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  LOCAL_CONFIG="$SCRIPT_DIR/../config/local-config.json"
+
+  APP_ID=$(aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl appconfig create-application \
+    --name "account-components" \
+    --query 'Id' \
+    --output text)
+
+  ENV_ID=$(aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl appconfig create-environment \
+    --application-id "$APP_ID" \
+    --name "local" \
+    --query 'Id' \
+    --output text)
+
+  PROFILE_ID=$(aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl appconfig create-configuration-profile \
+    --application-id "$APP_ID" \
+    --name "operational" \
+    --location-uri "hosted" \
+    --query 'Id' \
+    --output text)
+
+  VERSION=$(aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl appconfig create-hosted-configuration-version \
+    --application-id "$APP_ID" \
+    --configuration-profile-id "$PROFILE_ID" \
+    --content-type "application/json" \
+    --content "fileb://$LOCAL_CONFIG" \
+    --query 'VersionNumber' \
+    --output text \
+    /dev/null)
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl appconfig start-deployment \
+    --application-id "$APP_ID" \
+    --environment-id "$ENV_ID" \
+    --configuration-profile-id "$PROFILE_ID" \
+    --configuration-version "$VERSION" \
+    --deployment-strategy-id "AppConfig.AllAtOnce"
+
+  echo "Finished creating AppConfig resources"
+  return 0
+}
+
 list_resources() {
   echo "List resources"
 
@@ -310,6 +354,7 @@ create_ssm_parameters
 create_kms_keys
 create_dynamodb_tables
 create_sqs_queues
+create_app_config
 list_resources
 
 echo "Local AWS provisioned successfully"

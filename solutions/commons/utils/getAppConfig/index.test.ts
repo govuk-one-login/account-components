@@ -20,23 +20,11 @@ describe("getAppConfig", () => {
     vi.resetModules();
   });
 
-  it("returns local config when environment is local", async () => {
-    // @ts-expect-error
-    vi.doMock(import("../getEnvironment/index.js"), () => ({
-      getEnvironment: vi.fn(() => "local"),
+  it("returns appconfig data", async () => {
+    const mockGet = vi.fn().mockResolvedValue(mockConfig);
+    const mockAppConfigProvider = vi.fn().mockImplementation(() => ({
+      get: mockGet,
     }));
-
-    // @ts-expect-error
-    vi.doMock(import("../../../config/local-config.json"), () => mockConfig);
-
-    const { getAppConfig } = await import("./index.js");
-    const result = await getAppConfig();
-
-    expect(result).toStrictEqual(mockConfig);
-  });
-
-  it("returns appconfig data when environment is not local", async () => {
-    const mockRetrieveAppConfig = vi.fn().mockResolvedValue(mockConfig);
     const mockGetAppConfigClient = vi.fn().mockReturnValue({
       client: {},
       config: {},
@@ -48,7 +36,7 @@ describe("getAppConfig", () => {
     }));
 
     vi.doMock(import("@aws-lambda-powertools/parameters/appconfig"), () => ({
-      getAppConfig: mockRetrieveAppConfig,
+      AppConfigProvider: mockAppConfigProvider,
     }));
 
     vi.doMock(import("../awsClient/appconfigClient/index.js"), () => ({
@@ -58,18 +46,23 @@ describe("getAppConfig", () => {
     const { getAppConfig } = await import("./index.js");
     const result = await getAppConfig();
 
-    expect(mockRetrieveAppConfig).toHaveBeenCalledWith("operational", {
+    expect(mockAppConfigProvider).toHaveBeenCalledWith({
       application: "account-components",
       environment: "dev",
-      transform: "json",
       awsSdkV3Client: {},
+    });
+    expect(mockGet).toHaveBeenCalledWith("operational", {
+      transform: "json",
       maxAge: 300,
     });
     expect(result).toStrictEqual(mockConfig);
   });
 
-  it("calls getAppConfig with correct parameters for production environment", async () => {
-    const mockRetrieveAppConfig = vi.fn().mockResolvedValue(mockConfig);
+  it("passes the correct environment to AppConfigProvider", async () => {
+    const mockGet = vi.fn().mockResolvedValue(mockConfig);
+    const mockAppConfigProvider = vi.fn().mockImplementation(() => ({
+      get: mockGet,
+    }));
     const mockGetAppConfigClient = vi.fn().mockReturnValue({
       client: {},
       config: {},
@@ -81,7 +74,7 @@ describe("getAppConfig", () => {
     }));
 
     vi.doMock(import("@aws-lambda-powertools/parameters/appconfig"), () => ({
-      getAppConfig: mockRetrieveAppConfig,
+      AppConfigProvider: mockAppConfigProvider,
     }));
 
     vi.doMock(import("../awsClient/appconfigClient/index.js"), () => ({
@@ -91,12 +84,40 @@ describe("getAppConfig", () => {
     const { getAppConfig } = await import("./index.js");
     await getAppConfig();
 
-    expect(mockRetrieveAppConfig).toHaveBeenCalledWith("operational", {
+    expect(mockAppConfigProvider).toHaveBeenCalledWith({
       application: "account-components",
       environment: "production",
-      transform: "json",
       awsSdkV3Client: {},
-      maxAge: 300,
     });
+  });
+
+  it("reuses the provider across calls", async () => {
+    const mockGet = vi.fn().mockResolvedValue(mockConfig);
+    const mockAppConfigProvider = vi.fn().mockImplementation(() => ({
+      get: mockGet,
+    }));
+    const mockGetAppConfigClient = vi.fn().mockReturnValue({
+      client: {},
+      config: {},
+    });
+
+    // @ts-expect-error
+    vi.doMock(import("../getEnvironment/index.js"), () => ({
+      getEnvironment: vi.fn(() => "dev"),
+    }));
+
+    vi.doMock(import("@aws-lambda-powertools/parameters/appconfig"), () => ({
+      AppConfigProvider: mockAppConfigProvider,
+    }));
+
+    vi.doMock(import("../awsClient/appconfigClient/index.js"), () => ({
+      getAppConfigClient: mockGetAppConfigClient,
+    }));
+
+    const { getAppConfig } = await import("./index.js");
+    await getAppConfig();
+    await getAppConfig();
+
+    expect(mockAppConfigProvider).toHaveBeenCalledTimes(1);
   });
 });
