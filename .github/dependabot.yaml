@@ -115,7 +115,6 @@ updates:
   - package-ecosystem: docker
     directories:
       - "/solutions/integration-tests"
-      - "/solutions/local-aws/local-kms"
       - "/solutions/local-aws/aws-emulator"
     schedule:
       interval: "cron"

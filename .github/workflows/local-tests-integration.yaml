@@ -44,7 +44,6 @@ jobs:
           ROOT_DOMAIN_WITH_ENV=localhost
           AWS_REGION=eu-west-2
           LOCAL_AWS_ENDPOINT=https://localhost:9297
-          LOCAL_AWS_KMS_ENDPOINT=http://localhost:4567
           LOCAL_AWS_ACCESS_KEY_ID=test
           LOCAL_AWS_ACCESS_KEY=test
           AUTHORIZE_ENDPOINT_URL=http://localhost:6002/authorize
@@ -88,7 +87,6 @@ jobs:
           AUTHORIZE_URL=http://localhost:6002/authorize
           AWS_REGION=eu-west-2
           LOCAL_AWS_ENDPOINT=https://localhost:9297
-          LOCAL_AWS_KMS_ENDPOINT=http://localhost:4567
           LOCAL_AWS_ACCESS_KEY_ID=test
           LOCAL_AWS_ACCESS_KEY=test
           ROOT_DOMAIN=localhost          
@@ -105,7 +103,6 @@ jobs:
               "NODE_ENV": "production",
               "USE_LOCAL_AWS": "1",
               "LOCAL_AWS_ENDPOINT": "https://account-components-aws-emulator:9297",
-              "LOCAL_AWS_KMS_ENDPOINT": "http://account-components-local-kms:8080",
               "LOCAL_AWS_ACCESS_KEY_ID": "test",
               "LOCAL_AWS_ACCESS_KEY": "test"
             },

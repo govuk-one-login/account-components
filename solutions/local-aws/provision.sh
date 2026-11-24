@@ -8,7 +8,6 @@ export AWS_SECRET_ACCESS_KEY="test" # pragma: allowlist secret
 export AWS_DEFAULT_REGION="eu-west-2"
 
 EMULATOR_ENDPOINT="https://localhost:9297"
-KMS_ENDPOINT="http://localhost:4567"
 
 generate_keys() {
   echo "Starting to generate keys"
@@ -42,7 +41,6 @@ build_images() {
   esac
 
   docker build -t account-components-aws-emulator --build-arg RPM_ARCH="$RPM_ARCH" -f "$SCRIPT_DIR/aws-emulator/Dockerfile" "$SCRIPT_DIR"
-  docker build -t account-components-local-kms -f "$SCRIPT_DIR/local-kms/Dockerfile" "$SCRIPT_DIR"
 
   echo "Finished building Docker images"
   return 0
@@ -68,22 +66,6 @@ start_aws_emulator() {
   return 0
 }
 
-# It is necessary to use a separate KMS solution rather than relying on AWS Emulator's.
-# AWS Emulator's KMS solution does not work consistently across different machines.
-start_kms_local() {
-  echo "Starting KMS Local"
-
-  docker stop account-components-local-kms || true && docker rm account-components-local-kms || true
-  docker run -d -p 4567:8080 --network account-components-network --name account-components-local-kms account-components-local-kms
-
-  until aws --endpoint-url="$KMS_ENDPOINT" kms list-keys > /dev/null 2>&1; do
-    echo "⌛ KMS Local not ready yet, retrying in 2s"
-    sleep 2
-  done
-
-  echo "KMS Local is ready"
-  return 0
-}
 
 create_ssm_parameters() {
   echo "Creating SSM parameters"
@@ -117,18 +99,18 @@ create_ssm_parameters() {
 create_kms_keys() {
   echo "Creating KMS keys"
 
-  KEY_ID=$(aws --endpoint-url="$KMS_ENDPOINT" kms create-key \
+  KEY_ID=$(aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl kms create-key \
     --key-spec RSA_2048 \
     --key-usage ENCRYPT_DECRYPT \
     --origin AWS_KMS \
     --query 'KeyMetadata.KeyId' \
     --output text)
 
-  aws --endpoint-url="$KMS_ENDPOINT" kms create-alias \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl kms create-alias \
     --alias-name alias/amc-JARRSAEncryptionKey \
     --target-key-id "$KEY_ID"
 
-  JWT_SIGNING_KEY_ID=$(aws --endpoint-url="$KMS_ENDPOINT" kms create-key \
+  JWT_SIGNING_KEY_ID=$(aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl kms create-key \
     --key-spec ECC_NIST_P256 \
     --key-usage SIGN_VERIFY \
     --origin AWS_KMS \
@@ -136,7 +118,7 @@ create_kms_keys() {
     --query 'KeyMetadata.KeyId' \
     --output text)
 
-  aws --endpoint-url="$KMS_ENDPOINT" kms create-alias \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl kms create-alias \
     --alias-name alias/amc-JWTSigningKey \
     --target-key-id "$JWT_SIGNING_KEY_ID"
 
@@ -338,8 +320,8 @@ list_resources() {
   done
 
   aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb list-tables
-  aws --endpoint-url="$KMS_ENDPOINT" kms list-keys
-  aws --endpoint-url="$KMS_ENDPOINT" kms list-aliases
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl kms list-keys
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl kms list-aliases
   aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl sqs list-queues
 
   return 0
@@ -349,7 +331,6 @@ generate_keys
 create_docker_network
 build_images
 start_aws_emulator
-start_kms_local
 create_ssm_parameters
 create_kms_keys
 create_dynamodb_tables
