@@ -66,6 +66,7 @@ jobs:
           REPLAY_ATTACK_TABLE_NAME=amc-ReplayAttack  
           NOTIFICATIONS_QUEUE_URL=https://localhost:9297/000000000000/amc-NotificationsQueue
           AUDIT_EVENTS_QUEUE_URL=https://localhost:9297/000000000000/amc-TxMASQSProducerAuditEventQueue
+          SPLIT_TESTS_COOKIE_OVERRIDE=1
           INTERNAL_API_URL=http://localhost:6003/internal-api        
           EOF
 
@@ -89,7 +90,8 @@ jobs:
           LOCAL_AWS_ENDPOINT=https://localhost:9297
           LOCAL_AWS_ACCESS_KEY_ID=test
           LOCAL_AWS_ACCESS_KEY=test
-          ROOT_DOMAIN=localhost          
+          ROOT_DOMAIN=localhost  
+          AMC_ROOT_DOMAIN=localhost
           EOF
 
       - name: Configure API environment
