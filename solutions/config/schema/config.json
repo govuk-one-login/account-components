@@ -76,7 +76,7 @@
           "required": ["control", "variantA", "variantB", "variantC"]
         }
       },
-      "required": ["testingJourneySplitTest"]
+      "required": ["testingJourneySplitTest", "passkeyCreateContent"]
     }
   },
   "required": [
