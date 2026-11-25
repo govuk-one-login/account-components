@@ -34,6 +34,7 @@ describe("getKMSKey", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockKmsClient = {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-class-instance-assignment
       client: {} as KMSClient,
       config: {} as KMSClientResolvedConfig,
       getPublicKey: vi.fn().mockResolvedValue({

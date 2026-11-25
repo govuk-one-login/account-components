@@ -263,7 +263,7 @@ export async function postHandler(
   const registrationOptions =
     reply.journeyStates[Scope.passkeyCreate].getSnapshot().context
       .registrationOptions;
-  assert.ok(registrationOptions);
+  assert.ok(registrationOptions, "Registration options are missing");
 
   const stringsSuffix = getStringsSuffix(reply);
 

@@ -131,9 +131,7 @@ describe("onRequest", () => {
       journeyStates: {},
       client: undefined,
       globals: {
-        currentUrl: {
-          pathname: "/test-path",
-        } as URL,
+        currentUrl: new URL("/test-path", "https://example.com"),
         buildCompleteFailedJourneyUri: undefined,
       },
     } as unknown as FastifyReply;
