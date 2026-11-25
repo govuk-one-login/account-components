@@ -18,7 +18,11 @@ This repo contains the code for Account Components
 
 ## Updating the event catalogue dev dependencies from the private registry
 
-To install the latest versions of the private event catalogue dependencies run `npm install @govuk-one-login/event-catalogue-schemas@latest @govuk-one-login/event-catalogue@latest --registry https://npm.pkg.github.com`.
+To install the latest versions of the private event catalogue dependencies:
+
+- Add `@govuk-one-login:registry=https://npm.pkg.github.com` to `.npmrc`
+- Run `npm install @govuk-one-login/event-catalogue-schemas@latest @govuk-one-login/event-catalogue@latest`
+- Remove `@govuk-one-login:registry=https://npm.pkg.github.com` from `.npmrc`
 
 ## Updating Node version
 
