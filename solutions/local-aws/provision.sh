@@ -75,23 +75,24 @@ create_ssm_parameters() {
   aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl ssm put-parameter \
     --name "/amc/MockClientEcPrivateKey" \
     --value "${MOCK_CLIENT_EC_PRIVATE_KEY}" \
-    --type "${STRING}"
+    --type "${STRING}" &
 
   aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl ssm put-parameter \
     --name "/amc/MockClientEcPublicKey" \
     --value "${MOCK_CLIENT_EC_PUBLIC_KEY}" \
-    --type "${STRING}"
+    --type "${STRING}" &
 
   aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl ssm put-parameter \
     --name "/amc/MockClientRsaPrivateKey" \
     --value "${MOCK_CLIENT_RSA_PRIVATE_KEY}" \
-    --type "${STRING}"
+    --type "${STRING}" &
 
   aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl ssm put-parameter \
     --name "/amc/MockClientRsaPublicKey" \
     --value "${MOCK_CLIENT_RSA_PUBLIC_KEY}" \
-    --type "${STRING}"
+    --type "${STRING}" &
 
+  wait
   echo "Finished creating SSM parameters"
   return 0
 }
@@ -99,172 +100,115 @@ create_ssm_parameters() {
 create_kms_keys() {
   echo "Creating KMS keys"
 
-  KEY_ID=$(aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl kms create-key \
+  local key_id_file jwt_key_id_file
+  key_id_file=$(mktemp)
+  jwt_key_id_file=$(mktemp)
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl kms create-key \
     --key-spec RSA_2048 \
     --key-usage ENCRYPT_DECRYPT \
     --origin AWS_KMS \
     --query 'KeyMetadata.KeyId' \
-    --output text)
+    --output text > "$key_id_file" &
 
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl kms create-alias \
-    --alias-name alias/amc-JARRSAEncryptionKey \
-    --target-key-id "$KEY_ID"
-
-  JWT_SIGNING_KEY_ID=$(aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl kms create-key \
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl kms create-key \
     --key-spec ECC_NIST_P256 \
     --key-usage SIGN_VERIFY \
     --origin AWS_KMS \
     --description "JWT Signing Key" \
     --query 'KeyMetadata.KeyId' \
-    --output text)
+    --output text > "$jwt_key_id_file" &
+
+  wait
+
+  KEY_ID=$(cat "$key_id_file")
+  JWT_SIGNING_KEY_ID=$(cat "$jwt_key_id_file")
+  rm "$key_id_file" "$jwt_key_id_file"
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl kms create-alias \
+    --alias-name alias/amc-JARRSAEncryptionKey \
+    --target-key-id "$KEY_ID" &
 
   aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl kms create-alias \
     --alias-name alias/amc-JWTSigningKey \
-    --target-key-id "$JWT_SIGNING_KEY_ID"
+    --target-key-id "$JWT_SIGNING_KEY_ID" &
 
+  wait
   echo "Finished creating KMS keys"
   return 0
+}
+
+create_dynamodb_table() {
+  local table_name="$1"
+  local attribute_definitions="$2"
+  local key_schema="$3"
+  local gsi="$4"
+  local ttl_attr="$5"
+
+  local args=(
+    --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table
+    --table-name "$table_name"
+    --attribute-definitions $attribute_definitions
+    --key-schema $key_schema
+    --billing-mode PAY_PER_REQUEST
+  )
+  [ -n "$gsi" ] && args+=(--global-secondary-indexes "$gsi")
+
+  aws "${args[@]}"
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists --table-name "$table_name"
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
+    --table-name "$table_name" \
+    --time-to-live-specification "Enabled=true,AttributeName=$ttl_attr"
 }
 
 create_dynamodb_tables() {
   echo "Creating DynamoDB tables"
 
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
-    --table-name "amc-JourneyOutcome" \
-    --attribute-definitions \
-      AttributeName=outcome_id,AttributeType=S \
-    --key-schema \
-      AttributeName=outcome_id,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST
+  create_dynamodb_table "amc-JourneyOutcome" \
+    "AttributeName=outcome_id,AttributeType=S" \
+    "AttributeName=outcome_id,KeyType=HASH" \
+    "" "expires" &
 
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
-    --table-name "amc-JourneyOutcome"
+  create_dynamodb_table "amc-SessionStore" \
+    "AttributeName=id,AttributeType=S" \
+    "AttributeName=id,KeyType=HASH" \
+    "" "expires" &
 
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
-    --table-name "amc-JourneyOutcome" \
-    --time-to-live-specification "Enabled=true,AttributeName=expires"
+  create_dynamodb_table "amc-AuthCode" \
+    "AttributeName=code,AttributeType=S" \
+    "AttributeName=code,KeyType=HASH" \
+    "" "expires" &
 
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
-    --table-name "amc-SessionStore" \
-    --attribute-definitions \
-      AttributeName=id,AttributeType=S \
-    --key-schema \
-      AttributeName=id,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST
+  create_dynamodb_table "amc-ReplayAttack" \
+    "AttributeName=nonce,AttributeType=S" \
+    "AttributeName=nonce,KeyType=HASH" \
+    "" "expires" &
 
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
-    --table-name "amc-SessionStore"
+  create_dynamodb_table "amc-Lockouts" \
+    "AttributeName=id,AttributeType=S AttributeName=publicSubjectId,AttributeType=S AttributeName=lockedOutAt,AttributeType=N" \
+    "AttributeName=id,KeyType=HASH" \
+    '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"lockedOutAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+    "keepUntil" &
 
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
-    --table-name "amc-SessionStore" \
-    --time-to-live-specification "Enabled=true,AttributeName=expires"
+  create_dynamodb_table "amc-OTPs" \
+    "AttributeName=id,AttributeType=S AttributeName=publicSubjectId,AttributeType=S AttributeName=createdAt,AttributeType=N" \
+    "AttributeName=id,KeyType=HASH" \
+    '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+    "keepUntil" &
 
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
-    --table-name "amc-AuthCode" \
-    --attribute-definitions \
-      AttributeName=code,AttributeType=S \
-    --key-schema \
-      AttributeName=code,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST
+  create_dynamodb_table "amc-OTP-Checks" \
+    "AttributeName=id,AttributeType=S AttributeName=publicSubjectId,AttributeType=S AttributeName=createdAt,AttributeType=N" \
+    "AttributeName=id,KeyType=HASH" \
+    '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+    "keepUntil" &
 
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
-    --table-name "amc-AuthCode"
+  create_dynamodb_table "amc-Password-Checks" \
+    "AttributeName=id,AttributeType=S AttributeName=publicSubjectId,AttributeType=S AttributeName=createdAt,AttributeType=N" \
+    "AttributeName=id,KeyType=HASH" \
+    '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+    "keepUntil" &
 
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
-    --table-name "amc-AuthCode" \
-    --time-to-live-specification "Enabled=true,AttributeName=expires"
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
-    --table-name "amc-ReplayAttack" \
-    --attribute-definitions \
-      AttributeName=nonce,AttributeType=S \
-    --key-schema \
-      AttributeName=nonce,KeyType=HASH \
-    --billing-mode PAY_PER_REQUEST
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
-    --table-name "amc-ReplayAttack"
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
-    --table-name "amc-ReplayAttack" \
-    --time-to-live-specification "Enabled=true,AttributeName=expires"
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
-    --table-name "amc-Lockouts" \
-    --attribute-definitions \
-      AttributeName=id,AttributeType=S \
-      AttributeName=publicSubjectId,AttributeType=S \
-      AttributeName=lockedOutAt,AttributeType=N \
-    --key-schema \
-      AttributeName=id,KeyType=HASH \
-    --global-secondary-indexes \
-      '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"lockedOutAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
-    --billing-mode PAY_PER_REQUEST
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
-    --table-name "amc-Lockouts"
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
-    --table-name "amc-Lockouts" \
-    --time-to-live-specification "Enabled=true,AttributeName=keepUntil"
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
-    --table-name "amc-OTPs" \
-    --attribute-definitions \
-      AttributeName=id,AttributeType=S \
-      AttributeName=publicSubjectId,AttributeType=S \
-      AttributeName=createdAt,AttributeType=N \
-    --key-schema \
-      AttributeName=id,KeyType=HASH \
-    --global-secondary-indexes \
-      '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
-    --billing-mode PAY_PER_REQUEST
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
-    --table-name "amc-OTPs"
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
-    --table-name "amc-OTPs" \
-    --time-to-live-specification "Enabled=true,AttributeName=keepUntil"
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
-    --table-name "amc-OTP-Checks" \
-    --attribute-definitions \
-      AttributeName=id,AttributeType=S \
-      AttributeName=publicSubjectId,AttributeType=S \
-      AttributeName=createdAt,AttributeType=N \
-    --key-schema \
-      AttributeName=id,KeyType=HASH \
-    --global-secondary-indexes \
-      '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
-    --billing-mode PAY_PER_REQUEST
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
-    --table-name "amc-OTP-Checks"
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
-    --table-name "amc-OTP-Checks" \
-    --time-to-live-specification "Enabled=true,AttributeName=keepUntil"
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb create-table \
-    --table-name "amc-Password-Checks" \
-    --attribute-definitions \
-      AttributeName=id,AttributeType=S \
-      AttributeName=publicSubjectId,AttributeType=S \
-      AttributeName=createdAt,AttributeType=N \
-    --key-schema \
-      AttributeName=id,KeyType=HASH \
-    --global-secondary-indexes \
-      '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
-    --billing-mode PAY_PER_REQUEST
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb wait table-exists \
-    --table-name "amc-Password-Checks"
-
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl dynamodb update-time-to-live \
-    --table-name "amc-Password-Checks" \
-    --time-to-live-specification "Enabled=true,AttributeName=keepUntil"
-
+  wait
   echo "Finished creating DynamoDB tables"
   return 0
 }
@@ -273,11 +217,12 @@ create_sqs_queues() {
   echo "Creating SQS queues"
 
   aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl sqs create-queue \
-    --queue-name "amc-NotificationsQueue"
+    --queue-name "amc-NotificationsQueue" &
 
   aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl sqs create-queue \
-    --queue-name "amc-TxMASQSProducerAuditEventQueue"
+    --queue-name "amc-TxMASQSProducerAuditEventQueue" &
 
+  wait
   echo "Finished creating SQS queues"
   return 0
 }
@@ -359,11 +304,12 @@ generate_keys
 create_docker_network
 build_images
 start_aws_emulator
-create_ssm_parameters
-create_kms_keys
-create_dynamodb_tables
-create_sqs_queues
-create_app_config
+create_ssm_parameters &
+create_kms_keys &
+create_dynamodb_tables &
+create_sqs_queues &
+create_app_config &
+wait
 list_resources
 
 echo "Local AWS provisioned successfully"
