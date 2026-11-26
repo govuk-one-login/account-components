@@ -8,8 +8,7 @@ import {
 } from "./common.js";
 import type { JWTPayload } from "jose";
 import { jwtVerify, createRemoteJWKSet, decodeProtectedHeader } from "jose";
-import type { JWTExpired } from "jose/errors";
-import { JOSEError } from "jose/errors";
+import { JWTExpired, JOSEError } from "jose/errors";
 import type { ClientEntry } from "../../../../../config/schema/types.js";
 import { authorizeErrors } from "../../../utils/authorizeErrors.js";
 import { getClaimsSchema } from "../../../utils/getClaimsSchema.js";
@@ -142,11 +141,12 @@ const handleJwtError = (
       );
 
     case "JWTExpired": {
-      // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
-      const expiredError = error as JWTExpired;
       logger.warn("JWTExpired", {
         client_id: client.client_id,
-        exp: new Date(Number(expiredError.payload.exp) * 1000).toISOString(),
+        exp:
+          error instanceof JWTExpired
+            ? new Date(Number(error.payload.exp) * 1000).toISOString()
+            : undefined,
         current_datetime: new Date().toISOString(),
       });
       addAuthorizeErrorMetric("JWTExpired");

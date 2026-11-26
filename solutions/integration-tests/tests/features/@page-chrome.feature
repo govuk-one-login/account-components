@@ -2,6 +2,10 @@ Feature: Page chrome
 
   Scenario: Signed out page chrome
     Given I go to the journey initiator
+    And I fill the input with the label beginning with "Split test bucket assignments" with the text:
+      """
+        testingJourneySplitTest: bucket1
+      """
     And I select the option beginning with "Auth" in the "Client" select
     And I begin a "testing-journey" journey    
     Then the page looks as expected
@@ -11,6 +15,10 @@ Feature: Page chrome
 
   Scenario: Signed in page chrome
     Given I go to the journey initiator
+    And I fill the input with the label beginning with "Split test bucket assignments" with the text:
+      """
+        testingJourneySplitTest: bucket1
+      """
     And I select the option beginning with "Home" in the "Client" select
     And I begin a "testing-journey" journey    
     Then the page looks as expected
@@ -40,6 +48,10 @@ Feature: Page chrome
 
   Scenario: Navigate via app channel
     Given I go to the journey initiator
+    And I fill the input with the label beginning with "Split test bucket assignments" with the text:
+      """
+        testingJourneySplitTest: bucket1
+      """
     And I select the "strategic_app" channel
     Then the footer does not show
     And the phase banner does not show

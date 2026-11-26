@@ -1,0 +1,12 @@
+directory:
+  - .
+skip-path:
+  # skips solutions/app-infra/template.yaml due to a checkov bug where Fn::If
+  # inside SAM Globals causes a ValueError crash (invalid literal for int() with base 10: 'Fn::If').
+  # See: https://github.com/bridgecrewio/checkov/issues/6804
+  - solutions/app-infra/template.yaml
+skip-check:
+  - CKV_AWS_124
+skip-framework:
+  - openapi # redocly handles checking OpenAPI specs
+  - github_actions # zizmor handles checking GitHub Actions

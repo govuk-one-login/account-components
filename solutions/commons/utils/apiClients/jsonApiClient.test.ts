@@ -117,19 +117,22 @@ describe("jsonApiClient", () => {
       await clientWithEvent.testFetch("http://example.com");
 
       expect(mockGetPropsFromAPIGatewayEvent).toHaveBeenCalledWith(mockEvent);
-      expect(mockFetch).toHaveBeenCalledWith(
-        "http://example.com",
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            "di-persistent-session-id": "persistent-123",
-            "session-id": "session-456",
-            "client-session-id": "client-789",
-            "user-language": "en",
-            "x-forwarded-for": "192.168.1.1",
-            "txma-audit-encoded": "audit-data",
-          }),
-        }),
-      );
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      const [url, init] = mockFetch.mock.calls[0]!;
+
+      expect(url).toBe("http://example.com");
+      expect(init?.headers).toBeInstanceOf(Headers);
+      expect(
+        Object.fromEntries((init!.headers as Headers).entries()),
+      ).toStrictEqual({
+        "di-persistent-session-id": "persistent-123",
+        "session-id": "session-456",
+        "client-session-id": "client-789",
+        "user-language": "en",
+        "x-forwarded-for": "192.168.1.1",
+        "txma-audit-encoded": "audit-data",
+      });
 
       mockFetch.mockRestore();
     });
@@ -148,20 +151,19 @@ describe("jsonApiClient", () => {
       const clientWithEvent = new TestJsonApiClient("TestService", mockEvent);
       await clientWithEvent.testFetch("http://example.com");
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        "http://example.com",
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            "session-id": "session-only",
-            "x-forwarded-for": "10.0.0.1",
-          }),
-        }),
-      );
-      expect(
-        (mockFetch.mock.calls[0]![1]!.headers as Record<string, string>)[
-          "di-persistent-session-id"
-        ],
-      ).toBeUndefined();
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      const [url, init] = mockFetch.mock.calls[0]!;
+
+      const headers = init!.headers as Headers;
+
+      expect(url).toBe("http://example.com");
+      expect(headers).toBeInstanceOf(Headers);
+      expect(Object.fromEntries(headers.entries())).toStrictEqual({
+        "session-id": "session-only",
+        "x-forwarded-for": "10.0.0.1",
+      });
+      expect(headers.has("di-persistent-session-id")).toBe(false);
 
       mockFetch.mockRestore();
     });
@@ -185,16 +187,18 @@ describe("jsonApiClient", () => {
         },
       });
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        "http://example.com",
-        expect.objectContaining({
-          headers: expect.objectContaining({
-            "session-id": "session-456",
-            "content-type": "application/json",
-            "client-session-id": undefined,
-          }),
-        }),
-      );
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      const [url, init] = mockFetch.mock.calls[0]!;
+
+      expect(url).toBe("http://example.com");
+      expect(init?.headers).toBeInstanceOf(Headers);
+      expect(
+        Object.fromEntries((init!.headers as Headers).entries()),
+      ).toStrictEqual({
+        "session-id": "session-456",
+        "content-type": "application/json",
+      });
 
       mockFetch.mockRestore();
     });
@@ -281,10 +285,10 @@ describe("jsonApiClient", () => {
     });
 
     it("should log response status when rawResponse is present", async () => {
-      const mockResponse = {
-        status: 500,
-        statusText: "Internal Server Error",
-      } as Response;
+      const mockResponse = Response.json(
+        { error: "Something went wrong" },
+        { status: 500, statusText: "Internal Server Error" },
+      );
       const errorFn = vi.fn().mockResolvedValue({
         success: false,
         error: "ServerError",

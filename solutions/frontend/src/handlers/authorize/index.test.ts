@@ -401,6 +401,7 @@ describe("getHandler", () => {
     );
     vi.mocked(checkJtiUnused).mockResolvedValue(undefined);
     // @ts-expect-error
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-class-instance-assignment
     vi.mocked(startSessionAndGoToJourney).mockResolvedValue(mockReply);
 
     const result = await getHandler(mockRequest, mockReply);

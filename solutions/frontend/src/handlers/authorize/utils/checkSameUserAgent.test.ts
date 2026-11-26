@@ -1,7 +1,9 @@
+import * as crypto from "node:crypto";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { checkSameUserAgent } from "./checkSameUserAgent.js";
 import { ErrorResponse } from "./common.js";
 import type { FastifyReply, FastifyRequest } from "fastify";
+import type * as cryptoType from "node:crypto";
 
 // @ts-expect-error
 vi.mock(import("node:crypto"), () => ({
@@ -38,13 +40,11 @@ describe("checkSameUserAgent", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
-    const crypto = await import("node:crypto");
-    // @ts-expect-error
-    vi.mocked(crypto.createHash).mockReturnValue({
-      update: vi.fn().mockReturnValue({
-        digest: vi.fn().mockReturnValue(validHash),
-      }),
-    });
+    const actualCrypto =
+      await vi.importActual<typeof cryptoType>("node:crypto");
+    const mockHash = actualCrypto.createHash("sha256");
+    vi.spyOn(mockHash, "digest").mockReturnValue(validHash);
+    vi.mocked(crypto.createHash).mockReturnValue(mockHash);
     request = {
       cookies: {},
     } as unknown as FastifyRequest;

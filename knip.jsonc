@@ -31,6 +31,8 @@
         "sam",
         "awk",
         "detect-secrets",
+        "jq",
+        "checkov",
       ],
       "ignoreDependencies": [
         "csso-cli",

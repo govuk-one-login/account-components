@@ -3,6 +3,8 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 import type { Claims } from "../../../utils/getClaimsSchema.js";
 import type { FastifySessionObject } from "@fastify/session";
 import { Scope } from "../../../../../commons/utils/commonTypes.js";
+import { createActor } from "xstate";
+import { passkeyCreateStateMachine } from "../../utils/stateMachines/passkey-create.js";
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -1267,18 +1269,12 @@ describe("passkey-create handlers", () => {
 
       it("should throw when registration options are missing", async () => {
         mockReply.journeyStates = {
-          // @ts-expect-error
-          [Scope.passkeyCreate]: {
-            send: vi.fn(),
-            getSnapshot: vi.fn().mockReturnValue({
-              context: {},
-            }),
-          },
+          [Scope.passkeyCreate]: createActor(passkeyCreateStateMachine).start(),
         };
 
         await expect(
           postHandler(mockRequest as FastifyRequest, mockReply as FastifyReply),
-        ).rejects.toThrow();
+        ).rejects.toThrow("Registration options are missing");
       });
 
       it("should throw when PASSKEYS_EXPECTED_ORIGIN is not set", async () => {

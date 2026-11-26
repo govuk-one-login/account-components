@@ -32,5 +32,10 @@
     "playwright-bdd": "^9.0.0",
     "valibot": "^1.4.0",
     "yaml": "^2.8.4"
+  },
+  "overrides": {
+    "nodemon": {
+      "minimatch": "^11.0.1"
+    }
   }
 }

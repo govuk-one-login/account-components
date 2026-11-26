@@ -6,15 +6,21 @@ on:
   pull_request:
   merge_group:
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 jobs:
   local-tests-integration:
     runs-on: ubuntu-latest
     permissions:
       packages: read
     timeout-minutes: 30
-    concurrency:
-      group: ${{ github.workflow }}-${{ github.ref }}
-      cancel-in-progress: true
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2, 3, 4]
+        shardTotal: [4]
 
     steps:
       - name: Checkout
@@ -66,6 +72,7 @@ jobs:
           REPLAY_ATTACK_TABLE_NAME=amc-ReplayAttack  
           NOTIFICATIONS_QUEUE_URL=https://localhost:9297/000000000000/amc-NotificationsQueue
           AUDIT_EVENTS_QUEUE_URL=https://localhost:9297/000000000000/amc-TxMASQSProducerAuditEventQueue
+          SPLIT_TESTS_COOKIE_OVERRIDE=1
           INTERNAL_API_URL=http://localhost:6003/internal-api        
           EOF
 
@@ -89,7 +96,8 @@ jobs:
           LOCAL_AWS_ENDPOINT=https://localhost:9297
           LOCAL_AWS_ACCESS_KEY_ID=test
           LOCAL_AWS_ACCESS_KEY=test
-          ROOT_DOMAIN=localhost          
+          ROOT_DOMAIN=localhost  
+          AMC_ROOT_DOMAIN=localhost
           EOF
 
       - name: Configure API environment
@@ -149,12 +157,12 @@ jobs:
           touch .env
           echo "PRE_OR_POST_DEPLOY=pre" >> .env
           echo "PW_TEST_CONNECT_WS_ENDPOINT=ws://127.0.0.1:3000/" >> .env
-          npm run test
+          npm run test -- --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
 
       - name: Upload test results artifact
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
-          name: integration-test-results
+          name: integration-test-results-${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
           path: solutions/integration-tests/test-results/
           retention-days: 7

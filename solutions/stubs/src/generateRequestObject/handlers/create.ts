@@ -20,9 +20,14 @@ import type { JWTPayload } from "jose";
 import { getEnvironment } from "../../../../commons/utils/getEnvironment/index.js";
 import { createHash } from "node:crypto";
 import {
+  amcRootDomain,
   checkUserAgentCookieName,
   rootDomain,
 } from "../../../../commons/utils/constants.js";
+import {
+  getSplitTestBucketAssignmentsSchema,
+  splitTestOverridesCookieName,
+} from "../../../../commons/utils/fastify/splitTests/index.js";
 
 export const requestBodySchema = v.object({
   client_id: v.string(),
@@ -48,6 +53,7 @@ export const requestBodySchema = v.object({
   internal_api_generateOTP_scenario: v.string(),
   internal_api_checkOTP_scenario: v.string(),
   internal_api_checkPassword_scenario: v.string(),
+  split_test_bucket_assignments: v.string(),
   internal_api_lockouts_scenario: v.string(),
 });
 
@@ -129,6 +135,7 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
     }
 
     assert.ok(rootDomain);
+    assert.ok(amcRootDomain);
 
     reply.setCookie(
       checkUserAgentCookieName,
@@ -141,6 +148,40 @@ export function createRequestObjectPost(fastify: FastifyInstance) {
         path: "/",
       },
     );
+
+    const splitTestBucketAssignmentsSchema =
+      await getSplitTestBucketAssignmentsSchema();
+
+    const splitTestBucketAssignments = v.safeParse(
+      v.pipe(
+        v.string(),
+        v.transform((splitTestBucketAssignmentsString) =>
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+          Object.fromEntries(
+            splitTestBucketAssignmentsString
+              .split(/\r?\n/)
+              .map((line) => line.split(/:(.*)/).map((part) => part.trim()))
+              .filter(([key]) => key),
+          ),
+        ),
+        splitTestBucketAssignmentsSchema,
+      ),
+      requestBody.split_test_bucket_assignments,
+    );
+
+    if (splitTestBucketAssignments.success) {
+      reply.setCookie(
+        splitTestOverridesCookieName,
+        JSON.stringify(splitTestBucketAssignments.output),
+        {
+          secure: getEnvironment() !== "local",
+          httpOnly: true,
+          domain: amcRootDomain,
+          sameSite: "strict",
+          path: "/",
+        },
+      );
+    }
 
     await createRequestObjectGet(
       request,
