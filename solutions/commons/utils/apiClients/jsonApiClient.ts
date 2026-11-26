@@ -22,37 +22,33 @@ export abstract class JsonApiClient {
       : undefined;
 
     this.fetch = async (...args: Parameters<typeof fetch>) => {
+      const headers = new Headers(args[1]?.headers);
+
+      const defaultHeaders: Record<string, string | undefined> = {
+        "di-persistent-session-id": propsFromEvent?.persistentSessionId,
+        "session-id": propsFromEvent?.sessionId,
+        "client-session-id": propsFromEvent?.clientSessionId,
+        "user-language": propsFromEvent?.userLanguage,
+        "x-forwarded-for": propsFromEvent?.sourceIp,
+        "txma-audit-encoded": propsFromEvent?.txmaAuditEncoded,
+      };
+
+      for (const [key, value] of Object.entries(defaultHeaders)) {
+        if (value && !headers.has(key)) {
+          headers.set(key, value);
+        }
+      }
+
+      for (const [key, value] of headers.entries()) {
+        if (value === "undefined") {
+          headers.delete(key);
+        }
+      }
+
       args[1] = {
         signal: AbortSignal.timeout(10000),
         ...args[1],
-        headers: {
-          ...(propsFromEvent?.persistentSessionId
-            ? {
-                "di-persistent-session-id": propsFromEvent.persistentSessionId,
-              }
-            : {}),
-          ...(propsFromEvent?.sessionId
-            ? { "session-id": propsFromEvent.sessionId }
-            : {}),
-          ...(propsFromEvent?.clientSessionId
-            ? {
-                "client-session-id": propsFromEvent.clientSessionId,
-              }
-            : {}),
-          ...(propsFromEvent?.userLanguage
-            ? { "user-language": propsFromEvent.userLanguage }
-            : {}),
-          ...(propsFromEvent?.sourceIp
-            ? { "x-forwarded-for": propsFromEvent.sourceIp }
-            : {}),
-          ...(propsFromEvent?.txmaAuditEncoded
-            ? {
-                "txma-audit-encoded": propsFromEvent.txmaAuditEncoded,
-              }
-            : {}),
-          // eslint-disable-next-line @typescript-eslint/no-misused-spread
-          ...args[1]?.headers,
-        },
+        headers,
       };
       return await fetch(...args);
     };
