@@ -20,8 +20,8 @@
               "name": "secret scanning"
             }
           ],
-          "file": ".github/workflows/lint.yaml",
-          "path": "$.jobs.lint"
+          "file": ".github/workflows/checks.yaml",
+          "path": "$.jobs.build-and-pre-commit"
         },
         {
           "phase": "pre-merge",
