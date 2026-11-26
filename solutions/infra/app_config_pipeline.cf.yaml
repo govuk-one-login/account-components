@@ -481,16 +481,23 @@ Resources:
               - "s3:PutObjectAcl"
               - "s3:PutObject"
             Effect: "Allow"
-          - Resource: "*"
+          - Resource:
+              - !Sub "arn:aws:appconfig:${AWS::Region}:${AWS::AccountId}:application/${AppConfigApplication}/environment/${AppConfigEnvironment}/deployment/*"
             Action:
               - "appconfig:StartDeployment"
               - "appconfig:StopDeployment"
               - "appconfig:GetDeployment"
+            Effect: "Allow"
+          - Resource: "*"
+            Action:
               - "codebuild:BatchGetBuilds"
               - "codebuild:StartBuild"
               - "codebuild:BatchGetBuildBatches"
               - "codebuild:StartBuildBatch"
             Effect: "Allow"
+            Condition:
+              StringEquals:
+                "aws:ResourceAccount": !Ref AWS::AccountId
           - Resource:
               - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codepipeline/${AWS::StackName}-${ProfileName}-Pipeline"
               - !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codepipeline/${AWS::StackName}-${ProfileName}-Pipeline:*"
