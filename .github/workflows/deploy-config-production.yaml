@@ -1,5 +1,7 @@
 name: Deploy Configuration - production
 
+permissions: {}
+
 on:
   push:
     branches:
@@ -8,10 +10,6 @@ on:
       - "solutions/config/production-config.json"
       - ".github/workflows/deploy-config.yaml"
       - ".github/workflows/deploy-config-production.yaml"
-
-permissions:
-  id-token: write
-  contents: read
 
 jobs:
   deploy-config-to-production:
