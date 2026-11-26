@@ -145,4 +145,7 @@ repos:
     rev: a8ee1c49faec5e324ddf27afb1a7d37a33d109e1 # pragma: allowlist secret
     hooks:
       - id: checkov
+        entry: npm run checkov
+        always_run: true
+        pass_filenames: false
         stages: [pre-commit]
