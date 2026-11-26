@@ -1,7 +1,7 @@
 name: Deploy Configuration - dev
 
-# This pipeline deploys work-in-progress branches for dev work
-# checkov:skip=CKV_GHA_7:workflow_dispatch inputs are required to select the branch/tag to deploy
+permissions: {}
+
 on:
   workflow_dispatch:
     inputs:
@@ -10,10 +10,6 @@ on:
         required: true
         type: string
         default: main
-
-permissions:
-  id-token: write
-  contents: read
 
 jobs:
   deploy-config-to-dev:
