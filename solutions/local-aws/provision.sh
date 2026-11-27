@@ -209,7 +209,14 @@ create_dynamodb_tables() {
     '[{"IndexName":"PublicSubjectId_Index","KeySchema":[{"AttributeName":"publicSubjectId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
     "keepUntil" &
 
+  create_dynamodb_table "amc-StubsOutputsTable" \
+    "AttributeName=id,AttributeType=S AttributeName=allItemsId,AttributeType=S AttributeName=createdAt,AttributeType=N" \
+    "$ID_KEY_SCHEMA" \
+    '[{"IndexName":"AllItemsIndex","KeySchema":[{"AttributeName":"allItemsId","KeyType":"HASH"},{"AttributeName":"createdAt","KeyType":"RANGE"}],"Projection":{"ProjectionType":"ALL"}}]' \
+    "expiresAt" &    
+
   wait
+
   echo "Finished creating DynamoDB tables"
   return 0
 }
@@ -217,11 +224,27 @@ create_dynamodb_tables() {
 create_sqs_queues() {
   echo "Creating SQS queues"
 
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl sqs create-queue \
-    --queue-name "amc-NotificationsQueue" &
+  NOTIFICATIONS_QUEUE_URL=$(aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl sqs create-queue \
+    --queue-name "amc-NotificationsQueue" \
+    --attributes MessageRetentionPeriod=300 \
+    --query 'QueueUrl' \
+    --output text)
 
-  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl sqs create-queue \
-    --queue-name "amc-TxMASQSProducerAuditEventQueue" &
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl ssm put-parameter \
+    --name "/tests/NotificationsQueueUrl" \
+    --value "$NOTIFICATIONS_QUEUE_URL" \
+    --type "String"
+
+  TXMA_QUEUE_URL=$(aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl sqs create-queue \
+    --queue-name "amc-TxMASQSProducerAuditEventQueue" \
+    --attributes MessageRetentionPeriod=300 \
+    --query 'QueueUrl' \
+    --output text)
+
+  aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl ssm put-parameter \
+    --name "/tests/TxMASQSProducerAuditEventQueueUrl" \
+    --value "$TXMA_QUEUE_URL" \
+    --type "String"
 
   wait
   echo "Finished creating SQS queues"

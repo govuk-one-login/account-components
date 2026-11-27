@@ -243,3 +243,31 @@ Then(
     expect(journeyOutcomeDetails).toMatchObject(object);
   },
 );
+
+Given("I use a unique user", async ({ page, scenarioData }) => {
+  const email = `testuser+${scenarioData.id}@test.null.local`;
+  const publicSubjectId = `public-${scenarioData.id}`;
+  const commonSubjectId = `common-${scenarioData.id}`;
+
+  await page
+    .getByRole("textbox", {
+      name: /^User email address/,
+    })
+    .fill(email);
+  await page
+    .getByRole("textbox", {
+      name: /^User public subject ID/,
+    })
+    .fill(publicSubjectId);
+  await page
+    .getByRole("textbox", {
+      name: /^User common subject ID/,
+    })
+    .fill(commonSubjectId);
+
+  scenarioData.uniqueUser = {
+    email,
+    publicSubjectId,
+    commonSubjectId,
+  };
+});

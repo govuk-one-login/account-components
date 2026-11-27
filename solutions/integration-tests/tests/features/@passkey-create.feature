@@ -193,6 +193,7 @@ Feature: Passkey create
     
   Scenario: Successfully create a passkey
     Given I go to the journey initiator
+    And I use a unique user
     And I begin a "passkey-create" journey
     And I have an authenticator with the following options:
     """
@@ -207,15 +208,17 @@ Feature: Passkey create
     {
       "actions": [{
         "action": "passkey-create",      
-        "success": true
+        "success": true,
+        "details": {
+          "aaguid": "01020304-0506-0708-0102-030405060708"
+        }
       }],
-      "email": "testuser@test.null.local",
       "scope": "passkey-create",
-      "sub": "urn:fdc:gov.uk:default",
       "success": true
     }    
     """
-    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
+    And I receive an email about my new passkey
+    And a AMC_PASSKEY_ENROLMENT_SUCCESSFUL audit event is sent
 
   Scenario: User has maximum number of passkeys
     Given I go to the journey initiator
@@ -257,7 +260,10 @@ Feature: Passkey create
     {
       "actions": [{
         "action": "passkey-create",      
-        "success": true
+        "success": true,
+        "details": {
+          "aaguid": "01020304-0506-0708-0102-030405060708"
+        }
       }],
       "email": "testuser@test.null.local",
       "scope": "passkey-create",
@@ -265,7 +271,6 @@ Feature: Passkey create
       "success": true
     }    
     """
-    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
 
   Scenario: Invalid authenticators
     Given I go to the journey initiator
@@ -349,7 +354,10 @@ Feature: Passkey create
     {
       "actions": [{
         "action": "passkey-create",      
-        "success": true
+        "success": true,
+        "details": {
+          "aaguid": "01020304-0506-0708-0102-030405060708"
+        }
       }],
       "email": "testuser@test.null.local",
       "scope": "passkey-create",
@@ -357,7 +365,6 @@ Feature: Passkey create
       "success": true
     }    
     """
-    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
 
     Given I have no authenticators
     And I go to the journey initiator
@@ -376,7 +383,10 @@ Feature: Passkey create
     {
       "actions": [{
         "action": "passkey-create",      
-        "success": true
+        "success": true,
+        "details": {
+          "aaguid": "01020304-0506-0708-0102-030405060708"
+        }
       }],
       "email": "testuser@test.null.local",
       "scope": "passkey-create",
@@ -384,7 +394,6 @@ Feature: Passkey create
       "success": true
     }    
     """
-    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
 
     Given I have no authenticators
     And I go to the journey initiator
@@ -403,7 +412,10 @@ Feature: Passkey create
     {
       "actions": [{
         "action": "passkey-create",      
-        "success": true
+        "success": true,
+        "details": {
+          "aaguid": "01020304-0506-0708-0102-030405060708"
+        }
       }],
       "email": "testuser@test.null.local",
       "scope": "passkey-create",
@@ -411,7 +423,6 @@ Feature: Passkey create
       "success": true
     }    
     """
-    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
 
     Given I have no authenticators
     And I go to the journey initiator
@@ -430,7 +441,10 @@ Feature: Passkey create
     {
       "actions": [{
         "action": "passkey-create",      
-        "success": true
+        "success": true,
+        "details": {
+          "aaguid": "01020304-0506-0708-0102-030405060708"
+        }
       }],
       "email": "testuser@test.null.local",
       "scope": "passkey-create",
@@ -438,7 +452,6 @@ Feature: Passkey create
       "success": true
     }    
     """
-    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
 
     Given I have no authenticators
     And I go to the journey initiator
@@ -458,7 +471,10 @@ Feature: Passkey create
     {
       "actions": [{
         "action": "passkey-create",      
-        "success": true
+        "success": true,
+        "details": {
+          "aaguid": "01020304-0506-0708-0102-030405060708"
+        }
       }],
       "email": "testuser@test.null.local",
       "scope": "passkey-create",
@@ -466,7 +482,6 @@ Feature: Passkey create
       "success": true
     }    
     """
-    And the page contains the text '"aaguid": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"'
 
   @noJs
   Scenario: JavaScript disabled

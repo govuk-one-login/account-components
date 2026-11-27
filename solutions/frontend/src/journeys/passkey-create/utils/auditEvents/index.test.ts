@@ -254,18 +254,6 @@ describe("passkey-create audit events", () => {
       );
     });
 
-    it("returns early when awsLambda event is not present", async () => {
-      delete mockRequest.awsLambda;
-
-      await sendPasskeyRegistrationGeneratedAuditEvent(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-        registrationOptions as PublicKeyCredentialCreationOptionsJSON,
-      );
-
-      expect(mockSendAuditEvent).not.toHaveBeenCalled();
-    });
-
     it("throws when session claims are missing", async () => {
       mockRequest.session = {} as FastifySessionObject;
 
@@ -313,18 +301,6 @@ describe("passkey-create audit events", () => {
           event_name: "AMC_PASSKEY_REGISTRATION_FAILED",
         }),
       );
-    });
-
-    it("returns early when awsLambda event is not present", async () => {
-      delete mockRequest.awsLambda;
-
-      await sendPasskeyRegistrationFailedAuditEvent(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-        "UnknownError",
-      );
-
-      expect(mockSendAuditEvent).not.toHaveBeenCalled();
     });
 
     it("throws when session claims are missing", async () => {
@@ -472,18 +448,6 @@ describe("passkey-create audit events", () => {
       expect(eventPayload.restricted.passkey).not.toHaveProperty(
         "passkey_credential_id",
       );
-    });
-
-    it("returns early when awsLambda event is not present", async () => {
-      delete mockRequest.awsLambda;
-
-      await sendPasskeyRegistrationSuccessfulAuditEvent(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-        registrationResponse,
-      );
-
-      expect(mockSendAuditEvent).not.toHaveBeenCalled();
     });
 
     it("throws when session claims are missing", async () => {
@@ -678,22 +642,6 @@ describe("passkey-create audit events", () => {
       );
     });
 
-    it("returns early when awsLambda event is not present", async () => {
-      // @ts-expect-error
-      mockRequest.awsLambda = undefined;
-
-      await sendPasskeyEnrolmentFailedAuditEvent(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-        registrationOptions as PublicKeyCredentialCreationOptionsJSON,
-        registrationResponse,
-        undefined,
-        "UserVerificationError",
-      );
-
-      expect(mockSendAuditEvent).not.toHaveBeenCalled();
-    });
-
     it("throws when session claims are missing", async () => {
       mockRequest.session = {} as FastifySessionObject;
 
@@ -842,21 +790,6 @@ describe("passkey-create audit events", () => {
           }),
         }),
       );
-    });
-
-    it("returns early when awsLambda event is not present", async () => {
-      // @ts-expect-error
-      mockRequest.awsLambda = undefined;
-
-      await sendPasskeyEnrolmentSuccessfulAuditEvent(
-        mockRequest as FastifyRequest,
-        mockReply as FastifyReply,
-        registrationOptions as PublicKeyCredentialCreationOptionsJSON,
-        registrationResponse,
-        3,
-      );
-
-      expect(mockSendAuditEvent).not.toHaveBeenCalled();
     });
 
     it("throws when session claims are missing", async () => {

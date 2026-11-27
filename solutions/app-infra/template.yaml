@@ -92,7 +92,7 @@ Mappings:
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.dev.account.gov.uk/account-data-api
       internalApiUrl: https://stubs.manage.dev.account.gov.uk/internal-api
-      notifyDontSendEmailsTo: "^(perftest.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
+      notifyDontSendEmailsTo: "^(perftest.+?@digital.cabinet-office.gov.uk)|(testuser.*?@test.null.local)$"
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "fb385d74-ac28-466d-8695-3d8a732a4cf8",
@@ -104,6 +104,7 @@ Mappings:
       stubsDomain: stubs.manage.dev.account.gov.uk
       rootDomain: account.gov.uk
       rootDomainWithEnv: dev.account.gov.uk
+      notifyStubUrl: https://stubs.manage.dev.account.gov.uk/notify
       splitTestsCookieOverride: "1"
     build:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
@@ -130,7 +131,7 @@ Mappings:
       dynatraceRumUrl: ""
       accountDataApiUrl: https://stubs.manage.build.account.gov.uk/account-data-api
       internalApiUrl: https://stubs.manage.build.account.gov.uk/internal-api
-      notifyDontSendEmailsTo: "^(perftest.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
+      notifyDontSendEmailsTo: "^(perftest.+?@digital.cabinet-office.gov.uk)|(testuser.*?@test.null.local)$"
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "fb385d74-ac28-466d-8695-3d8a732a4cf8",
@@ -142,6 +143,7 @@ Mappings:
       stubsDomain: stubs.manage.build.account.gov.uk
       rootDomain: account.gov.uk
       rootDomainWithEnv: build.account.gov.uk
+      notifyStubUrl: https://stubs.manage.build.account.gov.uk/notify
       splitTestsCookieOverride: "1"
     staging:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
@@ -170,7 +172,7 @@ Mappings:
       dynatraceRumUrl: ""
       accountDataApiUrl: https://7xgl7lexy4.execute-api.eu-west-2.amazonaws.com/staging
       internalApiUrl: https://2hdyiuvtug.execute-api.eu-west-2.amazonaws.com/v1
-      notifyDontSendEmailsTo: "^(perftest.+?@digital.cabinet-office.gov.uk)|(testuser@test.null.local)$"
+      notifyDontSendEmailsTo: "^(perftest.+?@digital.cabinet-office.gov.uk)|(testuser.*?@test.null.local)$"
       notifyTemplateIds: |
         {
           "CREATE_PASSKEY_WITH_DISPLAY_NAME": "aa8697b6-23e6-4317-9aff-5a274142e7f2",
@@ -182,6 +184,7 @@ Mappings:
       stubsDomain: ""
       rootDomain: account.gov.uk
       rootDomainWithEnv: staging.account.gov.uk
+      notifyStubUrl: ""
       splitTestsCookieOverride: "1"
     integration:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceNonProductionVariables # pragma: allowlist secret
@@ -222,6 +225,7 @@ Mappings:
       stubsDomain: ""
       rootDomain: account.gov.uk
       rootDomainWithEnv: integration.account.gov.uk
+      notifyStubUrl: ""
       splitTestsCookieOverride: "0"
     production:
       dynatraceSecretArn: arn:aws:secretsmanager:eu-west-2:216552277552:secret:DynatraceProductionVariables # pragma: allowlist secret
@@ -262,6 +266,7 @@ Mappings:
       stubsDomain: ""
       rootDomain: account.gov.uk
       rootDomainWithEnv: account.gov.uk
+      notifyStubUrl: ""
       splitTestsCookieOverride: "0"
 
 Conditions:
@@ -286,6 +291,7 @@ Conditions:
   IsDevEnvironment: !Equals [!Ref Environment, "dev"]
   IsBuildEnvironment: !Equals [!Ref Environment, "build"]
   IsDevOrBuild: !Or [Condition: IsDevEnvironment, Condition: IsBuildEnvironment]
+  IsNotDevOrBuild: !Not [Condition: IsDevOrBuild]
   IsLocalOrDev: !Or [Condition: IsDevEnvironment, Condition: IsLocal]
   HasAllowedVpceIds: !Not
     - !Equals
@@ -1116,14 +1122,15 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      MessageRetentionPeriod: 1209600
+      MessageRetentionPeriod: !If [IsDevOrBuild, 300, 1209600]
       VisibilityTimeout:
         !FindInMap [
           EnvironmentConfiguration,
           !Ref Environment,
           notificationsVisibilityTimeout,
         ]
-      KmsMasterKeyId: !GetAtt SqsKmsKey.Arn
+      KmsMasterKeyId:
+        !If [IsDevOrBuild, !Ref AWS::NoValue, !GetAtt SqsKmsKey.Arn]
       RedriveAllowPolicy:
         redrivePermission: denyAll
       RedrivePolicy:
@@ -1135,12 +1142,21 @@ Resources:
             notificationsMaxReceiveCount,
           ]
 
+  NotificationsQueueUrlParameter: # for use by Integration Tests only
+    Type: AWS::SSM::Parameter
+    Condition: IsDevOrBuild
+    Properties:
+      Name: !Sub "/tests/NotificationsQueueUrl"
+      Type: String
+      Value: !GetAtt NotificationsQueue.QueueUrl
+
   NotificationsDLQ:
     Type: AWS::SQS::Queue
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      KmsMasterKeyId: !GetAtt SqsKmsKey.Arn
+      KmsMasterKeyId:
+        !If [IsDevOrBuild, !Ref AWS::NoValue, !GetAtt SqsKmsKey.Arn]
       MessageRetentionPeriod: 1209600
 
   NotificationsServiceLambda:
@@ -1179,6 +1195,12 @@ Resources:
               EnvironmentConfiguration,
               !Ref Environment,
               notifyDontSendEmailsTo,
+            ]
+          NOTIFY_STUB_URL:
+            !FindInMap [
+              EnvironmentConfiguration,
+              !Ref Environment,
+              notifyStubUrl,
             ]
       DeploymentPreference:
         Alarms:
@@ -1385,8 +1407,13 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      MessageRetentionPeriod: !If [IsDevOrBuild, 3600, 1209600]
-      KmsMasterKeyId: !Ref TxMASQSProducerAuditEventQueueEncryptionKeyAlias
+      MessageRetentionPeriod: !If [IsDevOrBuild, 300, 1209600]
+      KmsMasterKeyId:
+        !If [
+          IsDevOrBuild,
+          !Ref AWS::NoValue,
+          !Ref TxMASQSProducerAuditEventQueueEncryptionKeyAlias,
+        ]
       RedriveAllowPolicy:
         redrivePermission: denyAll
       RedrivePolicy:
@@ -1424,6 +1451,14 @@ Resources:
               - "sqs:DeleteMessage"
               - "sqs:GetQueueAttributes"
             Resource: !GetAtt TxMASQSProducerAuditEventQueue.Arn
+
+  TxMASQSProducerAuditEventQueueUrlParameter: # for use by Integration Tests only
+    Type: AWS::SSM::Parameter
+    Condition: IsDevOrBuild
+    Properties:
+      Name: !Sub "/tests/TxMASQSProducerAuditEventQueueUrl"
+      Type: String
+      Value: !GetAtt TxMASQSProducerAuditEventQueue.QueueUrl
 
   TxMAAuditEventDeadLetterQueue:
     Type: AWS::SQS::Queue
@@ -1486,6 +1521,7 @@ Resources:
 
   TxMASQSProducerAuditEventQueueProcessingTooSlow:
     Type: AWS::CloudWatch::Alarm
+    Condition: IsNotDevOrBuild
     Properties:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
@@ -1503,6 +1539,7 @@ Resources:
 
   TxMAAuditEventDeadLetterQueueHasMessages:
     Type: AWS::CloudWatch::Alarm
+    Condition: IsNotDevOrBuild
     Properties:
       AlarmActions:
         - Fn::ImportValue: !Sub ${AlertsStackName}-WarningAlertsTopicArn
@@ -4497,6 +4534,7 @@ Resources:
               !Ref Environment,
               notifyDontSendEmailsTo,
             ]
+          STUBS_OUTPUTS_TABLE_NAME: !Ref StubsOutputsTable
       Policies:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
         - Statement:
@@ -4520,6 +4558,20 @@ Resources:
                 - kms:DescribeKey
                 - kms:GetPublicKey
               Resource: !GetAtt JARRSAEncryptionKey.Arn
+        - Statement:
+            - Effect: Allow
+              Action:
+                - kms:Decrypt
+                - kms:GenerateDataKey*
+              Resource: !GetAtt DynamoDbSSEKey.Arn
+        - Statement:
+            - Effect: Allow
+              Action:
+                - dynamodb:PutItem
+                - dynamodb:UpdateItem
+                - dynamodb:DeleteItem
+                - dynamodb:BatchWriteItem
+              Resource: !GetAtt StubsOutputsTable.Arn
 
   StubsLambdaLogGroup:
     Type: AWS::Logs::LogGroup
@@ -4528,6 +4580,41 @@ Resources:
       LogGroupName: !Sub "/aws/lambda/${AWS::StackName}/StubsLambda"
       RetentionInDays: 90
       KmsKeyId: !GetAtt CloudWatchEncryptionKey.Arn
+
+  StubsOutputsTable:
+    Type: AWS::DynamoDB::Table
+    Condition: IsDevOrBuild
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Sub ${AWS::StackName}-StubsOutputsTable
+      BillingMode: PAY_PER_REQUEST
+      ContributorInsightsSpecification:
+        Enabled: true
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: allItemsId
+          AttributeType: S
+        - AttributeName: createdAt
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: AllItemsIndex
+          KeySchema:
+            - AttributeName: allItemsId
+              KeyType: HASH
+            - AttributeName: createdAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      TimeToLiveSpecification:
+        AttributeName: expiresAt
+        Enabled: true
 
   Dashboard:
     Type: AWS::CloudWatch::Dashboard

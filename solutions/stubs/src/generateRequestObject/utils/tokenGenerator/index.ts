@@ -130,6 +130,8 @@ export function getJwtPayload(
     exp: bodyExp,
     iss: bodyIss,
     user_email_address: bodyUserEmailAddress,
+    user_public_subject_id: bodyUserPublicSubjectId,
+    user_common_subject_id: bodyUserCommonSubjectId,
     channel: bodyChannel,
     ...payload
   } = requestObjectOptions;
@@ -148,10 +150,15 @@ export function getJwtPayload(
       ? bodyIss
       : // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
         (requestObjectOptions["client_id"] as string);
-  const userEmailAddress =
-    typeof bodyUserEmailAddress === "string" && bodyUserEmailAddress.length > 0
-      ? bodyUserEmailAddress
-      : user.email;
+  const nonEmptyString = (val: unknown, fallback: string) =>
+    typeof val === "string" && val.length > 0 ? val : fallback;
+
+  const userEmailAddress = nonEmptyString(bodyUserEmailAddress, user.email);
+  const userPublicSubjectId = nonEmptyString(
+    bodyUserPublicSubjectId,
+    user.public_sub,
+  );
+  const userCommonSubjectId = nonEmptyString(bodyUserCommonSubjectId, user.sub);
 
   return {
     ...payload,
@@ -177,8 +184,8 @@ export function getJwtPayload(
         ? getDateEpoch(-5)
         : getDateEpoch(0) + expiresIn,
     iss,
-    sub: user.sub,
-    public_sub: user.public_sub,
+    sub: userCommonSubjectId,
+    public_sub: userPublicSubjectId,
     email: userEmailAddress,
   };
 }

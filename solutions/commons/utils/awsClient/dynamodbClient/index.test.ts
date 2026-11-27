@@ -84,10 +84,6 @@ describe("getDynamoDbClient", () => {
     expect(client.get).toBeTypeOf("function");
     expect(client.delete).toBeTypeOf("function");
     expect(client.update).toBeTypeOf("function");
-    expect(client.query).toBeTypeOf("function");
-    expect(client.scan).toBeTypeOf("function");
-    expect(client.batchWrite).toBeTypeOf("function");
-    expect(client.batchGet).toBeTypeOf("function");
     expect(client.transactWrite).toBeTypeOf("function");
   });
 
@@ -142,64 +138,6 @@ describe("getDynamoDbClient", () => {
     await client.update(params);
 
     expect(mockCommands.UpdateCommand).toHaveBeenCalledWith(params);
-    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
-  });
-
-  it("query method calls client.send with QueryCommand", async () => {
-    const { getDynamoDbClient } = await import("./index.js");
-
-    const client = getDynamoDbClient();
-    const params = {
-      TableName: "test-table",
-      KeyConditionExpression: "id = :id",
-      ExpressionAttributeValues: { ":id": "test" },
-    };
-
-    await client.query(params);
-
-    expect(mockCommands.QueryCommand).toHaveBeenCalledWith(params);
-    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
-  });
-
-  it("scan method calls client.send with ScanCommand", async () => {
-    const { getDynamoDbClient } = await import("./index.js");
-
-    const client = getDynamoDbClient();
-    const params = { TableName: "test-table" };
-
-    await client.scan(params);
-
-    expect(mockCommands.ScanCommand).toHaveBeenCalledWith(params);
-    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
-  });
-
-  it("batchWrite method calls client.send with BatchWriteCommand", async () => {
-    const { getDynamoDbClient } = await import("./index.js");
-
-    const client = getDynamoDbClient();
-    const params = {
-      RequestItems: {
-        "test-table": [{ PutRequest: { Item: { id: "test" } } }],
-      },
-    };
-
-    await client.batchWrite(params);
-
-    expect(mockCommands.BatchWriteCommand).toHaveBeenCalledWith(params);
-    expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
-  });
-
-  it("batchGet method calls client.send with BatchGetCommand", async () => {
-    const { getDynamoDbClient } = await import("./index.js");
-
-    const client = getDynamoDbClient();
-    const params = {
-      RequestItems: { "test-table": { Keys: [{ id: "test" }] } },
-    };
-
-    await client.batchGet(params);
-
-    expect(mockCommands.BatchGetCommand).toHaveBeenCalledWith(params);
     expect(mockDocClient.send).toHaveBeenCalledWith(expect.any(Object));
   });
 

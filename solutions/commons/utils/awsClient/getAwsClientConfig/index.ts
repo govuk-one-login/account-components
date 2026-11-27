@@ -1,5 +1,4 @@
 import { NodeHttpHandler } from "@smithy/node-http-handler";
-import { getNumberFromEnvVar } from "../../getNumberFromEnvVar/index.js";
 import { resolveEnvVarToBool } from "../../resolveEnvVarToBool/index.js";
 import http from "node:http";
 import https from "node:https";
@@ -12,7 +11,7 @@ export const getAwsClientConfig = () => {
 
   return {
     region: process.env["AWS_REGION"],
-    maxAttempts: getNumberFromEnvVar("AWS_MAX_ATTEMPTS", 3),
+    maxAttempts: 3,
     ...(() => {
       if (!useLocalAws) {
         return {};
@@ -40,11 +39,8 @@ export const getAwsClientConfig = () => {
       };
     })(),
     requestHandler: new NodeHttpHandler({
-      connectionTimeout: getNumberFromEnvVar(
-        "AWS_CLIENT_CONNECT_TIMEOUT",
-        10000,
-      ),
-      requestTimeout: getNumberFromEnvVar("AWS_CLIENT_REQUEST_TIMEOUT", 10000),
+      connectionTimeout: 10000,
+      requestTimeout: 10000,
       httpAgent: new http.Agent({
         keepAlive: true,
         maxSockets: 50,
