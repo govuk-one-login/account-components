@@ -15,7 +15,7 @@ export const queueMessageExists = async (
       QueueUrl: queueUrl,
       MaxNumberOfMessages: 10,
       VisibilityTimeout: 0,
-      WaitTimeSeconds: 0,
+      WaitTimeSeconds: 1,
     });
 
     const found = (response.Messages ?? []).some((message) => {
