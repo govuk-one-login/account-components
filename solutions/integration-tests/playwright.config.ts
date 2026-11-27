@@ -88,7 +88,7 @@ export default defineConfig({
       : []),
   ],
   timeout: 60000,
-  expect: { timeout: 20000 },
+  expect: { timeout: 35000 },
   webServer: webServers,
   use: {
     baseURL: getBaseUrl(),

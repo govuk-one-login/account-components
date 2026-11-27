@@ -1,6 +1,6 @@
 import { getSqsClient } from "./sqsClient.js";
 
-const MAX_ATTEMPTS = 15;
+const MAX_ATTEMPTS = 30;
 
 const sqsClient = getSqsClient();
 

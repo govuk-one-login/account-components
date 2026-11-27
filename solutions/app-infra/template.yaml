@@ -1122,7 +1122,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      MessageRetentionPeriod: 1209600
+      MessageRetentionPeriod: !If [IsDevOrBuild, 300, 1209600]
       VisibilityTimeout:
         !FindInMap [
           EnvironmentConfiguration,
@@ -1407,7 +1407,7 @@ Resources:
     DeletionPolicy: Retain
     UpdateReplacePolicy: Retain
     Properties:
-      MessageRetentionPeriod: !If [IsDevOrBuild, 3600, 1209600]
+      MessageRetentionPeriod: !If [IsDevOrBuild, 300, 1209600]
       KmsMasterKeyId:
         !If [
           IsDevOrBuild,
