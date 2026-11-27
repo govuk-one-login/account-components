@@ -14,8 +14,8 @@ export const queueMessageExists = async (
     const response = await sqsClient.receiveMessage({
       QueueUrl: queueUrl,
       MaxNumberOfMessages: 10,
-      VisibilityTimeout: 0,
-      WaitTimeSeconds: 1,
+      VisibilityTimeout: 1,
+      WaitTimeSeconds: 0,
     });
 
     const found = (response.Messages ?? []).some((message) => {
