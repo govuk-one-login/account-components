@@ -329,25 +329,25 @@ export const sendPasskeyEnrolmentSuccessfulAuditEvent = async (
     registrationResponse,
   );
 
-  const event = createEvent("AMC_PASSKEY_ENROLMENT_SUCCESSFUL", {
-    ...base.commonAuditEventProps,
-    event_name: "AMC_PASSKEY_ENROLMENT_SUCCESSFUL",
-    client_id: base.claims.client_id,
-    extensions: {
-      ...(base.journeyType !== undefined && {
-        "journey-type": base.journeyType,
-      }),
-      passkey: enrolment.extensions,
-    },
-    restricted: {
-      ...base.commonAuditEventProps.restricted,
-      passkey: enrolment.restricted,
-    },
-    user: {
-      ...base.user,
-      passkey_count: passkeyCount,
-    },
-  });
-
-  await sendAuditEvent(event);
+  await sendAuditEvent(
+    createEvent("AMC_PASSKEY_ENROLMENT_SUCCESSFUL", {
+      ...base.commonAuditEventProps,
+      event_name: "AMC_PASSKEY_ENROLMENT_SUCCESSFUL",
+      client_id: base.claims.client_id,
+      extensions: {
+        ...(base.journeyType !== undefined && {
+          "journey-type": base.journeyType,
+        }),
+        passkey: enrolment.extensions,
+      },
+      restricted: {
+        ...base.commonAuditEventProps.restricted,
+        passkey: enrolment.restricted,
+      },
+      user: {
+        ...base.user,
+        passkey_count: passkeyCount,
+      },
+    }),
+  );
 };
