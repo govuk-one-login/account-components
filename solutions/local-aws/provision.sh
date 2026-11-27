@@ -226,6 +226,7 @@ create_sqs_queues() {
 
   NOTIFICATIONS_QUEUE_URL=$(aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl sqs create-queue \
     --queue-name "amc-NotificationsQueue" \
+    --attributes MessageRetentionPeriod=300 \
     --query 'QueueUrl' \
     --output text)
 
@@ -236,6 +237,7 @@ create_sqs_queues() {
 
   TXMA_QUEUE_URL=$(aws --endpoint-url="$EMULATOR_ENDPOINT" --no-verify-ssl sqs create-queue \
     --queue-name "amc-TxMASQSProducerAuditEventQueue" \
+    --attributes MessageRetentionPeriod=300 \
     --query 'QueueUrl' \
     --output text)
 
