@@ -147,12 +147,20 @@ const processNotification = async (
       let notifyClient: InstanceType<typeof NotifyClient>;
 
       if (
-        stubUrl?.length &&
         process.env["NOTIFY_DONT_SEND_EMAILS_TO"] &&
         new RegExp(process.env["NOTIFY_DONT_SEND_EMAILS_TO"], "i").test(
           message.emailAddress,
         )
       ) {
+        if (stubUrl === undefined) {
+          logger.info("notification_would_have_been_sent", {
+            reference,
+            templateId,
+            template: templateType,
+          });
+          return;
+        }
+
         notifyClient = new NotifyClient(stubUrl, randomUUID());
       } else {
         notifyClient = new NotifyClient(notifyApiKey);

@@ -567,15 +567,11 @@ describe("notifications-service", () => {
     delete process.env["NOTIFY_STUB_URL"];
   });
 
-  it("sends via real client when email matches NOTIFY_DONT_SEND_EMAILS_TO but NOTIFY_STUB_URL is not set", async () => {
+  it("logs notification_would_have_been_sent and skips sending when email matches NOTIFY_DONT_SEND_EMAILS_TO but NOTIFY_STUB_URL is not set", async () => {
     process.env["NOTIFY_DONT_SEND_EMAILS_TO"] = "@test\\.null\\.local$";
     delete process.env["NOTIFY_STUB_URL"];
 
     const { handler } = await import("./notifications-service.js");
-
-    mockSendEmail.mockResolvedValue({
-      data: { id: "notify-id", reference: "ref" },
-    });
 
     const message = {
       emailAddress: "testuser@test.null.local",
@@ -587,13 +583,13 @@ describe("notifications-service", () => {
     const result = await handler(event);
 
     expect(result.batchItemFailures).toHaveLength(0);
-    expect(mockNotifyClientConstructor).toHaveBeenCalledWith("test-api-key");
-    expect(mockSendEmail).toHaveBeenCalledWith(
-      "template-personalisation",
-      "testuser@test.null.local",
+    expect(mockSendEmail).not.toHaveBeenCalled();
+    expect(mockLogger.info).toHaveBeenCalledWith(
+      "notification_would_have_been_sent",
       expect.objectContaining({
-        personalisation: { name: "Test User" },
         reference: expect.any(String),
+        templateId: "template-personalisation",
+        template: "WITH_PERSONALISATION",
       }),
     );
 
