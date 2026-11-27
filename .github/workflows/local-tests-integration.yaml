@@ -172,6 +172,6 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
-          name: integration-test-results-${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+          name: integration-test-results-${{ matrix.shardIndex }}-${{ matrix.shardTotal }}
           path: solutions/integration-tests/test-results/
           retention-days: 7
