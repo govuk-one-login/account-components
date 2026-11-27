@@ -41,6 +41,8 @@ export const requestBodySchema = v.object({
   user: v.string(),
   state: v.string(),
   user_email_address: v.string(),
+  user_public_subject_id: v.string(),
+  user_common_subject_id: v.string(),
   account_management_api_authenticate_scenario: v.string(),
   account_management_api_deleteAccount_scenario: v.string(),
   account_management_api_sendOtpChallenge_scenario: v.string(),

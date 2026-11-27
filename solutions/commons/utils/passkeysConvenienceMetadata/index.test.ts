@@ -50,7 +50,17 @@ describe("passkeysConvenienceMetadata", () => {
 
       const result = await getAllPasskeyConvenienceMetadata();
 
-      expect(result).toStrictEqual(mockMetadata);
+      expect(result).toMatchObject(mockMetadata);
+    });
+
+    it("includes the Chromium Virtual Authenticator entry", async () => {
+      const { getAllPasskeyConvenienceMetadata } = await import("./index.js");
+
+      const result = await getAllPasskeyConvenienceMetadata();
+
+      expect(result["01020304-0506-0708-0102-030405060708"]).toStrictEqual({
+        name: "Chromium Virtual Authenticator (browser dev tools)",
+      });
     });
 
     it("caches the result on subsequent calls", async () => {

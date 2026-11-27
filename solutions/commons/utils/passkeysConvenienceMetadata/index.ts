@@ -59,6 +59,10 @@ export const getAllPasskeyConvenienceMetadata = async () => {
 
   convenienceMetadata = parseResult.output;
 
+  convenienceMetadata["01020304-0506-0708-0102-030405060708"] = {
+    name: "Chromium Virtual Authenticator (browser dev tools)",
+  };
+
   return convenienceMetadata;
 };
 

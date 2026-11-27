@@ -350,6 +350,34 @@ describe("getJwtPayload", () => {
     expect(payload["email"]).toBe("custom@example.com");
   });
 
+  it("should use custom user_public_subject_id when provided", () => {
+    const body = {
+      client_id: "my-client-id",
+      iss: "issuer.example.com",
+      jti: "nonce-abc-123",
+      user_public_subject_id: "custom-public-sub",
+    };
+    process.env["DEFAULT_AUDIENCE"] = "default-audience";
+
+    const payload = getJwtPayload(MockRequestObjectScenarios.VALID, body);
+
+    expect(payload["public_sub"]).toBe("custom-public-sub");
+  });
+
+  it("should use custom user_common_subject_id when provided", () => {
+    const body = {
+      client_id: "my-client-id",
+      iss: "issuer.example.com",
+      jti: "nonce-abc-123",
+      user_common_subject_id: "custom-common-sub",
+    };
+    process.env["DEFAULT_AUDIENCE"] = "default-audience";
+
+    const payload = getJwtPayload(MockRequestObjectScenarios.VALID, body);
+
+    expect(payload.sub).toBe("custom-common-sub");
+  });
+
   it("should use custom iss when provided", () => {
     const body = {
       client_id: "my-client-id",

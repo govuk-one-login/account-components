@@ -110,6 +110,8 @@ describe("createRequestObjectPost", () => {
         user: "default",
         state: "example-state",
         user_email_address: "test@test.com",
+        user_public_subject_id: "mock-public-subject-id",
+        user_common_subject_id: "mock-common-subject-id",
         account_management_api_authenticate_scenario: "successful",
         account_management_api_deleteAccount_scenario: "successful",
         account_management_api_sendOtpChallenge_scenario: "successful",

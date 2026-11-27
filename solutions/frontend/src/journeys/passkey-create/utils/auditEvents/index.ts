@@ -130,10 +130,8 @@ const buildResponseInfoPasskeyFields = (
 const getBaseEventProps = (request: FastifyRequest, reply: FastifyReply) => {
   assert.ok(request.session.claims);
 
-  if (!request.awsLambda?.event) return undefined;
-
   const commonAuditEventProps = getCommonAuditEventProps(
-    request.awsLambda.event,
+    request.awsLambda?.event,
   );
 
   return {
@@ -183,7 +181,6 @@ export const sendPasskeyRegistrationGeneratedAuditEvent = async (
   registrationOptions: PublicKeyCredentialCreationOptionsJSON,
 ) => {
   const base = getBaseEventProps(request, reply);
-  if (!base) return;
 
   await sendAuditEvent(
     createEvent("AMC_PASSKEY_REGISTRATION_GENERATED", {
@@ -217,7 +214,6 @@ export const sendPasskeyRegistrationFailedAuditEvent = async (
   reason: (typeof passkeyRegistrationFailureReason)[number],
 ) => {
   const base = getBaseEventProps(request, reply);
-  if (!base) return;
 
   await sendAuditEvent(
     createEvent("AMC_PASSKEY_REGISTRATION_FAILED", {
@@ -245,7 +241,6 @@ export const sendPasskeyRegistrationSuccessfulAuditEvent = async (
   >["registrationResponse"],
 ) => {
   const base = getBaseEventProps(request, reply);
-  if (!base) return;
 
   const responseInfo = extractRegistrationResponseInfo(registrationResponse);
 
@@ -284,7 +279,6 @@ export const sendPasskeyEnrolmentFailedAuditEvent = async (
   enrolmentFailureReason?: string,
 ) => {
   const base = getBaseEventProps(request, reply);
-  if (!base) return;
 
   const enrolment = buildEnrolmentEventPayload(
     registrationOptions,
@@ -329,32 +323,31 @@ export const sendPasskeyEnrolmentSuccessfulAuditEvent = async (
   passkeyCount: number,
 ) => {
   const base = getBaseEventProps(request, reply);
-  if (!base) return;
 
   const enrolment = buildEnrolmentEventPayload(
     registrationOptions,
     registrationResponse,
   );
 
-  await sendAuditEvent(
-    createEvent("AMC_PASSKEY_ENROLMENT_SUCCESSFUL", {
-      ...base.commonAuditEventProps,
-      event_name: "AMC_PASSKEY_ENROLMENT_SUCCESSFUL",
-      client_id: base.claims.client_id,
-      extensions: {
-        ...(base.journeyType !== undefined && {
-          "journey-type": base.journeyType,
-        }),
-        passkey: enrolment.extensions,
-      },
-      restricted: {
-        ...base.commonAuditEventProps.restricted,
-        passkey: enrolment.restricted,
-      },
-      user: {
-        ...base.user,
-        passkey_count: passkeyCount,
-      },
-    }),
-  );
+  const event = createEvent("AMC_PASSKEY_ENROLMENT_SUCCESSFUL", {
+    ...base.commonAuditEventProps,
+    event_name: "AMC_PASSKEY_ENROLMENT_SUCCESSFUL",
+    client_id: base.claims.client_id,
+    extensions: {
+      ...(base.journeyType !== undefined && {
+        "journey-type": base.journeyType,
+      }),
+      passkey: enrolment.extensions,
+    },
+    restricted: {
+      ...base.commonAuditEventProps.restricted,
+      passkey: enrolment.restricted,
+    },
+    user: {
+      ...base.user,
+      passkey_count: passkeyCount,
+    },
+  });
+
+  await sendAuditEvent(event);
 };

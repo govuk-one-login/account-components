@@ -12,6 +12,11 @@ export const test = base.extend<
       id: UUID;
       cdpSession: CDPSession;
       authenticatorIds: string[];
+      uniqueUser?: {
+        email: string;
+        publicSubjectId: string;
+        commonSubjectId: string;
+      };
       [key: string]: unknown;
     };
   },
